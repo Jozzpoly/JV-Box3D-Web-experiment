@@ -32,7 +32,7 @@ Important native sources:
 - Added telemetry for rack friction and transverse tie-rod load.
 - Added live hardpoint-driven rendering for wishbone links, kingpins, coilovers and steering/toe links.
 - Added automatic synchronization and rendering of the real `assets/source/Nadwozie.gltf` tube frame with the native 0.35 scale, -90 degree yaw and `(0,-0.60,0)` base pose.
-- Replaced the temporary 132 m board with the current 400x400 m plate.
+- Replaced the temporary board with the current 400x400 m plate.
 - Ported the exact Central Test Campus bumper-bank specifications and deterministic E1/E2/E3 rock-island generation.
 - Updated the scan-island placement to the native north-island contract (`south edge z=320`, lowest point y=0).
 
@@ -41,14 +41,14 @@ The real body asset is intentionally synchronized at dev/build time and ignored 
 ## Validation
 
 - The user confirmed the original browser bootstrap runs.
-- The parity controller and real-body/live-rig renderer passed strict TypeScript and production Vite build in GitHub Actions.
-- The Central Test Campus commit must also remain green before calling this pass complete.
+- The complete serious parity pass passed `npm install`, asset synchronization, strict TypeScript and production Vite build in GitHub Actions at head `3f6ae70`.
+- The build includes the current M6 controller, real tube-frame asset, live suspension visualization and Central Test Campus contract.
 
 Compilation is not physics parity. The next explicit gate is a user runtime test and native/web driving comparison.
 
 ## Next validation order
 
-1. User runs `git pull` then `npm run dev` and reports startup/runtime behavior.
+1. User runs `git pull`, `npm install`, then `npm run dev` and reports startup/runtime behavior.
 2. Compare static pose, rack travel, body/joint/contact counts and basic straight-line response against native M6 Rig Lab.
 3. Correct any browser-only runtime/API differences revealed by the first serious test.
 4. Synchronize the actual wheel and front steering-rig visual contracts.
