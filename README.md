@@ -2,37 +2,45 @@
 
 A focused proof of concept for running a real slice of **Jozz Vehicle** directly in a browser with Box3D compiled to WebAssembly.
 
-## Scope
+## Current target
 
-The target is deliberately narrow:
+- the current M6/M7 multi-body vehicle foundation, not historical M5;
+- current factory tuning from native JV;
+- the Central Test Campus contract;
+- the real `rama_rurowa` body asset;
+- a separate photogrammetry visual mesh and reduced collision mesh.
 
-- one current JV vehicle rig;
-- the JV test board;
-- a photogrammetry/3D-scan terrain;
-- keyboard driving, chase camera, restart and basic telemetry.
+This remains a proof of concept. Compilation and browser infrastructure are proven; native/web behavior still needs direct driving comparison.
 
-This is not a port of the whole desktop application and it is not intended to be production-ready.
-
-## Important rig decision
-
-The browser vehicle is based on the **M6/M7 multi-body suspension foundation and later updates**. M5 is an old single-joint baseline and is not used as the implementation snapshot.
-
-The bootstrap already represents:
+## Implemented parity pass
 
 - four double-wishbone corners;
 - physical control-arm bodies, knuckles, ball joints and coilovers;
-- a physical steering rack and tie rods;
-- torque-based drive;
-- anti-roll bars and aero drag;
-- the split rolling-sphere / true-width sidewall wheel envelope.
+- physical steering rack and rigid tie rods;
+- exact current rack-stroke geometry;
+- load-dependent rack friction from transverse tie-rod forces;
+- current torque-based drive, brake, coast, ARB and aero defaults;
+- split rolling-sphere / true-width sidewall wheel envelope;
+- live hardpoint-driven suspension visualization;
+- current 400×400 m plate and Central Test Campus bumper/rock contracts;
+- current scan-island north-edge placement contract.
 
-See [`docs/PORTING_NOTES.md`](docs/PORTING_NOTES.md) for parity details and deliberate first-pass differences.
+See [`docs/PORTING_NOTES.md`](docs/PORTING_NOTES.md) for deliberate remaining differences.
 
 ## Run
 
 ```bash
 npm install
 npm run dev
+```
+
+`npm run dev` first synchronizes the self-contained `Nadwozie.gltf` from the authoritative JV repository, then starts Vite.
+
+Refresh synchronized JV assets explicitly:
+
+```bash
+$env:JV_REFRESH_ASSETS="1"
+npm run sync-assets
 ```
 
 Production check:
@@ -62,4 +70,13 @@ The visual mesh may remain detailed and textured. The collision mesh must be cle
 
 ## Source lineage
 
-The authoritative native reference is the `jozz-scan-terrain-f0` branch of `Jozzpoly/Box3d_FunProject`, especially the current M6/M7 suspension rig, geometry, config and lab files. Box3D and `box3d.js` are MIT-licensed projects.
+The authoritative native reference is the current `main` branch of `Jozzpoly/Box3d_FunProject`, especially:
+
+- `jozz_vehicle_m6_geometry.cpp`;
+- `jozz_vehicle_m6_suspension_rig.cpp`;
+- `jozz_vehicle_central_test_campus.cpp`;
+- `jozz_vehicle_central_test_campus_builder.cpp`;
+- `jozz_vehicle_obstacle_kit.cpp`;
+- `jozz_vehicle_body_registry.cpp`.
+
+Box3D, `box3d.js` and this experiment use MIT-compatible source code.
