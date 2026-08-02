@@ -13,6 +13,5 @@ export class CapsuleGeometry extends THREE.CylinderGeometry {
     radialSegments = 8,
   ) {
     super(radius, radius, length, radialSegments, 1, false);
-    this.type = 'JvCapsuleVisualGeometry';
   }
 }
