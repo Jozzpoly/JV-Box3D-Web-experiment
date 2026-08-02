@@ -61,17 +61,30 @@ export interface M6RigConfig {
   driveTaperStart: number;
   brakeTorque: number;
   coastTorque: number;
+  allWheelDrive: boolean;
   maxSteeringAngleDegrees: number;
+  frontToeDeg: number;
+  rearToeDeg: number;
   steeringHertz: number;
   steeringDampingRatio: number;
+  maxSteeringTorque: number;
   rackFrictionBase: number;
+  rackFrictionLoadCoeff: number;
+  steeringFrictionTorque: number;
   steerInputDeadzone: number;
+  rackCenteringHertz: number;
+  uprightAssist: boolean;
+  uprightHertz: number;
+  uprightDampingRatio: number;
+  bodyVisualModel: string;
+  bodyVisualOffset: Vec3;
+  frontSuspensionVisualModel: string;
   filterGroupIndex: number;
 }
 
-// Current web bootstrap contract: M6/M7 mechanisms, not the historical M5 rig.
-// Values are deliberately isolated in one snapshot so a later export from JV can
-// replace them without changing the runtime builder.
+// Exact factory snapshot from Box3d_FunProject/main,
+// samples/jozz_vehicle_m6_geometry.cpp::JozzVehicleM6DefaultConfig.
+// Asset inputs: radius 1.46875*0.35, width 1.25*0.35, travel 2.0*0.35.
 export const DEFAULT_M6_CONFIG: M6RigConfig = {
   chassisHalfExtents: { x: 1.55, y: 0.35, z: 0.55 },
   chassisDensity: 200,
@@ -80,28 +93,28 @@ export const DEFAULT_M6_CONFIG: M6RigConfig = {
   trackHalfWidth: 1.05,
   restDrop: 0.55,
   wishbone: {
-    uprightHalfHeight: 0.26,
-    kingpinOffset: 0.10,
-    casterDeg: 8,
+    uprightHalfHeight: 0.18,
+    kingpinOffset: 0.14,
+    casterDeg: 5,
     kingpinInclinationDeg: 7,
-    upperArmLength: 0.54,
-    lowerArmLength: 0.64,
-    armHalfSpread: 0.22,
-    steeringArmBack: 0.20,
+    upperArmLength: 0.34,
+    lowerArmLength: 0.46,
+    armHalfSpread: 0.24,
+    steeringArmBack: 0.17,
     ackermannTrapezoid: true,
     ackermannFraction: 0.6,
-    coiloverTopHeight: 0.58,
-    coiloverTopInboard: 0.30,
-    restArmDroopDeg: 7,
+    coiloverTopHeight: 0.42,
+    coiloverTopInboard: 0.12,
+    restArmDroopDeg: 15,
   },
-  knuckleMass: 18,
-  armMass: 7,
-  rackMass: 6,
-  rackHalfWidth: 0.55,
-  rackTravel: 0.075,
-  rackServoForce: 4000,
-  rackServoSpeedGain: 18,
-  rackServoMaxSpeed: 1.3,
+  knuckleMass: 28,
+  armMass: 5,
+  rackMass: 5,
+  rackHalfWidth: 0.45,
+  rackTravel: 0,
+  rackServoForce: 12000,
+  rackServoSpeedGain: 12,
+  rackServoMaxSpeed: 1.2,
   wheelRadius: 0.5140625,
   wheelWidth: 0.4375,
   wheelDensity: 80,
@@ -113,20 +126,33 @@ export const DEFAULT_M6_CONFIG: M6RigConfig = {
   rearSuspensionScale: 1,
   reboundTravel: 0.28,
   compressionTravel: 0.42,
-  suspensionPreloadFront: 0.05,
-  suspensionPreloadRear: 0.05,
-  arbFrontStiffness: 6500,
-  arbRearStiffness: 5200,
-  aeroDragArea: 0.85,
-  maxDriveSpeed: 52,
-  maxDriveTorque: 950,
-  driveTaperStart: 0.72,
-  brakeTorque: 1500,
-  coastTorque: 18,
+  suspensionPreloadFront: 0.07,
+  suspensionPreloadRear: 0.07,
+  arbFrontStiffness: 16000,
+  arbRearStiffness: 10000,
+  aeroDragArea: 0.9,
+  maxDriveSpeed: 40,
+  maxDriveTorque: 320,
+  driveTaperStart: 0.6,
+  brakeTorque: 650,
+  coastTorque: 8,
+  allWheelDrive: true,
   maxSteeringAngleDegrees: 32,
+  frontToeDeg: 0,
+  rearToeDeg: 0,
   steeringHertz: 14,
   steeringDampingRatio: 1,
-  rackFrictionBase: 18,
-  steerInputDeadzone: 0.04,
-  filterGroupIndex: -18,
+  maxSteeringTorque: 700,
+  rackFrictionBase: 40,
+  rackFrictionLoadCoeff: 0.1,
+  steeringFrictionTorque: 40,
+  steerInputDeadzone: 0.02,
+  rackCenteringHertz: 0,
+  uprightAssist: false,
+  uprightHertz: 0.4,
+  uprightDampingRatio: 1,
+  bodyVisualModel: 'rama_rurowa',
+  bodyVisualOffset: { x: 0, y: 0, z: 0 },
+  frontSuspensionVisualModel: 'rig_kierowniczy',
+  filterGroupIndex: -19,
 };
