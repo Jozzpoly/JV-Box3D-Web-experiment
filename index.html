@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1118" />
+    <title>JV Box3D Web Experiment</title>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="viewport"></canvas>
+      <section id="hud" aria-live="polite">
+        <strong>JV · Box3D Web PoC</strong>
+        <div id="status">Inicjalizacja WebAssembly…</div>
+        <div id="telemetry"></div>
+        <div class="controls">W/S — napęd · A/D — skręt · Spacja — hamulec · R — restart</div>
+      </section>
+      <div id="error" hidden></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
