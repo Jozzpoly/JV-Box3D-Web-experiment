@@ -12,23 +12,30 @@ Do **not** copy M5 as the vehicle. M5 is an old, simple rig. The authoritative v
 
 ## Current implementation
 
-Branch `agent/bootstrap-web-poc` contains a Vite + TypeScript + Three.js + `box3d.js/inline` bootstrap. The vehicle builder is an M6/M7-oriented four-corner double-wishbone rig, not M5. It includes torque drive, rack steering, coilovers, ARB, aero and split sphere/sidewall wheel collision.
+Branch `agent/bootstrap-web-poc` and draft PR #1 contain a Vite + TypeScript + Three.js + `box3d.js/inline` bootstrap. The vehicle builder is an M6/M7-oriented four-corner double-wishbone rig, not M5. It includes torque drive, rack steering, coilovers, ARB, aero and split sphere/sidewall wheel collision.
 
 The world currently provides a procedural JV-style board and optional scan slots:
 
 - `public/assets/scan/terrain-visual.glb`
 - `public/assets/scan/terrain-collision.glb`
 
+## Validation completed
+
+- `npm install` succeeds with 0 reported vulnerabilities.
+- strict TypeScript checking succeeds.
+- the production Vite build succeeds in GitHub Actions on head `05022b8`.
+
+This validates compilation only. Native/web physics parity and runtime browser behavior remain explicit gates.
+
 ## Next validation order
 
-1. Install dependencies and run `npm run build` in an internet-enabled checkout.
-2. Open the app and validate world creation before tuning.
-3. Compare body/joint counts and static pose against native M6 Rig Lab.
-4. Export a current M6 config/preset from JV rather than hand-copying old constants.
-5. Copy the chosen vehicle visual assets.
-6. Copy/convert the JV board.
-7. Add the cleaned scan pair and inspect ghost contacts.
-8. Port load-dependent rack friction and other remaining parity items.
+1. Open the built app and validate world creation before tuning.
+2. Compare body/joint counts and static pose against native M6 Rig Lab.
+3. Export a current M6 config/preset from JV rather than hand-copying old constants.
+4. Copy the chosen vehicle visual assets.
+5. Copy/convert the JV board.
+6. Add the cleaned scan pair and inspect ghost contacts.
+7. Port load-dependent rack friction, static toe and other remaining parity items.
 
 ## Known binding risk
 
