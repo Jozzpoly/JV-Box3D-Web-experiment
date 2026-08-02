@@ -68,6 +68,8 @@ async function start(): Promise<void> {
     if (catchUpSteps === maxCatchUpSteps) accumulator = 0;
 
     rig.syncVisuals();
+    const updateRigVisuals = chassisVisual.userData.updateRigVisuals;
+    if (typeof updateRigVisuals === 'function') updateRigVisuals();
     render.updateCamera(chassisVisual, frameDt);
     render.renderer.render(render.scene, render.camera);
 
