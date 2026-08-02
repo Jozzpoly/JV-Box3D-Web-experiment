@@ -1,12 +1,19 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { M6WebRig } from '../physics/m6-rig';
 
 export interface RenderContext {
-  scene: any;
-  camera: any;
-  renderer: any;
-  updateCamera(target: any, deltaSeconds: number): void;
+  scene: THREE.Scene;
+  camera: THREE.PerspectiveCamera;
+  renderer: THREE.WebGLRenderer;
+  updateCamera(target: THREE.Object3D, deltaSeconds: number): void;
   dispose(): void;
+}
+
+interface DynamicSegment {
+  mesh: THREE.Mesh;
+  radius: number;
+  endpoints(): [THREE.Vector3, THREE.Vector3];
 }
 
 export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
@@ -35,7 +42,7 @@ export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
   sun.shadow.camera.bottom = -90;
   scene.add(sun);
 
-  const chasePosition = new THREE.Vector3();
+  const chasePosition = new THREE.Vector3(-9, 5, 9);
   const desiredPosition = new THREE.Vector3();
   const lookTarget = new THREE.Vector3();
   const behind = new THREE.Vector3(-8.5, 4.2, 0);
@@ -43,7 +50,9 @@ export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
   const resize = () => {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    if (canvas.width !== Math.round(width * renderer.getPixelRatio()) || canvas.height !== Math.round(height * renderer.getPixelRatio())) {
+    const targetWidth = Math.round(width * renderer.getPixelRatio());
+    const targetHeight = Math.round(height * renderer.getPixelRatio());
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
       renderer.setSize(width, height, false);
       camera.aspect = width / Math.max(height, 1);
       camera.updateProjectionMatrix();
@@ -58,7 +67,7 @@ export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
     scene,
     camera,
     renderer,
-    updateCamera(target: any, deltaSeconds: number) {
+    updateCamera(target, deltaSeconds) {
       target.getWorldPosition(lookTarget);
       desiredPosition.copy(behind).applyQuaternion(target.quaternion).add(lookTarget);
       const blend = 1 - Math.exp(-5 * deltaSeconds);
@@ -73,74 +82,211 @@ export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
   };
 }
 
-export function createRigVisuals(scene: any, rig: M6WebRig): any {
+export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group {
+  const b3 = (rig as any).b3;
   const chassisRoot = new THREE.Group();
-  const chassisMesh = new THREE.Mesh(
+  chassisRoot.name = 'JV chassis visual root';
+
+  const fallbackChassis = new THREE.Mesh(
     new THREE.BoxGeometry(
       rig.config.chassisHalfExtents.x * 2,
       rig.config.chassisHalfExtents.y * 2,
       rig.config.chassisHalfExtents.z * 2,
     ),
-    new THREE.MeshStandardMaterial({ color: 0x3085a3, roughness: 0.55, metalness: 0.12 }),
+    new THREE.MeshStandardMaterial({
+      color: 0x28647a,
+      roughness: 0.7,
+      metalness: 0.1,
+      transparent: true,
+      opacity: 0.55,
+    }),
   );
-  chassisMesh.position.y = -rig.config.cgVerticalOffset;
-  chassisMesh.castShadow = true;
-  chassisMesh.receiveShadow = true;
-  chassisRoot.add(chassisMesh);
-
-  const cabin = new THREE.Mesh(
-    new THREE.BoxGeometry(1.35, 0.58, 0.95),
-    new THREE.MeshStandardMaterial({ color: 0x1c3b49, roughness: 0.35, metalness: 0.2 }),
-  );
-  cabin.position.set(-0.25, 0.37, 0);
-  cabin.castShadow = true;
-  chassisRoot.add(cabin);
+  fallbackChassis.position.y = -rig.config.cgVerticalOffset;
+  fallbackChassis.castShadow = true;
+  fallbackChassis.receiveShadow = true;
+  chassisRoot.add(fallbackChassis);
   scene.add(chassisRoot);
   rig.bindings.push({ bodyId: rig.chassisId, object: chassisRoot });
 
-  const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x17191c, roughness: 0.92 });
-  const hubMaterial = new THREE.MeshStandardMaterial({ color: 0x87919a, roughness: 0.42, metalness: 0.55 });
-  const armMaterial = new THREE.MeshStandardMaterial({ color: 0xb25d38, roughness: 0.68, metalness: 0.18 });
+  void loadRealJvBody(chassisRoot, fallbackChassis);
 
-  for (const corner of rig.corners) {
+  const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x131518, roughness: 0.96 });
+  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0x8d979e, roughness: 0.38, metalness: 0.68 });
+  const knuckleMaterial = new THREE.MeshStandardMaterial({ color: 0x9aa3aa, roughness: 0.48, metalness: 0.5 });
+  const upperArmMaterial = new THREE.MeshStandardMaterial({ color: 0xd76537, roughness: 0.62, metalness: 0.18 });
+  const lowerArmMaterial = new THREE.MeshStandardMaterial({ color: 0x397db4, roughness: 0.62, metalness: 0.18 });
+  const steeringMaterial = new THREE.MeshStandardMaterial({ color: 0xd8be64, roughness: 0.5, metalness: 0.42 });
+  const damperMaterial = new THREE.MeshStandardMaterial({ color: 0xb8c0c6, roughness: 0.35, metalness: 0.75 });
+
+  for (const corner of rig.corners as any[]) {
     const wheelGroup = new THREE.Group();
     const tire = new THREE.Mesh(
-      new THREE.CylinderGeometry(rig.config.wheelRadius, rig.config.wheelRadius, rig.config.wheelWidth, 32),
+      new THREE.CylinderGeometry(rig.config.wheelRadius, rig.config.wheelRadius, rig.config.wheelWidth, 36),
       wheelMaterial,
     );
     tire.castShadow = true;
     tire.receiveShadow = true;
     wheelGroup.add(tire);
-    const hub = new THREE.Mesh(
-      new THREE.CylinderGeometry(rig.config.wheelRadius * 0.42, rig.config.wheelRadius * 0.42, rig.config.wheelWidth * 1.04, 20),
-      hubMaterial,
+
+    const rim = new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        rig.config.wheelRadius * 0.43,
+        rig.config.wheelRadius * 0.43,
+        rig.config.wheelWidth * 1.02,
+        24,
+      ),
+      rimMaterial,
     );
-    hub.castShadow = true;
-    wheelGroup.add(hub);
+    rim.castShadow = true;
+    wheelGroup.add(rim);
     scene.add(wheelGroup);
     rig.bindings.push({ bodyId: corner.wheelId, object: wheelGroup });
-
-    const knuckle = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.42, 0.16), hubMaterial);
-    knuckle.castShadow = true;
-    scene.add(knuckle);
-    rig.bindings.push({ bodyId: corner.knuckleId, object: knuckle });
-
-    for (const [bodyId, verticalOffset] of [[corner.upperArmId, 0.08], [corner.lowerArmId, -0.08]] as const) {
-      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.06, 0.62), armMaterial);
-      arm.position.y = verticalOffset;
-      arm.castShadow = true;
-      scene.add(arm);
-      rig.bindings.push({ bodyId, object: arm });
-    }
   }
 
   const rack = new THREE.Mesh(
-    new THREE.BoxGeometry(0.12, 0.12, rig.config.rackHalfWidth * 2),
-    new THREE.MeshStandardMaterial({ color: 0xd6bc65, roughness: 0.5, metalness: 0.42 }),
+    new THREE.CylinderGeometry(0.045, 0.045, rig.config.rackHalfWidth * 2, 12),
+    steeringMaterial,
   );
+  rack.rotation.x = Math.PI / 2;
   rack.castShadow = true;
   scene.add(rack);
   rig.bindings.push({ bodyId: rig.rackId, object: rack });
+
+  const unitCylinder = new THREE.CylinderGeometry(1, 1, 1, 10);
+  const segments: DynamicSegment[] = [];
+  const addSegment = (
+    radius: number,
+    material: THREE.Material,
+    endpoints: DynamicSegment['endpoints'],
+  ) => {
+    const mesh = new THREE.Mesh(unitCylinder, material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+    segments.push({ mesh, radius, endpoints });
+  };
+
+  const worldPoint = (bodyId: any, local: any) => toThree(b3.b3Body_GetWorldPoint(bodyId, local));
+  for (const corner of rig.corners as any[]) {
+    const hp = corner.hardpoints;
+    const wheelCenter = corner.restWheelCenterLocal;
+    const upperBallLocal = subtract(hp.upperBallJoint, wheelCenter);
+    const lowerBallLocal = subtract(hp.lowerBallJoint, wheelCenter);
+    const steeringArmLocal = subtract(hp.steeringArm, wheelCenter);
+    const coiloverKnuckleLocal = subtract(hp.coiloverKnuckle, wheelCenter);
+
+    addSegment(0.032, upperArmMaterial, () => [
+      worldPoint(rig.chassisId, hp.upperFrontChassis),
+      worldPoint(corner.knuckleId, upperBallLocal),
+    ]);
+    addSegment(0.032, upperArmMaterial, () => [
+      worldPoint(rig.chassisId, hp.upperRearChassis),
+      worldPoint(corner.knuckleId, upperBallLocal),
+    ]);
+    addSegment(0.038, lowerArmMaterial, () => [
+      worldPoint(rig.chassisId, hp.lowerFrontChassis),
+      worldPoint(corner.knuckleId, lowerBallLocal),
+    ]);
+    addSegment(0.038, lowerArmMaterial, () => [
+      worldPoint(rig.chassisId, hp.lowerRearChassis),
+      worldPoint(corner.knuckleId, lowerBallLocal),
+    ]);
+    addSegment(0.052, knuckleMaterial, () => [
+      worldPoint(corner.knuckleId, lowerBallLocal),
+      worldPoint(corner.knuckleId, upperBallLocal),
+    ]);
+    addSegment(0.043, damperMaterial, () => [
+      worldPoint(rig.chassisId, hp.coiloverChassis),
+      worldPoint(corner.knuckleId, coiloverKnuckleLocal),
+    ]);
+
+    if (corner.isFront) {
+      const rackEndLocal = {
+        x: 0,
+        y: 0,
+        z: corner.isLeft ? -rig.config.rackHalfWidth : rig.config.rackHalfWidth,
+      };
+      addSegment(0.026, steeringMaterial, () => [
+        worldPoint(rig.rackId, rackEndLocal),
+        worldPoint(corner.knuckleId, steeringArmLocal),
+      ]);
+    } else {
+      const inward = corner.isLeft ? 1 : -1;
+      const droopLift = rig.config.wishbone.lowerArmLength
+        * Math.tan(rig.config.wishbone.restArmDroopDeg * Math.PI / 180);
+      const toeChassis = {
+        x: hp.steeringArm.x,
+        y: hp.steeringArm.y + droopLift,
+        z: hp.steeringArm.z + inward * rig.config.wishbone.lowerArmLength,
+      };
+      addSegment(0.026, steeringMaterial, () => [
+        worldPoint(rig.chassisId, toeChassis),
+        worldPoint(corner.knuckleId, steeringArmLocal),
+      ]);
+    }
+  }
+
+  const updateRigVisuals = () => {
+    for (const segment of segments) updateSegment(segment);
+  };
+  chassisRoot.userData.updateRigVisuals = updateRigVisuals;
   rig.syncVisuals();
+  updateRigVisuals();
   return chassisRoot;
+}
+
+async function loadRealJvBody(chassisRoot: THREE.Group, fallback: THREE.Object3D): Promise<void> {
+  try {
+    const gltf = await new GLTFLoader().loadAsync('./assets/vehicle/Nadwozie.gltf');
+    const body = gltf.scene;
+    body.name = 'JV rama_rurowa · Nadwozie.gltf';
+    body.scale.setScalar(0.35);
+    body.rotation.y = -Math.PI / 2;
+    body.position.set(0, -0.60, 0);
+    body.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      object.castShadow = true;
+      object.receiveShadow = true;
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      for (const material of materials) {
+        if ('map' in material && material.map instanceof THREE.Texture) {
+          material.map.colorSpace = THREE.SRGBColorSpace;
+          material.map.magFilter = THREE.NearestFilter;
+          material.map.minFilter = THREE.NearestFilter;
+        }
+      }
+    });
+    chassisRoot.add(body);
+    fallback.visible = false;
+  } catch (error) {
+    console.warn('JV rama_rurowa could not be loaded; using the collider fallback.', error);
+  }
+}
+
+function updateSegment(segment: DynamicSegment): void {
+  const [a, b] = segment.endpoints();
+  const direction = new THREE.Vector3().subVectors(b, a);
+  const segmentLength = direction.length();
+  if (segmentLength < 1e-5) {
+    segment.mesh.visible = false;
+    return;
+  }
+  segment.mesh.visible = true;
+  segment.mesh.position.copy(a).add(b).multiplyScalar(0.5);
+  segment.mesh.quaternion.setFromUnitVectors(
+    new THREE.Vector3(0, 1, 0),
+    direction.multiplyScalar(1 / segmentLength),
+  );
+  segment.mesh.scale.set(segment.radius, segmentLength, segment.radius);
+}
+
+function toThree(value: { x: number; y: number; z: number }): THREE.Vector3 {
+  return new THREE.Vector3(value.x, value.y, value.z);
+}
+
+function subtract(
+  a: { x: number; y: number; z: number },
+  b: { x: number; y: number; z: number },
+): { x: number; y: number; z: number } {
+  return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
 }
