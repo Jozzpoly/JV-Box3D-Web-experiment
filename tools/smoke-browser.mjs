@@ -61,7 +61,10 @@ try {
   previewProcess = spawn(
     process.platform === 'win32' ? 'npm.cmd' : 'npm',
     ['run', 'preview', '--', '--host', APP_HOST, '--port', String(APP_PORT), '--strictPort'],
-    { stdio: ['ignore', 'pipe', 'pipe'] },
+    {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      detached: process.platform !== 'win32',
+    },
   );
   pipeWithPrefix(previewProcess.stdout, '[preview]');
   pipeWithPrefix(previewProcess.stderr, '[preview]');
@@ -75,10 +78,14 @@ try {
     '--disable-gpu',
     '--disable-dev-shm-usage',
     '--disable-background-networking',
+    '--enable-unsafe-swiftshader',
     `--remote-debugging-port=${DEBUG_PORT}`,
     `--user-data-dir=${chromeProfile}`,
     'about:blank',
-  ], { stdio: ['ignore', 'pipe', 'pipe'] });
+  ], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: process.platform !== 'win32',
+  });
   pipeWithPrefix(chromeProcess.stderr, '[chrome]');
   await waitForHttp(`${DEBUG_URL}/json/version`, 20_000);
 
@@ -140,9 +147,9 @@ try {
   );
   cdp.close();
 } finally {
-  terminate(chromeProcess);
-  terminate(previewProcess);
-  if (chromeProfile) await rm(chromeProfile, { recursive: true, force: true });
+  await terminateProcessTree(chromeProcess);
+  await terminateProcessTree(previewProcess);
+  if (chromeProfile) await removeDirectoryBestEffort(chromeProfile);
 }
 
 async function findChromeExecutable() {
@@ -194,9 +201,51 @@ function pipeWithPrefix(stream, prefix) {
   });
 }
 
-function terminate(child) {
-  if (!child || child.killed) return;
-  child.kill('SIGTERM');
+async function terminateProcessTree(child) {
+  if (!child || child.exitCode !== null) return;
+  sendSignal(child, 'SIGTERM');
+  if (await waitForExit(child, 1_500)) return;
+  sendSignal(child, 'SIGKILL');
+  await waitForExit(child, 1_500);
+}
+
+function sendSignal(child, signal) {
+  try {
+    if (process.platform !== 'win32' && child.pid) process.kill(-child.pid, signal);
+    else child.kill(signal);
+  } catch (error) {
+    if (error?.code !== 'ESRCH') throw error;
+  }
+}
+
+function waitForExit(child, timeoutMs) {
+  if (child.exitCode !== null) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      child.off('exit', onExit);
+      resolve(value);
+    };
+    const onExit = () => finish(true);
+    const timer = setTimeout(() => finish(false), timeoutMs);
+    child.once('exit', onExit);
+  });
+}
+
+async function removeDirectoryBestEffort(directory) {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    try {
+      await rm(directory, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
+      return;
+    } catch (error) {
+      if (!['ENOTEMPTY', 'EBUSY', 'EPERM'].includes(error?.code)) throw error;
+      await sleep(200 * (attempt + 1));
+    }
+  }
+  console.warn(`[browser-smoke] Could not remove temporary Chrome profile: ${directory}`);
 }
 
 function sleep(milliseconds) {
