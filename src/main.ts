@@ -77,7 +77,7 @@ app.innerHTML = `
         <div><dt>Input</dt><dd data-command>RELEASE</dd></div>
         <div><dt>Actuator</dt><dd data-actuator>OFF</dd></div>
         <div><dt>Live rack</dt><dd data-rack>0.000000 m · 0.000000 m/s</dd></div>
-        <div><dt>Drift from spawn</dt><dd data-displacement>0.000 m</dd></div>
+        <div><dt>Drift from initial sample</dt><dd data-displacement>0.000 m</dd></div>
         <div><dt>Contacts</dt><dd data-contacts>0</dd></div>
         <div><dt>Mechanics gate</dt><dd data-validation>NOT STARTED</dd></div>
       </dl>
@@ -172,6 +172,11 @@ try {
 
 let host: F4VehicleHost | null = null;
 let startupGeneration = 0;
+let observationOrigin: Readonly<{
+  generation: number;
+  x: number;
+  z: number;
+}> | null = null;
 
 function selectedProfileId(): RateSteeringProfileId {
   const selected = RATE_STEERING_PROFILES.find(
@@ -216,14 +221,38 @@ function formatError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function chassisDisplacement(trace: M6TraceFrame): number {
+  if (observationOrigin?.generation !== trace.generation) {
+    observationOrigin = {
+      generation: trace.generation,
+      x: trace.chassisPosition.x,
+      z: trace.chassisPosition.z,
+    };
+  }
+  return Math.hypot(
+    trace.chassisPosition.x - observationOrigin.x,
+    trace.chassisPosition.z - observationOrigin.z,
+  );
+}
+
 function renderTrace(trace: M6TraceFrame): void {
-  renderer?.render(trace);
-  const displacement = renderer?.displacement(trace) ?? 0;
+  if (renderer !== null) {
+    try {
+      renderer.render(trace);
+    } catch (error: unknown) {
+      renderer.dispose();
+      renderer = null;
+      console.error(error);
+    }
+  }
+  const displacement = chassisDisplacement(trace);
   const steering = trace.steering;
   const command = formatCommand(trace.command);
 
   sceneStateElement.textContent =
-    `LIVE · GENERATION ${trace.generation} · ${trace.worldContacts} CONTACTS`;
+    renderer === null
+      ? `PHYSICS LIVE · RENDERER OFF · ${trace.worldContacts} CONTACTS`
+      : `LIVE · GENERATION ${trace.generation} · ${trace.worldContacts} CONTACTS`;
   sceneCommandElement.textContent = command;
   sceneRackElement.textContent = `${trace.rackTranslation.toFixed(4)} m`;
   sceneDisplacementElement.textContent = `${displacement.toFixed(3)} m`;
