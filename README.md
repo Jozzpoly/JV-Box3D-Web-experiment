@@ -7,11 +7,11 @@ A focused proof of concept for running a real slice of **Jozz Vehicle** directly
 - the current M6/M7 multi-body vehicle foundation, not historical M5;
 - the current local JV tuning session when a native checkout is available;
 - the Central Test Campus contract;
-- the real `rama_rurowa` body and `Offroad_Big_Wheels` assets;
+- real JV body and wheel assets attached through explicit runtime contracts;
 - a separate photogrammetry visual mesh and reduced collision mesh;
 - deterministic browser probes that distinguish physics parity from keyboard handling.
 
-This remains a proof of concept. Browser infrastructure, startup and isolated M6 steering parity are tested. Direct owner driving comparison remains the product gate.
+This remains a proof of concept. Browser infrastructure, startup, isolated M6 steering parity and the wheel visual contract are tested. Direct owner driving and visual comparison remain the product gate.
 
 ## Implemented parity pass
 
@@ -23,13 +23,16 @@ This remains a proof of concept. Browser infrastructure, startup and isolated M6
 - current torque-based drive, brake, coast, ARB and aero behavior;
 - split rolling-sphere / true-width sidewall wheel envelope;
 - live hardpoint-driven suspension visualization;
-- real JV body and wheel glTF assets with native scale/orientation correction;
+- real `rama_rurowa` body with native registry/session offset;
+- four independent `Offroad_Big_Wheels.gltf` skinned instances;
+- wheel scale, orientation and origin derived from authored socket/radius/width markers;
+- wheel-root to Box3D-body attachment validation;
 - current 400×400 m plate and Central Test Campus bumper/rock contracts;
 - current scan-island north-edge placement contract;
 - native-style straight-line and steering-impact recovery probes;
 - a finite-rate keyboard driver model that limits hand/rack command speed without reading or stabilizing vehicle motion.
 
-See [`docs/PORTING_NOTES.md`](docs/PORTING_NOTES.md) for deliberate remaining differences.
+Architecture, invariants and the recommended conversion sequence are defined in [`docs/WEB_CONVERSION_FOUNDATION.md`](docs/WEB_CONVERSION_FOUNDATION.md). See also [`docs/PORTING_NOTES.md`](docs/PORTING_NOTES.md) for deliberate remaining differences.
 
 ## Local workspace detection
 
@@ -71,13 +74,16 @@ npm run dev
 
 1. finds the local native JV checkout when present;
 2. synchronizes the current body, wheel, front-rig, rear-mount and damper glTF assets;
-3. copies `build/jozz_vehicle_m6_session.json` into the ignored web runtime area when it exists;
-4. falls back to committed JV `main` assets and the factory/`uliczny` config when no local source exists;
-5. instantiates the real Box3D WASM module;
-6. checks every `b3.*` call used by the source against actual `box3d.js` exports;
-7. executes a small physics smoke simulation;
-8. runs isolated M6 behavior probes in invisible Box3D worlds;
-9. starts Vite only after the preflight checks pass.
+3. validates required authored socket/marker contracts;
+4. generates `public/assets/jv-asset-manifest.json` with source, SHA-256 and structural metadata;
+5. copies `build/jozz_vehicle_m6_session.json` into the ignored web runtime area when it exists;
+6. falls back to committed JV `main` assets and the factory/`uliczny` config when no local source exists;
+7. instantiates the real Box3D WASM module;
+8. checks every `b3.*` call used by the source against actual `box3d.js` exports;
+9. executes a small physics smoke simulation;
+10. runs isolated M6 behavior probes in invisible Box3D worlds;
+11. validates the loaded visual wheel contract before starting the visible simulation;
+12. starts Vite only after the preflight checks pass.
 
 When local JV is detected, asset contents are compared every start. Changed native assets replace the web cache automatically; unchanged files are left untouched.
 
@@ -109,7 +115,14 @@ After a production build, run the full startup test in an installed Chrome brows
 npm run smoke-browser
 ```
 
-The browser smoke test fails on a visible error panel, uncaught exception, missing Box3D status, invalid canvas, inactive simulation telemetry or failed parity probes. It logs numerical straight-line, steering-impact and keyboard-tap results. GitHub Actions requires these gates to pass.
+The browser smoke test fails on a visible error panel, uncaught exception, missing Box3D status, invalid canvas, inactive telemetry, failed parity probes or an invalid wheel visual contract. The wheel gate requires:
+
+- four visual clones;
+- independent skeletons for all four skinned meshes;
+- authored marker dimensions matching the physical radius and width;
+- each visual root occupying the corresponding Box3D wheel-body position.
+
+GitHub Actions requires all gates to pass.
 
 ## Controls
 
@@ -137,7 +150,14 @@ or:
 lokalny jozz_vehicle_m6_session.json
 ```
 
-It also exposes raw versus modeled steering input, rack translation, rack friction, tie-rod load, static toe, parity-probe status and keyboard-tap status.
+It also exposes raw versus modeled steering input, rack translation, rack friction, tie-rod load, static toe, parity-probe status, keyboard-tap status, wheel clone/skeleton count and wheel-root binding error.
+
+A healthy wheel contract reports approximately:
+
+```text
+koła GLTF: 4 · szkielety 4
+binding kół: OK · 0.0e+0 m
+```
 
 ## Scan assets
 
