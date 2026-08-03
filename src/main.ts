@@ -6,6 +6,7 @@ import { loadRuntimeM6Config } from './physics/config-loader';
 import { M6ParityController } from './physics/m6-parity-controller';
 import { runM6ParityProbes, type M6ProbeReport } from './physics/m6-probes';
 import { prepareBox3dRuntime } from './physics/box3d-runtime';
+import { RackResponseWatchdog } from './physics/rack-response-watchdog';
 import { M6WebRig } from './physics/m6-rig';
 import {
   createRenderContext,
@@ -54,6 +55,7 @@ async function start(): Promise<void> {
   const spawnHeight = config.restDrop + config.wheelRadius + 0.08;
   const rig = new M6WebRig(b3, worldId, config, { x: 0, y: spawnHeight, z: 0 });
   const parityController = new M6ParityController(b3, rig);
+  const rackWatchdog = new RackResponseWatchdog(b3, rig);
 
   statusElement.textContent = 'Walidacja wizualnych kontraktów JV…';
   const visualResult = await createRigVisuals(render.scene, rig);
@@ -69,6 +71,7 @@ async function start(): Promise<void> {
     runtimeConfig.source,
     `sondy ${probes.passedCount}/${probes.totalCount}`,
     `klawiatura ${probes.handlingPulse.stable ? 'OK' : 'niestabilna'}`,
+    `low-speed ${probes.lowSpeedSteering.stable ? 'OK' : 'diagnostyka'}`,
     `koła ${wheelVisualValid ? 'GLTF OK' : 'fallback'}`,
   ].join(' · ');
 
@@ -105,6 +108,7 @@ async function start(): Promise<void> {
     while (accumulator >= fixedDt && catchUpSteps < maxCatchUpSteps) {
       const modeledDriveInput = driverInput.update(rawDriveInput, fixedDt);
       parityController.update(modeledDriveInput);
+      rackWatchdog.update(modeledDriveInput);
       b3.b3World_Step(worldId, fixedDt, subSteps);
       accumulator -= fixedDt;
       catchUpSteps += 1;
@@ -122,17 +126,24 @@ async function start(): Promise<void> {
       telemetryClock = 0;
       const telemetry = rig.getTelemetry();
       const parity = parityController.telemetry;
+      const rackResponse = rackWatchdog.telemetry;
       const inputTelemetry = driverInput.telemetry;
       const wheel = visualResult.report.wheel;
+      const stationary = probes.lowSpeedSteering.stationary;
+      const creep = probes.lowSpeedSteering.creep;
       telemetryElement.innerHTML = [
         `prędkość: <b>${telemetry.speedKmh.toFixed(1)} km/h</b>`,
         `skręt klawisz/model: ${inputTelemetry.rawSteer.toFixed(2)} / ${inputTelemetry.filteredSteer.toFixed(2)}`,
         `rack: ${telemetry.rackTravel.toFixed(4)} / ${rig.config.rackTravel.toFixed(4)} m`,
+        `rack ${rackResponse.mode}: target ${rackResponse.targetTranslation.toFixed(4)} · err ${rackResponse.error.toFixed(4)} m`,
+        `rack v: ${rackResponse.speed.toFixed(4)} m/s · stall ${rackResponse.stalledFrames}/${rackResponse.maxStalledFrames} kl.`,
         `tarcie racka: ${parity.rackFrictionForce.toFixed(0)} N`,
         `obciążenie drążków: ${parity.transverseTieRodLoad.toFixed(0)} N`,
         `toe F/R: ${rig.config.frontToeDeg.toFixed(2)}° / ${rig.config.rearToeDeg.toFixed(2)}°`,
         `sondy parytetu: ${probes.passedCount}/${probes.totalCount}`,
         `keyboard tap: ${probes.handlingPulse.stable ? 'OK' : 'NIESTABILNY'}`,
+        `low-speed postój/creep: ${stationary.stable ? 'OK' : 'UWAGA'} / ${creep.stable ? 'OK' : 'UWAGA'}`,
+        `stall sondy postój/creep: ${stationary.maxServoStallFrames}/${creep.maxServoStallFrames} kl.`,
         `koła GLTF: ${wheel.loaded ? `${wheel.cloneCount} · szkielety ${wheel.uniqueSkeletonCount}` : 'fallback'}`,
         `binding kół: ${wheel.attachedToWheelBodies ? 'OK' : 'BŁĄD'} · root ${wheel.maxBindingPositionError.toExponential(1)} m`,
         `środek opony: ${wheel.centerError.toExponential(1)} m · socket ${wheel.mountOffset.toFixed(4)} m`,
@@ -164,6 +175,8 @@ function logProbeReport(report: M6ProbeReport): void {
   const straight = report.straight;
   const impact = report.steeringImpact;
   const handling = report.handlingPulse;
+  const stationary = report.lowSpeedSteering.stationary;
+  const creep = report.lowSpeedSteering.creep;
   console.info(
     `[jv-probe] straight ${straight.passed ? 'PASS' : 'FAIL'}: `
     + `dx=${straight.forwardMeters.toFixed(2)}m, dz=${straight.lateralMeters.toFixed(2)}m, `
@@ -178,6 +191,18 @@ function logProbeReport(report: M6ProbeReport): void {
     `[jv-probe] keyboard-tap ${handling.stable ? 'STABLE' : 'UNSTABLE'}: `
     + `peak=${handling.peakRackFraction.toFixed(3)}, final=${handling.finalRackFraction.toFixed(3)}, `
     + `yaw=${handling.finalYawRate.toFixed(3)}rad/s`,
+  );
+  console.info(
+    `[jv-probe] low-speed stationary ${stationary.stable ? 'STABLE' : 'UNSTABLE'}: `
+    + `left=${stationary.leftPeakFraction.toFixed(3)}, right=${stationary.rightPeakFraction.toFixed(3)}, `
+    + `final=${stationary.finalRackFraction.toFixed(3)}, crossed=${stationary.crossedCentreOnReversal}, `
+    + `stall=${stationary.maxServoStallFrames} frames`,
+  );
+  console.info(
+    `[jv-probe] low-speed creep ${creep.stable ? 'STABLE' : 'UNSTABLE'}: `
+    + `left=${creep.leftPeakFraction.toFixed(3)}, right=${creep.rightPeakFraction.toFixed(3)}, `
+    + `final=${creep.finalRackFraction.toFixed(3)}, crossed=${creep.crossedCentreOnReversal}, `
+    + `stall=${creep.maxServoStallFrames} frames, speed=${creep.finalSpeedMs.toFixed(3)}m/s`,
   );
 }
 
