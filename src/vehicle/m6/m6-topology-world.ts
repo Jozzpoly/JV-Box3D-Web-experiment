@@ -62,14 +62,23 @@ export class M6TopologyWorld {
   constructor(
     b3: Box3DModule,
     receipt: NativeFactorySnapshot,
-    rateProfileId: RateSteeringProfileId =
+    profileOrAllocator:
+      | RateSteeringProfileId
+      | CollisionGroupAllocator =
       INITIAL_RATE_STEERING_PROFILE_ID,
     allocator = new CollisionGroupAllocator(),
   ) {
     this.#b3 = b3;
     this.#config = m6TopologyConfigFromReceipt(receipt);
-    this.#rateProfile = rateSteeringProfile(rateProfileId);
-    this.#allocator = allocator;
+    if (profileOrAllocator instanceof CollisionGroupAllocator) {
+      this.#rateProfile = rateSteeringProfile(
+        INITIAL_RATE_STEERING_PROFILE_ID,
+      );
+      this.#allocator = profileOrAllocator;
+    } else {
+      this.#rateProfile = rateSteeringProfile(profileOrAllocator);
+      this.#allocator = allocator;
+    }
 
     const worldDef = b3.b3DefaultWorldDef();
     worldDef.gravity = vec3(
