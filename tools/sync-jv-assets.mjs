@@ -7,6 +7,22 @@ const sourceRef = process.env.JV_SOURCE_REF || 'main';
 const refresh = process.env.JV_REFRESH_ASSETS === '1';
 const nativeRoot = findNativeRoot();
 
+const FRONT_RIG_REQUIRED_NODES = [
+  'Socket_SingleDamperUpper',
+  'Socket_SingleDamper_Mount',
+  'Socket_ChassisMount_a',
+  'Chassis_Top',
+  'Socket_SingleDamperLower',
+  'Chassis_Bottom',
+  'Socket_ChassisMount_b',
+  'Socket_SteeringRod',
+  'Socket_WheelCenter',
+  'Socket_CardanDrive',
+  'Socket_CardanHub',
+  'Axis_SuspensionTravel_Top',
+  'Axis_SuspensionTravel_Bottom',
+];
+
 const assets = [
   asset('rama_rurowa', 'assets/source/Nadwozie.gltf', 'public/assets/vehicle/Nadwozie.gltf'),
   asset(
@@ -19,6 +35,7 @@ const assets = [
     'przedni rig kierowniczy',
     'assets/source/OneSided_Steering_Suspension_Rig.gltf',
     'public/assets/vehicle/OneSided_Steering_Suspension_Rig.gltf',
+    FRONT_RIG_REQUIRED_NODES,
   ),
   asset(
     'tylny mount zawieszenia',
@@ -28,16 +45,27 @@ const assets = [
   asset('amortyzator JV', 'assets/source/Asset_Dumper.gltf', 'public/assets/vehicle/Asset_Dumper.gltf'),
 ];
 
+const contractFiles = [
+  contractFile(
+    'kontrakt przedniego rigu',
+    'assets/contracts/one_sided_steering_suspension.asset.json',
+    'public/assets/contracts/one_sided_steering_suspension.asset.json',
+    'jozz.one_sided_steering_suspension.v0',
+  ),
+];
+
 if (nativeRoot) console.log(`[jv-assets] lokalne źródło JV: ${nativeRoot}`);
 else console.log(`[jv-assets] lokalne JV nie znalezione; assety pochodzą z JV ${sourceRef}`);
 
 const manifestEntries = [];
 for (const item of assets) manifestEntries.push(await synchronizeAsset(item));
+for (const item of contractFiles) manifestEntries.push(await synchronizeContractFile(item));
 await writeAssetManifest(manifestEntries);
 await synchronizeSession();
 
 function asset(name, relativeSource, relativeTarget, requiredNodes = []) {
   return {
+    kind: 'gltf',
     name,
     relativeSource,
     relativeTarget,
@@ -47,40 +75,70 @@ function asset(name, relativeSource, relativeTarget, requiredNodes = []) {
   };
 }
 
+function contractFile(name, relativeSource, relativeTarget, expectedAssetId) {
+  return {
+    kind: 'native-contract',
+    name,
+    relativeSource,
+    relativeTarget,
+    expectedAssetId,
+    target: path.resolve(relativeTarget),
+    remote: `https://raw.githubusercontent.com/Jozzpoly/Box3d_FunProject/${sourceRef}/${relativeSource}`,
+  };
+}
+
 async function synchronizeAsset(item) {
+  const { text, sourceKind } = await readAuthoritativeText(item, validateGltfContract);
+  return describeGltf(item, text, sourceKind);
+}
+
+async function synchronizeContractFile(item) {
+  const { text, sourceKind } = await readAuthoritativeText(item, validateNativeContract);
+  const json = validateNativeContract(item, text);
+  return {
+    kind: item.kind,
+    key: item.name,
+    sourceKind,
+    sourcePath: item.relativeSource,
+    webPath: item.relativeTarget.replace(/^public[\\/]/, ''),
+    sha256: createHash('sha256').update(text, 'utf8').digest('hex'),
+    bytes: Buffer.byteLength(text, 'utf8'),
+    assetId: json.assetId,
+    assetType: json.assetType,
+    contractVersion: json.source?.contractVersion ?? null,
+  };
+}
+
+async function readAuthoritativeText(item, validate) {
   await mkdir(path.dirname(item.target), { recursive: true });
   const localSource = nativeRoot ? path.join(nativeRoot, item.relativeSource) : null;
   let text;
   let sourceKind;
 
-  // A local JV checkout is authoritative. Compare content on every dev/build
-  // start so edits to the real models are reflected without a manual refresh.
   if (localSource && existsSync(localSource)) {
     text = await readFile(localSource, 'utf8');
-    validateGltfContract(item, text);
+    validate(item, text);
     sourceKind = 'local-native-jv';
 
     if (!refresh && existsSync(item.target)) {
       const targetText = await readFile(item.target, 'utf8');
       if (targetText === text) {
         console.log(`[jv-assets] ${item.name}: zgodny z lokalnym JV`);
-        return describeGltf(item, text, sourceKind);
+        return { text, sourceKind };
       }
     }
 
     await writeFile(item.target, text, 'utf8');
     console.log(`[jv-assets] ${item.name}: zsynchronizowano lokalnie (${Math.round(text.length / 1024)} KiB)`);
-    return describeGltf(item, text, sourceKind);
+    return { text, sourceKind };
   }
 
-  // CI/standalone fallback: retain a valid cached copy unless refresh was
-  // explicitly requested, otherwise download the committed JV main version.
   if (!refresh && existsSync(item.target)) {
     text = await readFile(item.target, 'utf8');
     try {
-      validateGltfContract(item, text);
+      validate(item, text);
       console.log(`[jv-assets] ${item.name}: już istnieje`);
-      return describeGltf(item, text, 'cached-jv-asset');
+      return { text, sourceKind: 'cached-jv-asset' };
     } catch {
       // Invalid or stale-contract cache is replaced by the authoritative file.
     }
@@ -94,17 +152,17 @@ async function synchronizeAsset(item) {
     throw new Error(`${item.name}: download failed (${response.status} ${response.statusText})`);
   }
   text = await response.text();
-  validateGltfContract(item, text);
+  validate(item, text);
   await writeFile(item.target, text, 'utf8');
   console.log(`[jv-assets] ${item.name}: zapisano ${Math.round(text.length / 1024)} KiB`);
-  return describeGltf(item, text, `github-${sourceRef}`);
+  return { text, sourceKind: `github-${sourceRef}` };
 }
 
 async function writeAssetManifest(entries) {
   const target = path.resolve('public/assets/jv-asset-manifest.json');
   await mkdir(path.dirname(target), { recursive: true });
   const manifest = {
-    bridgeVersion: 1,
+    bridgeVersion: 2,
     nativeRepository: 'Jozzpoly/Box3d_FunProject',
     nativeRef: nativeRoot ? 'local-working-tree' : sourceRef,
     entries,
@@ -132,11 +190,31 @@ function validateGltfContract(item, text) {
   return json;
 }
 
+function validateNativeContract(item, text) {
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch (error) {
+    throw new Error(`${item.name}: plik nie jest poprawnym JSON (${String(error)})`);
+  }
+  if (!json || typeof json !== 'object' || Array.isArray(json)) {
+    throw new Error(`${item.name}: root kontraktu nie jest obiektem`);
+  }
+  if (json.assetId !== item.expectedAssetId) {
+    throw new Error(`${item.name}: oczekiwano assetId=${item.expectedAssetId}, otrzymano ${String(json.assetId)}`);
+  }
+  if (typeof json.source?.gltf !== 'string' || typeof json.source?.contractVersion !== 'number') {
+    throw new Error(`${item.name}: brak source.gltf albo source.contractVersion`);
+  }
+  return json;
+}
+
 function describeGltf(item, text, sourceKind) {
   const json = validateGltfContract(item, text);
   const nodeNames = (json.nodes ?? []).map((node) => node?.name).filter(Boolean);
   const contractNodes = nodeNames.filter((name) => /^(Socket_|Marker_|Axis_)/.test(name));
   return {
+    kind: item.kind,
     key: item.name,
     sourceKind,
     sourcePath: item.relativeSource,
@@ -181,10 +259,6 @@ function findNativeRoot() {
     return resolved;
   }
 
-  // Supported local layouts:
-  // 1. web repo nested somewhere inside the native JV repository;
-  // 2. Jozz's current workspace, where the native repository is the sibling
-  //    directory "box3d" under a shared Box3d_FunProject workspace folder.
   let current = process.cwd();
   for (let depth = 0; depth < 10; depth += 1) {
     const candidates = [current, path.join(current, 'box3d')];
