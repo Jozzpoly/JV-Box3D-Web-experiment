@@ -6,6 +6,7 @@
   "scripts": {
     "sync-assets": "node tools/sync-jv-assets.mjs",
     "verify-runtime": "node tools/check-box3d-runtime.mjs",
+    "smoke-browser": "node tools/smoke-browser.mjs",
     "predev": "npm run sync-assets && npm run verify-runtime",
     "dev": "vite",
     "prebuild": "npm run sync-assets",
