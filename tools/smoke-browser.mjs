@@ -119,6 +119,7 @@ try {
         errorText: error?.textContent ?? '',
         canvasWidth: canvas instanceof HTMLCanvasElement ? canvas.width : 0,
         canvasHeight: canvas instanceof HTMLCanvasElement ? canvas.height : 0,
+        probes: window.__JV_PROBE_REPORT__ ?? null,
       };
     })()`,
     returnByValue: true,
@@ -136,11 +137,25 @@ try {
   if (state.canvasWidth <= 0 || state.canvasHeight <= 0) {
     failures.push(`invalid canvas size: ${state.canvasWidth}x${state.canvasHeight}`);
   }
+  if (!state.probes) {
+    failures.push('missing window.__JV_PROBE_REPORT__');
+  } else if (!state.probes.passed) {
+    failures.push(`M6 behavior probes failed: ${JSON.stringify(state.probes)}`);
+  }
   if (cdp.exceptions.length > 0) {
     failures.push(`uncaught browser exceptions:\n${cdp.exceptions.join('\n')}`);
   }
   if (failures.length > 0) throw new Error(failures.join('\n\n'));
 
+  const straight = state.probes.straight;
+  const steering = state.probes.steeringRelease;
+  console.log(
+    `[browser-smoke] probes ${state.probes.passedCount}/${state.probes.totalCount}: `
+    + `straight dx=${straight.forwardMeters.toFixed(2)}m dz=${straight.lateralMeters.toFixed(2)}m `
+    + `ratio=${straight.lateralRatio.toFixed(3)} tilt=${straight.chassisTiltDeg.toFixed(1)}deg; `
+    + `steering peak=${steering.peakRackFraction.toFixed(3)} final=${steering.finalRackFraction.toFixed(3)} `
+    + `yaw=${steering.finalYawRate.toFixed(3)}rad/s`,
+  );
   console.log(
     `[browser-smoke] OK: ${state.status}; canvas ${state.canvasWidth}x${state.canvasHeight}; ` +
     'telemetry active.',
