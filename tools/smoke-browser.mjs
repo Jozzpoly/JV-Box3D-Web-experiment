@@ -135,6 +135,12 @@ try {
   } else if (!state.probes.passed) {
     failures.push(`M6 parity probes failed: ${JSON.stringify(state.probes)}`);
   }
+  if (!state.probes?.lowSpeedSteering) {
+    failures.push('missing low-speed steering diagnostic');
+  } else if (!state.probes.lowSpeedSteering.stationary?.finite
+      || !state.probes.lowSpeedSteering.creep?.finite) {
+    failures.push(`low-speed steering produced non-finite state: ${JSON.stringify(state.probes.lowSpeedSteering)}`);
+  }
 
   if (!state.visuals) {
     failures.push('missing window.__JV_VISUAL_REPORT__');
@@ -171,6 +177,7 @@ try {
   const straight = state.probes.straight;
   const impact = state.probes.steeringImpact;
   const handling = state.probes.handlingPulse;
+  const lowSpeed = state.probes.lowSpeedSteering;
   const wheel = state.visuals.wheel;
   console.log(
     `[browser-smoke] parity ${state.probes.passedCount}/${state.probes.totalCount}: `
@@ -183,6 +190,22 @@ try {
     `[browser-smoke] handling ${handling.stable ? 'STABLE' : 'UNSTABLE'}: `
     + `peak=${handling.peakRackFraction.toFixed(3)} final=${handling.finalRackFraction.toFixed(3)} `
     + `yaw=${handling.finalYawRate.toFixed(3)}rad/s`,
+  );
+  console.log(
+    `[browser-smoke] low-speed stationary ${lowSpeed.stationary.stable ? 'STABLE' : 'UNSTABLE'}: `
+    + `left=${lowSpeed.stationary.leftPeakFraction.toFixed(3)} `
+    + `right=${lowSpeed.stationary.rightPeakFraction.toFixed(3)} `
+    + `final=${lowSpeed.stationary.finalRackFraction.toFixed(3)} `
+    + `crossed=${lowSpeed.stationary.crossedCentreOnReversal} `
+    + `stall=${lowSpeed.stationary.maxServoStallFrames}f`,
+  );
+  console.log(
+    `[browser-smoke] low-speed creep ${lowSpeed.creep.stable ? 'STABLE' : 'UNSTABLE'}: `
+    + `left=${lowSpeed.creep.leftPeakFraction.toFixed(3)} `
+    + `right=${lowSpeed.creep.rightPeakFraction.toFixed(3)} `
+    + `final=${lowSpeed.creep.finalRackFraction.toFixed(3)} `
+    + `crossed=${lowSpeed.creep.crossedCentreOnReversal} `
+    + `stall=${lowSpeed.creep.maxServoStallFrames}f speed=${lowSpeed.creep.finalSpeedMs.toFixed(3)}m/s`,
   );
   console.log(
     `[browser-smoke] wheels OK: clones=${wheel.cloneCount}, skeletons=${wheel.uniqueSkeletonCount}, `
