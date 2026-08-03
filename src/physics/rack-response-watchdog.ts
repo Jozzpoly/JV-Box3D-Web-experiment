@@ -41,7 +41,7 @@ export class RackResponseWatchdog {
 
   update(input: DriveInput): RackResponseTelemetry {
     const cfg = this.rig.config;
-    const handsOn = Math.abs(input.steer) > cfg.steerInputDeadzone;
+    const handsOn = input.steeringEngaged ?? Math.abs(input.steer) > cfg.steerInputDeadzone;
     let targetTranslation = 0;
 
     if (handsOn) {
