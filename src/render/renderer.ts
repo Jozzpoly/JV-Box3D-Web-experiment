@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { M6WebRig } from '../physics/m6-rig';
+import type { Vec3 } from '../physics/rig-config';
 import { VehicleOrbitCamera } from './vehicle-camera';
 
 export interface RenderContext {
@@ -107,7 +108,11 @@ export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group
   scene.add(chassisRoot);
   rig.bindings.push({ bodyId: rig.chassisId, object: chassisRoot });
 
-  void loadRealJvBody(chassisRoot, fallbackChassis);
+  if (rig.config.bodyVisualModel === 'rama_rurowa') {
+    void loadRealJvBody(chassisRoot, fallbackChassis, rig.config.bodyVisualOffset);
+  } else if (rig.config.bodyVisualModel !== 'brak') {
+    console.warn(`Unknown JV bodyVisualModel "${rig.config.bodyVisualModel}"; using the collider fallback.`);
+  }
 
   const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x131518, roughness: 0.96 });
   const rimMaterial = new THREE.MeshStandardMaterial({ color: 0x8d979e, roughness: 0.38, metalness: 0.68 });
@@ -239,14 +244,18 @@ export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group
   return chassisRoot;
 }
 
-async function loadRealJvBody(chassisRoot: THREE.Group, fallback: THREE.Object3D): Promise<void> {
+async function loadRealJvBody(
+  chassisRoot: THREE.Group,
+  fallback: THREE.Object3D,
+  sessionOffset: Vec3,
+): Promise<void> {
   try {
     const gltf = await new GLTFLoader().loadAsync('./assets/vehicle/Nadwozie.gltf');
     const body = gltf.scene;
     body.name = 'JV rama_rurowa · Nadwozie.gltf';
     body.scale.setScalar(0.35);
     body.rotation.y = -Math.PI / 2;
-    body.position.set(0, -0.60, 0);
+    body.position.set(sessionOffset.x, -0.60 + sessionOffset.y, sessionOffset.z);
     configureJvMaterials(body);
     chassisRoot.add(body);
     fallback.visible = false;
