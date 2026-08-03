@@ -1,20 +1,31 @@
 # JV Box3D Web — kanoniczny stan projektu
 
 Updated: 2026-08-03
-Status: `CANONICAL FOUNDATION STATE`
+Status: `CANONICAL ACTIVE STATE`
 
 ## 1. Gdzie jesteśmy
 
-Projekt ma obecnie trzy rozdzielone linie:
+Projekt ma obecnie cztery rozdzielone linie:
 
 | Linia | Rola | Status |
 |---|---|---|
 | `main` | minimalny root repozytorium | bez implementacji |
 | `agent/bootstrap-web-poc` / PR #1 | działający eksperyment i zbiór failure lessons | kwarantanna, nie scalać jako fundament |
 | `agent/fundamental-audit-rebuild` / PR #2 | audyt, receipts, kontrakty i errata | dokumentacja fundamentu |
-| `agent/clean-browser-core` | docelowa czysta implementacja | aktywna linia dalszego rozwoju |
+| `agent/clean-browser-core` / PR #4 | docelowa czysta implementacja | aktywna linia dalszego rozwoju |
 
-Nie istnieje jeszcze zaakceptowany clean runtime. PR #1 uruchamia się i był testowany przez Jozza, ale zawiera odrzucone mechanizmy i nie może być rozwijany przez dokładanie kolejnych poprawek.
+Clean runtime nie jest jeszcze kompletnym portem ani pojazdem, ale pierwsza właściwa warstwa implementacji już istnieje:
+
+```text
+F1 clean host/input checkpoint
+head: 8148b643aee66719993201b1b66a4fd2aba8a8c2
+issue: #3
+PR: #4
+```
+
+Zawiera project shell, transactional lifecycle, fixed-step clock, timestamped input timeline, semantyczne komendy kierownicy i testy. Nie zawiera jeszcze Box3D ani kodu pojazdu.
+
+PR #1 uruchamia się i był testowany przez Jozza, ale zawiera odrzucone mechanizmy i nie może być rozwijany przez dokładanie kolejnych poprawek.
 
 ## 2. Cel najbliższego milestone'u
 
@@ -55,6 +66,16 @@ Puszczenie kierownicy oznacza natychmiastowy hands-off. Ewentualny powrót podcz
 ### Precyzyjne sterowanie cyfrowe
 
 Krótki tap ma dawać mały ruch, ale bez automatycznego powrotu do zera. Pierwszy badany model to rack-space `RATE` z natychmiastowym `RELEASE` po key-up/pointer-up.
+
+F1 rozstrzyga wyłącznie sposób próbkowania czasu urządzenia:
+
+```text
+sub-frame tap
+→ signed active time / fixed-step time
+→ proporcjonalna komenda RATE
+```
+
+One-step latch nie jest domyślną polityką. Nie wybiera to jeszcze fizycznego rack rate ani feelu. Decyzję zapisuje `docs/decisions/ADR-0001-subframe-rate-integration.md`.
 
 ### Koło
 
@@ -108,6 +129,8 @@ JV fork jest potomkiem tego engine commita. Aktywna core delta dla continuous-di
 - centre-hold timer;
 - test wymagający centrowania na postoju;
 - speed/yaw/slip feedback ukryty w adapterze klawiatury;
+- render-frame polling jako źródło komend fixed-step;
+- one-step latch jako ukryta minimalna długość każdego tapu;
 - silent fallback z invalid session do innego auta;
 - ręczny webowy config mirror jako trwałe źródło prawdy;
 - traktowanie legacy split jako future wheel;
@@ -121,7 +144,8 @@ JV fork jest potomkiem tego engine commita. Aktywna core delta dla continuous-di
 ## 6. Co pozostaje otwarte
 
 - finalny rack rate i target-lead cap;
-- dokładna polityka sub-frame taps: event timeline kontra one-step latch;
+- target Node 24/TypeScript 7/Vite 8 oraz prawdziwy browser run F1;
+- wygenerowanie i commit `package-lock.json`;
 - zakres native-generated config/factory export;
 - wybór długoterminowy: upstream WASM z delta contractem kontra binding z JV fork;
 - future wheel backend i poziom ingerencji w manifold/solver;
@@ -130,7 +154,7 @@ JV fork jest potomkiem tego engine commita. Aktywna core delta dla continuous-di
 - mobile performance budget na prawdziwym urządzeniu;
 - lokalne, niezacommitowane różnice w working tree Jozza.
 
-Otwarte pytanie nie blokuje M0, jeżeli nie należy do minimalnego slice'u.
+Proporcjonalne signed-time integration jest przyjętą polityką F1, ale nadal wymaga target-browser validation. Otwarte pytanie nie blokuje M0, jeżeli nie należy do minimalnego slice'u.
 
 ## 7. Granice pierwszej implementacji
 
@@ -215,7 +239,7 @@ owner verdict status
 
 Brak karty oznacza implementację od zera, nie kopiowanie.
 
-## 10. Polityka CI
+## 10. Polityka CI i narzędzi
 
 ### Zwykłe CI produktu
 
@@ -231,6 +255,8 @@ small Node/WASM contract tests
 small headless browser startup/input test
 ```
 
+Na etapie F1 nie uruchamiamy GitHub Actions tylko po to, aby wygenerować lockfile albo powtórzyć testy możliwe lokalnie.
+
 ### Forensic workflows
 
 Trzy istniejące workflowy audytowe są manual-only. Nie uruchamiać ich przy dokumentacyjnych commitach ani zwykłym PR.
@@ -239,16 +265,32 @@ Trzy istniejące workflowy audytowe są manual-only. Nie uruchamiać ich przy do
 
 Pełne sondy są osobną trasą/komendą CI. Nie blokują first useful frame normalnej aplikacji.
 
+### Operacyjny tracker
+
+- issue #3: bieżące bramki i checkpoint F1;
+- PR #4: wyłącznie diff implementacyjny clean core;
+- README: szybki status i narzędzia;
+- broad audit docs nie są codziennym backlogiem.
+
 ## 11. Warunek przejścia do dalszych etapów
 
-M0 jest gotowe dopiero, gdy:
+F1 jest gotowe dopiero, gdy:
 
-- kod buduje się z przypiętym lockfile;
-- zwykły startup nie wykonuje pełnych probes;
+- istnieje przypięty `package-lock.json`;
+- `npm ci`, `npm run check` i `npm run build` przechodzą na Node 24;
+- prawdziwa przeglądarka potwierdza host i lifecycle klawiatury;
+- zwykły startup nie wykonuje physics probes;
 - input trace jest niezależny od render FPS;
-- release wyłącza hands-on w pierwszym fixed step;
-- brak targetu do centrum jest widoczny w trace;
-- minimalny fixture jest finite i ma source/config receipt;
+- sub-frame tap nie znika ani nie jest automatycznie rozciągany do pełnego kroku;
+- focus/visibility release działa w pierwszym właściwym fixed-step interval;
+- nie ma claimu o rack physics ani feelu.
+
+M0 jest gotowe dopiero później, gdy dodatkowo:
+
+- release wyłącza fizyczny hands-on w pierwszym fixed step;
+- brak targetu do centrum jest widoczny w controller trace;
+- minimalny Box3D fixture jest finite i ma source/config receipt;
+- minimalny M6 controller jest jedynym właścicielem sił;
 - Jozz może wykonać desktopowy test krótkich tapów;
 - nie ma claimu o feelu przed jego werdyktem.
 
@@ -260,4 +302,15 @@ Rozwój odbywa się na:
 agent/clean-browser-core
 ```
 
-Pierwszy commit implementacyjny ma stworzyć tylko project shell, lifecycle, fixed-step clock, semantic input types i testy osi czasu. Box3D vehicle code wchodzi dopiero po przejściu tych testów.
+Najbliższa kolejność:
+
+```text
+bezpieczne odzyskanie i przełączenie lokalnego brancha
+→ wygenerowanie clean package-lock z package.json F1
+→ npm ci / check / build na Node 24
+→ real browser F1 smoke i korekty
+→ zamknięcie issue #3
+→ dopiero potem F2: typed Box3D/WASM boundary
+```
+
+Nie dodawać kodu pojazdu przed przejściem bramek F1.
