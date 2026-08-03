@@ -44,6 +44,7 @@ export interface SteeringCycleResult {
   stable: boolean;
   leftPeakFraction: number;
   rightPeakFraction: number;
+  rackFractionAtServoRelease: number;
   finalRackFraction: number;
   crossedCentreOnReversal: boolean;
   maxServoStallFrames: number;
@@ -281,15 +282,26 @@ function runSteeringCycleScenario(
       }
     }
 
-    stepManyModeled(
-      b3,
-      worldId,
-      controller,
-      driver,
-      { drive, steer: 0, brake: false },
-      90,
-      watchdog,
-    );
+    let rackFractionAtServoRelease = Number.NaN;
+    let wasEngaged = true;
+    for (let i = 0; i < 90; i += 1) {
+      const modeled = stepOneModeled(
+        b3,
+        worldId,
+        controller,
+        driver,
+        { drive, steer: 0, brake: false },
+        watchdog,
+      );
+      const engaged = modeled.steeringEngaged ?? Math.abs(modeled.steer) > rig.config.steerInputDeadzone;
+      if (wasEngaged && !engaged && !Number.isFinite(rackFractionAtServoRelease)) {
+        rackFractionAtServoRelease = rackFraction(b3, rig);
+      }
+      wasEngaged = engaged;
+    }
+    if (!Number.isFinite(rackFractionAtServoRelease)) {
+      rackFractionAtServoRelease = rackFraction(b3, rig);
+    }
 
     const leftPeakFraction = Math.abs(leftPeakSigned) / travel;
     const rightPeakFraction = Math.abs(rightPeakSigned) / travel;
@@ -301,12 +313,14 @@ function runSteeringCycleScenario(
       && rightPeakFraction > 0.15
       && crossedCentreOnReversal
       && watchdog.telemetry.maxStalledFrames < 18
-      && finalRackFraction < 0.4;
+      && rackFractionAtServoRelease < 0.1
+      && (drive !== 0 || finalRackFraction < 0.1);
 
     return {
       stable,
       leftPeakFraction,
       rightPeakFraction,
+      rackFractionAtServoRelease,
       finalRackFraction,
       crossedCentreOnReversal,
       maxServoStallFrames: watchdog.telemetry.maxStalledFrames,
@@ -385,11 +399,12 @@ function stepOneModeled(
   driver: KeyboardDriverInputModel,
   rawInput: DriveInput,
   watchdog?: RackResponseWatchdog,
-): void {
+): DriveInput {
   const modeled = driver.update(rawInput, FIXED_DT);
   controller.update(modeled);
   watchdog?.update(modeled);
   b3.b3World_Step(worldId, FIXED_DT, SUB_STEPS);
+  return modeled;
 }
 
 function rackFraction(b3: any, rig: M6WebRig): number {
