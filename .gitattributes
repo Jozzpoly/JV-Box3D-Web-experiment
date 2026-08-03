@@ -1,0 +1,2 @@
+# Byte-pinned native receipts must survive checkout unchanged on every OS.
+public/receipts/jv_m6_factory_receipt.json -text
