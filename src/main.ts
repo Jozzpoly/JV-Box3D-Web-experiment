@@ -1,10 +1,10 @@
 import Box3D from 'box3d.js/inline';
 import './style.css';
 import { KeyboardInput } from './input';
+import { loadRuntimeM6Config } from './physics/config-loader';
 import { M6ParityController } from './physics/m6-parity-controller';
 import { prepareBox3dRuntime } from './physics/box3d-runtime';
 import { M6WebRig } from './physics/m6-rig';
-import { DEFAULT_M6_CONFIG } from './physics/rig-config';
 import { createRenderContext, createRigVisuals } from './render/renderer';
 import { createWorldScene } from './scene/world';
 
@@ -14,10 +14,16 @@ const telemetryElement = requireElement<HTMLElement>('telemetry');
 const errorElement = requireElement<HTMLElement>('error');
 
 async function start(): Promise<void> {
-  statusElement.textContent = 'Ładowanie Box3D WebAssembly…';
-  const b3 = prepareBox3dRuntime(await Box3D());
+  statusElement.textContent = 'Ładowanie Box3D WebAssembly i konfiguracji JV…';
+  const [rawBox3d, runtimeConfig] = await Promise.all([
+    Box3D(),
+    loadRuntimeM6Config(),
+  ]);
+  const b3 = prepareBox3dRuntime(rawBox3d);
   const version = b3.b3GetVersion();
-  statusElement.textContent = `Box3D ${version.major}.${version.minor}.${version.revision} · JV M6 parity pass`;
+  const config = runtimeConfig.config;
+  statusElement.textContent = `Box3D ${version.major}.${version.minor}.${version.revision} · ${runtimeConfig.source}`;
+  for (const warning of runtimeConfig.warnings) console.warn(`[jv-config] ${warning}`);
 
   const render = createRenderContext(canvas);
   const worldDef = b3.b3DefaultWorldDef();
@@ -27,8 +33,8 @@ async function start(): Promise<void> {
   b3.b3World_SetContactTuning(worldId, 30, 10, 3);
 
   const worldResources = await createWorldScene(b3, worldId, render.scene);
-  const spawnHeight = DEFAULT_M6_CONFIG.restDrop + DEFAULT_M6_CONFIG.wheelRadius + 0.08;
-  const rig = new M6WebRig(b3, worldId, DEFAULT_M6_CONFIG, { x: 0, y: spawnHeight, z: 0 });
+  const spawnHeight = config.restDrop + config.wheelRadius + 0.08;
+  const rig = new M6WebRig(b3, worldId, config, { x: 0, y: spawnHeight, z: 0 });
   const parityController = new M6ParityController(b3, rig);
   const chassisVisual = createRigVisuals(render.scene, rig);
   const input = new KeyboardInput();
@@ -84,6 +90,7 @@ async function start(): Promise<void> {
         `rack: ${telemetry.rackTravel.toFixed(4)} / ${rig.config.rackTravel.toFixed(4)} m`,
         `tarcie racka: ${parity.rackFrictionForce.toFixed(0)} N`,
         `obciążenie drążków: ${parity.transverseTieRodLoad.toFixed(0)} N`,
+        `toe F/R: ${rig.config.frontToeDeg.toFixed(2)}° / ${rig.config.rearToeDeg.toFixed(2)}°`,
         `fizyka: ${telemetry.physicsMs.toFixed(2)} ms`,
         `body/joint/contact: ${telemetry.bodyCount}/${telemetry.jointCount}/${telemetry.contactCount}`,
       ].join('<br>');
