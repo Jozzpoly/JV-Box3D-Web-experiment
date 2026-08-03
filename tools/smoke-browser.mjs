@@ -23,6 +23,7 @@ const READ_BROWSER_STATE = `(() => {
     canvasHeight: canvas instanceof HTMLCanvasElement ? canvas.height : 0,
     probes: window.__JV_PROBE_REPORT__ ?? null,
     visuals: window.__JV_VISUAL_REPORT__ ?? null,
+    frontRig: window.__JV_FRONT_RIG_REPORT__ ?? null,
   };
 })()`;
 
@@ -145,14 +146,37 @@ try {
     if (!lowSpeed.stationary?.finite || !lowSpeed.creep?.finite) {
       failures.push(`low-speed steering produced non-finite state: ${JSON.stringify(lowSpeed)}`);
     }
-    if (!lowSpeed.stable) {
-      failures.push(`low-speed steering centre-capture failed: ${JSON.stringify(lowSpeed)}`);
-    }
+    if (!lowSpeed.stable) failures.push(`low-speed steering centre-capture failed: ${JSON.stringify(lowSpeed)}`);
     if (!(lowSpeed.stationary?.rackFractionAtServoRelease < 0.1)) {
       failures.push(`stationary rack was not centred before servo release: ${lowSpeed.stationary?.rackFractionAtServoRelease}`);
     }
     if (!(lowSpeed.creep?.rackFractionAtServoRelease < 0.1)) {
       failures.push(`creep rack was not centred before servo release: ${lowSpeed.creep?.rackFractionAtServoRelease}`);
+    }
+  }
+
+  if (!state.frontRig) {
+    failures.push('missing window.__JV_FRONT_RIG_REPORT__');
+  } else {
+    const frontRig = state.frontRig;
+    if (!frontRig.loaded) failures.push(`front-rig bridge preflight failed: ${frontRig.message}`);
+    if (frontRig.assetId !== 'jozz.one_sided_steering_suspension.v0') {
+      failures.push(`unexpected front-rig assetId: ${frontRig.assetId}`);
+    }
+    if (!(frontRig.contractVersion >= 2)) failures.push(`front-rig contractVersion=${frontRig.contractVersion}`);
+    if (frontRig.resolvedNodeCount !== frontRig.requiredNodeCount || frontRig.requiredNodeCount !== 13) {
+      failures.push(`front-rig nodes ${frontRig.resolvedNodeCount}/${frontRig.requiredNodeCount}`);
+    }
+    if (frontRig.missingNodes?.length || frontRig.duplicateNodes?.length) {
+      failures.push(`front-rig node ambiguity: missing=${frontRig.missingNodes}, duplicate=${frontRig.duplicateNodes}`);
+    }
+    if (!(frontRig.skinnedMeshCount > 0) || !(frontRig.uniqueSkeletonCount > 0)) {
+      failures.push(`front-rig skin missing: meshes=${frontRig.skinnedMeshCount}, skeletons=${frontRig.uniqueSkeletonCount}`);
+    }
+    if (frontRig.m6CarrierBody !== 'lowerArm') failures.push(`unexpected M6 carrier mapping: ${frontRig.m6CarrierBody}`);
+    const recognizedNativeOwnership = ['knuckle', 'carrier', 'lowerArm'].includes(frontRig.nativeChassisMountBRidesBody);
+    if (!recognizedNativeOwnership) {
+      failures.push(`unknown native ChassisMount_b ownership: ${frontRig.nativeChassisMountBRidesBody}`);
     }
   }
 
@@ -171,9 +195,7 @@ try {
     if (!wheel?.attachedToWheelBodies) {
       failures.push(`wheel visuals are detached/mis-centred: ${wheel?.message ?? 'unknown'}`);
     }
-    if (!(wheel?.maxBindingPositionError <= 1e-5)) {
-      failures.push(`wheel root/body binding error=${wheel?.maxBindingPositionError}`);
-    }
+    if (!(wheel?.maxBindingPositionError <= 1e-5)) failures.push(`wheel root/body binding error=${wheel?.maxBindingPositionError}`);
     if (!(wheel?.centerError <= 1e-5)) failures.push(`wheel physical-centre error=${wheel?.centerError}`);
     if (!(wheel?.mountAxisError <= 1e-5)) failures.push(`wheel mount-axis error=${wheel?.mountAxisError}`);
     if (!(wheel?.mountOffset > 0 && wheel?.mountOffset < wheel?.requestedWidth * 0.5 + 1e-5)) {
@@ -183,9 +205,7 @@ try {
     if (!(wheel?.widthError <= 1e-5)) failures.push(`wheel width contract error=${wheel?.widthError}`);
   }
 
-  if (cdp.exceptions.length > 0) {
-    failures.push(`uncaught browser exceptions:\n${cdp.exceptions.join('\n')}`);
-  }
+  if (cdp.exceptions.length > 0) failures.push(`uncaught browser exceptions:\n${cdp.exceptions.join('\n')}`);
   if (failures.length > 0) throw new Error(failures.join('\n\n'));
 
   const straight = state.probes.straight;
@@ -193,6 +213,7 @@ try {
   const handling = state.probes.handlingPulse;
   const lowSpeed = state.probes.lowSpeedSteering;
   const wheel = state.visuals.wheel;
+  const frontRig = state.frontRig;
   console.log(
     `[browser-smoke] parity ${state.probes.passedCount}/${state.probes.totalCount}: `
     + `straight dx=${straight.forwardMeters.toFixed(2)}m dz=${straight.lateralMeters.toFixed(2)}m `
@@ -207,21 +228,24 @@ try {
   );
   console.log(
     `[browser-smoke] low-speed stationary ${lowSpeed.stationary.stable ? 'STABLE' : 'UNSTABLE'}: `
-    + `left=${lowSpeed.stationary.leftPeakFraction.toFixed(3)} `
-    + `right=${lowSpeed.stationary.rightPeakFraction.toFixed(3)} `
+    + `left=${lowSpeed.stationary.leftPeakFraction.toFixed(3)} right=${lowSpeed.stationary.rightPeakFraction.toFixed(3)} `
     + `capture=${lowSpeed.stationary.rackFractionAtServoRelease.toFixed(3)} `
     + `final=${lowSpeed.stationary.finalRackFraction.toFixed(3)} `
-    + `crossed=${lowSpeed.stationary.crossedCentreOnReversal} `
-    + `stall=${lowSpeed.stationary.maxServoStallFrames}f`,
+    + `crossed=${lowSpeed.stationary.crossedCentreOnReversal} stall=${lowSpeed.stationary.maxServoStallFrames}f`,
   );
   console.log(
     `[browser-smoke] low-speed creep ${lowSpeed.creep.stable ? 'STABLE' : 'UNSTABLE'}: `
-    + `left=${lowSpeed.creep.leftPeakFraction.toFixed(3)} `
-    + `right=${lowSpeed.creep.rightPeakFraction.toFixed(3)} `
+    + `left=${lowSpeed.creep.leftPeakFraction.toFixed(3)} right=${lowSpeed.creep.rightPeakFraction.toFixed(3)} `
     + `capture=${lowSpeed.creep.rackFractionAtServoRelease.toFixed(3)} `
     + `final=${lowSpeed.creep.finalRackFraction.toFixed(3)} `
     + `crossed=${lowSpeed.creep.crossedCentreOnReversal} `
     + `stall=${lowSpeed.creep.maxServoStallFrames}f speed=${lowSpeed.creep.finalSpeedMs.toFixed(3)}m/s`,
+  );
+  console.log(
+    `[browser-smoke] front-rig preflight OK: nodes=${frontRig.resolvedNodeCount}/${frontRig.requiredNodeCount}, `
+    + `skin=${frontRig.skinnedMeshCount}/${frontRig.uniqueSkeletonCount}, `
+    + `M6 carrier=${frontRig.m6CarrierBody}, native JSON=${frontRig.nativeChassisMountBRidesBody}, `
+    + `knownDrift=${frontRig.knownOwnershipDrift}`,
   );
   console.log(
     `[browser-smoke] wheels OK: clones=${wheel.cloneCount}, skeletons=${wheel.uniqueSkeletonCount}, `
@@ -230,9 +254,7 @@ try {
     + `root=${wheel.maxBindingPositionError.toExponential(2)}m, `
     + `centre=${wheel.centerError.toExponential(2)}m, mount=${wheel.mountOffset.toFixed(5)}m`,
   );
-  console.log(
-    `[browser-smoke] OK: ${state.status}; canvas ${state.canvasWidth}x${state.canvasHeight}; telemetry active.`,
-  );
+  console.log(`[browser-smoke] OK: ${state.status}; canvas ${state.canvasWidth}x${state.canvasHeight}; telemetry active.`);
   cdp.close();
 } finally {
   await terminateProcessTree(chromeProcess);
