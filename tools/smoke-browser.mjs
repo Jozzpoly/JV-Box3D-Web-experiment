@@ -9,6 +9,50 @@ const DEBUG_PORT = 9222;
 const APP_URL = `http://${APP_HOST}:${APP_PORT}/`;
 const DEBUG_URL = `http://127.0.0.1:${DEBUG_PORT}`;
 
+class CdpClient {
+  constructor(url) {
+    this.url = url;
+    this.nextId = 1;
+    this.pending = new Map();
+    this.exceptions = [];
+  }
+
+  async connect() {
+    this.socket = new WebSocket(this.url);
+    this.socket.addEventListener('message', (event) => this.onMessage(event));
+    await new Promise((resolve, reject) => {
+      this.socket.addEventListener('open', resolve, { once: true });
+      this.socket.addEventListener('error', reject, { once: true });
+    });
+  }
+
+  send(method, params = {}) {
+    const id = this.nextId++;
+    const promise = new Promise((resolve, reject) => this.pending.set(id, { resolve, reject }));
+    this.socket.send(JSON.stringify({ id, method, params }));
+    return promise;
+  }
+
+  close() {
+    this.socket?.close();
+  }
+
+  onMessage(event) {
+    const message = JSON.parse(String(event.data));
+    if (message.method === 'Runtime.exceptionThrown') {
+      const details = message.params?.exceptionDetails;
+      this.exceptions.push(details?.exception?.description ?? details?.text ?? 'Unknown exception');
+      return;
+    }
+    if (!message.id) return;
+    const pending = this.pending.get(message.id);
+    if (!pending) return;
+    this.pending.delete(message.id);
+    if (message.error) pending.reject(new Error(`${message.error.message}: ${message.error.data ?? ''}`));
+    else pending.resolve(message.result);
+  }
+}
+
 let previewProcess;
 let chromeProcess;
 let chromeProfile;
@@ -92,57 +136,13 @@ try {
 
   console.log(
     `[browser-smoke] OK: ${state.status}; canvas ${state.canvasWidth}x${state.canvasHeight}; ` +
-    `telemetry active.`,
+    'telemetry active.',
   );
   cdp.close();
 } finally {
   terminate(chromeProcess);
   terminate(previewProcess);
   if (chromeProfile) await rm(chromeProfile, { recursive: true, force: true });
-}
-
-class CdpClient {
-  constructor(url) {
-    this.url = url;
-    this.nextId = 1;
-    this.pending = new Map();
-    this.exceptions = [];
-  }
-
-  async connect() {
-    this.socket = new WebSocket(this.url);
-    this.socket.addEventListener('message', (event) => this.onMessage(event));
-    await new Promise((resolve, reject) => {
-      this.socket.addEventListener('open', resolve, { once: true });
-      this.socket.addEventListener('error', reject, { once: true });
-    });
-  }
-
-  send(method, params = {}) {
-    const id = this.nextId++;
-    const promise = new Promise((resolve, reject) => this.pending.set(id, { resolve, reject }));
-    this.socket.send(JSON.stringify({ id, method, params }));
-    return promise;
-  }
-
-  close() {
-    this.socket?.close();
-  }
-
-  onMessage(event) {
-    const message = JSON.parse(String(event.data));
-    if (message.method === 'Runtime.exceptionThrown') {
-      const details = message.params?.exceptionDetails;
-      this.exceptions.push(details?.exception?.description ?? details?.text ?? 'Unknown exception');
-      return;
-    }
-    if (!message.id) return;
-    const pending = this.pending.get(message.id);
-    if (!pending) return;
-    this.pending.delete(message.id);
-    if (message.error) pending.reject(new Error(`${message.error.message}: ${message.error.data ?? ''}`));
-    else pending.resolve(message.result);
-  }
 }
 
 async function findChromeExecutable() {
