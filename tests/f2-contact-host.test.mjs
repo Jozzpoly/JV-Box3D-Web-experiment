@@ -58,3 +58,46 @@ test("F1 fixed-step host drives F2 contact and restart leaves no scheduled resou
     assert.throws(() => host.snapshot, /disposed/);
   }
 });
+
+test("runtime physics fault disposes world and permits a clean rebuild", async () => {
+  const frames = new FakeAnimationFrames();
+  const fault = new Error("intentional F2 physics fault");
+  let observedFatal = null;
+  const faultedHost = await F2ContactHost.start({
+    now: () => 0,
+    animationFrames: frames,
+    windowTarget: new EventTarget(),
+    documentTarget: new EventTarget(),
+    isDocumentHidden: () => false,
+    onPhysicsStep() {
+      throw fault;
+    },
+    onFatalError(error) {
+      observedFatal = error;
+    },
+  });
+
+  frames.run(0);
+  frames.run(1000 / 60);
+  assert.equal(observedFatal, fault);
+  assert.equal(faultedHost.fatalError, fault);
+  assert.equal(frames.callbacks.size, 0);
+  assert.throws(() => faultedHost.snapshot, /faulted/);
+  faultedHost.dispose();
+
+  const rebuildFrames = new FakeAnimationFrames();
+  const rebuilt = await F2ContactHost.start({
+    now: () => 0,
+    animationFrames: rebuildFrames,
+    windowTarget: new EventTarget(),
+    documentTarget: new EventTarget(),
+    isDocumentHidden: () => false,
+    onPhysicsStep() {},
+  });
+  for (let frame = 0; frame < 180; frame += 1) {
+    rebuildFrames.run(frame * (1000 / 60));
+  }
+  assert.ok(rebuilt.snapshot.contactBeginEvents >= 1);
+  rebuilt.dispose();
+  assert.equal(rebuildFrames.callbacks.size, 0);
+});
