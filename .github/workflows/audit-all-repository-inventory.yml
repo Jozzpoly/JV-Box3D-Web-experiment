@@ -56,7 +56,8 @@ jobs:
             git -C "$checkout" ls-tree -r --full-tree HEAD > "$out/git-tree.txt"
             git -C "$checkout" submodule status --recursive > "$out/submodules.txt" || true
 
-            printf 'path\tmode\tgit_type\tgit_object\tbytes\tlines\tcontent_sha256\tclassification\n' > "$out/files.tsv"
+            rows="$out/files.rows.tsv"
+            : > "$rows"
 
             tracked_files=0
             tracked_bytes=0
@@ -73,7 +74,7 @@ jobs:
 
               if [[ "$type" == commit ]]; then
                 submodules=$((submodules + 1))
-                printf '%s\t%s\t%s\t%s\t0\t0\t-\tsubmodule\n' "$path" "$mode" "$type" "$object" >> "$out/files.tsv"
+                printf '%s\t%s\t%s\t%s\t0\t0\t-\tsubmodule\n' "$path" "$mode" "$type" "$object" >> "$rows"
                 continue
               fi
 
@@ -101,15 +102,20 @@ jobs:
 
               printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
                 "$path" "$mode" "$type" "$object" "$bytes" "$lines" "$sha" "$classification" \
-                >> "$out/files.tsv"
+                >> "$rows"
             done < <(git -C "$checkout" ls-tree -r -z --full-tree HEAD | while IFS= read -r -d '' entry; do
               meta="${entry%%$'\t'*}"
               path="${entry#*$'\t'}"
               printf '%s\t%s\n' "$meta" "$path"
             done)
 
-            LC_ALL=C sort -t $'\t' -k1,1 "$out/files.tsv" -o "$out/files.tsv"
-            tree_receipt="$(tail -n +2 "$out/files.tsv" | sha256sum | cut -d' ' -f1)"
+            LC_ALL=C sort -t $'\t' -k1,1 "$rows" -o "$rows"
+            tree_receipt="$(sha256sum "$rows" | cut -d' ' -f1)"
+            {
+              printf 'path\tmode\tgit_type\tgit_object\tbytes\tlines\tcontent_sha256\tclassification\n'
+              cat "$rows"
+            } > "$out/files.tsv"
+            rm "$rows"
             printf '%s\n' "$tree_receipt" > "$out/tree-receipt.sha256"
 
             printf '%s\tJozzpoly/%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
