@@ -123,7 +123,7 @@ F1: agent/clean-browser-core@484c865
 F2: agent/typed-box3d-boundary@2c208809
 F3: agent/native-factory-receipt / PR #9
 F4: agent/current-m6-topology@1653e982 / PR #11
-F5 active: agent/physical-rate-steering@9960338 / PR #13
+F5 active: agent/physical-rate-steering / PR #13
 ```
 
 All PRs remain stacked drafts and unmerged.
@@ -190,7 +190,8 @@ Issue and PR:
 ```text
 #12 Physical rack-space RATE steering experiment
 #13 draft / NOT YET EXECUTED / DO NOT MERGE
-head 9960338d45b1ff5c9836bc88566199e53614c128
+source/test checkpoint: 9960338d45b1ff5c9836bc88566199e53614c128
+later branch commits only synchronize canonical project documentation
 ```
 
 Current candidate profiles:
@@ -239,7 +240,7 @@ The new F5 matrix covers:
 - irregular cadence and dropped gaps;
 - profile switch and destroy/rebuild lifecycle.
 
-F5 is **not complete**. The current head has not received a real dependency install, TypeScript check, WASM test run, production build or browser smoke receipt.
+F5 is **not complete**. The current branch has not received a real dependency install, TypeScript check, WASM test run, production build or browser smoke receipt.
 
 ## 10. Required F5 completion gate
 
