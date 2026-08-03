@@ -17,8 +17,21 @@ export const M6_TOPOLOGY_COUNTS = Object.freeze({
 } as const);
 
 export type M6SteeringActuatorState = "OFF" | "POSITION" | "RATE";
-
 export type M6HandsOnEdge = "NONE" | "ENGAGE" | "REVERSE";
+
+export interface M6Rotation {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+  readonly w: number;
+}
+
+export interface M6VisualGeometry {
+  readonly chassisHalfExtents: b3Vec3;
+  readonly wheelRadius: number;
+  readonly wheelWidth: number;
+  readonly rackHalfWidth: number;
+}
 
 export interface M6SteeringMechanismTrace {
   readonly profileId: RateSteeringProfileId;
@@ -39,6 +52,7 @@ export interface M6SteeringMechanismTrace {
 
 export interface M6CornerTrace {
   readonly wheelPosition: b3Vec3;
+  readonly wheelRotation: M6Rotation;
   readonly wheelVelocity: b3Vec3;
   readonly wheelSpinSpeed: number;
   readonly coiloverLength: number;
@@ -54,9 +68,13 @@ export interface M6TraceFrame {
   readonly steering: M6SteeringMechanismTrace;
   readonly collisionGroupIndex: number;
   readonly wheelBackendId: typeof LEGACY_SPLIT_WHEEL_BACKEND_ID;
+  readonly visualGeometry: M6VisualGeometry;
   readonly chassisPosition: b3Vec3;
+  readonly chassisRotation: M6Rotation;
   readonly chassisVelocity: b3Vec3;
   readonly chassisAngularVelocity: b3Vec3;
+  readonly rackPosition: b3Vec3;
+  readonly rackRotation: M6Rotation;
   readonly rackTranslation: number;
   readonly rackSpeed: number;
   readonly worldContacts: number;
