@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - .github/workflows/audit-all-repository-inventory.yml
   workflow_dispatch:
 
 permissions:
@@ -13,6 +15,12 @@ jobs:
   inventory:
     runs-on: ubuntu-24.04
     steps:
+      - name: Check out current private repository with authorized token
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: current-web
+
       - name: Inventory exact tracked trees
         shell: bash
         run: |
@@ -20,54 +28,60 @@ jobs:
 
           mkdir -p audit-inventory/repos audit-inventory/snapshots
 
-          cat > audit-inventory/scopes.tsv <<'SCOPES'
+          # Public repositories can be cloned reproducibly by CI. The current
+          # private repository is available only through actions/checkout and
+          # is inventoried from that authorized checkout. Other private repos
+          # are intentionally NOT given broader credentials.
+          cat > audit-inventory/public-scopes.tsv <<'SCOPES'
           Box3d_FunProject	main
           Box3d_FunProject	jozz-scan-terrain-f0
+          voxel-aeronautics-workshop	main
+          Simply_game_experiment	master
+          SCOPES
+
+          cat > audit-inventory/current-private-scopes.tsv <<'SCOPES'
           JV-Box3D-Web-experiment	main
           JV-Box3D-Web-experiment	agent/bootstrap-web-poc
           JV-Box3D-Web-experiment	agent/fundamental-audit-rebuild
-          JOZZ-ENGINEERING-SANDBOX	main
-          voxel-aeronautics-workshop	main
-          Coopege	main
-          HomeScan-Web-Builder	main
-          planet-matter-lab	main
-          Simply_game_experiment	master
-          Jozz_Test_Mod_0.04	main
           SCOPES
 
-          printf 'scope\trepository\tref\tcommit\tcommit_date\ttracked_files\ttracked_bytes\ttext_files\ttext_lines\tlfs_pointers\tsymlinks\tsubmodules\ttree_receipt_sha256\n' \
+          cat > audit-inventory/connector-only-private-scopes.tsv <<'SCOPES'
+          JOZZ-ENGINEERING-SANDBOX	main	CONNECTOR_ONLY_NO_RECURSIVE_TREE_RECEIPT
+          Coopege	main	CONNECTOR_ONLY_NO_RECURSIVE_TREE_RECEIPT
+          HomeScan-Web-Builder	main	CONNECTOR_ONLY_NO_RECURSIVE_TREE_RECEIPT
+          planet-matter-lab	main	CONNECTOR_ONLY_NO_RECURSIVE_TREE_RECEIPT
+          Jozz_Test_Mod_0.04	main	CONNECTOR_ONLY_NO_RECURSIVE_TREE_RECEIPT
+          SCOPES
+
+          printf 'scope\trepository\tvisibility\tref\tcommit\tcommit_date\ttracked_files\ttracked_bytes\ttext_files\ttext_lines\tlfs_pointers\tsymlinks\tsubmodules\ttree_receipt_sha256\n' \
             > audit-inventory/summary.tsv
 
-          while IFS=$'\t' read -r repo ref; do
-            [[ -z "$repo" ]] && continue
-            scope="${repo}__${ref//\//_}"
-            url="https://github.com/Jozzpoly/${repo}.git"
-            checkout="audit-inventory/repos/$scope"
-            out="audit-inventory/snapshots/$scope"
+          inventory_checkout() {
+            local checkout="$1"
+            local repo="$2"
+            local visibility="$3"
+            local ref="$4"
+            local scope="${repo}__${ref//\//_}"
+            local out="audit-inventory/snapshots/$scope"
             mkdir -p "$out"
 
-            git clone --quiet --no-checkout "$url" "$checkout"
-            git -C "$checkout" fetch --quiet --no-tags origin "$ref"
-            git -C "$checkout" checkout --quiet --detach FETCH_HEAD
+            git -C "$checkout" checkout --quiet --detach "$ref"
 
+            local commit commit_date
             commit="$(git -C "$checkout" rev-parse HEAD)"
             commit_date="$(git -C "$checkout" show -s --format=%cI HEAD)"
             git -C "$checkout" show -s --format='%H%n%cI%n%s' HEAD > "$out/commit.txt"
             git -C "$checkout" ls-tree -r --full-tree HEAD > "$out/git-tree.txt"
             git -C "$checkout" submodule status --recursive > "$out/submodules.txt" || true
 
-            rows="$out/files.rows.tsv"
+            local rows="$out/files.rows.tsv"
             : > "$rows"
 
-            tracked_files=0
-            tracked_bytes=0
-            text_files=0
-            text_lines=0
-            lfs_pointers=0
-            symlinks=0
-            submodules=0
+            local tracked_files=0 tracked_bytes=0 text_files=0 text_lines=0
+            local lfs_pointers=0 symlinks=0 submodules=0
 
             while IFS=$'\t' read -r meta path; do
+              local mode type object file bytes sha lines classification
               mode="$(printf '%s' "$meta" | cut -d' ' -f1)"
               type="$(printf '%s' "$meta" | cut -d' ' -f2)"
               object="$(printf '%s' "$meta" | cut -d' ' -f3)"
@@ -104,12 +118,14 @@ jobs:
                 "$path" "$mode" "$type" "$object" "$bytes" "$lines" "$sha" "$classification" \
                 >> "$rows"
             done < <(git -C "$checkout" ls-tree -r -z --full-tree HEAD | while IFS= read -r -d '' entry; do
+              local meta path
               meta="${entry%%$'\t'*}"
               path="${entry#*$'\t'}"
               printf '%s\t%s\n' "$meta" "$path"
             done)
 
             LC_ALL=C sort -t $'\t' -k1,1 "$rows" -o "$rows"
+            local tree_receipt
             tree_receipt="$(sha256sum "$rows" | cut -d' ' -f1)"
             {
               printf 'path\tmode\tgit_type\tgit_object\tbytes\tlines\tcontent_sha256\tclassification\n'
@@ -118,17 +134,39 @@ jobs:
             rm "$rows"
             printf '%s\n' "$tree_receipt" > "$out/tree-receipt.sha256"
 
-            printf '%s\tJozzpoly/%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-              "$scope" "$repo" "$ref" "$commit" "$commit_date" \
+            printf '%s\tJozzpoly/%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+              "$scope" "$repo" "$visibility" "$ref" "$commit" "$commit_date" \
               "$tracked_files" "$tracked_bytes" "$text_files" "$text_lines" \
               "$lfs_pointers" "$symlinks" "$submodules" "$tree_receipt" \
               >> audit-inventory/summary.tsv
+          }
 
-            rm -rf "$checkout/.git"
-          done < audit-inventory/scopes.tsv
+          while IFS=$'\t' read -r repo ref; do
+            [[ -z "$repo" ]] && continue
+            scope="${repo}__${ref//\//_}"
+            checkout="audit-inventory/repos/$scope"
+            git clone --quiet --no-checkout "https://github.com/Jozzpoly/${repo}.git" "$checkout"
+            git -C "$checkout" fetch --quiet --no-tags origin "$ref"
+            inventory_checkout "$checkout" "$repo" public FETCH_HEAD
+          done < audit-inventory/public-scopes.tsv
+
+          # Fetch the named refs from the authorized checkout of the current
+          # private repository. No token is copied into shell URLs or artifacts.
+          git -C current-web fetch --quiet origin \
+            main \
+            agent/bootstrap-web-poc \
+            agent/fundamental-audit-rebuild
+
+          while IFS=$'\t' read -r repo ref; do
+            [[ -z "$repo" ]] && continue
+            inventory_checkout current-web "$repo" private "origin/$ref"
+          done < audit-inventory/current-private-scopes.tsv
 
           echo '=== repository snapshot summary ==='
           column -t -s $'\t' audit-inventory/summary.tsv || cat audit-inventory/summary.tsv
+
+          echo '=== private scopes intentionally excluded from CI clone ==='
+          cat audit-inventory/connector-only-private-scopes.tsv
 
           echo '=== inventory artifact self-hash ==='
           find audit-inventory/snapshots -type f -print0 \
@@ -137,9 +175,9 @@ jobs:
             | sha256sum \
             | tee audit-inventory/inventory-artifact.sha256
 
-          rm -rf audit-inventory/repos
+          rm -rf audit-inventory/repos current-web/.git
 
-      - name: Upload complete inventory
+      - name: Upload complete accessible inventory
         uses: actions/upload-artifact@v4
         with:
           name: jozz-repository-inventory
