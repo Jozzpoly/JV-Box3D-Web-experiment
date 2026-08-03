@@ -1,6 +1,7 @@
 import type { SteeringCommand } from "../../input/steering-command.js";
 import type {
   Box3DModule,
+  b3BodyId,
   b3Vec3,
   b3WorldId,
 } from "../../physics/box3d-runtime-contract.js";
@@ -22,6 +23,7 @@ import {
   M6_TOPOLOGY_COUNTS,
   type M6CornerTrace,
   type M6HandsOnEdge,
+  type M6Rotation,
   type M6SteeringActuatorState,
   type M6SteeringMechanismTrace,
   type M6TraceFrame,
@@ -272,6 +274,9 @@ export class M6VehicleController {
               corner.wheel.bodyId,
             ),
           ),
+          wheelRotation: this.#cloneRotation(
+            corner.wheel.bodyId,
+          ),
           wheelVelocity: clone3(
             this.#b3.b3Body_GetLinearVelocity(
               corner.wheel.bodyId,
@@ -302,8 +307,19 @@ export class M6VehicleController {
       steering,
       collisionGroupIndex: this.#collisionGroupIndex,
       wheelBackendId: LEGACY_SPLIT_WHEEL_BACKEND_ID,
+      visualGeometry: {
+        chassisHalfExtents: clone3(
+          this.#config.chassisHalfExtents,
+        ),
+        wheelRadius: this.#config.wheelRadius,
+        wheelWidth: this.#config.wheelWidth,
+        rackHalfWidth: this.#config.rackHalfWidth,
+      },
       chassisPosition: clone3(
         this.#b3.b3Body_GetPosition(this.#runtime.chassisId),
+      ),
+      chassisRotation: this.#cloneRotation(
+        this.#runtime.chassisId,
       ),
       chassisVelocity: clone3(
         this.#b3.b3Body_GetLinearVelocity(
@@ -315,6 +331,10 @@ export class M6VehicleController {
           this.#runtime.chassisId,
         ),
       ),
+      rackPosition: clone3(
+        this.#b3.b3Body_GetPosition(this.#runtime.rackId),
+      ),
+      rackRotation: this.#cloneRotation(this.#runtime.rackId),
       rackTranslation: liveRack,
       rackSpeed: this.#b3.b3PrismaticJoint_GetSpeed(
         this.#runtime.rackJointId,
@@ -442,6 +462,16 @@ export class M6VehicleController {
       motorForceCap: input.motorForceCap,
       rackFrictionBase: input.rackLoad.frictionBase,
       rackFrictionLoadTerm: input.rackLoad.frictionLoadTerm,
+    };
+  }
+
+  #cloneRotation(bodyId: b3BodyId): M6Rotation {
+    const rotation = this.#b3.b3Body_GetRotation(bodyId);
+    return {
+      x: rotation.v.x,
+      y: rotation.v.y,
+      z: rotation.v.z,
+      w: rotation.s,
     };
   }
 
