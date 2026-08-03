@@ -7,6 +7,9 @@ import type {
 } from "../../physics/box3d-runtime-contract.js";
 import type { LegacySplitWheelReceipt } from "./legacy-split-wheel-backend.js";
 import type { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";
+import type {
+  RateSteeringProfileId,
+} from "./rate-steering-profile.js";
 
 export const M6_TOPOLOGY_COUNTS = Object.freeze({
   bodies: 18,
@@ -18,7 +21,29 @@ export const M6_TOPOLOGY_COUNTS = Object.freeze({
 export type M6SteeringActuatorState =
   | "OFF"
   | "POSITION"
-  | "RATE_RESERVED";
+  | "RATE";
+
+export type M6HandsOnEdge =
+  | "NONE"
+  | "ENGAGE"
+  | "REVERSE";
+
+export interface M6SteeringMechanismTrace {
+  readonly profileId: RateSteeringProfileId;
+  readonly rackRateMetersPerSecond: number;
+  readonly maxTargetLeadMeters: number;
+  readonly handsOn: boolean;
+  readonly handsOnEdge: M6HandsOnEdge;
+  readonly commandedRack: number | null;
+  readonly liveRackTranslation: number;
+  readonly targetError: number;
+  readonly springEnabled: boolean;
+  readonly targetTranslation: number | null;
+  readonly requestedMotorSpeed: number;
+  readonly motorForceCap: number;
+  readonly rackFrictionBase: number;
+  readonly rackFrictionLoadTerm: number;
+}
 
 export interface M6CornerTrace {
   readonly wheelPosition: b3Vec3;
@@ -34,6 +59,7 @@ export interface M6TraceFrame {
   readonly stepIndex: number;
   readonly command: SteeringCommand;
   readonly steeringActuator: M6SteeringActuatorState;
+  readonly steering: M6SteeringMechanismTrace;
   readonly collisionGroupIndex: number;
   readonly wheelBackendId: typeof LEGACY_SPLIT_WHEEL_BACKEND_ID;
   readonly chassisPosition: b3Vec3;
