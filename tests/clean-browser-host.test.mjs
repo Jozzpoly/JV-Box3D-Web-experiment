@@ -90,3 +90,43 @@ test("startup failure rolls back listeners and scheduled resources", () => {
   assert.throws(() => CleanBrowserHost.start(options), /requestAnimationFrame unavailable/);
   assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 0);
 });
+
+test("runtime step failure disposes listeners and does not schedule another frame", () => {
+  const fatal = new Error("physics step failed");
+  let observedFatal = null;
+  const options = createOptions({
+    onStep() {
+      throw fatal;
+    },
+    onFatalError(error) {
+      observedFatal = error;
+    },
+  });
+  const host = CleanBrowserHost.start(options);
+
+  const firstHandle = [...options.animationFrames.callbacks.keys()][0];
+  options.animationFrames.run(firstHandle, 0);
+  const secondHandle = [...options.animationFrames.callbacks.keys()][0];
+  options.animationFrames.run(secondHandle, 1000 / 60);
+
+  assert.equal(observedFatal, fatal);
+  assert.equal(host.fatalError, fatal);
+  assert.equal(options.animationFrames.callbacks.size, 0);
+  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 0);
+  host.dispose();
+});
+
+test("dispose called during a step prevents rescheduling", () => {
+  const options = createOptions();
+  let host;
+  options.onStep = () => host.dispose();
+  host = CleanBrowserHost.start(options);
+
+  const firstHandle = [...options.animationFrames.callbacks.keys()][0];
+  options.animationFrames.run(firstHandle, 0);
+  const secondHandle = [...options.animationFrames.callbacks.keys()][0];
+  options.animationFrames.run(secondHandle, 1000 / 60);
+
+  assert.equal(options.animationFrames.callbacks.size, 0);
+  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 0);
+});
