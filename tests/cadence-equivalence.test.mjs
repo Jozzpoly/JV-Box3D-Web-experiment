@@ -52,3 +52,24 @@ test("irregular render cadence stays equivalent while catch-up remains within bu
   const irregular = [0, 8, 24, 72, 81, 123, 167, 200];
   assert.deepEqual(simulate(irregular), baseline);
 });
+
+test("events inside a clamped dropped gap update state without leaking stale steering", () => {
+  const timeline = new SteeringInputTimeline(0);
+  timeline.enqueueButton("LEFT", true, 10, "recording");
+  timeline.enqueueButton("LEFT", false, 30, "recording");
+  const clock = new FixedStepClock(0, {
+    fixedStepMs: 10,
+    maxCatchUpSteps: 4,
+    maxFrameDeltaMs: 20,
+  });
+  const commands = [];
+
+  const report = clock.advance(
+    100,
+    (step) => commands.push(timeline.consumeInterval(step.startTimeMs, step.endTimeMs).command),
+    (drop) => timeline.skipInterval(drop.startTimeMs, drop.endTimeMs),
+  );
+
+  assert.equal(report.droppedTimeMs, 80);
+  assert.deepEqual(commands, [{ mode: "RELEASE" }, { mode: "RELEASE" }]);
+});

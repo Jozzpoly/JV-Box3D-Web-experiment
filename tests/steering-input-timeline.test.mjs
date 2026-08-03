@@ -42,3 +42,15 @@ test("release-all clears active state from its timestamp onward", () => {
   assert.deepEqual(sample.command, { mode: "RATE", value: -0.5 });
   assert.equal(sample.rightPressedAtEnd, false);
 });
+
+test("same-timestamp events are ordered by insertion sequence", () => {
+  const timeline = new SteeringInputTimeline(0);
+  timeline.enqueueButton("LEFT", true, 0, "test");
+  timeline.enqueueButton("RIGHT", true, 0, "test");
+  timeline.enqueueButton("LEFT", false, 0, "test");
+
+  const sample = timeline.consumeInterval(0, 10);
+  assert.deepEqual(sample.command, { mode: "RATE", value: -1 });
+  assert.equal(sample.leftPressedAtEnd, false);
+  assert.equal(sample.rightPressedAtEnd, true);
+});

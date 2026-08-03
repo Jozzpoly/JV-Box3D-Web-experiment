@@ -77,3 +77,26 @@ test("two physical keys mapped to the same side do not release each other early"
   assert.deepEqual(timeline.consumeInterval(0, 10).command, { mode: "RATE", value: 0.8 });
   adapter.dispose();
 });
+
+test("visibility loss releases active steering at the captured timestamp", () => {
+  const windowTarget = new FakeEventTarget();
+  const documentTarget = new FakeEventTarget();
+  const timeline = new SteeringInputTimeline(0);
+  let now = 1;
+  let hidden = false;
+  const adapter = new KeyboardSteeringAdapter({
+    windowTarget,
+    documentTarget,
+    timeline,
+    now: () => now,
+    isDocumentHidden: () => hidden,
+  });
+
+  windowTarget.dispatch("keydown", { code: "KeyD" });
+  now = 6;
+  hidden = true;
+  documentTarget.dispatch("visibilitychange");
+
+  assert.deepEqual(timeline.consumeInterval(0, 10).command, { mode: "RATE", value: -0.5 });
+  adapter.dispose();
+});
