@@ -1,11 +1,7 @@
 name: f2-lock-and-validate
 
 on:
-  push:
-    branches:
-      - agent/typed-box3d-boundary
-    paths:
-      - .github/workflows/f2-lock-and-validate.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
