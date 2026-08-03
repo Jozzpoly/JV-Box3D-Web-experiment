@@ -1,0 +1,142 @@
+name: audit-all-repository-inventory
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Inventory exact tracked trees
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p audit-inventory/repos audit-inventory/snapshots
+
+          cat > audit-inventory/scopes.tsv <<'SCOPES'
+          Box3d_FunProject	main
+          Box3d_FunProject	jozz-scan-terrain-f0
+          JV-Box3D-Web-experiment	main
+          JV-Box3D-Web-experiment	agent/bootstrap-web-poc
+          JV-Box3D-Web-experiment	agent/fundamental-audit-rebuild
+          JOZZ-ENGINEERING-SANDBOX	main
+          voxel-aeronautics-workshop	main
+          Coopege	main
+          HomeScan-Web-Builder	main
+          planet-matter-lab	main
+          Simply_game_experiment	master
+          Jozz_Test_Mod_0.04	main
+          SCOPES
+
+          printf 'scope\trepository\tref\tcommit\tcommit_date\ttracked_files\ttracked_bytes\ttext_files\ttext_lines\tlfs_pointers\tsymlinks\tsubmodules\ttree_receipt_sha256\n' \
+            > audit-inventory/summary.tsv
+
+          while IFS=$'\t' read -r repo ref; do
+            [[ -z "$repo" ]] && continue
+            scope="${repo}__${ref//\//_}"
+            url="https://github.com/Jozzpoly/${repo}.git"
+            checkout="audit-inventory/repos/$scope"
+            out="audit-inventory/snapshots/$scope"
+            mkdir -p "$out"
+
+            git clone --quiet --no-checkout "$url" "$checkout"
+            git -C "$checkout" fetch --quiet --no-tags origin "$ref"
+            git -C "$checkout" checkout --quiet --detach FETCH_HEAD
+
+            commit="$(git -C "$checkout" rev-parse HEAD)"
+            commit_date="$(git -C "$checkout" show -s --format=%cI HEAD)"
+            git -C "$checkout" show -s --format='%H%n%cI%n%s' HEAD > "$out/commit.txt"
+            git -C "$checkout" ls-tree -r --full-tree HEAD > "$out/git-tree.txt"
+            git -C "$checkout" submodule status --recursive > "$out/submodules.txt" || true
+
+            printf 'path\tmode\tgit_type\tgit_object\tbytes\tlines\tcontent_sha256\tclassification\n' > "$out/files.tsv"
+
+            tracked_files=0
+            tracked_bytes=0
+            text_files=0
+            text_lines=0
+            lfs_pointers=0
+            symlinks=0
+            submodules=0
+
+            while IFS=$'\t' read -r meta path; do
+              mode="$(printf '%s' "$meta" | cut -d' ' -f1)"
+              type="$(printf '%s' "$meta" | cut -d' ' -f2)"
+              object="$(printf '%s' "$meta" | cut -d' ' -f3)"
+
+              if [[ "$type" == commit ]]; then
+                submodules=$((submodules + 1))
+                printf '%s\t%s\t%s\t%s\t0\t0\t-\tsubmodule\n' "$path" "$mode" "$type" "$object" >> "$out/files.tsv"
+                continue
+              fi
+
+              tracked_files=$((tracked_files + 1))
+              file="$checkout/$path"
+              bytes="$(wc -c < "$file")"
+              sha="$(sha256sum "$file" | cut -d' ' -f1)"
+              tracked_bytes=$((tracked_bytes + bytes))
+              lines=0
+              classification=binary
+
+              if [[ "$mode" == 120000 ]]; then
+                symlinks=$((symlinks + 1))
+                classification=symlink
+              elif grep -Iq . "$file" 2>/dev/null || [[ ! -s "$file" ]]; then
+                classification=text
+                lines="$(wc -l < "$file")"
+                text_files=$((text_files + 1))
+                text_lines=$((text_lines + lines))
+                if head -n 1 "$file" | grep -q '^version https://git-lfs.github.com/spec/v1$'; then
+                  classification=lfs-pointer
+                  lfs_pointers=$((lfs_pointers + 1))
+                fi
+              fi
+
+              printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "$path" "$mode" "$type" "$object" "$bytes" "$lines" "$sha" "$classification" \
+                >> "$out/files.tsv"
+            done < <(git -C "$checkout" ls-tree -r -z --full-tree HEAD | while IFS= read -r -d '' entry; do
+              meta="${entry%%$'\t'*}"
+              path="${entry#*$'\t'}"
+              printf '%s\t%s\n' "$meta" "$path"
+            done)
+
+            LC_ALL=C sort -t $'\t' -k1,1 "$out/files.tsv" -o "$out/files.tsv"
+            tree_receipt="$(tail -n +2 "$out/files.tsv" | sha256sum | cut -d' ' -f1)"
+            printf '%s\n' "$tree_receipt" > "$out/tree-receipt.sha256"
+
+            printf '%s\tJozzpoly/%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+              "$scope" "$repo" "$ref" "$commit" "$commit_date" \
+              "$tracked_files" "$tracked_bytes" "$text_files" "$text_lines" \
+              "$lfs_pointers" "$symlinks" "$submodules" "$tree_receipt" \
+              >> audit-inventory/summary.tsv
+
+            rm -rf "$checkout/.git"
+          done < audit-inventory/scopes.tsv
+
+          echo '=== repository snapshot summary ==='
+          column -t -s $'\t' audit-inventory/summary.tsv || cat audit-inventory/summary.tsv
+
+          echo '=== inventory artifact self-hash ==='
+          find audit-inventory/snapshots -type f -print0 \
+            | LC_ALL=C sort -z \
+            | xargs -0 sha256sum \
+            | sha256sum \
+            | tee audit-inventory/inventory-artifact.sha256
+
+          rm -rf audit-inventory/repos
+
+      - name: Upload complete inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: jozz-repository-inventory
+          path: audit-inventory/
+          if-no-files-found: error
+          retention-days: 30
