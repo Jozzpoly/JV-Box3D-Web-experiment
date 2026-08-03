@@ -2,6 +2,13 @@ export interface DriveInput {
   drive: number;
   steer: number;
   brake: boolean;
+  /**
+   * Optional driver-state signal. When present, steering assistance stays
+   * engaged even when the commanded steering value is already close to zero.
+   * This lets an input model represent hands actively returning/holding the
+   * steering wheel at centre without reading any vehicle state.
+   */
+  steeringEngaged?: boolean;
 }
 
 export class KeyboardInput {
