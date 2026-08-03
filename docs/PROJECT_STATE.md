@@ -3,314 +3,239 @@
 Updated: 2026-08-03
 Status: `CANONICAL ACTIVE STATE`
 
-## 1. Gdzie jesteśmy
-
-Projekt ma obecnie cztery rozdzielone linie:
+## 1. Linie projektu
 
 | Linia | Rola | Status |
 |---|---|---|
 | `main` | minimalny root repozytorium | bez implementacji |
-| `agent/bootstrap-web-poc` / PR #1 | działający eksperyment i zbiór failure lessons | kwarantanna, nie scalać jako fundament |
+| `agent/bootstrap-web-poc` / PR #1 | działający eksperyment i failure lessons | kwarantanna, nie scalać jako fundament |
 | `agent/fundamental-audit-rebuild` / PR #2 | audyt, receipts, kontrakty i errata | dokumentacja fundamentu |
-| `agent/clean-browser-core` / PR #4 | docelowa czysta implementacja | aktywna linia dalszego rozwoju |
+| `agent/clean-browser-core` / PR #4 | czysta implementacja | aktywna linia rozwoju |
 
-Clean runtime nie jest jeszcze kompletnym portem ani pojazdem, ale pierwsza właściwa warstwa implementacji już istnieje:
+Dokładny ruchomy HEAD jest odczytywany z PR #4. Nie jest przypinany w tym dokumencie, ponieważ zmienia się przy każdym checkpointcie.
 
-```text
-F1 clean host/input checkpoint
-head: 8148b643aee66719993201b1b66a4fd2aba8a8c2
-issue: #3
-PR: #4
-```
-
-Zawiera project shell, transactional lifecycle, fixed-step clock, timestamped input timeline, semantyczne komendy kierownicy i testy. Nie zawiera jeszcze Box3D ani kodu pojazdu.
-
-PR #1 uruchamia się i był testowany przez Jozza, ale zawiera odrzucone mechanizmy i nie może być rozwijany przez dokładanie kolejnych poprawek.
-
-## 2. Cel najbliższego milestone'u
-
-Pierwszy clean milestone nie jest pełną grą ani pełnym portem JV.
+Operacyjny tracker bieżącej pracy:
 
 ```text
-Clean Browser Core M0
+issue #3 — F1 Clean host and deterministic input timeline
+PR #4    — F1 implementation diff
 ```
 
-Ma udowodnić:
+## 2. Gdzie jesteśmy
 
-1. przypięty i opisany runtime Box3D/WASM;
-2. transakcyjny lifecycle aplikacji;
-3. fixed-step host z timestamped input timeline;
-4. jawne `SteeringCommand: RELEASE | POSITION | RATE`;
-5. minimalny płaski świat z przypiętym solver profile;
-6. minimalną aktualną topologię M6 z jednym controllerem;
-7. controller trace ujawniający wszystkie siły/targety kierownicy;
-8. brak artificial centering na postoju;
-9. desktopowy eksperyment małych tapów;
-10. build/typecheck/test bez uruchamiania kosztownych sond przy zwykłym starcie.
+Pierwsza właściwa warstwa clean implementation już istnieje.
 
-Dopiero po M0 następują mobile input, wheel seam, realne visuals, campus i scan.
+F1 zawiera:
 
-## 3. Nadrzędne decyzje właściciela
+- strict TypeScript project shell;
+- Node major 24 i dokładne wersje zależności w `package.json`;
+- transactional resource ownership i startup rollback;
+- bounded fixed-step clock;
+- jawne dropped-time intervals;
+- timestamped input event timeline;
+- `SteeringCommand = RELEASE | POSITION | RATE`;
+- proporcjonalne signed-time integration krótkich tapów;
+- deterministic same-timestamp/reversal ordering;
+- disposable keyboard/focus/visibility lifecycle;
+- restart hosta bez przeładowania strony;
+- testy host/input;
+- ADR-0001 dla polityki sub-frame taps.
 
-### Realizm
+F1 celowo nie zawiera:
 
-Domyślny pojazd nie zawiera ukrytych sił stabilizujących ani sztucznego self-centeringu.
+- Box3D;
+- pojazdu ani rack actuatora;
+- Three.js i assetów;
+- mobile touch controls;
+- campus/scan;
+- startup physics probes.
+
+## 3. Aktualny poziom dowodu
+
+Izolowana walidacja pomocnicza:
+
+```text
+TypeScript 5.8.3 strict compile — PASS
+Node 22 deterministic tests     — 19/19 PASS
+```
+
+To jest wartościowy test logiki, ale nie kończy F1.
+
+Brakujące bramki target environment:
+
+1. wygenerowany i commitowany `package-lock.json`;
+2. Node 24;
+3. `npm ci`;
+4. `npm run check`;
+5. `npm run build`;
+6. real-browser host/input lifecycle smoke.
+
+Bez tych bramek nie używać statusu `F1 COMPLETE`.
+
+## 4. Przyjęta polityka sub-frame taps
+
+F1 rozstrzyga wyłącznie próbkowanie czasu urządzenia:
+
+```text
+LEFT  = +1
+RIGHT = -1
+both/neither = 0
+
+RATE value = signed active time / fixed-step time
+```
+
+Konsekwencje:
+
+- bardzo krótki tap nie znika;
+- tap nie jest sztucznie rozciągany do pełnego kroku;
+- event na końcu interwału działa od następnego kroku;
+- ten sam timestamp jest porządkowany monotoniczną sekwencją;
+- dropped interval konsumuje eventy i aktualizuje stan, lecz nie emituje komendy pojazdu;
+- key-up nie uruchamia return-to-zero ani centre hold.
+
+Źródło decyzji:
+
+```text
+docs/decisions/ADR-0001-subframe-rate-integration.md
+```
+
+Ta decyzja nie wybiera jeszcze:
+
+- fizycznego rack rate;
+- target-lead cap;
+- serwa;
+- feelu kierownicy.
+
+## 5. Nadrzędne reguły mechaniki
+
+Domyślny realistyczny pojazd:
 
 ```text
 rackCenteringHertz = 0
 uprightAssist = false
 ```
 
-Puszczenie kierownicy oznacza natychmiastowy hands-off. Ewentualny powrót podczas toczenia wynika z fizyki.
+Release oznacza natychmiastowy hands-off. Nie istnieje:
 
-### Precyzyjne sterowanie cyfrowe
+- target do zera;
+- centre timer;
+- hostowa stabilizacja z yaw/slip/speed;
+- wymaganie centrowania na postoju.
 
-Krótki tap ma dawać mały ruch, ale bez automatycznego powrotu do zera. Pierwszy badany model to rack-space `RATE` z natychmiastowym `RELEASE` po key-up/pointer-up.
+Ewentualny powrót podczas toczenia ma pochodzić z kontaktu, casteru, geometrii, linkage i bezwładności.
 
-F1 rozstrzyga wyłącznie sposób próbkowania czasu urządzenia:
+## 6. Kierunek M0
+
+Po F1 kolejność jest zamknięta:
 
 ```text
-sub-frame tap
-→ signed active time / fixed-step time
-→ proporcjonalna komenda RATE
+F2 typed Box3D/WASM boundary + minimal contact fixture
+F3 native-generated config/factory receipt
+F4 minimal current M6 topology + one controller + trace
+F5 precise RATE steering experiment + owner verdict
+F6 touch adapter and first real mobile test
+F7 minimal wheel adoption seam
+F8 real visual assets one corner at a time
+F9 campus
+F10 scan
 ```
 
-One-step latch nie jest domyślną polityką. Nie wybiera to jeszcze fizycznego rack rate ani feelu. Decyzję zapisuje `docs/decisions/ADR-0001-subframe-rate-integration.md`.
+Nie rozpoczynać F2 przed przejściem target-toolchain i browser gate F1.
+
+## 7. Koło i mobilka
 
 ### Koło
 
-Sfera i legacy split są zbyt ograniczające i nie definiują przyszłej opony. Web przygotowuje wymienny seam, lecz nie wybiera backendu bez wyniku programu Wheel Scope.
+```text
+legacy_m6_split_sphere_sidewall
+```
+
+jest tylko historycznym fixture regresyjnym. Nie jest future tire architecture.
+
+Przyszły seam zachowuje:
+
+```text
+W1 WheelSpecSnapshot + explicit mass/inertia
+W2 replaceable contact backend
+neutral contact observer
+W4 visual binding independent from W2
+W3 absent until justified
+```
+
+Nie wybieramy backendu bez wystarczającego wyniku Wheel Scope.
 
 ### Mobilka
 
-Telefon jest bliskim celem testowym. Nie dostaje osobnej, uproszczonej fizyki. Dostaje inny input adapter, lżejszy render profile i mały świat.
+Telefon dostaje:
 
-### Owner verdict
+- touch adapter;
+- pointer ownership;
+- low visual profile;
+- mały świat testowy.
 
-Jozz ocenia feel, naturalność i obraz. Automatyzacja mierzy mechanizm, stabilność, zgodność scenariusza i granice.
+Nie dostaje po cichu:
 
-## 4. Dokładne źródła użyte przez fundament
+- innych substeps;
+- innego contact tuningu;
+- innego koła;
+- innych mass data;
+- urządzeniowo zależnej sztucznej kierownicy.
 
-### Native JV baseline
+## 8. Źródła prawdy
+
+Kolejność:
+
+1. najnowsza bezpośrednia decyzja Jozza;
+2. `AI_PROJECT_MEMORY.md`;
+3. ten dokument;
+4. `AUDIT_ERRATA_2026_08_03_PL.md`;
+5. focused receipts i subsystem docs;
+6. wcześniejsze broad audits;
+7. dokumentacja PR #1.
+
+Native baseline audytu:
 
 ```text
 Jozzpoly/Box3d_FunProject
 main@959aefb78587ce60cf2b8eb03ff82797a4165142
 ```
 
-### Wheel research snapshot
+Wheel research snapshot:
 
 ```text
-Jozzpoly/Box3d_FunProject
 jozz-scan-terrain-f0@761bd3ef60992f7dec3bcdddf1945fdbc1cb0825
 ```
 
-### Historical browser implementation
+GitHub nie dowodzi lokalnych, niezacommitowanych zmian Jozza.
+
+## 9. Narzędzia i dyscyplina
+
+- GitHub connector dla pracy repozytoryjnej;
+- normalne lokalne Git/Node/npm tylko tam, gdzie potrzebny jest prawdziwy working tree lub browser;
+- issue #3 jako bieżący dziennik i bramki;
+- PR #4 jako czysty diff implementacyjny;
+- manual-only forensic workflows;
+- brak automatycznych Actions dla dokumentacji i generowania lockfile;
+- local/unit tests przed browser testem;
+- browser test przed Box3D integration;
+- jeden aktywny etap naraz.
+
+Bezpieczna procedura lokalna:
 
 ```text
-Jozzpoly/JV-Box3D-Web-experiment
-agent/bootstrap-web-poc@891c7561142b601f62ea76b68b0f55f8fababc6c
+docs/operations/F1_LOCAL_RUNBOOK_PL.md
 ```
 
-### Box3D browser dependency receipt
+## 10. Najbliższy ruch
 
 ```text
-box3d.js@0.0.2
-binding: isaac-mason/box3d.js@2617a0ff763a60c9f17cee57c6ea72aab75a5077
-engine:  erincatto/box3d@8441b4a06d6d09dcfb0b0f704df4d847d1437b92
+safe local recovery/switch
+→ package-lock generation on Node 24
+→ npm ci / check / build
+→ real browser F1 smoke
+→ fixes, if any
+→ close issue #3
+→ begin F2
 ```
 
-JV fork jest potomkiem tego engine commita. Aktywna core delta dla continuous-disabled M6 fixture nie została znaleziona, ale pełna runtime equivalence nadal wymaga binding/body/joint/contact receipts.
-
-## 5. Co zostało definitywnie odrzucone
-
-- return-to-zero po puszczeniu A/D;
-- `steeringEngaged` utrzymywane podczas automatycznego powrotu;
-- centre-hold timer;
-- test wymagający centrowania na postoju;
-- speed/yaw/slip feedback ukryty w adapterze klawiatury;
-- render-frame polling jako źródło komend fixed-step;
-- one-step latch jako ukryta minimalna długość każdego tapu;
-- silent fallback z invalid session do innego auta;
-- ręczny webowy config mirror jako trwałe źródło prawdy;
-- traktowanie legacy split jako future wheel;
-- zmiana natury koła kategorią powierzchni;
-- mobile physics profile zmieniany automatycznie;
-- pełne sondy uruchamiane przy każdym normalnym starcie;
-- stwierdzenie parity na podstawie build/smoke;
-- wholesale merge/cherry-pick PR #1;
-- używanie Git Diff Patcher Bridge.
-
-## 6. Co pozostaje otwarte
-
-- finalny rack rate i target-lead cap;
-- target Node 24/TypeScript 7/Vite 8 oraz prawdziwy browser run F1;
-- wygenerowanie i commit `package-lock.json`;
-- zakres native-generated config/factory export;
-- wybór długoterminowy: upstream WASM z delta contractem kontra binding z JV fork;
-- future wheel backend i poziom ingerencji w manifold/solver;
-- właściwy visual body/wheel/front-rig contract;
-- peak memory i mesh semantics dla scanów;
-- mobile performance budget na prawdziwym urządzeniu;
-- lokalne, niezacommitowane różnice w working tree Jozza.
-
-Proporcjonalne signed-time integration jest przyjętą polityką F1, ale nadal wymaga target-browser validation. Otwarte pytanie nie blokuje M0, jeżeli nie należy do minimalnego slice'u.
-
-## 7. Granice pierwszej implementacji
-
-### Wchodzi do M0
-
-- mały, typed app shell;
-- jeden lifecycle owner;
-- fixed-step scheduler;
-- timestamped raw input events;
-- keyboard adapter;
-- `RELEASE/POSITION/RATE` contract;
-- minimalny runtime capability receipt;
-- jawny physics profile;
-- minimalny ground fixture;
-- M6 topology/controller w niezbędnym zakresie;
-- primitive renderer i debug trace;
-- deterministic tests input/controller;
-- desktop manual drive route.
-
-### Nie wchodzi do M0
-
-- Central Test Campus;
-- scan;
-- real body/wheel/suspension GLTF;
-- touch UI;
-- nowy wheel backend;
-- tire law;
-- PWA;
-- replay editor;
-- pełny native session importer;
-- wiele pojazdów;
-- backward compatibility starego webowego formatu.
-
-## 8. Wymagane warstwy odpowiedzialności
-
-```text
-AppHost
-  lifecycle, startup, route, diagnostics
-
-FixedStepClock
-  render time -> physics steps
-
-RawDeviceEventTimeline
-  keyboard/pointer/gamepad events with timestamps
-
-InputAdapter
-  device events -> semantic driver command
-
-VehicleController
-  exactly one owner of drive/steering/ARB/aero updates
-
-VehicleRig
-  topology, body/joint IDs and state only
-
-PhysicsRuntimeAdapter
-  typed Box3D/WASM boundary and compatibility helpers
-
-Config/FactoryReceipt
-  source values, derived values, feature support and provenance
-
-Renderer
-  observer only; never physics authority
-
-Diagnostics
-  consumes controller/runtime trace; never reimplements control laws
-```
-
-## 9. Dowody wymagane przy odzyskiwaniu kodu PR #1
-
-Każdy odzyskiwany mechanizm otrzymuje kartę:
-
-```text
-behavior/component name
-old file/function
-native source locator or explicit new experiment
-known defects in old version
-clean API boundary
-independent tests
-remaining deltas
-owner verdict status
-```
-
-Brak karty oznacza implementację od zera, nie kopiowanie.
-
-## 10. Polityka CI i narzędzi
-
-### Zwykłe CI produktu
-
-Docelowo:
-
-```text
-npm ci
-format/lint
-strict typecheck
-unit tests
-build
-small Node/WASM contract tests
-small headless browser startup/input test
-```
-
-Na etapie F1 nie uruchamiamy GitHub Actions tylko po to, aby wygenerować lockfile albo powtórzyć testy możliwe lokalnie.
-
-### Forensic workflows
-
-Trzy istniejące workflowy audytowe są manual-only. Nie uruchamiać ich przy dokumentacyjnych commitach ani zwykłym PR.
-
-### Runtime probes
-
-Pełne sondy są osobną trasą/komendą CI. Nie blokują first useful frame normalnej aplikacji.
-
-### Operacyjny tracker
-
-- issue #3: bieżące bramki i checkpoint F1;
-- PR #4: wyłącznie diff implementacyjny clean core;
-- README: szybki status i narzędzia;
-- broad audit docs nie są codziennym backlogiem.
-
-## 11. Warunek przejścia do dalszych etapów
-
-F1 jest gotowe dopiero, gdy:
-
-- istnieje przypięty `package-lock.json`;
-- `npm ci`, `npm run check` i `npm run build` przechodzą na Node 24;
-- prawdziwa przeglądarka potwierdza host i lifecycle klawiatury;
-- zwykły startup nie wykonuje physics probes;
-- input trace jest niezależny od render FPS;
-- sub-frame tap nie znika ani nie jest automatycznie rozciągany do pełnego kroku;
-- focus/visibility release działa w pierwszym właściwym fixed-step interval;
-- nie ma claimu o rack physics ani feelu.
-
-M0 jest gotowe dopiero później, gdy dodatkowo:
-
-- release wyłącza fizyczny hands-on w pierwszym fixed step;
-- brak targetu do centrum jest widoczny w controller trace;
-- minimalny Box3D fixture jest finite i ma source/config receipt;
-- minimalny M6 controller jest jedynym właścicielem sił;
-- Jozz może wykonać desktopowy test krótkich tapów;
-- nie ma claimu o feelu przed jego werdyktem.
-
-## 12. Następny ruch
-
-Rozwój odbywa się na:
-
-```text
-agent/clean-browser-core
-```
-
-Najbliższa kolejność:
-
-```text
-bezpieczne odzyskanie i przełączenie lokalnego brancha
-→ wygenerowanie clean package-lock z package.json F1
-→ npm ci / check / build na Node 24
-→ real browser F1 smoke i korekty
-→ zamknięcie issue #3
-→ dopiero potem F2: typed Box3D/WASM boundary
-```
-
-Nie dodawać kodu pojazdu przed przejściem bramek F1.
+Nie dodawać pojazdu, Box3D ani mobile controls przed zamknięciem tych bramek.
