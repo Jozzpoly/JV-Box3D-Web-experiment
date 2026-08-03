@@ -1,11 +1,6 @@
 name: f3-validate
 
 on:
-  pull_request:
-    branches:
-      - agent/typed-box3d-boundary
-    types:
-      - reopened
   workflow_dispatch:
 
 permissions:
