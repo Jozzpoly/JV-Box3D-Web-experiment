@@ -73,7 +73,7 @@ try {
     returnByValue: true,
     awaitPromise: true,
   });
-  const state = evaluation.result?.result?.value;
+  const state = evaluation.result?.value;
   if (!state) throw new Error('Browser smoke test received no DOM state.');
 
   const failures = [];
