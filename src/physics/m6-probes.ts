@@ -7,6 +7,7 @@ import { TERRAIN_CATEGORY, type M6RigConfig, type Vec3 } from './rig-config';
 const FIXED_DT = 1 / 60;
 const SUB_STEPS = 4;
 const NEUTRAL: DriveInput = { drive: 0, steer: 0, brake: false };
+const FRONT_LEFT = 0;
 
 export interface StraightProbeResult {
   passed: boolean;
@@ -18,8 +19,18 @@ export interface StraightProbeResult {
   finite: boolean;
 }
 
-export interface SteeringReleaseProbeResult {
+export interface SteeringImpactProbeResult {
   passed: boolean;
+  worstRackFraction: number;
+  atRestRackFraction: number;
+  finalRackFraction: number;
+  finalYawRate: number;
+  finalSpeedMs: number;
+  finite: boolean;
+}
+
+export interface HandlingPulseProbeResult {
+  stable: boolean;
   peakRackFraction: number;
   finalRackFraction: number;
   finalYawRate: number;
@@ -32,19 +43,22 @@ export interface M6ProbeReport {
   passedCount: number;
   totalCount: number;
   straight: StraightProbeResult;
-  steeringRelease: SteeringReleaseProbeResult;
+  steeringImpact: SteeringImpactProbeResult;
+  handlingPulse: HandlingPulseProbeResult;
 }
 
 export function runM6ParityProbes(b3: any, config: M6RigConfig): M6ProbeReport {
   const straight = runStraightProbe(b3, config);
-  const steeringRelease = runSteeringReleaseProbe(b3, config);
-  const results = [straight.passed, steeringRelease.passed];
+  const steeringImpact = runSteeringImpactProbe(b3, config);
+  const handlingPulse = runHandlingPulseProbe(b3, config);
+  const gatedResults = [straight.passed, steeringImpact.passed];
   return {
-    passed: results.every(Boolean),
-    passedCount: results.filter(Boolean).length,
-    totalCount: results.length,
+    passed: gatedResults.every(Boolean),
+    passedCount: gatedResults.filter(Boolean).length,
+    totalCount: gatedResults.length,
     straight,
-    steeringRelease,
+    steeringImpact,
+    handlingPulse,
   };
 }
 
@@ -80,7 +94,59 @@ function runStraightProbe(b3: any, config: M6RigConfig): StraightProbeResult {
   });
 }
 
-function runSteeringReleaseProbe(b3: any, config: M6RigConfig): SteeringReleaseProbeResult {
+// Browser equivalent of the native P1 steering-fence/self-centering probe:
+// knock the front-left wheel sideways while stationary, leave the rack hands-off,
+// then drive straight. The rack may remain displaced at rest (honest caster has
+// no centering force without rolling) but must stay inside its fence and return
+// once the tyre rolls forward.
+function runSteeringImpactProbe(b3: any, config: M6RigConfig): SteeringImpactProbeResult {
+  return withProbeRig(b3, config, ({ worldId, rig, controller }) => {
+    stepMany(b3, worldId, controller, NEUTRAL, 120);
+
+    const flWheel = (rig.corners[FRONT_LEFT] as any).wheelId;
+    const beforeVelocity = b3.b3Body_GetLinearVelocity(flWheel);
+    b3.b3Body_SetLinearVelocity(flWheel, {
+      x: beforeVelocity.x,
+      y: beforeVelocity.y,
+      z: beforeVelocity.z + 14,
+    });
+
+    let worstRackFraction = 0;
+    for (let i = 0; i < 120; i += 1) {
+      stepOne(b3, worldId, controller, NEUTRAL);
+      worstRackFraction = Math.max(worstRackFraction, rackFraction(b3, rig));
+    }
+    const atRestRackFraction = rackFraction(b3, rig);
+
+    stepMany(b3, worldId, controller, { drive: 1, steer: 0, brake: false }, 300);
+    const finalRackFraction = rackFraction(b3, rig);
+    const angularVelocity = b3.b3Body_GetAngularVelocity(rig.chassisId);
+    const finalYawRate = angularVelocity.y;
+    const finalSpeedMs = rig.getForwardSpeed();
+    const finite = vehicleStateIsFinite(b3, rig);
+    const passed = finite
+      && worstRackFraction <= 1.05
+      && finalRackFraction < 0.25
+      && Math.abs(finalYawRate) < 1.5
+      && finalSpeedMs > 5;
+
+    return {
+      passed,
+      worstRackFraction,
+      atRestRackFraction,
+      finalRackFraction,
+      finalYawRate,
+      finalSpeedMs,
+      finite,
+    };
+  });
+}
+
+// Product/feel diagnostic, deliberately not a parity gate. This reproduces a
+// harsh digital-keyboard corner under power and records whether the whole car
+// settles after release. It is useful precisely because the native validator's
+// isolated P1 probe can pass while the driving experience still feels unstable.
+function runHandlingPulseProbe(b3: any, config: M6RigConfig): HandlingPulseProbeResult {
   return withProbeRig(b3, config, ({ worldId, rig, controller }) => {
     stepMany(b3, worldId, controller, NEUTRAL, 120);
     stepMany(b3, worldId, controller, { drive: 1, steer: 0, brake: false }, 150);
@@ -94,23 +160,21 @@ function runSteeringReleaseProbe(b3: any, config: M6RigConfig): SteeringReleaseP
 
     const releaseInput: DriveInput = { drive: 0.55, steer: 0, brake: false };
     stepMany(b3, worldId, controller, releaseInput, 240);
-    const finalRack = Math.abs(b3.b3PrismaticJoint_GetTranslation(rig.rackJointId));
+    const finalRackFraction = rackFraction(b3, rig);
     const travel = Math.max(rig.config.rackTravel, 1e-5);
     const peakRackFraction = peakRack / travel;
-    const finalRackFraction = finalRack / travel;
     const angularVelocity = b3.b3Body_GetAngularVelocity(rig.chassisId);
     const finalYawRate = angularVelocity.y;
     const finalSpeedMs = rig.getForwardSpeed();
     const finite = vehicleStateIsFinite(b3, rig);
-    const passed = finite
-      && peakRackFraction > 0.15
+    const stable = finite
       && peakRackFraction <= 1.05
       && finalRackFraction < 0.45
       && Math.abs(finalYawRate) < 2.5
       && finalSpeedMs > 1;
 
     return {
-      passed,
+      stable,
       peakRackFraction,
       finalRackFraction,
       finalYawRate,
@@ -166,6 +230,11 @@ function stepMany(
 function stepOne(b3: any, worldId: any, controller: M6ParityController, input: DriveInput): void {
   controller.update(input);
   b3.b3World_Step(worldId, FIXED_DT, SUB_STEPS);
+}
+
+function rackFraction(b3: any, rig: M6WebRig): number {
+  return Math.abs(b3.b3PrismaticJoint_GetTranslation(rig.rackJointId))
+    / Math.max(rig.config.rackTravel, 1e-5);
 }
 
 function vehicleStateIsFinite(b3: any, rig: M6WebRig): boolean {
