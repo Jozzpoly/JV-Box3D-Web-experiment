@@ -8,6 +8,11 @@ import { multiplyQuat } from "../.test-dist/physics/native-inline-compat.js";
 
 test("B0-B5 are reported separately and a real contact fixture passes all levels", async () => {
   const boundary = await Box3DBoundary.load();
+  assert.equal(
+    await Box3DBoundary.load(),
+    boundary,
+    "WASM module boundary must be shared across world rebuilds",
+  );
   assert.equal(boundary.receipt.identity, BOX3D_RUNTIME_IDENTITY);
   assert.deepEqual(boundary.receipt.engineVersion, { major: 0, minor: 1, revision: 0 });
   for (const id of ["B0", "B1", "B2", "B4"]) {
