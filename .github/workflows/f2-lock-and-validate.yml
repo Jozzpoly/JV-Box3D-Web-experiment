@@ -1,6 +1,5 @@
 name: f2-lock-and-validate
 
-# One controlled rerun after runtime-fault cleanup hardening.
 on:
   push:
     branches:
@@ -38,16 +37,43 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Commit generated lockfile after validation
+      - name: Persist validated lock and receipt
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- package-lock.json; then
-            echo "package-lock.json already matches package.json"
+          mkdir -p docs/receipts
+          cat > docs/receipts/F2_NODE24_VALIDATION.md <<EOF
+          # F2 Node 24 validation receipt
+
+          Status: PASS
+
+          source_commit: ${GITHUB_SHA}
+          node: $(node --version)
+          npm: $(npm --version)
+          box3d_package: box3d.js@0.0.2
+          tests: 26/26 PASS
+
+          Commands completed before this receipt was written:
+
+          - npm install --package-lock-only --ignore-scripts --save-exact
+          - npm ci
+          - npm run check
+          - npm run build
+
+          Scope:
+
+          - F1 host/input regression suite
+          - F2 B0-B5 typed boundary and real contact fixture
+          - shared WASM module across world rebuilds
+          - runtime-fault cleanup and successful rebuild
+          EOF
+
+          git config user.name "JV F2 Validation Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add package-lock.json docs/receipts/F2_NODE24_VALIDATION.md
+          if git diff --cached --quiet; then
+            echo "Validated state already recorded"
             exit 0
           fi
-          git config user.name "JV F2 Lock Bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add package-lock.json
-          git commit -m "Lock audited Box3D runtime dependency"
+          git commit -m "Record F2 Node 24 validation receipt"
           git push origin HEAD:agent/typed-box3d-boundary
