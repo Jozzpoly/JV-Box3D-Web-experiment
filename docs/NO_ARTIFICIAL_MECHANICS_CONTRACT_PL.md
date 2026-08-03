@@ -1,6 +1,8 @@
 # Kontrakt braku sztucznych mechanik — JV Web
 
-Status: `OWNER_RULE_CAPTURED / IMPLEMENTATION_PENDING`
+Status: `OWNER_RULE_CAPTURED / PRECISE_DIGITAL_STEERING_RATIFIED_AS_RESEARCH_NEED / IMPLEMENTATION_PENDING`
+
+Rewizja 2026-08-03: Jozz potwierdził, że finite-rate keyboard steering ze starego PoC dawał wartościową możliwość bardzo małych korekt krótkimi kliknięciami. Odzyskujemy ograniczoną szybkość ruchu komendy, ale nie odzyskujemy automatycznego powrotu do zera ani centre-hold. Szczegóły: `STEERING_INPUT_RESEARCH_2026_08_03_PL.md`.
 
 ## 1. Reguła nadrzędna
 
@@ -8,7 +10,8 @@ W realistycznym domyślnym JV Web każda siła, moment, constraint, target, tłu
 
 1. jest wiernym portem jawnego mechanizmu aktualnego native JV na przypiętym commicie;
 2. jest koniecznym adapterem API, który zachowuje tę samą semantykę i ma niezależny test;
-3. jest eksperymentem/assistem jawnie zatwierdzonym przez Jozza, wyłączonym domyślnie i widocznym w configu, HUD oraz receipcie.
+3. jest eksperymentem/assistem jawnie zatwierdzonym przez Jozza, wyłączonym domyślnie i widocznym w configu, HUD oraz receipcie;
+4. jest jawnym modelem aktuatora kierowcy, który przekłada ograniczenia urządzenia wejściowego na hands-on force/position/rate bez odczytywania stanu jazdy i bez generowania stabilizacji pojazdu.
 
 Brak spełnienia któregokolwiek warunku oznacza zakaz w ścieżce produktu.
 
@@ -16,22 +19,22 @@ Brak spełnienia któregokolwiek warunku oznacza zakaz w ścieżce produktu.
 
 Dla `rackCenteringHertz == 0`:
 
-- aktywne A/D może sterować rackiem przez zatwierdzony hands-on servo;
-- zwolnienie A/D oznacza brak aktywnej komendy kierowcy;
-- rack spring/servo zostają zwolnione;
+- aktywna komenda kierowcy może sterować rackiem przez zatwierdzony hands-on actuator;
+- zwolnienie sterowania w trybie `RELEASE` oznacza brak aktywnej komendy kierowcy;
+- rack spring/servo hands-on zostają zwolnione;
 - pozostaje wyłącznie zatwierdzone fizyczne tarcie racka;
 - przy postoju caster nie ma wejściowej siły kontaktowej zdolnej wycentrować koła;
 - koła mogą pozostać skręcone;
 - podczas toczenia kontakt opony, caster trail, geometria zwrotnicy, tie-rody, rack, bezwładność i tarcie mogą fizycznie zmienić skręt.
 
-Host nie może po key-up:
+Host nie może po `RELEASE`:
 
 - prowadzić targetu do zera;
-- utrzymywać `handsOn` lub równoważnej flagi;
+- utrzymywać hands-on lub równoważnej flagi;
 - używać timera centre hold;
 - ustawiać target translation na zero;
 - dodawać prędkości racka w stronę środka;
-- odczytywać rack/yaw/slip/speed i generować korektę;
+- odczytywać yaw/slip/speed i generować korektę;
 - uznawać końcowego wycentrowania na postoju za warunek PASS.
 
 ## 3. Jawne assisty native JV
@@ -64,7 +67,7 @@ Poniższe mechanizmy mają jawny odpowiednik w przypiętym native JV, lecz nadal
 - physical rack body + prismatic joint;
 - rigid tie rods;
 - load-dependent Coulomb rack friction i stiction ratio;
-- steering servo wyłącznie hands-on;
+- steering actuator wyłącznie w jawnym trybie hands-on;
 - wheel contact i friction;
 - coilovers;
 - arm/ball-joint/hinge limits;
@@ -72,31 +75,63 @@ Poniższe mechanizmy mają jawny odpowiednik w przypiętym native JV, lecz nadal
 - torque-based drive;
 - brake/coast torque;
 - quadratic aero drag;
-- split sphere/sidewall collision envelope.
+- legacy split sphere/sidewall fixture, wyłącznie jako stary baseline, nie future wheel architecture.
 
 Samo występowanie w native nie zwalnia z dowodu, że web nie zmienił znaków, osi, kolejności, capów lub warunków aktywacji.
 
-## 5. Semantyka wejścia klawiaturowego
+## 5. Semantyka wejścia
 
-Pierwszy czysty slice używa semantyki minimalnej zgodnej z native:
+Minimalna semantyka nie może już być jednym niejasnym polem `steer` plus opcjonalne `steeringEngaged`.
 
 ```text
-A/D aktywne  -> jawna komenda steer
-A/D zwolnione -> steer = 0 / hands off
+SteeringCommand =
+  RELEASE
+  POSITION(-1..1)
+  RATE(-1..1)
 ```
 
-Nie ma automatycznego powrotu wirtualnej kierownicy.
+### `RELEASE`
 
-Finite-rate input może wrócić wyłącznie jako osobny eksperyment po decyzji Jozza. Musi wtedy odpowiedzieć na pytania:
+- hands off natychmiast;
+- brak targetu do środka;
+- brak aktywnego steering spring/servo;
+- pozostaje fizyczne tarcie i back-drive.
 
-- co dokładnie reprezentuje wartość po puszczeniu klawisza;
-- czy key-up oznacza hands off, hold, czy ręczne prowadzenie do środka;
-- jak użytkownik jawnie wydaje każde z tych poleceń;
-- czy model nie czyta stanu pojazdu;
-- czy default pozostaje zgodny z native;
-- czy poprawa ergonomii nie zmienia mechaniki samochodu.
+### `POSITION`
 
-## 6. Testy obowiązkowe
+Jawny target kierowcy, odpowiedni między innymi dla analogowej osi lub dotykowego steru pozycyjnego. To hands-on command, nie self-centering.
+
+### `RATE`
+
+Jawna ograniczona szybkość ruchu kierownicy/racka, przeznaczona przede wszystkim dla klawiatury i dotykowych przycisków. Krótki press daje mały nudge. Key-up przechodzi do `RELEASE`, nie do `POSITION(0)`.
+
+Pierwszy kandydat badawczy to rate command bazowany na live rack przy rozpoczęciu hands-on. Może czytać położenie własnego aktuatora, ale nie może czytać stanu jazdy.
+
+## 6. Dozwolone i zakazane sprzężenie
+
+### Zakazane w adapterze urządzenia i ergonomii
+
+- yaw/yaw rate;
+- slip/slip angle;
+- wheel contact/force;
+- vehicle speed jako ukryty regulator czułości;
+- travel direction;
+- body orientation;
+- trajektoria drogi;
+- target wynikający z tego, gdzie „powinien” jechać pojazd.
+
+### Dozwolone w jawnym aktuatorze kierowcy
+
+- rack translation;
+- rack speed;
+- rack limits;
+- actuator target error;
+- motor/spring force cap;
+- edge hands-on/hands-off.
+
+Warunek: dane służą wyłącznie realizacji jawnej komendy `POSITION` lub `RATE`. Nie mogą zmieniać kierunku albo wartości komendy na podstawie ruchu pojazdu.
+
+## 7. Testy obowiązkowe
 
 ### `NO_ARTIFICIAL_CENTERING_AT_REST`
 
@@ -106,12 +141,12 @@ Warunki:
 - `uprightAssist = false`;
 - pojazd stoi na płaskim podłożu;
 - rack zostaje fizycznie/aktywną komendą ustawiony poza środkiem;
-- wejście przechodzi w hands off;
+- wejście przechodzi w `RELEASE`;
 - brak ruchu postępowego.
 
 Test nie wymaga, aby rack zachował idealnie identyczną liczbę — solver, sprężystość i relaksacja mogą dać drobny ruch. Test sprawdza przyczynę:
 
-- rack spring disabled;
+- hands-on spring disabled;
 - servo target/motor nie generuje ruchu ku centrum;
 - max motor force odpowiada wyłącznie modelowi tarcia;
 - brak hostowego timer/target;
@@ -119,7 +154,15 @@ Test nie wymaga, aby rack zachował idealnie identyczną liczbę — solver, spr
 
 ### `PHYSICAL_CASTER_RETURN_REQUIRES_ROLLING`
 
-Ten sam stan początkowy, lecz po hands off pojazd zaczyna toczyć się do przodu. Obserwujemy, czy geometria/contact może back-drive'ować rack. Wynik jest pomiarem mechanizmu, nie wymogiem idealnego zera.
+Ten sam stan początkowy, lecz po `RELEASE` pojazd zaczyna toczyć się do przodu. Obserwujemy, czy geometria/contact może back-drive'ować rack. Wynik jest pomiarem mechanizmu, nie wymogiem idealnego zera.
+
+### `DIGITAL_NUDGE_IS_BOUNDED`
+
+Jednokrokowy i krótkotrwały `RATE` musi dać małą, ograniczoną zmianę komendy/racka, nie target pełnego locka.
+
+### `RELEASE_AFTER_NUDGE`
+
+Pierwszy fixed step po zakończeniu tapu musi mieć hands-on OFF. Brak fazy return-to-zero i centre hold.
 
 ### `OPTIONAL_ASSISTS_DEFAULT_OFF`
 
@@ -130,27 +173,19 @@ rackCenteringHertz == 0
 uprightAssist == false
 ```
 
-### `NO_HIDDEN_STATE_FEEDBACK`
+### `NO_HIDDEN_DRIVING_STATE_FEEDBACK`
 
-Statyczny scan i testy modułowe odrzucają zależność input mappingu od:
+Statyczny scan i testy modułowe odrzucają zależność device adaptera lub rate mappera od yaw, slip, vehicle speed, travel direction, body orientation i wheel forces. Aktuator może czytać wyłącznie własny rack state zgodnie z §6.
 
-- yaw/yaw rate;
-- slip/slip angle;
-- rack translation/speed/force;
-- wheel contact/force;
-- vehicle speed;
-- travel direction;
-- body orientation.
-
-Wyjątki wymagają osobnej, owner-ratyfikowanej mechaniki i nie mogą wejść jako ergonomia hosta.
-
-## 7. Controller trace zamiast zgadywania
+## 8. Controller trace zamiast zgadywania
 
 Jeden kontroler pojazdu emituje neutralny trace każdej klatki:
 
 ```text
 steering_mode
-input_steer
+raw_device_intent
+commanded_position_or_rate
+hands_on
 spring_enabled
 spring_hertz
 target_translation
@@ -165,7 +200,7 @@ optional_assists_active
 
 Watchdog i testy konsumują ten trace. Nie odtwarzają logiki kontrolera po raz drugi.
 
-## 8. Warunek dokumentacyjny
+## 9. Warunek dokumentacyjny
 
 Żaden dokument, HUD ani PR nie może użyć określeń `realistic`, `parity`, `physical` albo `owner validated` bez wskazania:
 
