@@ -3,4 +3,5 @@ dist/
 .vite/
 *.log
 .DS_Store
-public/assets/vehicle/Nadwozie.gltf
+public/assets/vehicle/*.gltf
+public/assets/config/current-session.json
