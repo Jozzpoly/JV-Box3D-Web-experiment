@@ -1,6 +1,7 @@
 import "./style.css";
 import { F4VehicleHost } from "./app/f4-vehicle-host.js";
 import type { SteeringCommand } from "./input/steering-command.js";
+import { M6DebugRenderer } from "./render/m6-debug-renderer.js";
 import {
   INITIAL_RATE_STEERING_PROFILE_ID,
   RATE_STEERING_PROFILES,
@@ -18,53 +19,98 @@ function requireRoot(): HTMLElement {
 
 const app = requireRoot();
 app.innerHTML = `
-  <section class="panel">
-    <p class="eyebrow">JV Box3D Web</p>
-    <h1>Physical Rack-Space RATE Steering — F5</h1>
-    <p class="status" data-status>Validating native receipt and Box3D boundary…</p>
-    <label>
-      RATE experiment profile
-      <select data-rate-profile>
-        ${RATE_STEERING_PROFILES.map(
-          (profile) =>
-            `<option value="${profile.id}"${
-              profile.id === INITIAL_RATE_STEERING_PROFILE_ID
-                ? " selected"
-                : ""
-            }>${profile.rackRateMetersPerSecond.toFixed(2)} m/s · lead ${(
-              profile.maxTargetLeadMeters * 1000
-            ).toFixed(0)} mm</option>`,
-        ).join("")}
-      </select>
-    </label>
-    <dl>
-      <div><dt>Native source</dt><dd data-native-source>PENDING</dd></div>
-      <div><dt>Box3D</dt><dd data-box3d>PENDING</dd></div>
-      <div><dt>Topology</dt><dd data-topology>PENDING</dd></div>
-      <div><dt>Wheel backend</dt><dd data-wheel-backend>PENDING</dd></div>
-      <div><dt>Collision group</dt><dd data-group>PENDING</dd></div>
-      <div><dt>Generation</dt><dd data-generation>0</dd></div>
-      <div><dt>Fixed step</dt><dd data-step>0</dd></div>
-      <div><dt>Input command</dt><dd data-command>RELEASE</dd></div>
-      <div><dt>Rack actuator</dt><dd data-actuator>OFF</dd></div>
-      <div><dt>RATE profile</dt><dd data-profile>PENDING</dd></div>
-      <div><dt>Hands-on edge</dt><dd data-edge>NONE</dd></div>
-      <div><dt>Commanded / live rack</dt><dd data-commanded-rack>NONE / 0.000000 m</dd></div>
-      <div><dt>Target error</dt><dd data-target-error>0.000000 m</dd></div>
-      <div><dt>Spring / motor</dt><dd data-spring>OFF · 0.000000 m/s · 0.00 N</dd></div>
-      <div><dt>Physical rack friction</dt><dd data-friction>40.00 + 0.00 N</dd></div>
-      <div><dt>Rack</dt><dd data-rack>0.000000 m · 0.000000 m/s</dd></div>
-      <div><dt>Chassis position</dt><dd data-chassis-position>0.0000, 0.0000, 0.0000 m</dd></div>
-      <div><dt>Chassis velocity</dt><dd data-chassis-velocity>0.0000, 0.0000, 0.0000 m/s</dd></div>
-      <div><dt>World contacts</dt><dd data-contacts>0</dd></div>
-      <div><dt>Contact begins</dt><dd data-begins>0</dd></div>
-      <div><dt>Four corners</dt><dd data-corners>PENDING</dd></div>
-      <div><dt>Dropped render time</dt><dd data-dropped>0.00 ms</dd></div>
-      <div><dt>Mechanics gate</dt><dd data-validation>PENDING</dd></div>
-    </dl>
-    <p class="hint">A/D produkuje timestamped RATE w fizycznych metrach racka na sekundę. RELEASE wyłącza spring i servo natychmiast. Nie ma targetu do środka, speed sensitivity ani stabilizatora pojazdu. Profile są kandydatami eksperymentu, nie zatwierdzonym ustawieniem produktu.</p>
-    <button type="button" data-restart>Destroy and rebuild RATE experiment</button>
-  </section>
+  <main class="lab-shell">
+    <section class="scene-panel" aria-label="M6 physical observer">
+      <canvas data-scene aria-label="Live WebGL view of the Box3D M6 vehicle"></canvas>
+      <header class="scene-header">
+        <div>
+          <p class="eyebrow">JV Box3D Web · F5 Visual Observer</p>
+          <h1>Physical steering, finally visible</h1>
+        </div>
+        <p class="scene-state" data-scene-state>WAITING FOR PHYSICS</p>
+      </header>
+      <div class="scene-readouts" aria-live="polite">
+        <div><span>Command</span><strong data-scene-command>RELEASE</strong></div>
+        <div><span>Rack</span><strong data-scene-rack>0.0000 m</strong></div>
+        <div><span>Chassis drift</span><strong data-scene-displacement>0.000 m</strong></div>
+        <div><span>Step</span><strong data-scene-step>0</strong></div>
+      </div>
+      <div class="scene-legend" aria-hidden="true">
+        <span class="legend-chassis">Chassis</span>
+        <span class="legend-front">Front wheels</span>
+        <span class="legend-rear">Rear wheels</span>
+        <span class="legend-steering">Rack / observer links</span>
+      </div>
+      <p class="scene-help">
+        Drag to orbit · wheel to zoom · A/D steers. Orange lines are visual observer guides to the wheel centres, not exact tie-rod endpoints.
+      </p>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Live mechanics laboratory</p>
+          <h2>RATE steering</h2>
+        </div>
+        <p class="status" data-status>Validating native receipt and Box3D boundary…</p>
+      </div>
+
+      <label class="profile-control">
+        <span>RATE experiment profile</span>
+        <select data-rate-profile>
+          ${RATE_STEERING_PROFILES.map(
+            (profile) =>
+              `<option value="${profile.id}"${
+                profile.id === INITIAL_RATE_STEERING_PROFILE_ID
+                  ? " selected"
+                  : ""
+              }>${profile.rackRateMetersPerSecond.toFixed(2)} m/s · lead ${(
+                profile.maxTargetLeadMeters * 1000
+              ).toFixed(0)} mm</option>`,
+          ).join("")}
+        </select>
+      </label>
+
+      <button type="button" data-restart>Destroy and rebuild physical world</button>
+
+      <dl class="primary-metrics">
+        <div><dt>Input</dt><dd data-command>RELEASE</dd></div>
+        <div><dt>Actuator</dt><dd data-actuator>OFF</dd></div>
+        <div><dt>Live rack</dt><dd data-rack>0.000000 m · 0.000000 m/s</dd></div>
+        <div><dt>Drift from spawn</dt><dd data-displacement>0.000 m</dd></div>
+        <div><dt>Contacts</dt><dd data-contacts>0</dd></div>
+        <div><dt>Mechanics gate</dt><dd data-validation>NOT STARTED</dd></div>
+      </dl>
+
+      <details>
+        <summary>Full trace and provenance</summary>
+        <dl class="telemetry-grid">
+          <div><dt>Native source</dt><dd data-native-source>PENDING</dd></div>
+          <div><dt>Box3D</dt><dd data-box3d>PENDING</dd></div>
+          <div><dt>Topology</dt><dd data-topology>PENDING</dd></div>
+          <div><dt>Wheel backend</dt><dd data-wheel-backend>PENDING</dd></div>
+          <div><dt>Collision group</dt><dd data-group>PENDING</dd></div>
+          <div><dt>Generation</dt><dd data-generation>0</dd></div>
+          <div><dt>Fixed step</dt><dd data-step>0</dd></div>
+          <div><dt>RATE profile</dt><dd data-profile>PENDING</dd></div>
+          <div><dt>Hands-on edge this step</dt><dd data-edge>NONE</dd></div>
+          <div><dt>Commanded / live rack</dt><dd data-commanded-rack>NONE / 0.000000 m</dd></div>
+          <div><dt>Target error</dt><dd data-target-error>0.000000 m</dd></div>
+          <div><dt>Spring / requested motor / force cap</dt><dd data-spring>OFF · 0.000000 m/s · 0.00 N</dd></div>
+          <div><dt>Physical rack friction</dt><dd data-friction>40.00 + 0.00 N</dd></div>
+          <div><dt>Chassis position</dt><dd data-chassis-position>0.0000, 0.0000, 0.0000 m</dd></div>
+          <div><dt>Chassis velocity</dt><dd data-chassis-velocity>0.0000, 0.0000, 0.0000 m/s</dd></div>
+          <div><dt>Contact begins</dt><dd data-begins>0</dd></div>
+          <div><dt>Four corners</dt><dd data-corners>PENDING</dd></div>
+          <div><dt>Dropped render time</dt><dd data-dropped>0.00 ms</dd></div>
+        </dl>
+      </details>
+
+      <p class="hint">
+        RELEASE removes the steering target and disables the spring immediately. The renderer only observes copied Box3D transforms; it does not write back into physics.
+      </p>
+    </aside>
+  </main>
 `;
 
 function requireElement<T extends Element>(selector: string): T {
@@ -75,6 +121,12 @@ function requireElement<T extends Element>(selector: string): T {
   return element;
 }
 
+const sceneCanvas = requireElement<HTMLCanvasElement>("[data-scene]");
+const sceneStateElement = requireElement<HTMLElement>("[data-scene-state]");
+const sceneCommandElement = requireElement<HTMLElement>("[data-scene-command]");
+const sceneRackElement = requireElement<HTMLElement>("[data-scene-rack]");
+const sceneDisplacementElement = requireElement<HTMLElement>("[data-scene-displacement]");
+const sceneStepElement = requireElement<HTMLElement>("[data-scene-step]");
 const statusElement = requireElement<HTMLElement>("[data-status]");
 const profileSelect = requireElement<HTMLSelectElement>("[data-rate-profile]");
 const nativeSourceElement = requireElement<HTMLElement>("[data-native-source]");
@@ -93,6 +145,7 @@ const targetErrorElement = requireElement<HTMLElement>("[data-target-error]");
 const springElement = requireElement<HTMLElement>("[data-spring]");
 const frictionElement = requireElement<HTMLElement>("[data-friction]");
 const rackElement = requireElement<HTMLElement>("[data-rack]");
+const displacementElement = requireElement<HTMLElement>("[data-displacement]");
 const chassisPositionElement = requireElement<HTMLElement>("[data-chassis-position]");
 const chassisVelocityElement = requireElement<HTMLElement>("[data-chassis-velocity]");
 const contactsElement = requireElement<HTMLElement>("[data-contacts]");
@@ -107,6 +160,15 @@ const animationFrames = {
     window.requestAnimationFrame(callback),
   cancel: (handle: number) => window.cancelAnimationFrame(handle),
 };
+
+let renderer: M6DebugRenderer | null = null;
+try {
+  renderer = new M6DebugRenderer(sceneCanvas);
+} catch (error: unknown) {
+  sceneStateElement.textContent =
+    `RENDERER UNAVAILABLE · ${formatError(error)}`;
+  console.error(error);
+}
 
 let host: F4VehicleHost | null = null;
 let startupGeneration = 0;
@@ -132,7 +194,9 @@ function formatCommand(command: SteeringCommand): string {
   }
 }
 
-function formatVector(value: Readonly<{ x: number; y: number; z: number }>): string {
+function formatVector(
+  value: Readonly<{ x: number; y: number; z: number }>,
+): string {
   return `${value.x.toFixed(4)}, ${value.y.toFixed(4)}, ${value.z.toFixed(4)}`;
 }
 
@@ -153,10 +217,21 @@ function formatError(error: unknown): string {
 }
 
 function renderTrace(trace: M6TraceFrame): void {
+  renderer?.render(trace);
+  const displacement = renderer?.displacement(trace) ?? 0;
   const steering = trace.steering;
+  const command = formatCommand(trace.command);
+
+  sceneStateElement.textContent =
+    `LIVE · GENERATION ${trace.generation} · ${trace.worldContacts} CONTACTS`;
+  sceneCommandElement.textContent = command;
+  sceneRackElement.textContent = `${trace.rackTranslation.toFixed(4)} m`;
+  sceneDisplacementElement.textContent = `${displacement.toFixed(3)} m`;
+  sceneStepElement.textContent = String(trace.stepIndex);
+
   generationElement.textContent = String(trace.generation);
   stepElement.textContent = String(trace.stepIndex);
-  commandElement.textContent = formatCommand(trace.command);
+  commandElement.textContent = command;
   actuatorElement.textContent = trace.steeringActuator;
   profileElement.textContent =
     `${steering.profileId} · ${steering.rackRateMetersPerSecond.toFixed(2)} m/s · ` +
@@ -176,6 +251,7 @@ function renderTrace(trace: M6TraceFrame): void {
   rackElement.textContent =
     `${trace.rackTranslation.toFixed(6)} m · ` +
     `${trace.rackSpeed.toFixed(6)} m/s`;
+  displacementElement.textContent = `${displacement.toFixed(3)} m`;
   chassisPositionElement.textContent = `${formatVector(trace.chassisPosition)} m`;
   chassisVelocityElement.textContent = `${formatVector(trace.chassisVelocity)} m/s`;
   contactsElement.textContent = String(trace.worldContacts);
@@ -200,6 +276,13 @@ function resetDisplay(): void {
   profileElement.textContent = "PENDING";
   validationElement.textContent = "PENDING";
   cornersElement.textContent = "PENDING";
+  displacementElement.textContent = "0.000 m";
+  sceneCommandElement.textContent = "RELEASE";
+  sceneRackElement.textContent = "0.0000 m";
+  sceneDisplacementElement.textContent = "0.000 m";
+  sceneStepElement.textContent = "0";
+  sceneStateElement.textContent =
+    renderer === null ? "RENDERER UNAVAILABLE" : "WAITING FOR PHYSICS";
 }
 
 async function startHost(): Promise<void> {
@@ -237,6 +320,7 @@ async function startHost(): Promise<void> {
         host = null;
         statusElement.textContent =
           `F5 runtime fault — resources disposed: ${formatError(error)}`;
+        sceneStateElement.textContent = "PHYSICS FAULTED";
         validationElement.textContent = "FAULTED / DISPOSED";
         restartButton.disabled = false;
         profileSelect.disabled = false;
@@ -277,6 +361,7 @@ async function startHost(): Promise<void> {
       return;
     }
     statusElement.textContent = `F5 startup rejected: ${formatError(error)}`;
+    sceneStateElement.textContent = "PHYSICS NOT STARTED";
     validationElement.textContent = "NOT STARTED";
     console.error(error);
   } finally {
@@ -300,6 +385,8 @@ window.addEventListener(
     startupGeneration += 1;
     host?.dispose();
     host = null;
+    renderer?.dispose();
+    renderer = null;
   },
   { once: true },
 );
