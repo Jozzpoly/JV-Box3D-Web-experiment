@@ -9,7 +9,7 @@ Detailed session handoff:
 docs/HANDOFF_2026_08_04_PL.md
 ```
 
-Read that file immediately after this one. It contains exact receipts, branch SHAs, the quarantined F3 failure and current F5 WIP mechanics.
+Read that file immediately after this one. It contains exact receipts, branch SHAs, the quarantined F3 failure and the F5 mechanics. Where its old WIP counters differ, this newer memory and PR #13 have precedence.
 
 ## 1. Purpose
 
@@ -28,6 +28,8 @@ Build a serious browser version of the current Jozz Vehicle research/runtime sli
 Use the GitHub connector and ordinary Git only. Do not shift routine repository work onto Jozz. Ask for local commands only when a real owner/browser test or local-only source is required.
 
 No merge, ready-for-review transition or product-default approval without Jozz.
+
+No self-modifying workflows, automatic commits, cross-repository commit loops or repeated Actions debugging.
 
 ## 3. Source authority and local paths
 
@@ -62,12 +64,13 @@ GitHub does not prove local uncommitted state.
 
 1. latest direct decision from Jozz;
 2. this file;
-3. `docs/HANDOFF_2026_08_04_PL.md`;
-4. `docs/PROJECT_STATE.md`;
-5. `docs/AUDIT_ERRATA_2026_08_03_PL.md`;
-6. focused receipts/ADRs/subsystem docs;
-7. broad audits;
-8. PR #1 historical documentation.
+3. PR #13 and issue #12 for current F5 state;
+4. `docs/HANDOFF_2026_08_04_PL.md`;
+5. `docs/PROJECT_STATE.md`;
+6. `docs/AUDIT_ERRATA_2026_08_03_PL.md`;
+7. focused receipts/ADRs/subsystem docs;
+8. broad audits;
+9. PR #1 historical documentation.
 
 ## 5. Non-negotiable mechanics policy
 
@@ -118,9 +121,9 @@ RATE experiment rules:
 foundation: agent/fundamental-audit-rebuild@2831d533
 F1: agent/clean-browser-core@484c865
 F2: agent/typed-box3d-boundary@2c208809
-F3: agent/native-factory-receipt (PR #9)
-F4: agent/current-m6-topology@1653e982
-F5 active: agent/physical-rate-steering
+F3: agent/native-factory-receipt / PR #9
+F4: agent/current-m6-topology@1653e982 / PR #11
+F5 active: agent/physical-rate-steering@9960338 / PR #13
 ```
 
 All PRs remain stacked drafts and unmerged.
@@ -182,13 +185,15 @@ These are machine/infrastructure results, not owner feel or full parity.
 
 ## 9. Active F5 state
 
-Issue:
+Issue and PR:
 
 ```text
 #12 Physical rack-space RATE steering experiment
+#13 draft / NOT YET EXECUTED / DO NOT MERGE
+head 9960338d45b1ff5c9836bc88566199e53614c128
 ```
 
-Branch F5 already contains WIP implementation and is ahead of F4. Current candidate profiles:
+Current candidate profiles:
 
 ```text
 0.06 / 0.12 / 0.21 / 0.36 m/s
@@ -205,29 +210,42 @@ Current K2b implementation:
 - per-step delta = command value × profile m/s × fixedDt;
 - target clamped to rack travel and live rack ± lead cap;
 - spring/motor active only hands-on;
-- RELEASE clears commanded target, disables spring, motor speed 0 and uses friction cap only;
+- RELEASE clears commanded target, disables spring, sets motor speed 0 and uses friction cap only;
 - trace exposes profile, edge, commanded/live rack, target error, spring, motor request/force and friction terms;
-- browser UI exposes all profiles and trace.
+- browser UI exposes all profiles and trace;
+- profile change performs a transactional host rebuild.
 
-F5 is **not complete**. It has only a basic RATE engagement test. Full matrix and validation are missing. See the handoff and issue #12.
+Recovery work after the interrupted conversation:
 
-## 10. Required F5 completion gate
+- verified that clean F3 and complete F4 already existed;
+- recovered the canonical handoff and exact branch stack;
+- removed one dangling required trace field that no controller path produced;
+- added `tests/f5-rate-steering.test.mjs`;
+- created draft PR #13;
+- recorded the checkpoint on issue #12;
+- started no workflow and performed no merge.
 
-Before CI:
+The new F5 matrix covers:
 
-- tap lengths 0.5/1/2/3/6 steps across all four profiles;
+- 0.5/1/2/3/6-step-equivalent taps across all four profiles;
 - monotonic commanded deltas;
-- exact signed-time sub-frame input;
+- exact F1 signed-time sub-frame mapping;
 - immediate release;
 - engage/reversal rebase;
 - left/right symmetry;
 - rack travel clamp;
-- blocked-rack lead-cap fixture;
-- 15/30/60/120 FPS and lag equivalence;
-- rebuild/profile switch/lifecycle;
-- no hidden centering after RELEASE.
+- frozen/blocked-rack lead-cap behavior;
+- 15/30/60/120 FPS equivalence;
+- irregular cadence and dropped gaps;
+- profile switch and destroy/rebuild lifecycle.
 
-Then exactly one justified read-only validation:
+F5 is **not complete**. The current head has not received a real dependency install, TypeScript check, WASM test run, production build or browser smoke receipt.
+
+## 10. Required F5 completion gate
+
+Do not change workflows to obtain the result. Do not start repeated Actions runs.
+
+After final source review, exactly one justified read-only validation:
 
 ```text
 npm ci
@@ -236,7 +254,11 @@ npm run build
 one browser smoke
 ```
 
-No self-modifying workflows, automatic commits or repeated Actions debugging.
+Required interpretation:
+
+- failures are evidence to fix locally/source-first, not a reason to mutate workflow triggers;
+- a green machine gate is not owner feel approval;
+- no RATE profile becomes a product default automatically.
 
 ## 11. Wheel direction
 
