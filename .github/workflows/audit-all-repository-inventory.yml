@@ -28,10 +28,6 @@ jobs:
 
           mkdir -p audit-inventory/repos audit-inventory/snapshots
 
-          # Public repositories can be cloned reproducibly by CI. The current
-          # private repository is available only through actions/checkout and
-          # is inventoried from that authorized checkout. Other private repos
-          # are intentionally NOT given broader credentials.
           cat > audit-inventory/public-scopes.tsv <<'SCOPES'
           Box3d_FunProject	main
           Box3d_FunProject	jozz-scan-terrain-f0
@@ -60,12 +56,13 @@ jobs:
             local checkout="$1"
             local repo="$2"
             local visibility="$3"
-            local ref="$4"
-            local scope="${repo}__${ref//\//_}"
+            local ref_label="$4"
+            local checkout_ref="$5"
+            local scope="${repo}__${ref_label//\//_}"
             local out="audit-inventory/snapshots/$scope"
             mkdir -p "$out"
 
-            git -C "$checkout" checkout --quiet --detach "$ref"
+            git -C "$checkout" checkout --quiet --detach "$checkout_ref"
 
             local commit commit_date
             commit="$(git -C "$checkout" rev-parse HEAD)"
@@ -135,7 +132,7 @@ jobs:
             printf '%s\n' "$tree_receipt" > "$out/tree-receipt.sha256"
 
             printf '%s\tJozzpoly/%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-              "$scope" "$repo" "$visibility" "$ref" "$commit" "$commit_date" \
+              "$scope" "$repo" "$visibility" "$ref_label" "$commit" "$commit_date" \
               "$tracked_files" "$tracked_bytes" "$text_files" "$text_lines" \
               "$lfs_pointers" "$symlinks" "$submodules" "$tree_receipt" \
               >> audit-inventory/summary.tsv
@@ -147,11 +144,9 @@ jobs:
             checkout="audit-inventory/repos/$scope"
             git clone --quiet --no-checkout "https://github.com/Jozzpoly/${repo}.git" "$checkout"
             git -C "$checkout" fetch --quiet --no-tags origin "$ref"
-            inventory_checkout "$checkout" "$repo" public FETCH_HEAD
+            inventory_checkout "$checkout" "$repo" public "$ref" FETCH_HEAD
           done < audit-inventory/public-scopes.tsv
 
-          # Fetch the named refs from the authorized checkout of the current
-          # private repository. No token is copied into shell URLs or artifacts.
           git -C current-web fetch --quiet origin \
             main \
             agent/bootstrap-web-poc \
@@ -159,7 +154,7 @@ jobs:
 
           while IFS=$'\t' read -r repo ref; do
             [[ -z "$repo" ]] && continue
-            inventory_checkout current-web "$repo" private "origin/$ref"
+            inventory_checkout current-web "$repo" private "$ref" "origin/$ref"
           done < audit-inventory/current-private-scopes.tsv
 
           echo '=== repository snapshot summary ==='
