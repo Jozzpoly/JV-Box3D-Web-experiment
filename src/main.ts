@@ -18,6 +18,7 @@ app.innerHTML = `
     <p class="status" data-status>Loading audited WASM…</p>
     <dl>
       <div><dt>Fixed step</dt><dd>60 Hz × 4 substeps</dd></div>
+      <div><dt>World generation</dt><dd data-generation>0</dd></div>
       <div><dt>Steering input</dt><dd data-command>RELEASE</dd></div>
       <div><dt>Physics step</dt><dd data-step>0</dd></div>
       <div><dt>Sphere Y</dt><dd data-position>3.0000 m</dd></div>
@@ -40,6 +41,7 @@ function requireElement<T extends Element>(selector: string): T {
 }
 
 const statusElement = requireElement<HTMLElement>("[data-status]");
+const generationElement = requireElement<HTMLElement>("[data-generation]");
 const commandElement = requireElement<HTMLElement>("[data-command]");
 const stepElement = requireElement<HTMLElement>("[data-step]");
 const positionElement = requireElement<HTMLElement>("[data-position]");
@@ -116,6 +118,7 @@ async function startHost(): Promise<void> {
     }
 
     host = nextHost;
+    generationElement.textContent = String(generation);
     validationElement.textContent = formatValidation(nextHost.validationLevels);
     const version = nextHost.receipt.engineVersion;
     statusElement.textContent =
