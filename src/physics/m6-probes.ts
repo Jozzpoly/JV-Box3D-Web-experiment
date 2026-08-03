@@ -3,6 +3,7 @@ import { KeyboardDriverInputModel } from '../input-model';
 import { M6ParityController } from './m6-parity-controller';
 import { M6WebRig } from './m6-rig';
 import { AXIS_Y, clamp, dot } from './math';
+import { RackResponseWatchdog } from './rack-response-watchdog';
 import { TERRAIN_CATEGORY, type M6RigConfig, type Vec3 } from './rig-config';
 
 const FIXED_DT = 1 / 60;
@@ -39,6 +40,23 @@ export interface HandlingPulseProbeResult {
   finite: boolean;
 }
 
+export interface SteeringCycleResult {
+  stable: boolean;
+  leftPeakFraction: number;
+  rightPeakFraction: number;
+  finalRackFraction: number;
+  crossedCentreOnReversal: boolean;
+  maxServoStallFrames: number;
+  finalSpeedMs: number;
+  finite: boolean;
+}
+
+export interface LowSpeedSteeringProbeResult {
+  stable: boolean;
+  stationary: SteeringCycleResult;
+  creep: SteeringCycleResult;
+}
+
 export interface M6ProbeReport {
   passed: boolean;
   passedCount: number;
@@ -46,12 +64,14 @@ export interface M6ProbeReport {
   straight: StraightProbeResult;
   steeringImpact: SteeringImpactProbeResult;
   handlingPulse: HandlingPulseProbeResult;
+  lowSpeedSteering: LowSpeedSteeringProbeResult;
 }
 
 export function runM6ParityProbes(b3: any, config: M6RigConfig): M6ProbeReport {
   const straight = runStraightProbe(b3, config);
   const steeringImpact = runSteeringImpactProbe(b3, config);
   const handlingPulse = runHandlingPulseProbe(b3, config);
+  const lowSpeedSteering = runLowSpeedSteeringProbe(b3, config);
   const gatedResults = [straight.passed, steeringImpact.passed];
   return {
     passed: gatedResults.every(Boolean),
@@ -60,6 +80,7 @@ export function runM6ParityProbes(b3: any, config: M6RigConfig): M6ProbeReport {
     straight,
     steeringImpact,
     handlingPulse,
+    lowSpeedSteering,
   };
 }
 
@@ -188,6 +209,113 @@ function runHandlingPulseProbe(b3: any, config: M6RigConfig): HandlingPulseProbe
   });
 }
 
+// Reproduces the owner's intermittent low-speed report without changing the
+// steering model: assisted left command, direct reversal, then release. Run
+// once fully stationary and once under a small creep command. A stall is only
+// counted while the servo has a meaningful target error and the rack speed is
+// almost zero; honest hands-off stiction is excluded by RackResponseWatchdog.
+function runLowSpeedSteeringProbe(b3: any, config: M6RigConfig): LowSpeedSteeringProbeResult {
+  const stationary = runSteeringCycleScenario(b3, config, 0);
+  const creep = runSteeringCycleScenario(b3, config, 0.12);
+  return {
+    stable: stationary.stable && creep.stable,
+    stationary,
+    creep,
+  };
+}
+
+function runSteeringCycleScenario(
+  b3: any,
+  config: M6RigConfig,
+  drive: number,
+): SteeringCycleResult {
+  return withProbeRig(b3, config, ({ worldId, rig, controller }) => {
+    const driver = new KeyboardDriverInputModel();
+    const watchdog = new RackResponseWatchdog(b3, rig);
+    stepManyModeled(b3, worldId, controller, driver, NEUTRAL, 120, watchdog);
+    if (drive !== 0) {
+      stepManyModeled(
+        b3,
+        worldId,
+        controller,
+        driver,
+        { drive, steer: 0, brake: false },
+        60,
+        watchdog,
+      );
+    }
+
+    const travel = Math.max(rig.config.rackTravel, 1e-5);
+    let leftPeakSigned = 0;
+    for (let i = 0; i < 36; i += 1) {
+      stepOneModeled(
+        b3,
+        worldId,
+        controller,
+        driver,
+        { drive, steer: 1, brake: false },
+        watchdog,
+      );
+      const translation = b3.b3PrismaticJoint_GetTranslation(rig.rackJointId);
+      if (Math.abs(translation) > Math.abs(leftPeakSigned)) leftPeakSigned = translation;
+    }
+
+    const leftSign = Math.sign(leftPeakSigned);
+    let rightPeakSigned = 0;
+    let crossedCentreOnReversal = false;
+    for (let i = 0; i < 72; i += 1) {
+      stepOneModeled(
+        b3,
+        worldId,
+        controller,
+        driver,
+        { drive, steer: -1, brake: false },
+        watchdog,
+      );
+      const translation = b3.b3PrismaticJoint_GetTranslation(rig.rackJointId);
+      if (leftSign !== 0 && Math.sign(translation) === -leftSign && Math.abs(translation) > 0.05 * travel) {
+        crossedCentreOnReversal = true;
+      }
+      if (leftSign === 0 || Math.sign(translation) === -leftSign) {
+        if (Math.abs(translation) > Math.abs(rightPeakSigned)) rightPeakSigned = translation;
+      }
+    }
+
+    stepManyModeled(
+      b3,
+      worldId,
+      controller,
+      driver,
+      { drive, steer: 0, brake: false },
+      90,
+      watchdog,
+    );
+
+    const leftPeakFraction = Math.abs(leftPeakSigned) / travel;
+    const rightPeakFraction = Math.abs(rightPeakSigned) / travel;
+    const finalRackFraction = rackFraction(b3, rig);
+    const finalSpeedMs = rig.getForwardSpeed();
+    const finite = vehicleStateIsFinite(b3, rig);
+    const stable = finite
+      && leftPeakFraction > 0.15
+      && rightPeakFraction > 0.15
+      && crossedCentreOnReversal
+      && watchdog.telemetry.maxStalledFrames < 18
+      && finalRackFraction < 0.4;
+
+    return {
+      stable,
+      leftPeakFraction,
+      rightPeakFraction,
+      finalRackFraction,
+      crossedCentreOnReversal,
+      maxServoStallFrames: watchdog.telemetry.maxStalledFrames,
+      finalSpeedMs,
+      finite,
+    };
+  });
+}
+
 function withProbeRig<T>(
   b3: any,
   config: M6RigConfig,
@@ -243,9 +371,10 @@ function stepManyModeled(
   driver: KeyboardDriverInputModel,
   rawInput: DriveInput,
   count: number,
+  watchdog?: RackResponseWatchdog,
 ): void {
   for (let i = 0; i < count; i += 1) {
-    stepOneModeled(b3, worldId, controller, driver, rawInput);
+    stepOneModeled(b3, worldId, controller, driver, rawInput, watchdog);
   }
 }
 
@@ -255,8 +384,11 @@ function stepOneModeled(
   controller: M6ParityController,
   driver: KeyboardDriverInputModel,
   rawInput: DriveInput,
+  watchdog?: RackResponseWatchdog,
 ): void {
-  controller.update(driver.update(rawInput, FIXED_DT));
+  const modeled = driver.update(rawInput, FIXED_DT);
+  controller.update(modeled);
+  watchdog?.update(modeled);
   b3.b3World_Step(worldId, FIXED_DT, SUB_STEPS);
 }
 
