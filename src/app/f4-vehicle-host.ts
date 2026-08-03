@@ -18,9 +18,12 @@ import {
   type Box3DRuntimeReceipt,
 } from "../physics/box3d-boundary.js";
 import type { b3Vec3 } from "../physics/box3d-runtime-contract.js";
-import type {
-  M6TopologyDisposalReceipt,
-  M6TraceFrame,
+import {
+  INITIAL_RATE_STEERING_PROFILE_ID,
+  type M6TopologyDisposalReceipt,
+  type M6TraceFrame,
+  type RateSteeringProfile,
+  type RateSteeringProfileId,
 } from "../vehicle/m6/m6-topology-world.js";
 
 export interface F4VehicleHostOptions {
@@ -31,6 +34,7 @@ export interface F4VehicleHostOptions {
   readonly isDocumentHidden: () => boolean;
   readonly generation?: number;
   readonly spawn?: b3Vec3;
+  readonly rateProfileId?: RateSteeringProfileId;
   readonly onVehicleStep: (
     step: FixedStepInterval,
     input: SteeringTimelineSample,
@@ -46,6 +50,7 @@ interface F4VehicleControllerRuntime {
 }
 
 interface F4WorldRuntime {
+  readonly rateProfile: RateSteeringProfile;
   readonly counters: Readonly<{
     bodyCount: number;
     shapeCount: number;
@@ -64,6 +69,7 @@ interface F4BoundaryRuntime {
   readonly receipt: Box3DRuntimeReceipt;
   createM6TopologyWorld(
     receipt: NativeFactorySnapshot,
+    rateProfileId?: RateSteeringProfileId,
   ): F4WorldRuntime;
 }
 
@@ -127,7 +133,11 @@ export class F4VehicleHost {
     try {
       const nativeReceipt = await dependencies.loadReceipt();
       const boundary = await dependencies.loadBoundary();
-      const world = boundary.createM6TopologyWorld(nativeReceipt);
+      const world = boundary.createM6TopologyWorld(
+        nativeReceipt,
+        options.rateProfileId ??
+          INITIAL_RATE_STEERING_PROFILE_ID,
+      );
       resources.defer("current M6 topology world", () => {
         world.dispose();
       });
@@ -147,7 +157,7 @@ export class F4VehicleHost {
           const trace = world.step(1)[0];
           if (trace === undefined) {
             throw new Error(
-              "F4 world produced no trace for its owned vehicle.",
+              "M6 world produced no trace for its owned vehicle.",
             );
           }
           options.onVehicleStep(step, input, trace);
@@ -168,7 +178,7 @@ export class F4VehicleHost {
                       (failure) => failure.error,
                     ),
                   ],
-                  "F4 runtime failed and cleanup reported errors.",
+                  "M6 runtime failed and cleanup reported errors.",
                 )
               : error;
           options.onFatalError?.(fatal);
@@ -198,7 +208,7 @@ export class F4VehicleHost {
               (failure) => failure.error,
             ),
           ],
-          "F4 startup and rollback both failed.",
+          "M6 startup and rollback both failed.",
         );
       }
       throw error;
@@ -212,6 +222,11 @@ export class F4VehicleHost {
 
   get box3dReceipt(): Box3DRuntimeReceipt {
     return this.#box3dReceipt;
+  }
+
+  get rateProfile(): RateSteeringProfile {
+    this.#assertActive();
+    return this.#world.rateProfile;
   }
 
   get fatalError(): unknown | null {
@@ -237,7 +252,7 @@ export class F4VehicleHost {
     if (report.failures.length > 0) {
       throw new AggregateError(
         report.failures.map((failure) => failure.error),
-        `Failed to dispose ${report.failures.length} F4 resources.`,
+        `Failed to dispose ${report.failures.length} M6 resources.`,
       );
     }
   }
