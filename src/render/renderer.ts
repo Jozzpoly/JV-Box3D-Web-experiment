@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { M6WebRig } from '../physics/m6-rig';
+import { VehicleOrbitCamera } from './vehicle-camera';
 
 export interface RenderContext {
   scene: THREE.Scene;
@@ -14,6 +15,11 @@ interface DynamicSegment {
   mesh: THREE.Mesh;
   radius: number;
   endpoints(): [THREE.Vector3, THREE.Vector3];
+}
+
+interface WheelVisualTarget {
+  root: THREE.Group;
+  fallback: THREE.Object3D;
 }
 
 export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
@@ -30,6 +36,8 @@ export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+  const orbitCamera = new VehicleOrbitCamera(canvas, camera);
+
   const hemisphere = new THREE.HemisphereLight(0xbfdfff, 0x29311f, 1.35);
   scene.add(hemisphere);
   const sun = new THREE.DirectionalLight(0xffffff, 2.2);
@@ -41,11 +49,6 @@ export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
   sun.shadow.camera.top = 90;
   sun.shadow.camera.bottom = -90;
   scene.add(sun);
-
-  const chasePosition = new THREE.Vector3(-9, 5, 9);
-  const desiredPosition = new THREE.Vector3();
-  const lookTarget = new THREE.Vector3();
-  const behind = new THREE.Vector3(-8.5, 4.2, 0);
 
   const resize = () => {
     const width = canvas.clientWidth;
@@ -68,22 +71,18 @@ export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
     camera,
     renderer,
     updateCamera(target, deltaSeconds) {
-      target.getWorldPosition(lookTarget);
-      desiredPosition.copy(behind).applyQuaternion(target.quaternion).add(lookTarget);
-      const blend = 1 - Math.exp(-5 * deltaSeconds);
-      chasePosition.lerp(desiredPosition, blend);
-      camera.position.copy(chasePosition);
-      camera.lookAt(lookTarget.x, lookTarget.y + 0.55, lookTarget.z);
+      orbitCamera.update(target, deltaSeconds);
     },
     dispose() {
       window.removeEventListener('resize', onResize);
+      orbitCamera.dispose();
       renderer.dispose();
     },
   };
 }
 
 export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group {
-  const b3 = (rig as any).b3;
+  const b3 = (rig as unknown as { b3: any }).b3;
   const chassisRoot = new THREE.Group();
   chassisRoot.name = 'JV chassis visual root';
 
@@ -117,16 +116,18 @@ export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group
   const lowerArmMaterial = new THREE.MeshStandardMaterial({ color: 0x397db4, roughness: 0.62, metalness: 0.18 });
   const steeringMaterial = new THREE.MeshStandardMaterial({ color: 0xd8be64, roughness: 0.5, metalness: 0.42 });
   const damperMaterial = new THREE.MeshStandardMaterial({ color: 0xb8c0c6, roughness: 0.35, metalness: 0.75 });
+  const wheelTargets: WheelVisualTarget[] = [];
 
   for (const corner of rig.corners as any[]) {
     const wheelGroup = new THREE.Group();
+    const fallback = new THREE.Group();
     const tire = new THREE.Mesh(
       new THREE.CylinderGeometry(rig.config.wheelRadius, rig.config.wheelRadius, rig.config.wheelWidth, 36),
       wheelMaterial,
     );
     tire.castShadow = true;
     tire.receiveShadow = true;
-    wheelGroup.add(tire);
+    fallback.add(tire);
 
     const rim = new THREE.Mesh(
       new THREE.CylinderGeometry(
@@ -138,10 +139,13 @@ export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group
       rimMaterial,
     );
     rim.castShadow = true;
-    wheelGroup.add(rim);
+    fallback.add(rim);
+    wheelGroup.add(fallback);
     scene.add(wheelGroup);
     rig.bindings.push({ bodyId: corner.wheelId, object: wheelGroup });
+    wheelTargets.push({ root: wheelGroup, fallback });
   }
+  void loadRealJvWheels(wheelTargets);
 
   const rack = new THREE.Mesh(
     new THREE.CylinderGeometry(0.045, 0.045, rig.config.rackHalfWidth * 2, 12),
@@ -243,24 +247,61 @@ async function loadRealJvBody(chassisRoot: THREE.Group, fallback: THREE.Object3D
     body.scale.setScalar(0.35);
     body.rotation.y = -Math.PI / 2;
     body.position.set(0, -0.60, 0);
-    body.traverse((object) => {
-      if (!(object instanceof THREE.Mesh)) return;
-      object.castShadow = true;
-      object.receiveShadow = true;
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      for (const material of materials) {
-        if ('map' in material && material.map instanceof THREE.Texture) {
-          material.map.colorSpace = THREE.SRGBColorSpace;
-          material.map.magFilter = THREE.NearestFilter;
-          material.map.minFilter = THREE.NearestFilter;
-        }
-      }
-    });
+    configureJvMaterials(body);
     chassisRoot.add(body);
     fallback.visible = false;
   } catch (error) {
     console.warn('JV rama_rurowa could not be loaded; using the collider fallback.', error);
   }
+}
+
+async function loadRealJvWheels(targets: WheelVisualTarget[]): Promise<void> {
+  try {
+    const gltf = await new GLTFLoader().loadAsync('./assets/vehicle/Offroad_Big_Wheels.gltf');
+    const source = gltf.scene;
+    source.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(source);
+    if (bounds.isEmpty()) throw new Error('wheel GLTF has empty bounds');
+    const authoredCenter = bounds.getCenter(new THREE.Vector3());
+
+    const xToBodyY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+    const upToBodyRadial = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
+    const correction = new THREE.Quaternion().multiplyQuaternions(upToBodyRadial, xToBodyY);
+
+    for (const target of targets) {
+      const correctionRoot = new THREE.Group();
+      correctionRoot.name = 'JV wheel visual correction';
+      correctionRoot.quaternion.copy(correction);
+
+      const wheel = source.clone(true);
+      wheel.name = 'JV Offroad_Big_Wheels.gltf';
+      wheel.scale.setScalar(0.35);
+      wheel.position.copy(authoredCenter).multiplyScalar(-0.35);
+      configureJvMaterials(wheel);
+      correctionRoot.add(wheel);
+      target.root.add(correctionRoot);
+      target.fallback.visible = false;
+    }
+  } catch (error) {
+    console.warn('JV wheel model could not be loaded; using primitive wheel visuals.', error);
+  }
+}
+
+function configureJvMaterials(root: THREE.Object3D): void {
+  root.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    object.castShadow = true;
+    object.receiveShadow = true;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    for (const material of materials) {
+      if ('map' in material && material.map instanceof THREE.Texture) {
+        material.map.colorSpace = THREE.SRGBColorSpace;
+        material.map.magFilter = THREE.NearestFilter;
+        material.map.minFilter = THREE.NearestFilter;
+        material.map.needsUpdate = true;
+      }
+    }
+  });
 }
 
 function updateSegment(segment: DynamicSegment): void {
