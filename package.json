@@ -1,0 +1,21 @@
+{
+  "name": "jv-box3d-web-clean-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "node tools/run-tests.mjs",
+    "check": "npm run typecheck && npm run test",
+    "build": "npm run check && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.1.5"
+  }
+}
