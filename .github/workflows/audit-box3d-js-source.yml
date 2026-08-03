@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 24
 
-      - name: Resolve npm metadata and tarball
+      - name: Resolve npm metadata, tarball, binding commit and engine submodule
         shell: bash
         run: |
           set -euo pipefail
@@ -37,6 +37,23 @@ jobs:
           sha256sum "$TARBALL" | tee tarball.sha256
           mkdir package-unpacked
           tar -xzf "$TARBALL" -C package-unpacked
+
+          BINDING_SHA="$(node -e "const p=require('./npm-view.json'); process.stdout.write(p.gitHead)")"
+          git clone --no-checkout https://github.com/isaac-mason/box3d.js.git binding-source
+          git -C binding-source checkout --detach "$BINDING_SHA"
+          git -C binding-source submodule update --init --recursive
+
+          {
+            echo "binding_repository=https://github.com/isaac-mason/box3d.js.git"
+            echo "binding_commit=$(git -C binding-source rev-parse HEAD)"
+            echo "binding_tree=$(git -C binding-source rev-parse HEAD^{tree})"
+            echo "engine_submodule_status=$(git -C binding-source submodule status vendor/box3d)"
+            echo "engine_repository=$(git -C binding-source/vendor/box3d remote get-url origin)"
+            echo "engine_commit=$(git -C binding-source/vendor/box3d rev-parse HEAD)"
+            echo "engine_describe=$(git -C binding-source/vendor/box3d describe --tags --always --dirty)"
+            echo "engine_commit_date=$(git -C binding-source/vendor/box3d show -s --format=%cI HEAD)"
+            echo "engine_commit_subject=$(git -C binding-source/vendor/box3d show -s --format=%s HEAD)"
+          } | tee source-receipt.txt
 
           echo '=== npm view selected identity ==='
           node <<'NODE'
@@ -55,11 +72,18 @@ jobs:
           }, null, 2));
           NODE
 
+          echo '=== exact source receipt ==='
+          cat source-receipt.txt
+
           echo '=== packed package.json ==='
           cat package-unpacked/package/package.json
 
           echo '=== packed file inventory ==='
           find package-unpacked/package -type f -printf '%P\n' | LC_ALL=C sort
+
+          echo '=== binding build inputs ==='
+          cat binding-source/.gitmodules
+          sed -n '1,260p' binding-source/scripts/build.mjs
 
           echo '=== source/version provenance candidates ==='
           find package-unpacked/package -type f \
@@ -75,6 +99,12 @@ jobs:
           find package-unpacked/package -maxdepth 2 -type f \
             \( -name 'package.json' -o -name '*.d.ts' -o -name '*.mjs' -o -name '*.wasm' \) \
             -print0 | sort -z | xargs -0 sha256sum
+
+          echo '=== engine source tree hash ==='
+          git -C binding-source/vendor/box3d ls-files -z \
+            | LC_ALL=C sort -z \
+            | while IFS= read -r -d '' f; do sha256sum "binding-source/vendor/box3d/$f"; done \
+            | sha256sum | tee engine-source-tree.sha256
 
       - name: Upload forensic receipt
         uses: actions/upload-artifact@v4
