@@ -7,7 +7,11 @@ import { M6ParityController } from './physics/m6-parity-controller';
 import { runM6ParityProbes, type M6ProbeReport } from './physics/m6-probes';
 import { prepareBox3dRuntime } from './physics/box3d-runtime';
 import { M6WebRig } from './physics/m6-rig';
-import { createRenderContext, createRigVisuals } from './render/renderer';
+import {
+  createRenderContext,
+  createRigVisuals,
+  type RigVisualReport,
+} from './render/renderer';
 import { createWorldScene } from './scene/world';
 
 const canvas = requireElement<HTMLCanvasElement>('viewport');
@@ -39,13 +43,6 @@ async function start(): Promise<void> {
     );
   }
 
-  statusElement.textContent = [
-    `Box3D ${version.major}.${version.minor}.${version.revision}`,
-    runtimeConfig.source,
-    `sondy ${probes.passedCount}/${probes.totalCount}`,
-    `klawiatura ${probes.handlingPulse.stable ? 'OK' : 'niestabilna'}`,
-  ].join(' · ');
-
   const render = createRenderContext(canvas);
   const worldDef = b3.b3DefaultWorldDef();
   worldDef.gravity = { x: 0, y: -9.81, z: 0 };
@@ -57,7 +54,23 @@ async function start(): Promise<void> {
   const spawnHeight = config.restDrop + config.wheelRadius + 0.08;
   const rig = new M6WebRig(b3, worldId, config, { x: 0, y: spawnHeight, z: 0 });
   const parityController = new M6ParityController(b3, rig);
-  const chassisVisual = createRigVisuals(render.scene, rig);
+
+  statusElement.textContent = 'Walidacja wizualnych kontraktów JV…';
+  const visualResult = await createRigVisuals(render.scene, rig);
+  const chassisVisual = visualResult.root;
+  exposeVisualReport(visualResult.report);
+
+  const wheelVisualValid = visualResult.report.wheel.loaded
+    && visualResult.report.wheel.markerContract
+    && visualResult.report.wheel.independentSkeletons;
+  statusElement.textContent = [
+    `Box3D ${version.major}.${version.minor}.${version.revision}`,
+    runtimeConfig.source,
+    `sondy ${probes.passedCount}/${probes.totalCount}`,
+    `klawiatura ${probes.handlingPulse.stable ? 'OK' : 'niestabilna'}`,
+    `koła ${wheelVisualValid ? 'GLTF OK' : 'fallback'}`,
+  ].join(' · ');
+
   const input = new KeyboardInput();
   const driverInput = new KeyboardDriverInputModel();
 
@@ -109,6 +122,7 @@ async function start(): Promise<void> {
       const telemetry = rig.getTelemetry();
       const parity = parityController.telemetry;
       const inputTelemetry = driverInput.telemetry;
+      const wheel = visualResult.report.wheel;
       telemetryElement.innerHTML = [
         `prędkość: <b>${telemetry.speedKmh.toFixed(1)} km/h</b>`,
         `skręt klawisz/model: ${inputTelemetry.rawSteer.toFixed(2)} / ${inputTelemetry.filteredSteer.toFixed(2)}`,
@@ -118,6 +132,7 @@ async function start(): Promise<void> {
         `toe F/R: ${rig.config.frontToeDeg.toFixed(2)}° / ${rig.config.rearToeDeg.toFixed(2)}°`,
         `sondy parytetu: ${probes.passedCount}/${probes.totalCount}`,
         `keyboard tap: ${probes.handlingPulse.stable ? 'OK' : 'NIESTABILNY'}`,
+        `koła GLTF: ${wheel.loaded ? `${wheel.cloneCount} · szkielety ${wheel.uniqueSkeletonCount}` : 'fallback'}`,
         `fizyka: ${telemetry.physicsMs.toFixed(2)} ms`,
         `body/joint/contact: ${telemetry.bodyCount}/${telemetry.jointCount}/${telemetry.contactCount}`,
       ].join('<br>');
@@ -135,6 +150,10 @@ async function start(): Promise<void> {
 
 function exposeProbeReport(report: M6ProbeReport): void {
   (window as Window & { __JV_PROBE_REPORT__?: M6ProbeReport }).__JV_PROBE_REPORT__ = report;
+}
+
+function exposeVisualReport(report: RigVisualReport): void {
+  (window as Window & { __JV_VISUAL_REPORT__?: RigVisualReport }).__JV_VISUAL_REPORT__ = report;
 }
 
 function logProbeReport(report: M6ProbeReport): void {
