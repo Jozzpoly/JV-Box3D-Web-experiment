@@ -99,9 +99,17 @@ function findNativeRoot() {
     return resolved;
   }
 
+  // Supported local layouts:
+  // 1. web repo nested somewhere inside the native JV repository;
+  // 2. Jozz's current workspace, where the native repository is the sibling
+  //    directory "box3d" under a shared Box3d_FunProject workspace folder.
   let current = process.cwd();
-  for (let depth = 0; depth < 9; depth += 1) {
-    if (isNativeRoot(current)) return current;
+  for (let depth = 0; depth < 10; depth += 1) {
+    const candidates = [current, path.join(current, 'box3d')];
+    for (const candidate of candidates) {
+      if (isNativeRoot(candidate)) return candidate;
+    }
+
     const parent = path.dirname(current);
     if (parent === current) break;
     current = parent;
