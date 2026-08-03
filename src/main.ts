@@ -9,6 +9,10 @@ import { prepareBox3dRuntime } from './physics/box3d-runtime';
 import { RackResponseWatchdog } from './physics/rack-response-watchdog';
 import { M6WebRig } from './physics/m6-rig';
 import {
+  loadFrontRigContractPreflight,
+  type FrontRigContractReport,
+} from './render/front-rig-contract';
+import {
   createRenderContext,
   createRigVisuals,
   type RigVisualReport,
@@ -49,6 +53,14 @@ async function start(): Promise<void> {
     );
   }
 
+  statusElement.textContent = 'Preflight kontraktu przedniego rigu JV…';
+  const frontRigContract = await loadFrontRigContractPreflight();
+  exposeFrontRigReport(frontRigContract);
+  if (!frontRigContract.loaded) {
+    throw new Error(`Kontrakt przedniego rigu został odrzucony: ${frontRigContract.message}`);
+  }
+  console.info(`[jv-front-rig] ${frontRigContract.message}`);
+
   const render = createRenderContext(canvas);
   const worldDef = b3.b3DefaultWorldDef();
   worldDef.gravity = { x: 0, y: -9.81, z: 0 };
@@ -78,6 +90,7 @@ async function start(): Promise<void> {
     `klawiatura ${probes.handlingPulse.stable ? 'OK' : 'niestabilna'}`,
     `low-speed ${probes.lowSpeedSteering.stable ? 'OK' : 'diagnostyka'}`,
     `koła ${wheelVisualValid ? 'GLTF OK' : 'fallback'}`,
+    `front-rig ${frontRigContract.resolvedNodeCount}/${frontRigContract.requiredNodeCount}`,
   ].join(' · ');
 
   const input = new KeyboardInput();
@@ -155,6 +168,8 @@ async function start(): Promise<void> {
         `binding kół: ${wheel.attachedToWheelBodies ? 'OK' : 'BŁĄD'} · root ${wheel.maxBindingPositionError.toExponential(1)} m`,
         `środek opony: ${wheel.centerError.toExponential(1)} m · socket ${wheel.mountOffset.toFixed(4)} m`,
         `oś socketu: ${wheel.mountAxisError.toExponential(1)} m`,
+        `front rig: ${frontRigContract.resolvedNodeCount}/${frontRigContract.requiredNodeCount} · skin ${frontRigContract.skinnedMeshCount}`,
+        `ownership: M6 ${frontRigContract.m6CarrierBody} · JSON ${frontRigContract.nativeChassisMountBRidesBody}${frontRigContract.knownOwnershipDrift ? ' (drift)' : ''}`,
         `fizyka: ${telemetry.physicsMs.toFixed(2)} ms`,
         `body/joint/contact: ${telemetry.bodyCount}/${telemetry.jointCount}/${telemetry.contactCount}`,
       ].join('<br>');
@@ -176,6 +191,10 @@ function exposeProbeReport(report: M6ProbeReport): void {
 
 function exposeVisualReport(report: RigVisualReport): void {
   (window as Window & { __JV_VISUAL_REPORT__?: RigVisualReport }).__JV_VISUAL_REPORT__ = report;
+}
+
+function exposeFrontRigReport(report: FrontRigContractReport): void {
+  (window as Window & { __JV_FRONT_RIG_REPORT__?: FrontRigContractReport }).__JV_FRONT_RIG_REPORT__ = report;
 }
 
 function logProbeReport(report: M6ProbeReport): void {
