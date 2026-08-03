@@ -2,6 +2,7 @@ import Box3D from 'box3d.js/inline';
 import './style.css';
 import { KeyboardInput } from './input';
 import { M6ParityController } from './physics/m6-parity-controller';
+import { prepareBox3dRuntime } from './physics/box3d-runtime';
 import { M6WebRig } from './physics/m6-rig';
 import { DEFAULT_M6_CONFIG } from './physics/rig-config';
 import { createRenderContext, createRigVisuals } from './render/renderer';
@@ -14,7 +15,7 @@ const errorElement = requireElement<HTMLElement>('error');
 
 async function start(): Promise<void> {
   statusElement.textContent = 'Ładowanie Box3D WebAssembly…';
-  const b3 = await Box3D();
+  const b3 = prepareBox3dRuntime(await Box3D());
   const version = b3.b3GetVersion();
   statusElement.textContent = `Box3D ${version.major}.${version.minor}.${version.revision} · JV M6 parity pass`;
 
