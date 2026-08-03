@@ -1,136 +1,75 @@
 # AI project memory — JV Box3D Web
 
-Updated: 2026-08-03
+Updated: 2026-08-04
 Status: `CANONICAL / READ_FIRST`
+
+Detailed session handoff:
+
+```text
+docs/HANDOFF_2026_08_04_PL.md
+```
+
+Read that file immediately after this one. It contains exact receipts, branch SHAs, the quarantined F3 failure and current F5 WIP mechanics.
 
 ## 1. Purpose
 
 Build a serious browser version of the current Jozz Vehicle research/runtime slice using Box3D WebAssembly without changing the soul of JV:
 
 - no hidden artificial vehicle mechanics;
-- physical behavior remains traceable to native JV or an explicitly approved experiment;
+- behavior traceable to native JV or a named experiment;
 - owner feel and visual verdicts belong to Jozz;
-- browser, desktop and mobile hosts must not silently change the physics profile;
-- current work begins with M6/M7+ architecture, never historical M5.
+- desktop/mobile hosts must not silently change the physics profile;
+- current work begins with M6/M7+, never historical M5.
 
-## 2. Mandatory tool rule
+## 2. Mandatory rules
 
-`Git Diff Patcher Bridge` is categorically forbidden for this project.
+`Git Diff Patcher Bridge` is categorically forbidden.
 
-Use:
+Use the GitHub connector and ordinary Git only. Do not shift routine repository work onto Jozz. Ask for local commands only when a real owner/browser test or local-only source is required.
 
-- GitHub connector;
-- normal Git commands given to Jozz only when local action is actually required;
-- project CI only for justified product checks;
-- manual forensic workflows only when their evidence must be refreshed.
+No merge, ready-for-review transition or product-default approval without Jozz.
 
-Do not interrupt work by claiming that Git Diff Patcher Bridge is required.
+## 3. Source authority and local paths
 
-## 3. Branch map
-
-### `main`
-
-Minimal repository root. It is not the working implementation.
-
-### `agent/bootstrap-web-poc`
-
-Historical, runnable browser prototype and draft PR #1.
-
-Status:
+Native baseline:
 
 ```text
-QUARANTINED IMPLEMENTATION EVIDENCE
-DO NOT CONTINUE AS PRODUCT FOUNDATION
-DO NOT MERGE WHOLESALE
+Jozzpoly/Box3d_FunProject
+main@959aefb78587ce60cf2b8eb03ff82797a4165142
 ```
 
-Useful ideas may be reimplemented after proof. The branch contains rejected behavior, especially automatic steering return-to-zero and centre hold.
-
-### `agent/fundamental-audit-rebuild`
-
-Documentation, source receipts, errata and manual forensic workflows. Draft PR #2.
-
-Status:
+Wheel research snapshot used by the audit:
 
 ```text
-FOUNDATION DOCUMENTATION
-NO PRODUCT RUNTIME
-SOURCE FOR CLEAN DEVELOPMENT DECISIONS
+jozz-scan-terrain-f0@761bd3ef60992f7dec3bcdddf1945fdbc1cb0825
 ```
 
-### `agent/clean-browser-core`
-
-Clean development branch created from the consolidated audit line.
-
-Status:
-
-```text
-ACTIVE IMPLEMENTATION DESTINATION
-```
-
-It must remain free from wholesale copies of PR #1. Recover behavior and small adapters only after classification and tests.
-
-## 4. Source authority
-
-### Native JV baseline
-
-```text
-repository: Jozzpoly/Box3d_FunProject
-main commit: 959aefb78587ce60cf2b8eb03ff82797a4165142
-```
-
-Critical sources include:
-
-- `samples/jozz_vehicle_m6_geometry.cpp`
-- `samples/jozz_vehicle_m6_suspension_rig.cpp`
-- `samples/jozz_vehicle_m6_config_io.cpp`
-- `samples/jozz_vehicle_m6_rig_lab*.cpp`
-- `samples/jozz_vehicle_m7_suspension_import.*`
-- `samples/jozz_vehicle_m9_steering_rig_bench.*`
-- `samples/validation/jozz_probes_*.cpp`
-- `samples/jozz_vehicle_asset_*.cpp`
-- `assets/contracts/*.asset.json`
-
-### Current wheel research snapshot used by this audit
-
-```text
-branch: jozz-scan-terrain-f0
-commit: 761bd3ef60992f7dec3bcdddf1945fdbc1cb0825
-```
-
-The branch name is historical. It contains the current Wheel Scope program and findings through F-31/F-32 at audit time.
-
-### Local owner working tree
-
-Jozz's local JV path:
+Local native path:
 
 ```text
 C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\box3d
 ```
 
-Browser experiment path:
+Local web path:
 
 ```text
 C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\JV-Box3D-Web-experiment\JV-Box3D-Web-experiment
 ```
 
-GitHub state does not prove local uncommitted files. Ask for a local receipt only when the exact local state matters. Never assume a different path.
+GitHub does not prove local uncommitted state.
 
-## 5. Document precedence
-
-When documents conflict, use this order:
+## 4. Document precedence
 
 1. latest direct decision from Jozz;
-2. this `AI_PROJECT_MEMORY.md`;
-3. `docs/PROJECT_STATE.md`;
-4. `docs/AUDIT_ERRATA_2026_08_03_PL.md`;
-5. exact source receipts and focused subsystem documents;
-6. earlier broad audit documents;
-7. PR #1 documentation and its old `AI_PROJECT_MEMORY.md`.
+2. this file;
+3. `docs/HANDOFF_2026_08_04_PL.md`;
+4. `docs/PROJECT_STATE.md`;
+5. `docs/AUDIT_ERRATA_2026_08_03_PL.md`;
+6. focused receipts/ADRs/subsystem docs;
+7. broad audits;
+8. PR #1 historical documentation.
 
-The old memory on `agent/bootstrap-web-poc` is not canonical. It incorrectly treats steering centre return/hold as an accepted fix.
-
-## 6. Non-negotiable mechanics policy
+## 5. Non-negotiable mechanics policy
 
 Default realistic steering:
 
@@ -139,134 +78,214 @@ rackCenteringHertz = 0
 uprightAssist = false
 ```
 
-After driver release:
+RELEASE means:
 
-- hands-on steering actuator turns off immediately;
-- no target moves toward zero;
-- no centre-hold timer;
+- hands-on spring/servo OFF in the first fixed step;
+- no target toward zero;
+- no centre timer or centre hold;
 - physical rack friction remains;
-- any return while rolling must come from geometry, contact, caster, linkage and inertia;
-- wheels may remain turned at standstill.
+- physical caster/contact/linkage/inertia may move the rack while rolling;
+- wheels may stay turned at standstill.
 
-Optional native assists may be supported later only as explicit, default-off features after owner approval.
+Optional assists may exist later only explicitly, default OFF and owner-approved.
 
-## 7. Precise digital steering direction
-
-Jozz confirmed that the useful part of the old web input was small steering nudges from short A/D taps.
-
-Do not recover the old return-to-zero filter.
-
-Current research candidate:
+## 6. Input contract
 
 ```text
 SteeringCommand = RELEASE | POSITION | RATE
 ```
 
-First experiment:
+F1 timestamped timeline integrates sub-frame digital taps proportionally:
 
-- `RATE` operates in rack-space;
-- command rebases to live rack at hands-on edge;
-- key/pointer release produces immediate `RELEASE`;
-- explicit cap prevents target lead from accumulating while blocked;
-- timestamped input events are consumed by fixed-step simulation;
-- keyboard and touch generate the same semantic command trace;
-- no yaw/slip/speed feedback in the device mapper.
+```text
+RATE value = signed active time / fixed-step time
+```
 
-Reference documents:
+Do not restore the rejected PR #1 return-to-zero filter.
 
-- `docs/STEERING_INPUT_RESEARCH_2026_08_03_PL.md`
-- `docs/STEERING_TAP_EXPERIMENT_MATRIX_2026_08_03_PL.md`
+RATE experiment rules:
 
-The old `2.25/s` normalized rate is a useful reference, not an accepted final parameter.
+- physical rack-space m/s;
+- rebase to live rack on engage and reversal;
+- immediate RELEASE;
+- bounded target lead;
+- no yaw/slip/speed feedback in the mapper;
+- keyboard and future touch share the same semantic timeline.
 
-## 8. Wheel direction
+## 7. Current branch stack
 
-Legacy M6 split wheel canonical ID:
+```text
+foundation: agent/fundamental-audit-rebuild@2831d533
+F1: agent/clean-browser-core@484c865
+F2: agent/typed-box3d-boundary@2c208809
+F3: agent/native-factory-receipt (PR #9)
+F4: agent/current-m6-topology@1653e982
+F5 active: agent/physical-rate-steering
+```
+
+All PRs remain stacked drafts and unmerged.
+
+Historical prototype:
+
+```text
+agent/bootstrap-web-poc / PR #1
+QUARANTINED / DO NOT MERGE
+```
+
+Failed first F3 attempt:
+
+```text
+agent/f3-regression-snapshot-2026-08-03@d583d3f
+PR #8 closed, quarantined
+```
+
+Never resume its self-modifying workflow/cross-repo commit loop.
+
+## 8. Completed evidence
+
+### F1
+
+- deterministic host/input/lifecycle;
+- Node 24.16.0, npm 11.17.0;
+- 19/19 tests;
+- `npm ci`, typecheck, build and browser dev host PASS.
+
+### F2
+
+- typed `box3d.js@0.0.2` boundary;
+- shared WASM module;
+- B0–B5 real contact/manifold and lifecycle;
+- 26/26 tests;
+- two browser world generations PASS;
+- receipts under `docs/receipts/F2_*`.
+
+### F3
+
+- exact static native receipt;
+- source `a740dec7`, artifact `78b0be92`, blob `6a5cb337`;
+- schema v1, 76 descriptor fields, SHA-256, topology/assist/fallback guards;
+- Box3D startup blocked on rejected receipt;
+- run `30855702375`, 37/37 tests, build and Chrome PASS.
+
+### F4
+
+- current minimal M6 graph: 18 vehicle bodies / 29 joints / 9 shapes;
+- unique negative collision group per instance;
+- temporary `legacy_m6_split_sphere_sidewall` backend;
+- one controller and full per-step trace;
+- POSITION baseline;
+- RELEASE disables spring/servo and keeps load-dependent physical friction;
+- run `30858244976`, 46/46 tests, build and Chrome PASS;
+- generation 1 and 2 each settled with four wheel contacts.
+
+These are machine/infrastructure results, not owner feel or full parity.
+
+## 9. Active F5 state
+
+Issue:
+
+```text
+#12 Physical rack-space RATE steering experiment
+```
+
+Branch F5 already contains WIP implementation and is ahead of F4. Current candidate profiles:
+
+```text
+0.06 / 0.12 / 0.21 / 0.36 m/s
+maxTargetLeadMeters = 0.008
+```
+
+Every profile has `productDefaultApproved: false`.
+
+`0.21 m/s` is only the initial historical-reference UI selection.
+
+Current K2b implementation:
+
+- engage/reversal rebases commanded rack to live rack;
+- per-step delta = command value × profile m/s × fixedDt;
+- target clamped to rack travel and live rack ± lead cap;
+- spring/motor active only hands-on;
+- RELEASE clears commanded target, disables spring, motor speed 0 and uses friction cap only;
+- trace exposes profile, edge, commanded/live rack, target error, spring, motor request/force and friction terms;
+- browser UI exposes all profiles and trace.
+
+F5 is **not complete**. It has only a basic RATE engagement test. Full matrix and validation are missing. See the handoff and issue #12.
+
+## 10. Required F5 completion gate
+
+Before CI:
+
+- tap lengths 0.5/1/2/3/6 steps across all four profiles;
+- monotonic commanded deltas;
+- exact signed-time sub-frame input;
+- immediate release;
+- engage/reversal rebase;
+- left/right symmetry;
+- rack travel clamp;
+- blocked-rack lead-cap fixture;
+- 15/30/60/120 FPS and lag equivalence;
+- rebuild/profile switch/lifecycle;
+- no hidden centering after RELEASE.
+
+Then exactly one justified read-only validation:
+
+```text
+npm ci
+npm run check
+npm run build
+one browser smoke
+```
+
+No self-modifying workflows, automatic commits or repeated Actions debugging.
+
+## 11. Wheel direction
+
+Legacy canonical regression ID:
 
 ```text
 legacy_m6_split_sphere_sidewall
 ```
 
-It is allowed only for reconstruction/regression. It is not the future tire architecture.
+It is not the future tire architecture.
 
-Important finding:
-
-- Central Test Campus plate, rocks and bumpers are all `TERRAIN`;
-- the legacy split therefore uses the rolling sphere on the main rocks and bumpers;
-- changing categories to force the cylinder would preserve the rejected category-switched nature of the tire.
-
-Clean architecture prepares only the durable seam:
+Durable future seam only:
 
 ```text
 W1 WheelSpecSnapshot + explicit mass/inertia
 W2 replaceable WheelContactBackend
 neutral WheelContactObserver / WheelContactSet
 W4 visual binding independent from W2
-W3 future tire law absent until justified
+W3 absent until justified
 ```
 
-No backend winner is selected. Do not port provisional Wheel Scope candidates into the vehicle runtime.
+No backend winner is selected.
 
-## 9. Mobile direction
+## 12. Mobile direction
 
-Mobile is a near-term host target, not a separate physics version.
+Mobile uses the same physics profile with a different input/render host.
 
-Allowed mobile changes:
+Allowed: touch adapter, pointer ownership, lower visual cost, smaller test world.
 
-- touch adapter;
-- pointer ownership;
-- low visual profile;
-- lower DPR/shadows/debug visuals;
-- smaller test world;
-- reduced HUD cost.
+Not silently allowed: fewer substeps, different tuning/backend/mass or device-dependent artificial steering.
 
-Not allowed without a separate named physics receipt:
+F6 starts only after F5 machine pass and owner steering verdict.
 
-- fewer substeps;
-- different contact tuning;
-- different wheel backend;
-- different mass data;
-- device-dependent artificial steering forces.
-
-First mobile test follows the clean input/host boundary and uses the same fixed-step command trace as desktop.
-
-## 10. Confirmed problems in PR #1
-
-Do not reintroduce:
+## 13. Do not reintroduce
 
 - automatic steering return-to-zero;
-- `0.35 s` centre hold;
-- tests requiring centre capture at standstill;
-- polling one input snapshot per render frame for all catch-up physics steps;
-- two divergent vehicle controllers;
-- silent fallback from invalid/unsupported session to another vehicle;
-- web-only sanitization that changes native steering limits;
-- hardcoded wheel dimensions presented as authored truth;
-- full probe suite during ordinary app startup;
+- 0.35 s centre hold;
+- standstill centre-capture tests;
+- render-frame input polling reused for catch-up steps;
+- divergent controllers;
+- invalid-session fallback to another vehicle;
+- browser-only steering sanitizer;
+- hardcoded wheel dimensions as authored truth;
+- startup probe suite;
 - moving asset refs without content provenance;
-- non-transactional asset synchronization;
-- one fixed negative collision group shared by every future vehicle instance;
-- treating startup/build/Chrome smoke as owner feel or parity proof.
+- shared fixed collision group;
+- browser/build smoke described as parity or owner approval.
 
-## 11. Valuable concepts recoverable after proof
-
-Candidates, not automatic code copies:
-
-- explicit WASM boundary and exact compatibility shims;
-- four-corner double-wishbone multi-body topology;
-- shapeless rack/arms with explicit mass data;
-- physical tie rods and rack;
-- torque drive, brake/coast, ARB and aero;
-- `SkeletonUtils.clone` for independent skinned wheel instances;
-- authored wheel marker concept;
-- contextual M6/M9 visual binding roles;
-- orbit/zoom camera;
-- deterministic campus data after generated receipt;
-- headless startup smoke at the correct evidence level.
-
-## 12. Evidence levels
-
-Use precise labels:
+## 14. Evidence vocabulary
 
 ```text
 SOURCE_FACT
@@ -279,46 +298,17 @@ VISUAL_OBSERVATION
 OWNER_VALIDATED
 ```
 
-Do not flatten these into one `PASS`.
-
-`Build PASS`, `WASM starts` and `Chrome renders` are infrastructure evidence only.
-
-## 13. Active implementation sequence
-
-1. Consolidated foundation documents and branch structure.
-2. Clean browser host with transactional lifecycle and fixed-step event timeline.
-3. Typed runtime/config boundary and pinned minimal world profile.
-4. Minimal M6 topology with one controller and full trace.
-5. Precise RATE steering experiment on desktop.
-6. Jozz owner test and behavior card for JV/JES.
-7. Touch adapter and low visual mobile profile using the same physics trace.
-8. Minimal future-wheel seam with legacy backend named explicitly.
-9. Real visual bindings one corner at a time with image/owner gates.
-10. Campus and scan only after their separate contracts and performance/contact receipts.
-
-Detailed gates are in `docs/IMPLEMENTATION_ROADMAP.md`.
-
-## 14. Current non-goals
-
-Do not currently implement:
-
-- backward compatibility for abandoned web prototypes;
-- full campus and scan in the first clean slice;
-- PWA/offline/mobile product shell;
-- speculative tire temperature/wear/damage framework;
-- a new tire backend without Wheel Scope evidence;
-- real front/rear rig visuals before one-corner contextual binding proof;
-- multi-vehicle gameplay before unique runtime collision groups exist;
-- broad refactors of native JV unrelated to a proven browser blocker.
+Do not flatten them into one PASS.
 
 ## 15. Work discipline
 
-For substantial changes:
-
-- read this file first;
-- work from exact current branch/source refs;
-- update this file after important decisions or state changes;
-- keep commits small and named by evidence/behavior;
-- send Jozz brief progress checkpoints during long work;
-- do not claim local runtime success without Jozz or a real runtime receipt;
-- do not rerun forensic workflows merely because documentation changed.
+- read this file and the handoff first;
+- inspect exact branch/ref before work;
+- one active stage at a time;
+- source/test work before CI;
+- small meaningful commits;
+- brief progress checkpoints, not tool-call narration;
+- no local-success claim without a real receipt;
+- no owner-feel claim without Jozz;
+- update memory/state after meaningful changes;
+- no merge without Jozz.
