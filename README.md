@@ -41,6 +41,59 @@ DEVELOP NEW CODE HERE
 
 It starts from the consolidated foundation rather than from PR #1.
 
+## Active work
+
+Current implementation issue:
+
+```text
+#3 — F1 Clean host and deterministic input timeline
+```
+
+Current draft implementation review:
+
+```text
+#4 — F1 deterministic browser host and semantic steering timeline
+```
+
+Current clean checkpoint:
+
+```text
+commit a73540e863c9f1dc878964fa3d32786a86d7677b
+```
+
+Implemented at this checkpoint:
+
+- strict TypeScript project shell;
+- transactional resource ownership and startup rollback;
+- bounded fixed-step clock with explicit dropped-time intervals;
+- timestamped input timeline;
+- semantic steering commands `RELEASE | POSITION | RATE`;
+- proportional preservation of sub-frame taps;
+- disposable keyboard/focus lifecycle;
+- restartable browser host without page reload;
+- deterministic unit tests independent of render cadence.
+
+Deliberately absent:
+
+- Box3D;
+- vehicle topology or controller;
+- Three.js and real assets;
+- touch controls;
+- campus and scan;
+- startup physics probes.
+
+The active issue is the operational progress log. Broad audit documents are not used as day-to-day TODO lists.
+
+## Current F1 gate
+
+The source has passed isolated strict compilation and 16 deterministic tests with the available local validation toolchain. F1 is not complete yet because the clean branch still needs:
+
+1. a generated and committed `package-lock.json` from the exact declared versions;
+2. `npm ci`, `npm run check` and `npm run build` on the target Node 24 environment;
+3. a real browser smoke of the host and keyboard lifecycle.
+
+No GitHub Actions workflow is used automatically for this work.
+
 ## Current first milestone
 
 `Clean Browser Core M0`:
@@ -63,7 +116,7 @@ Full campus, scans, real suspension assets, touch UI and a new tire backend are 
 - Current architecture begins with M6/M7+, not historical M5.
 - Default realistic mechanics contain no hidden artificial stabilization.
 - Steering release means immediate hands-off; physical caster/contact may move the rack while rolling.
-- Small digital steering taps are valuable and will be recovered through a bounded `RATE` command, not automatic return-to-zero.
+- Small digital steering taps are valuable and are recovered through a bounded `RATE` command, not automatic return-to-zero.
 - Legacy sphere/split wheel is only a regression fixture, not the future tire architecture.
 - Mobile uses the same physics profile with a different input and render host.
 - Feel and visual verdicts belong to Jozz.
@@ -81,17 +134,26 @@ jozz-scan-terrain-f0@761bd3ef60992f7dec3bcdddf1945fdbc1cb0825
 
 GitHub snapshots do not prove Jozz's local uncommitted working tree.
 
-## Forensic workflows
+## Tool and evidence policy
 
-The repository contains three evidence workflows for dependency, engine-delta and repository inventory receipts. They are manual-only:
+- GitHub connector for repository work;
+- ordinary local Git commands only when local state must be changed;
+- no Git Diff Patcher Bridge;
+- no automatic forensic workflows;
+- no GitHub Actions run merely to generate files or repeat known evidence;
+- local/Node tests before browser tests;
+- browser smoke before Box3D integration;
+- every claim names its evidence level.
+
+The three forensic workflows in the repository are manual-only:
 
 ```yaml
 on:
   workflow_dispatch:
 ```
 
-They are not ordinary product CI and must not be rerun without an exact evidence need.
+They are not ordinary product CI.
 
 ## Status
 
-The project foundation is consolidated. Clean product implementation is not yet claimed as complete or parity-proven. Development proceeds on `agent/clean-browser-core` according to the gated roadmap.
+The foundation is consolidated and the first clean implementation layer now exists. It is not yet F1-complete, physics-capable or parity-proven. Development proceeds on `agent/clean-browser-core` according to issue #3 and the gated roadmap.
