@@ -4,7 +4,7 @@ Updated: 2026-08-03
 
 ## Goal
 
-Proof of concept: run a real, current JV vehicle rig in a browser on the JV board and a 3D-scan terrain. The project has passed the first viability gate: the user ran the browser build successfully and drove the bootstrap vehicle.
+Proof of concept: run a real, current JV vehicle rig in a browser on the JV board and a 3D-scan terrain. The project passed the initial viability gate: the user ran and drove the first browser bootstrap.
 
 ## Critical owner correction
 
@@ -12,7 +12,7 @@ Do **not** copy M5 as the vehicle. M5 is an old, simple rig. The authoritative v
 
 ## Current source of truth
 
-Use the current `main` branch of `Jozzpoly/Box3d_FunProject`, not the historical `jozz-scan-terrain-f0` pointer recorded during repository initialization.
+Use the current `main` branch of `Jozzpoly/Box3d_FunProject`.
 
 Important native sources:
 
@@ -23,38 +23,73 @@ Important native sources:
 - `samples/jozz_vehicle_obstacle_kit.cpp`
 - `samples/jozz_vehicle_body_registry.cpp`
 
-## Serious parity pass completed on agent/bootstrap-web-poc
+## Serious parity pass on agent/bootstrap-web-poc
 
-- Replaced guessed bootstrap tuning with the exact current M6 factory defaults.
+- Replaced guessed bootstrap tuning with current M6 factory defaults.
 - Fixed the web rack-stroke error that doubled the Ackermann track term.
-- Added the native load-dependent hands-off rack friction model, including the 1.4 stiction ratio and transverse front tie-rod load.
+- Added native load-dependent hands-off rack friction, including the 1.4 stiction ratio and transverse front tie-rod load.
 - Restored current drive/brake/coast, servo, ARB, aero, filter-group and visual identity defaults.
 - Added telemetry for rack friction and transverse tie-rod load.
 - Added live hardpoint-driven rendering for wishbone links, kingpins, coilovers and steering/toe links.
-- Added automatic synchronization and rendering of the real `assets/source/Nadwozie.gltf` tube frame with the native 0.35 scale, -90 degree yaw and `(0,-0.60,0)` base pose.
-- Replaced the temporary board with the current 400x400 m plate.
-- Ported the exact Central Test Campus bumper-bank specifications and deterministic E1/E2/E3 rock-island generation.
-- Updated the scan-island placement to the native north-island contract (`south edge z=320`, lowest point y=0).
+- Added automatic synchronization and rendering of `assets/source/Nadwozie.gltf` with native scale/pose.
+- Restored the current 400×400 m plate.
+- Ported Central Test Campus bumper-bank specifications and deterministic E1/E2/E3 rock-island generation.
+- Updated scan-island placement to the native north-island contract (`south edge z=320`, lowest point y=0).
 
-The real body asset is intentionally synchronized at dev/build time and ignored by Git; it remains sourced from JV rather than becoming a drifting copy.
+## Runtime failure found by the owner
 
-## Validation
+The first serious browser build failed at startup with:
 
-- The user confirmed the original browser bootstrap runs.
-- The complete serious parity pass passed `npm install`, asset synchronization, strict TypeScript and production Vite build in GitHub Actions at head `3f6ae70`.
-- The build includes the current M6 controller, real tube-frame asset, live suspension visualization and Central Test Campus contract.
+```text
+b3.b3MulQuat is not a function
+```
 
-Compilation is not physics parity. The next explicit gate is a user runtime test and native/web driving comparison.
+Root cause: `b3MulQuat` is a native inline Box3D helper but is not exported by `box3d.js@0.0.2`. TypeScript did not catch it because several module boundaries still used `any`.
+
+This was not a local setup problem.
+
+## Runtime hardening completed
+
+- Added `src/physics/box3d-runtime.ts` as the explicit native/WASM compatibility boundary.
+- Added the exact Box3D `b3MulQuat` formula as one named compatibility shim.
+- Critical exports are validated before any world is allocated.
+- Added `tools/check-box3d-runtime.mjs`:
+  - instantiates the real `box3d.js/inline` WASM module;
+  - scans all source files for `b3.*` calls;
+  - currently validates 58 distinct calls;
+  - rejects any missing export not listed as an explicit shim;
+  - executes a real world/body/hull/sphere/step smoke simulation.
+- Added `tools/smoke-browser.mjs`:
+  - starts the production Vite build;
+  - launches real headless Chrome through CDP;
+  - checks the visible error panel, Box3D status, canvas dimensions, uncaught exceptions and active telemetry.
+- Both tests are mandatory GitHub Actions gates.
+
+## Validation completed
+
+At commit `512f644`:
+
+- asset synchronization succeeds;
+- strict TypeScript succeeds;
+- 58 Box3D source calls pass runtime export verification;
+- the Node/WASM physics smoke test succeeds;
+- production Vite build succeeds;
+- real headless Chrome starts the application successfully;
+- browser state reported `Box3D 0.1.0 · JV M6 parity pass`, a valid canvas and active body/joint/contact telemetry;
+- the complete GitHub Actions workflow is green.
+
+Compilation is still not native/web physics parity. The next explicit gate is the owner's runtime driving test and comparison against native M6 Rig Lab.
 
 ## Next validation order
 
-1. User runs `git pull`, `npm install`, then `npm run dev` and reports startup/runtime behavior.
-2. Compare static pose, rack travel, body/joint/contact counts and basic straight-line response against native M6 Rig Lab.
-3. Correct any browser-only runtime/API differences revealed by the first serious test.
-4. Synchronize the actual wheel and front steering-rig visual contracts.
-5. Add the user's cleaned scan visual/collision pair and inspect wheel contacts.
-6. Decide whether to fork `box3d.js` for mesh `identifyEdges=true`.
-7. Replace the remaining TypeScript mirror with generated native config/contract exports once the topology is validated.
+1. Owner pulls commit `512f644` or newer and runs `npm install`, then `npm run dev`.
+2. Verify the original `b3MulQuat` startup failure is gone on Windows/Chrome.
+3. Compare static pose, rack travel, body/joint/contact counts and straight-line response against native M6 Rig Lab.
+4. Correct any behavioral differences revealed by the comparison.
+5. Synchronize actual wheel and front steering-rig visual contracts.
+6. Add the cleaned scan visual/collision pair and inspect wheel contacts.
+7. Decide whether to fork `box3d.js` for mesh `identifyEdges=true`.
+8. Replace remaining TypeScript mirrors and `any` module boundaries with generated/typed native contracts.
 
 ## Known binding risk
 
