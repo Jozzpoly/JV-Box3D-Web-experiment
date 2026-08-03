@@ -1,0 +1,82 @@
+name: audit-box3d-js-source
+
+on:
+  push:
+    branches:
+      - agent/fundamental-audit-rebuild
+    paths:
+      - .github/workflows/audit-box3d-js-source.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  receipt:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Resolve npm metadata and tarball
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit
+          cd audit
+
+          npm view box3d.js@0.0.2 --json > npm-view.json
+          npm pack box3d.js@0.0.2 --json > npm-pack.json
+
+          TARBALL="$(node -e "const x=require('./npm-pack.json'); process.stdout.write(x[0].filename)")"
+          sha256sum "$TARBALL" | tee tarball.sha256
+          mkdir package-unpacked
+          tar -xzf "$TARBALL" -C package-unpacked
+
+          echo '=== npm view selected identity ==='
+          node <<'NODE'
+          const fs = require('node:fs');
+          const p = JSON.parse(fs.readFileSync('npm-view.json', 'utf8'));
+          console.log(JSON.stringify({
+            name: p.name,
+            version: p.version,
+            dist: p.dist,
+            repository: p.repository,
+            homepage: p.homepage,
+            bugs: p.bugs,
+            gitHead: p.gitHead,
+            engines: p.engines,
+            time: p.time,
+          }, null, 2));
+          NODE
+
+          echo '=== packed package.json ==='
+          cat package-unpacked/package/package.json
+
+          echo '=== packed file inventory ==='
+          find package-unpacked/package -type f -printf '%P\n' | LC_ALL=C sort
+
+          echo '=== source/version provenance candidates ==='
+          find package-unpacked/package -type f \
+            \( -iname '*version*' -o -iname '*source*' -o -iname '*commit*' -o -name '.gitmodules' -o -name 'CMakeLists.txt' \) \
+            -print
+
+          echo '=== textual SHA / repository hints ==='
+          grep -RInE 'github\.com|gitHead|commit|revision|[0-9a-f]{40}' package-unpacked/package \
+            --exclude='*.wasm' --exclude='*.map' --exclude='*.mjs' --exclude='*.js' \
+            || true
+
+          echo '=== key package file hashes ==='
+          find package-unpacked/package -maxdepth 2 -type f \
+            \( -name 'package.json' -o -name '*.d.ts' -o -name '*.mjs' -o -name '*.wasm' \) \
+            -print0 | sort -z | xargs -0 sha256sum
+
+      - name: Upload forensic receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: box3d-js-0.0.2-source-receipt
+          path: audit/
+          if-no-files-found: error
+          retention-days: 30
