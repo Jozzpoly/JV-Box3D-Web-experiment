@@ -1,6 +1,7 @@
 import Box3D from 'box3d.js/inline';
 import './style.css';
 import { KeyboardInput } from './input';
+import { KeyboardDriverInputModel } from './input-model';
 import { loadRuntimeM6Config } from './physics/config-loader';
 import { M6ParityController } from './physics/m6-parity-controller';
 import { runM6ParityProbes, type M6ProbeReport } from './physics/m6-probes';
@@ -42,7 +43,7 @@ async function start(): Promise<void> {
     `Box3D ${version.major}.${version.minor}.${version.revision}`,
     runtimeConfig.source,
     `sondy ${probes.passedCount}/${probes.totalCount}`,
-    `handling ${probes.handlingPulse.stable ? 'OK' : 'niestabilny'}`,
+    `klawiatura ${probes.handlingPulse.stable ? 'OK' : 'niestabilna'}`,
   ].join(' · ');
 
   const render = createRenderContext(canvas);
@@ -58,6 +59,7 @@ async function start(): Promise<void> {
   const parityController = new M6ParityController(b3, rig);
   const chassisVisual = createRigVisuals(render.scene, rig);
   const input = new KeyboardInput();
+  const driverInput = new KeyboardDriverInputModel();
 
   const fixedDt = 1 / 60;
   const subSteps = 4;
@@ -84,10 +86,11 @@ async function start(): Promise<void> {
     previousSeconds = seconds;
     accumulator += frameDt;
 
-    const driveInput = input.update();
+    const rawDriveInput = input.update();
     let catchUpSteps = 0;
     while (accumulator >= fixedDt && catchUpSteps < maxCatchUpSteps) {
-      parityController.update(driveInput);
+      const modeledDriveInput = driverInput.update(rawDriveInput, fixedDt);
+      parityController.update(modeledDriveInput);
       b3.b3World_Step(worldId, fixedDt, subSteps);
       accumulator -= fixedDt;
       catchUpSteps += 1;
@@ -105,14 +108,16 @@ async function start(): Promise<void> {
       telemetryClock = 0;
       const telemetry = rig.getTelemetry();
       const parity = parityController.telemetry;
+      const inputTelemetry = driverInput.telemetry;
       telemetryElement.innerHTML = [
         `prędkość: <b>${telemetry.speedKmh.toFixed(1)} km/h</b>`,
+        `skręt klawisz/model: ${inputTelemetry.rawSteer.toFixed(2)} / ${inputTelemetry.filteredSteer.toFixed(2)}`,
         `rack: ${telemetry.rackTravel.toFixed(4)} / ${rig.config.rackTravel.toFixed(4)} m`,
         `tarcie racka: ${parity.rackFrictionForce.toFixed(0)} N`,
         `obciążenie drążków: ${parity.transverseTieRodLoad.toFixed(0)} N`,
         `toe F/R: ${rig.config.frontToeDeg.toFixed(2)}° / ${rig.config.rearToeDeg.toFixed(2)}°`,
         `sondy parytetu: ${probes.passedCount}/${probes.totalCount}`,
-        `handling pulse: ${probes.handlingPulse.stable ? 'OK' : 'NIESTABILNY'}`,
+        `keyboard tap: ${probes.handlingPulse.stable ? 'OK' : 'NIESTABILNY'}`,
         `fizyka: ${telemetry.physicsMs.toFixed(2)} ms`,
         `body/joint/contact: ${telemetry.bodyCount}/${telemetry.jointCount}/${telemetry.contactCount}`,
       ].join('<br>');
@@ -147,7 +152,7 @@ function logProbeReport(report: M6ProbeReport): void {
     + `final=${impact.finalRackFraction.toFixed(3)}, yaw=${impact.finalYawRate.toFixed(3)}rad/s`,
   );
   console.info(
-    `[jv-probe] handling-pulse ${handling.stable ? 'STABLE' : 'UNSTABLE'}: `
+    `[jv-probe] keyboard-tap ${handling.stable ? 'STABLE' : 'UNSTABLE'}: `
     + `peak=${handling.peakRackFraction.toFixed(3)}, final=${handling.finalRackFraction.toFixed(3)}, `
     + `yaw=${handling.finalYawRate.toFixed(3)}rad/s`,
   );
