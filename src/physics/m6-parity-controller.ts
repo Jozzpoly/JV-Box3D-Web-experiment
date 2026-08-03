@@ -1,7 +1,7 @@
 import type { DriveInput } from '../input';
 import type { M6WebRig } from './m6-rig';
 import type { M6RigConfig, Vec3, WishboneGeometry } from './rig-config';
-import { AXIS_X, AXIS_Y, AXIS_Z, DEG, clamp, dot, length, scale, sub } from './math';
+import { AXIS_X, AXIS_Y, AXIS_Z, DEG, add, clamp, distance, dot, length, normalize, scale, sub } from './math';
 
 const RACK_STICTION_RATIO = 1.4;
 const FRONT_LEFT = 0;
@@ -14,13 +14,7 @@ export interface M6ParityTelemetry {
   transverseTieRodLoad: number;
 }
 
-/**
- * Current native M6/M7 drive controller port.
- *
- * Kept outside the first bootstrap builder so parity corrections remain easy
- * to audit against jozz_vehicle_m6_suspension_rig.cpp. It also repairs the
- * bootstrap's original rack-stroke mistake without rewriting the whole rig.
- */
+/** Current native M6/M7 drive controller and post-build parity corrections. */
 export class M6ParityController {
   readonly telemetry: M6ParityTelemetry = {
     rackFrictionForce: 0,
@@ -40,6 +34,7 @@ export class M6ParityController {
       cfg.maxSteeringAngleDegrees * DEG,
     );
     b3.b3PrismaticJoint_SetLimits(rig.rackJointId, -cfg.rackTravel, cfg.rackTravel);
+    this.applyStaticToeLinkLengths();
   }
 
   update(input: DriveInput): void {
@@ -76,7 +71,12 @@ export class M6ParityController {
       this.telemetry.rackFrictionForce = 0;
       this.telemetry.transverseTieRodLoad = 0;
     } else {
-      b3.b3PrismaticJoint_EnableSpring(rig.rackJointId, false);
+      b3.b3PrismaticJoint_EnableSpring(rig.rackJointId, cfg.rackCenteringHertz > 0);
+      if (cfg.rackCenteringHertz > 0) {
+        b3.b3PrismaticJoint_SetSpringHertz(rig.rackJointId, cfg.rackCenteringHertz);
+        b3.b3PrismaticJoint_SetSpringDampingRatio(rig.rackJointId, 1);
+        b3.b3PrismaticJoint_SetTargetTranslation(rig.rackJointId, 0);
+      }
       b3.b3PrismaticJoint_SetMotorSpeed(rig.rackJointId, 0);
 
       const slideAxis = b3.b3RotateVector(chassisRotation, AXIS_Z);
@@ -129,10 +129,42 @@ export class M6ParityController {
       b3.b3Body_SetAwake(rig.chassisId, true);
     }
   }
+
+  private applyStaticToeLinkLengths(): void {
+    const { b3, rig } = this;
+    const cfg = rig.config;
+    for (let index = 0; index < rig.corners.length; index += 1) {
+      const corner = rig.corners[index] as any;
+      const targetArm = steeringArmWithToe(b3, cfg, index, corner.hardpoints);
+      let inner: Vec3;
+
+      if (corner.isFront) {
+        const rackRestLocal = {
+          x: cfg.axleHalfSpacing - cfg.wishbone.steeringArmBack,
+          y: -cfg.restDrop + steeringLinkDroopLift(cfg),
+          z: 0,
+        };
+        const rackEndLocal = {
+          x: 0,
+          y: 0,
+          z: corner.isLeft ? -cfg.rackHalfWidth : cfg.rackHalfWidth,
+        };
+        inner = add(rackRestLocal, rackEndLocal);
+      } else {
+        const inward = corner.isLeft ? 1 : -1;
+        inner = add(corner.hardpoints.steeringArm, {
+          x: 0,
+          y: steeringLinkDroopLift(cfg),
+          z: inward * cfg.wishbone.lowerArmLength,
+        });
+      }
+
+      b3.b3DistanceJoint_SetLength(corner.steerLinkJointId, distance(inner, targetArm));
+      b3.b3Joint_WakeBodies(corner.steerLinkJointId);
+    }
+  }
 }
 
-// Exact translation of ComputeJozzVehicleM6RackStroke. Note that native JV
-// passes trackHalfWidth here; the bootstrap accidentally doubled it.
 export function computeRackStroke(
   geometry: WishboneGeometry,
   wheelbase: number,
@@ -152,6 +184,23 @@ export function computeRackStroke(
   const deltaX = armX + s;
   const reach = Math.sqrt(Math.max(tieRodLength * tieRodLength - deltaX * deltaX, 1e-6));
   return kingpinZ + armZ + reach + rackHalfWidth;
+}
+
+function steeringArmWithToe(b3: any, config: M6RigConfig, cornerIndex: number, hp: any): Vec3 {
+  const isFront = cornerIndex === FRONT_LEFT || cornerIndex === FRONT_RIGHT;
+  const isLeft = cornerIndex === FRONT_LEFT || cornerIndex === REAR_LEFT;
+  const toeDeg = isFront ? config.frontToeDeg : config.rearToeDeg;
+  if (toeDeg === 0) return hp.steeringArm;
+
+  const yaw = (isLeft ? -1 : 1) * toeDeg * DEG;
+  const axisPoint = hp.lowerBallJoint as Vec3;
+  const axisDirection = normalize(sub(hp.upperBallJoint, hp.lowerBallJoint));
+  const rotation = b3.b3MakeQuatFromAxisAngle(axisDirection, yaw);
+  return add(axisPoint, b3.b3RotateVector(rotation, sub(hp.steeringArm, axisPoint)));
+}
+
+function steeringLinkDroopLift(config: M6RigConfig): number {
+  return config.wishbone.lowerArmLength * Math.tan(config.wishbone.restArmDroopDeg * DEG);
 }
 
 function taperedDriveTorque(
