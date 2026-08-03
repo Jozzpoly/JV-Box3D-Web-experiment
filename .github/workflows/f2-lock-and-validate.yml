@@ -1,5 +1,6 @@
 name: f2-lock-and-validate
 
+# One controlled rerun after runtime-fault cleanup hardening.
 on:
   push:
     branches:
