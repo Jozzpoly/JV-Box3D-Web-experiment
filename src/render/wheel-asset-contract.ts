@@ -11,10 +11,15 @@ const REQUIRED_MARKERS = [
 
 export interface WheelAssetContract {
   readonly transform: THREE.Matrix4;
+  readonly authoredCenter: THREE.Vector3;
+  readonly transformedCenter: THREE.Vector3;
+  readonly transformedSocket: THREE.Vector3;
   readonly authoredRadius: number;
   readonly authoredWidth: number;
   readonly radialScale: number;
   readonly axialScale: number;
+  readonly mountOffset: number;
+  readonly mountAxisError: number;
   readonly sourceSkinnedMeshCount: number;
 }
 
@@ -27,6 +32,9 @@ export interface WheelAssetReport {
   independentSkeletons: boolean;
   attachedToWheelBodies: boolean;
   maxBindingPositionError: number;
+  centerError: number;
+  mountOffset: number;
+  mountAxisError: number;
   authoredRadius: number;
   authoredWidth: number;
   requestedRadius: number;
@@ -70,10 +78,16 @@ export function resolveWheelAssetContract(
   if (authoredWidth < EPSILON) throw new Error('wheel width markers collapse to the same point');
   authoredAxle.multiplyScalar(1 / authoredWidth);
 
-  const socketToRadius = radiusMarker.clone().sub(socket);
-  const radialComponent = socketToRadius
+  // The two width markers describe the physical tyre centre. Socket_WheelMount
+  // is deliberately NOT the centre: it is the inboard hub mounting face used
+  // by the native suspension visual adapter. Treating it as the wheel-body
+  // origin shifts every visual by the hub-face offset and makes the two sides
+  // asymmetrical because all Box3D wheel +Y axes initially point world +Z.
+  const authoredCenter = widthLeft.clone().add(widthRight).multiplyScalar(0.5);
+  const centerToRadius = radiusMarker.clone().sub(authoredCenter);
+  const radialComponent = centerToRadius
     .clone()
-    .addScaledVector(authoredAxle, -socketToRadius.dot(authoredAxle));
+    .addScaledVector(authoredAxle, -centerToRadius.dot(authoredAxle));
   const authoredRadius = radialComponent.length();
   if (authoredRadius < EPSILON) throw new Error('wheel radius marker lies on the authored axle');
   const authoredRadial = radialComponent.multiplyScalar(1 / authoredRadius);
@@ -105,8 +119,17 @@ export function resolveWheelAssetContract(
     .clone()
     .multiply(dimensionScale)
     .multiply(authoredBasis.clone().invert());
+  const transformedCenterBeforeTranslation = authoredCenter.clone().applyMatrix4(transform);
+  transform.setPosition(transformedCenterBeforeTranslation.multiplyScalar(-1));
+
+  const transformedCenter = authoredCenter.clone().applyMatrix4(transform);
   const transformedSocket = socket.clone().applyMatrix4(transform);
-  transform.setPosition(transformedSocket.multiplyScalar(-1));
+  const socketAxial = transformedSocket.dot(bodyAxle);
+  const mountAxisError = transformedSocket
+    .clone()
+    .addScaledVector(bodyAxle, -socketAxial)
+    .length();
+  const mountOffset = Math.abs(socketAxial);
 
   let sourceSkinnedMeshCount = 0;
   source.traverse((object) => {
@@ -115,10 +138,15 @@ export function resolveWheelAssetContract(
 
   return {
     transform,
+    authoredCenter,
+    transformedCenter,
+    transformedSocket,
     authoredRadius,
     authoredWidth,
     radialScale,
     axialScale,
+    mountOffset,
+    mountAxisError,
     sourceSkinnedMeshCount,
   };
 }
@@ -164,6 +192,7 @@ export function cloneWheelAssetBatch(
   const transformedWidth = contract.authoredWidth * contract.axialScale;
   const radiusError = Math.abs(transformedRadius - requestedRadius);
   const widthError = Math.abs(transformedWidth - requestedWidth);
+  const centerError = contract.transformedCenter.length();
 
   return {
     objects,
@@ -176,6 +205,9 @@ export function cloneWheelAssetBatch(
       independentSkeletons,
       attachedToWheelBodies: false,
       maxBindingPositionError: Number.POSITIVE_INFINITY,
+      centerError,
+      mountOffset: contract.mountOffset,
+      mountAxisError: contract.mountAxisError,
       authoredRadius: contract.authoredRadius,
       authoredWidth: contract.authoredWidth,
       requestedRadius,
@@ -185,7 +217,7 @@ export function cloneWheelAssetBatch(
       radiusError,
       widthError,
       message: independentSkeletons
-        ? 'marker dimensions and independent wheel skeletons validated'
+        ? 'physical centre, marker dimensions and independent wheel skeletons validated'
         : `wheel skeleton aliasing detected: ${skeletonIds.size}/${expectedSkinnedMeshes} unique`,
     },
   };
@@ -205,6 +237,9 @@ export function failedWheelAssetReport(
     independentSkeletons: false,
     attachedToWheelBodies: false,
     maxBindingPositionError: Number.POSITIVE_INFINITY,
+    centerError: Number.POSITIVE_INFINITY,
+    mountOffset: 0,
+    mountAxisError: Number.POSITIVE_INFINITY,
     authoredRadius: 0,
     authoredWidth: 0,
     requestedRadius,
