@@ -134,7 +134,9 @@ async function start(): Promise<void> {
         `sondy parytetu: ${probes.passedCount}/${probes.totalCount}`,
         `keyboard tap: ${probes.handlingPulse.stable ? 'OK' : 'NIESTABILNY'}`,
         `koła GLTF: ${wheel.loaded ? `${wheel.cloneCount} · szkielety ${wheel.uniqueSkeletonCount}` : 'fallback'}`,
-        `binding kół: ${wheel.attachedToWheelBodies ? 'OK' : 'BŁĄD'} · ${wheel.maxBindingPositionError.toExponential(1)} m`,
+        `binding kół: ${wheel.attachedToWheelBodies ? 'OK' : 'BŁĄD'} · root ${wheel.maxBindingPositionError.toExponential(1)} m`,
+        `środek opony: ${wheel.centerError.toExponential(1)} m · socket ${wheel.mountOffset.toFixed(4)} m`,
+        `oś socketu: ${wheel.mountAxisError.toExponential(1)} m`,
         `fizyka: ${telemetry.physicsMs.toFixed(2)} ms`,
         `body/joint/contact: ${telemetry.bodyCount}/${telemetry.jointCount}/${telemetry.contactCount}`,
       ].join('<br>');
