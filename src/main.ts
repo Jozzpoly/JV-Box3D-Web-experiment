@@ -1,5 +1,6 @@
 import "./style.css";
 import { F3ValidatedHost } from "./app/f3-validated-host.js";
+import type { SteeringCommand } from "./input/steering-command.js";
 import type { F2ValidationLevel } from "./physics/box3d-boundary.js";
 
 function requireRoot(): HTMLElement {
@@ -74,6 +75,17 @@ function formatValidation(levels: readonly F2ValidationLevel[]): string {
   return levels.map((level) => `${level.id}:${level.status}`).join(" · ");
 }
 
+function formatCommand(command: SteeringCommand): string {
+  switch (command.mode) {
+    case "RELEASE":
+      return "RELEASE";
+    case "POSITION":
+      return `POSITION ${command.value.toFixed(3)}`;
+    case "RATE":
+      return `RATE ${command.value.toFixed(3)}`;
+  }
+}
+
 function formatError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -106,10 +118,7 @@ async function startHost(): Promise<void> {
       isDocumentHidden: () => document.visibilityState === "hidden",
       onPhysicsStep: (step, input, snapshot) => {
         stepElement.textContent = String(step.index);
-        commandElement.textContent =
-          input.command.mode === "RATE"
-            ? `RATE ${input.command.value.toFixed(3)}`
-            : input.command.mode;
+        commandElement.textContent = formatCommand(input.command);
         positionElement.textContent = `${snapshot.bodyPosition.y.toFixed(4)} m`;
         contactsElement.textContent = `${snapshot.activeContacts} / ${snapshot.activeContactPoints} points`;
         beginsElement.textContent = String(snapshot.contactBeginEvents);
