@@ -43,7 +43,7 @@ export class M6ParityController {
     const corners = rig.corners as any[];
     const chassisRotation = b3.b3Body_GetRotation(rig.chassisId);
     const chassisUp = b3.b3RotateVector(chassisRotation, AXIS_Y);
-    const handsOn = Math.abs(input.steer) > cfg.steerInputDeadzone;
+    const handsOn = input.steeringEngaged ?? Math.abs(input.steer) > cfg.steerInputDeadzone;
     const rackAngle = clamp(input.steer, -1, 1) * cfg.maxSteeringAngleDegrees * DEG;
 
     if (handsOn) {
