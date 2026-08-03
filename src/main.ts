@@ -61,6 +61,10 @@ function formatValidation(levels: readonly F2ValidationLevel[]): string {
   return levels.map((level) => `${level.id}:${level.status}`).join(" · ");
 }
 
+function formatError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 async function startHost(): Promise<void> {
   const generation = ++startupGeneration;
   restartButton.disabled = true;
@@ -94,6 +98,16 @@ async function startHost(): Promise<void> {
         droppedTotalMs += report.droppedTimeMs;
         droppedElement.textContent = `${droppedTotalMs.toFixed(2)} ms`;
       },
+      onFatalError: (error) => {
+        if (generation !== startupGeneration) {
+          return;
+        }
+        host = null;
+        statusElement.textContent = `F2 runtime fault — resources disposed: ${formatError(error)}`;
+        validationElement.textContent = "FAULTED / DISPOSED";
+        restartButton.disabled = false;
+        console.error(error);
+      },
     });
 
     if (generation !== startupGeneration) {
@@ -111,8 +125,7 @@ async function startHost(): Promise<void> {
     if (generation !== startupGeneration) {
       return;
     }
-    statusElement.textContent =
-      `F2 startup failed: ${error instanceof Error ? error.message : String(error)}`;
+    statusElement.textContent = `F2 startup failed: ${formatError(error)}`;
     console.error(error);
   } finally {
     if (generation === startupGeneration) {
