@@ -149,7 +149,15 @@ try {
       );
     }
     if (!wheel?.attachedToWheelBodies) {
-      failures.push(`wheel visuals are detached from Box3D bodies: max error=${wheel?.maxBindingPositionError}`);
+      failures.push(`wheel visuals are detached/mis-centred: ${wheel?.message ?? 'unknown'}`);
+    }
+    if (!(wheel?.maxBindingPositionError <= 1e-5)) {
+      failures.push(`wheel root/body binding error=${wheel?.maxBindingPositionError}`);
+    }
+    if (!(wheel?.centerError <= 1e-5)) failures.push(`wheel physical-centre error=${wheel?.centerError}`);
+    if (!(wheel?.mountAxisError <= 1e-5)) failures.push(`wheel mount-axis error=${wheel?.mountAxisError}`);
+    if (!(wheel?.mountOffset > 0 && wheel?.mountOffset < wheel?.requestedWidth * 0.5 + 1e-5)) {
+      failures.push(`wheel mount offset is not inside the tyre half-width: ${wheel?.mountOffset}`);
     }
     if (!(wheel?.radiusError <= 1e-5)) failures.push(`wheel radius contract error=${wheel?.radiusError}`);
     if (!(wheel?.widthError <= 1e-5)) failures.push(`wheel width contract error=${wheel?.widthError}`);
@@ -180,7 +188,8 @@ try {
     `[browser-smoke] wheels OK: clones=${wheel.cloneCount}, skeletons=${wheel.uniqueSkeletonCount}, `
     + `authored=${wheel.authoredRadius.toFixed(5)}x${wheel.authoredWidth.toFixed(5)}, `
     + `scale=${wheel.radialScale.toFixed(5)}/${wheel.axialScale.toFixed(5)}, `
-    + `binding=${wheel.maxBindingPositionError.toExponential(2)}m`,
+    + `root=${wheel.maxBindingPositionError.toExponential(2)}m, `
+    + `centre=${wheel.centerError.toExponential(2)}m, mount=${wheel.mountOffset.toFixed(5)}m`,
   );
   console.log(
     `[browser-smoke] OK: ${state.status}; canvas ${state.canvasWidth}x${state.canvasHeight}; telemetry active.`,
