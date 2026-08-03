@@ -6,6 +6,7 @@ on:
       - agent/typed-box3d-boundary
     types:
       - opened
+      - reopened
   workflow_dispatch:
 
 permissions:
