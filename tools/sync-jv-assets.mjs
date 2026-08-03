@@ -38,22 +38,36 @@ function asset(name, relativeSource, relativeTarget) {
 }
 
 async function synchronizeAsset(item) {
+  await mkdir(path.dirname(item.target), { recursive: true });
+  const localSource = nativeRoot ? path.join(nativeRoot, item.relativeSource) : null;
+
+  // A local JV checkout is authoritative. Compare content on every dev/build
+  // start so edits to the real models are reflected without a manual refresh.
+  if (localSource && existsSync(localSource)) {
+    const sourceText = await readFile(localSource, 'utf8');
+    if (!isValidGltf(sourceText)) throw new Error(`${item.name}: lokalny plik nie jest poprawnym glTF`);
+
+    if (!refresh && existsSync(item.target)) {
+      const targetText = await readFile(item.target, 'utf8');
+      if (targetText === sourceText) {
+        console.log(`[jv-assets] ${item.name}: zgodny z lokalnym JV`);
+        return;
+      }
+    }
+
+    await writeFile(item.target, sourceText, 'utf8');
+    console.log(`[jv-assets] ${item.name}: zsynchronizowano lokalnie (${Math.round(sourceText.length / 1024)} KiB)`);
+    return;
+  }
+
+  // CI/standalone fallback: retain a valid cached copy unless refresh was
+  // explicitly requested, otherwise download the committed JV main version.
   if (!refresh && existsSync(item.target)) {
     const existing = await readFile(item.target, 'utf8');
     if (isValidGltf(existing)) {
       console.log(`[jv-assets] ${item.name}: już istnieje`);
       return;
     }
-  }
-
-  await mkdir(path.dirname(item.target), { recursive: true });
-  const localSource = nativeRoot ? path.join(nativeRoot, item.relativeSource) : null;
-  if (localSource && existsSync(localSource)) {
-    const text = await readFile(localSource, 'utf8');
-    if (!isValidGltf(text)) throw new Error(`${item.name}: lokalny plik nie jest poprawnym glTF`);
-    await writeFile(item.target, text, 'utf8');
-    console.log(`[jv-assets] ${item.name}: skopiowano lokalnie (${Math.round(text.length / 1024)} KiB)`);
-    return;
   }
 
   console.log(`[jv-assets] ${item.name}: pobieranie z JV ${sourceRef}`);
