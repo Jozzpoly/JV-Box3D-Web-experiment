@@ -1,0 +1,113 @@
+name: audit-box3d-engine-delta
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  engine-delta:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Compare exact upstream and JV engine trees
+        shell: bash
+        env:
+          UPSTREAM_SHA: 8441b4a06d6d09dcfb0b0f704df4d847d1437b92
+          JV_SHA: 959aefb78587ce60cf2b8eb03ff82797a4165142
+        run: |
+          set -euo pipefail
+          mkdir -p audit-engine
+
+          git clone https://github.com/Jozzpoly/Box3d_FunProject.git jv-source
+          git -C jv-source checkout --detach "$JV_SHA"
+          git -C jv-source remote add upstream https://github.com/erincatto/box3d.git
+          git -C jv-source fetch --no-tags upstream "$UPSTREAM_SHA"
+
+          ACTUAL_JV="$(git -C jv-source rev-parse HEAD)"
+          ACTUAL_UPSTREAM="$(git -C jv-source rev-parse FETCH_HEAD)"
+          MERGE_BASE="$(git -C jv-source merge-base "$ACTUAL_UPSTREAM" "$ACTUAL_JV" || true)"
+
+          {
+            echo "upstream_repository=https://github.com/erincatto/box3d.git"
+            echo "upstream_commit=$ACTUAL_UPSTREAM"
+            echo "jv_repository=https://github.com/Jozzpoly/Box3d_FunProject.git"
+            echo "jv_commit=$ACTUAL_JV"
+            echo "merge_base=${MERGE_BASE:-NONE}"
+            echo "upstream_subject=$(git -C jv-source show -s --format=%s "$ACTUAL_UPSTREAM")"
+            echo "jv_subject=$(git -C jv-source show -s --format=%s "$ACTUAL_JV")"
+          } | tee audit-engine/source-receipt.txt
+
+          git -C jv-source diff --name-status "$ACTUAL_UPSTREAM" "$ACTUAL_JV" \
+            > audit-engine/all-changed-files.txt
+          git -C jv-source diff --stat "$ACTUAL_UPSTREAM" "$ACTUAL_JV" \
+            > audit-engine/all-diff-stat.txt
+          git -C jv-source diff --numstat "$ACTUAL_UPSTREAM" "$ACTUAL_JV" \
+            > audit-engine/all-diff-numstat.txt
+
+          ENGINE_PATHS=(src include CMakeLists.txt cmake)
+          git -C jv-source diff --name-status "$ACTUAL_UPSTREAM" "$ACTUAL_JV" -- "${ENGINE_PATHS[@]}" \
+            > audit-engine/engine-changed-files.txt
+          git -C jv-source diff --stat "$ACTUAL_UPSTREAM" "$ACTUAL_JV" -- "${ENGINE_PATHS[@]}" \
+            > audit-engine/engine-diff-stat.txt
+          git -C jv-source diff --numstat "$ACTUAL_UPSTREAM" "$ACTUAL_JV" -- "${ENGINE_PATHS[@]}" \
+            > audit-engine/engine-diff-numstat.txt
+          git -C jv-source diff --no-ext-diff --full-index "$ACTUAL_UPSTREAM" "$ACTUAL_JV" -- "${ENGINE_PATHS[@]}" \
+            > audit-engine/engine.patch
+          sha256sum audit-engine/engine.patch | tee audit-engine/engine-patch.sha256
+
+          if [[ -n "$MERGE_BASE" ]]; then
+            git -C jv-source log --reverse --date=iso-strict \
+              --format='%H%x09%cI%x09%s' "$ACTUAL_UPSTREAM..$ACTUAL_JV" -- "${ENGINE_PATHS[@]}" \
+              > audit-engine/engine-commits.tsv
+            git -C jv-source rev-list --count "$ACTUAL_UPSTREAM..$ACTUAL_JV" \
+              > audit-engine/commits-ahead-of-upstream.txt
+            git -C jv-source rev-list --count "$ACTUAL_JV..$ACTUAL_UPSTREAM" \
+              > audit-engine/commits-behind-upstream.txt
+          else
+            echo 'NO_COMMON_ANCESTOR' > audit-engine/engine-commits.tsv
+          fi
+
+          for tree in upstream jv; do
+            if [[ "$tree" == upstream ]]; then sha="$ACTUAL_UPSTREAM"; else sha="$ACTUAL_JV"; fi
+            git -C jv-source ls-tree -r --name-only "$sha" -- src include CMakeLists.txt cmake \
+              | LC_ALL=C sort \
+              | while IFS= read -r f; do
+                  [[ -z "$f" ]] && continue
+                  git -C jv-source show "$sha:$f" | sha256sum | sed "s#  -#  $f#"
+                done \
+              | sha256sum \
+              | tee "audit-engine/${tree}-engine-tree.sha256"
+          done
+
+          {
+            echo '=== source receipt ==='
+            cat audit-engine/source-receipt.txt
+            echo
+            echo '=== engine changed files ==='
+            cat audit-engine/engine-changed-files.txt
+            echo
+            echo '=== engine diff stat ==='
+            cat audit-engine/engine-diff-stat.txt
+            echo
+            echo '=== engine commits ==='
+            cat audit-engine/engine-commits.tsv
+            echo
+            echo '=== patch hash ==='
+            cat audit-engine/engine-patch.sha256
+            echo
+            echo '=== tree hashes ==='
+            cat audit-engine/upstream-engine-tree.sha256
+            cat audit-engine/jv-engine-tree.sha256
+          }
+
+      - name: Upload engine delta receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: box3d-upstream-to-jv-engine-delta
+          path: audit-engine/
+          if-no-files-found: error
+          retention-days: 30
