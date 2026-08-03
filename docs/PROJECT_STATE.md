@@ -9,6 +9,8 @@ Pełny handoff:
 docs/HANDOFF_2026_08_04_PL.md
 ```
 
+Nowszy checkpoint F5 znajduje się w `AI_PROJECT_MEMORY.md`, issue #12 i draft PR #13.
+
 ## 1. Linie projektu
 
 | Linia | Rola | Status |
@@ -20,7 +22,7 @@ docs/HANDOFF_2026_08_04_PL.md
 | `agent/typed-box3d-boundary` / PR #6 | F2 WASM/contact | zakończone maszynowo, draft |
 | `agent/native-factory-receipt` / PR #9 | F3 config receipt | zakończone maszynowo, draft |
 | `agent/current-m6-topology` / PR #11 | F4 current M6 graph | zakończone maszynowo, draft |
-| `agent/physical-rate-steering` / issue #12 | F5 K2b RATE | aktywne WIP |
+| `agent/physical-rate-steering` / PR #13 | F5 K2b RATE | source + matrix obecne, niewykonane |
 
 Wszystkie warstwy są stacked i nie są zmergowane. Jozz zachowuje decyzję merge/review.
 
@@ -83,6 +85,18 @@ RELEASE actuator OFF
 
 To nie są jeszcze owner feel ani pełna parity.
 
+### F5
+
+```text
+source present
+completion matrix present
+current draft PR #13
+machine execution: NOT YET PERFORMED
+owner feel: NOT YET PERFORMED
+```
+
+Nie wolno przenosić wcześniejszych PASS F4 na obecny head F5.
+
 ## 4. Current M6 graph
 
 F4 odtwarza minimalny aktualny M6 double-wishbone:
@@ -114,13 +128,13 @@ RELEASE disables spring/servo and leaves physical load-dependent rack friction.
 
 ## 5. Aktywne F5
 
-Issue:
-
 ```text
-#12 Physical rack-space RATE steering experiment
+issue #12
+PR #13 draft / DO NOT MERGE
+branch agent/physical-rate-steering
 ```
 
-Branch zawiera już WIP K2b:
+Branch zawiera K2b:
 
 - profile 0.06 / 0.12 / 0.21 / 0.36 m/s;
 - target lead candidate 0.008 m;
@@ -130,26 +144,36 @@ Branch zawiera już WIP K2b:
 - spring/motor tylko hands-on;
 - immediate RELEASE;
 - trace mechanizmu;
-- browser profile selector i telemetrykę.
+- browser profile selector i telemetrykę;
+- transactional rebuild po zmianie profilu.
 
 Każdy profil ma `productDefaultApproved: false`. `0.21 m/s` nie jest zatwierdzonym defaultem.
 
-## 6. F5 nadal nieukończone
+Po odzyskaniu przerwanej rozmowy:
 
-Brakuje pełnej macierzy:
+- potwierdzono, że czyste F3 i F4 były już ukończone;
+- usunięto niedokończone wymagane pole trace bez producenta;
+- dodano `tests/f5-rate-steering.test.mjs`;
+- utworzono draft PR #13;
+- nie uruchomiono żadnego workflowa i niczego nie zmergowano.
+
+## 6. Macierz F5 jest zapisana, ale niezwalidowana
+
+Nowy test source obejmuje:
 
 - tapy 0.5/1/2/3/6 kroków;
 - wszystkie cztery rate profiles;
-- monotoniczność i left/right symmetry;
-- sub-frame signed-time input;
+- monotoniczność;
+- left/right symmetry;
+- exact sub-frame signed-time input;
 - release/reversal rebase;
-- blocked-rack lead cap;
+- frozen/blocked-rack lead cap;
 - rack travel clamp;
-- 15/30/60/120 FPS i lag equivalence;
-- profile switch i lifecycle;
-- finalny read-only browser smoke.
+- 15/30/60/120 FPS equivalence;
+- irregular cadence i dropped gap;
+- profile switch i destroy/rebuild lifecycle.
 
-Nie uruchamiać CI na częściowym kodzie.
+To jest `SOURCE_FACT`, nie `MEASURED_FACT`. Brakuje rzeczywistego wykonania zależności, typechecku, WASM tests, buildu i browser smoke.
 
 ## 7. Kwarantanna F3
 
@@ -177,13 +201,11 @@ Nie wznawiać samomodyfikującego workflowa ani automatycznej pętli cross-repo.
 ## 9. Najbliższy ruch
 
 ```text
-finish isolated F5 matrix
-→ fix only falsified behavior
-→ local/static full pass
-→ one manual-only read-only validation
-→ draft F5 PR
+final source/test review
+→ exactly one read-only npm ci/check/build/browser-smoke gate
+→ fix only behavior actually falsified by that gate
 → Jozz owner test of all four profiles
 → behavior card and owner verdict
 ```
 
-Nie zaczynać F6/mobile przed F5 machine gate i owner verdict.
+Nie zmieniać workflowów dla debugowania. Nie uruchamiać wielu runów. Nie zaczynać F6/mobile przed F5 machine gate i owner verdict.
