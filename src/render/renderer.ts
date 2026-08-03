@@ -3,6 +3,12 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { M6WebRig } from '../physics/m6-rig';
 import type { Vec3 } from '../physics/rig-config';
 import { VehicleOrbitCamera } from './vehicle-camera';
+import {
+  cloneWheelAssetBatch,
+  failedWheelAssetReport,
+  resolveWheelAssetContract,
+  type WheelAssetReport,
+} from './wheel-asset-contract';
 
 export interface RenderContext {
   scene: THREE.Scene;
@@ -10,6 +16,16 @@ export interface RenderContext {
   renderer: THREE.WebGLRenderer;
   updateCamera(target: THREE.Object3D, deltaSeconds: number): void;
   dispose(): void;
+}
+
+export interface RigVisualReport {
+  bodyLoaded: boolean;
+  wheel: WheelAssetReport;
+}
+
+export interface RigVisualResult {
+  root: THREE.Group;
+  report: RigVisualReport;
 }
 
 interface DynamicSegment {
@@ -82,7 +98,7 @@ export function createRenderContext(canvas: HTMLCanvasElement): RenderContext {
   };
 }
 
-export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group {
+export async function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): Promise<RigVisualResult> {
   const b3 = (rig as unknown as { b3: any }).b3;
   const chassisRoot = new THREE.Group();
   chassisRoot.name = 'JV chassis visual root';
@@ -108,12 +124,6 @@ export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group
   scene.add(chassisRoot);
   rig.bindings.push({ bodyId: rig.chassisId, object: chassisRoot });
 
-  if (rig.config.bodyVisualModel === 'rama_rurowa') {
-    void loadRealJvBody(chassisRoot, fallbackChassis, rig.config.bodyVisualOffset);
-  } else if (rig.config.bodyVisualModel !== 'brak') {
-    console.warn(`Unknown JV bodyVisualModel "${rig.config.bodyVisualModel}"; using the collider fallback.`);
-  }
-
   const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x131518, roughness: 0.96 });
   const rimMaterial = new THREE.MeshStandardMaterial({ color: 0x8d979e, roughness: 0.38, metalness: 0.68 });
   const knuckleMaterial = new THREE.MeshStandardMaterial({ color: 0x9aa3aa, roughness: 0.48, metalness: 0.5 });
@@ -125,7 +135,10 @@ export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group
 
   for (const corner of rig.corners as any[]) {
     const wheelGroup = new THREE.Group();
+    wheelGroup.name = `JV wheel body visual ${wheelTargets.length + 1}`;
     const fallback = new THREE.Group();
+    fallback.name = 'wheel primitive fallback';
+
     const tire = new THREE.Mesh(
       new THREE.CylinderGeometry(rig.config.wheelRadius, rig.config.wheelRadius, rig.config.wheelWidth, 36),
       wheelMaterial,
@@ -150,7 +163,6 @@ export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group
     rig.bindings.push({ bodyId: corner.wheelId, object: wheelGroup });
     wheelTargets.push({ root: wheelGroup, fallback });
   }
-  void loadRealJvWheels(wheelTargets);
 
   const rack = new THREE.Mesh(
     new THREE.CylinderGeometry(0.045, 0.045, rig.config.rackHalfWidth * 2, 12),
@@ -241,14 +253,32 @@ export function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): THREE.Group
   chassisRoot.userData.updateRigVisuals = updateRigVisuals;
   rig.syncVisuals();
   updateRigVisuals();
-  return chassisRoot;
+
+  const [bodyLoaded, wheelReport] = await Promise.all([
+    loadConfiguredJvBody(chassisRoot, fallbackChassis, rig.config.bodyVisualModel, rig.config.bodyVisualOffset),
+    loadRealJvWheels(wheelTargets, rig.config.wheelRadius, rig.config.wheelWidth),
+  ]);
+
+  rig.syncVisuals();
+  updateRigVisuals();
+  return {
+    root: chassisRoot,
+    report: { bodyLoaded, wheel: wheelReport },
+  };
 }
 
-async function loadRealJvBody(
+async function loadConfiguredJvBody(
   chassisRoot: THREE.Group,
   fallback: THREE.Object3D,
+  model: string,
   sessionOffset: Vec3,
-): Promise<void> {
+): Promise<boolean> {
+  if (model === 'brak') return false;
+  if (model !== 'rama_rurowa') {
+    console.warn(`Unknown JV bodyVisualModel "${model}"; using the collider fallback.`);
+    return false;
+  }
+
   try {
     const gltf = await new GLTFLoader().loadAsync('./assets/vehicle/Nadwozie.gltf');
     const body = gltf.scene;
@@ -259,40 +289,54 @@ async function loadRealJvBody(
     configureJvMaterials(body);
     chassisRoot.add(body);
     fallback.visible = false;
+    return true;
   } catch (error) {
     console.warn('JV rama_rurowa could not be loaded; using the collider fallback.', error);
+    return false;
   }
 }
 
-async function loadRealJvWheels(targets: WheelVisualTarget[]): Promise<void> {
+async function loadRealJvWheels(
+  targets: WheelVisualTarget[],
+  wheelRadius: number,
+  wheelWidth: number,
+): Promise<WheelAssetReport> {
   try {
     const gltf = await new GLTFLoader().loadAsync('./assets/vehicle/Offroad_Big_Wheels.gltf');
     const source = gltf.scene;
-    source.updateMatrixWorld(true);
-    const bounds = new THREE.Box3().setFromObject(source);
-    if (bounds.isEmpty()) throw new Error('wheel GLTF has empty bounds');
-    const authoredCenter = bounds.getCenter(new THREE.Vector3());
+    source.name = 'JV Offroad_Big_Wheels.gltf source';
+    const contract = resolveWheelAssetContract(source, wheelRadius, wheelWidth);
+    const batch = cloneWheelAssetBatch(source, contract, targets.length, wheelRadius, wheelWidth);
 
-    const xToBodyY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2);
-    const upToBodyRadial = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
-    const correction = new THREE.Quaternion().multiplyQuaternions(upToBodyRadial, xToBodyY);
+    if (!batch.report.independentSkeletons) {
+      throw new Error(batch.report.message);
+    }
+    const dimensionTolerance = 1e-5;
+    if (batch.report.radiusError > dimensionTolerance || batch.report.widthError > dimensionTolerance) {
+      throw new Error(
+        `wheel marker transform mismatch: radius error=${batch.report.radiusError}, width error=${batch.report.widthError}`,
+      );
+    }
 
-    for (const target of targets) {
-      const correctionRoot = new THREE.Group();
-      correctionRoot.name = 'JV wheel visual correction';
-      correctionRoot.quaternion.copy(correction);
-
-      const wheel = source.clone(true);
-      wheel.name = 'JV Offroad_Big_Wheels.gltf';
-      wheel.scale.setScalar(0.35);
-      wheel.position.copy(authoredCenter).multiplyScalar(-0.35);
+    for (let index = 0; index < targets.length; index += 1) {
+      const target = targets[index];
+      const wheel = batch.objects[index];
+      if (!target || !wheel) throw new Error(`wheel clone/target mismatch at index ${index}`);
       configureJvMaterials(wheel);
-      correctionRoot.add(wheel);
-      target.root.add(correctionRoot);
+      target.root.add(wheel);
       target.fallback.visible = false;
     }
+
+    console.info(
+      `[jv-visual] wheel contract OK: authored r=${batch.report.authoredRadius.toFixed(5)}, `
+      + `w=${batch.report.authoredWidth.toFixed(5)}, scale radial=${batch.report.radialScale.toFixed(5)}, `
+      + `axial=${batch.report.axialScale.toFixed(5)}, skeletons=${batch.report.uniqueSkeletonCount}`,
+    );
+    return batch.report;
   } catch (error) {
-    console.warn('JV wheel model could not be loaded; using primitive wheel visuals.', error);
+    const report = failedWheelAssetReport(wheelRadius, wheelWidth, error);
+    console.warn('JV wheel model contract failed; using primitive wheel visuals.', error);
+    return report;
   }
 }
 
@@ -301,6 +345,11 @@ function configureJvMaterials(root: THREE.Object3D): void {
     if (!(object instanceof THREE.Mesh)) return;
     object.castShadow = true;
     object.receiveShadow = true;
+    if (object instanceof THREE.SkinnedMesh) {
+      // The asset is tiny and this avoids stale bind-pose bounds causing a wheel
+      // to disappear while its physics body remains visible elsewhere.
+      object.frustumCulled = false;
+    }
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     for (const material of materials) {
       if ('map' in material && material.map instanceof THREE.Texture) {
