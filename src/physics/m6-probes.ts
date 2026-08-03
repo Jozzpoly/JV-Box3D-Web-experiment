@@ -1,4 +1,5 @@
 import type { DriveInput } from '../input';
+import { KeyboardDriverInputModel } from '../input-model';
 import { M6ParityController } from './m6-parity-controller';
 import { M6WebRig } from './m6-rig';
 import { AXIS_Y, clamp, dot } from './math';
@@ -142,24 +143,26 @@ function runSteeringImpactProbe(b3: any, config: M6RigConfig): SteeringImpactPro
   });
 }
 
-// Product/feel diagnostic, deliberately not a parity gate. This reproduces a
-// harsh digital-keyboard corner under power and records whether the whole car
-// settles after release. It is useful precisely because the native validator's
-// isolated P1 probe can pass while the driving experience still feels unstable.
+// Product/feel diagnostic, deliberately not a physics-parity gate. It models a
+// short A-key tap through the same finite-rate keyboard driver used by the live
+// app. This asks whether an ordinary digital correction settles; it no longer
+// confuses "hold a large steering command for 1.25 s under power" with a normal
+// keyboard tap.
 function runHandlingPulseProbe(b3: any, config: M6RigConfig): HandlingPulseProbeResult {
   return withProbeRig(b3, config, ({ worldId, rig, controller }) => {
-    stepMany(b3, worldId, controller, NEUTRAL, 120);
-    stepMany(b3, worldId, controller, { drive: 1, steer: 0, brake: false }, 150);
+    const driver = new KeyboardDriverInputModel();
+    stepManyModeled(b3, worldId, controller, driver, NEUTRAL, 120);
+    stepManyModeled(b3, worldId, controller, driver, { drive: 1, steer: 0, brake: false }, 150);
 
     let peakRack = 0;
-    const steerInput: DriveInput = { drive: 0.75, steer: 0.65, brake: false };
-    for (let i = 0; i < 75; i += 1) {
-      stepOne(b3, worldId, controller, steerInput);
+    const tapInput: DriveInput = { drive: 0.65, steer: 1, brake: false };
+    for (let i = 0; i < 18; i += 1) {
+      stepOneModeled(b3, worldId, controller, driver, tapInput);
       peakRack = Math.max(peakRack, Math.abs(b3.b3PrismaticJoint_GetTranslation(rig.rackJointId)));
     }
 
-    const releaseInput: DriveInput = { drive: 0.55, steer: 0, brake: false };
-    stepMany(b3, worldId, controller, releaseInput, 240);
+    const releaseInput: DriveInput = { drive: 0.4, steer: 0, brake: false };
+    stepManyModeled(b3, worldId, controller, driver, releaseInput, 210);
     const finalRackFraction = rackFraction(b3, rig);
     const travel = Math.max(rig.config.rackTravel, 1e-5);
     const peakRackFraction = peakRack / travel;
@@ -168,9 +171,10 @@ function runHandlingPulseProbe(b3: any, config: M6RigConfig): HandlingPulseProbe
     const finalSpeedMs = rig.getForwardSpeed();
     const finite = vehicleStateIsFinite(b3, rig);
     const stable = finite
+      && peakRackFraction > 0.08
       && peakRackFraction <= 1.05
-      && finalRackFraction < 0.45
-      && Math.abs(finalYawRate) < 2.5
+      && finalRackFraction < 0.35
+      && Math.abs(finalYawRate) < 1.5
       && finalSpeedMs > 1;
 
     return {
@@ -229,6 +233,30 @@ function stepMany(
 
 function stepOne(b3: any, worldId: any, controller: M6ParityController, input: DriveInput): void {
   controller.update(input);
+  b3.b3World_Step(worldId, FIXED_DT, SUB_STEPS);
+}
+
+function stepManyModeled(
+  b3: any,
+  worldId: any,
+  controller: M6ParityController,
+  driver: KeyboardDriverInputModel,
+  rawInput: DriveInput,
+  count: number,
+): void {
+  for (let i = 0; i < count; i += 1) {
+    stepOneModeled(b3, worldId, controller, driver, rawInput);
+  }
+}
+
+function stepOneModeled(
+  b3: any,
+  worldId: any,
+  controller: M6ParityController,
+  driver: KeyboardDriverInputModel,
+  rawInput: DriveInput,
+): void {
+  controller.update(driver.update(rawInput, FIXED_DT));
   b3.b3World_Step(worldId, FIXED_DT, SUB_STEPS);
 }
 
