@@ -9,6 +9,8 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - .github/workflows/audit-box3d-js-source.yml
   workflow_dispatch:
 
 permissions:
