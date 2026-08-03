@@ -10,7 +10,7 @@ A focused proof of concept for running a real slice of **Jozz Vehicle** directly
 - the real `rama_rurowa` body asset;
 - a separate photogrammetry visual mesh and reduced collision mesh.
 
-This remains a proof of concept. Compilation and browser infrastructure are proven; native/web behavior still needs direct driving comparison.
+This remains a proof of concept. Browser infrastructure and startup are tested; native/web driving behavior still needs direct comparison.
 
 ## Implemented parity pass
 
@@ -34,21 +34,43 @@ npm install
 npm run dev
 ```
 
-`npm run dev` first synchronizes the self-contained `Nadwozie.gltf` from the authoritative JV repository, then starts Vite.
+`npm run dev` first:
 
-Refresh synchronized JV assets explicitly:
+1. synchronizes the self-contained `Nadwozie.gltf` from the authoritative JV repository;
+2. instantiates the real Box3D WASM module;
+3. checks every `b3.*` call used by the source against actual `box3d.js` exports;
+4. executes a small physics smoke simulation;
+5. starts Vite only after those checks pass.
 
-```bash
+Refresh synchronized JV assets explicitly in PowerShell:
+
+```powershell
 $env:JV_REFRESH_ASSETS="1"
 npm run sync-assets
 ```
 
-Production check:
+## Validation commands
+
+Check the real WASM surface and physics runtime:
+
+```bash
+npm run verify-runtime
+```
+
+Production build:
 
 ```bash
 npm run build
 npm run preview
 ```
+
+After a production build, run the full startup test in an installed Chrome browser:
+
+```bash
+npm run smoke-browser
+```
+
+The browser smoke test fails on a visible error panel, uncaught exception, missing Box3D status, invalid canvas or inactive simulation telemetry. GitHub Actions requires all of these gates to pass.
 
 ## Controls
 
