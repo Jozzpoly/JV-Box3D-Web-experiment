@@ -37,7 +37,10 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Persist validated lock and receipt
+      - name: Browser contact and rebuild smoke
+        run: node tools/smoke-f2-browser.mjs --output docs/receipts/F2_BROWSER_SMOKE.json
+
+      - name: Persist validated lock and receipts
         shell: bash
         run: |
           set -euo pipefail
@@ -52,6 +55,7 @@ jobs:
           npm: $(npm --version)
           box3d_package: box3d.js@0.0.2
           tests: 26/26 PASS
+          browser_smoke: PASS
 
           Commands completed before this receipt was written:
 
@@ -59,6 +63,7 @@ jobs:
           - npm ci
           - npm run check
           - npm run build
+          - node tools/smoke-f2-browser.mjs
 
           Scope:
 
@@ -66,14 +71,17 @@ jobs:
           - F2 B0-B5 typed boundary and real contact fixture
           - shared WASM module across world rebuilds
           - runtime-fault cleanup and successful rebuild
+          - headless Chrome contact observation and world generation 1 -> 2 rebuild
           EOF
 
           git config user.name "JV F2 Validation Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add package-lock.json docs/receipts/F2_NODE24_VALIDATION.md
+          git add package-lock.json \
+            docs/receipts/F2_NODE24_VALIDATION.md \
+            docs/receipts/F2_BROWSER_SMOKE.json
           if git diff --cached --quiet; then
             echo "Validated state already recorded"
             exit 0
           fi
-          git commit -m "Record F2 Node 24 validation receipt"
+          git commit -m "Record F2 browser validation receipts"
           git push origin HEAD:agent/typed-box3d-boundary
