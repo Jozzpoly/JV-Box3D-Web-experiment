@@ -1,11 +1,6 @@
 name: f4-validate
 
 on:
-  pull_request:
-    branches:
-      - agent/native-factory-receipt
-    types:
-      - opened
   workflow_dispatch:
 
 permissions:
