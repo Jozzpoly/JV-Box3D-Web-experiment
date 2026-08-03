@@ -22,6 +22,7 @@ const READ_BROWSER_STATE = `(() => {
     canvasWidth: canvas instanceof HTMLCanvasElement ? canvas.width : 0,
     canvasHeight: canvas instanceof HTMLCanvasElement ? canvas.height : 0,
     probes: window.__JV_PROBE_REPORT__ ?? null,
+    visuals: window.__JV_VISUAL_REPORT__ ?? null,
   };
 })()`;
 
@@ -109,9 +110,7 @@ try {
     `${DEBUG_URL}/json/new?${encodeURIComponent(APP_URL)}`,
     { method: 'PUT' },
   );
-  if (!targetResponse.ok) {
-    throw new Error(`Chrome target creation failed: HTTP ${targetResponse.status}`);
-  }
+  if (!targetResponse.ok) throw new Error(`Chrome target creation failed: HTTP ${targetResponse.status}`);
   const target = await targetResponse.json();
   if (!target.webSocketDebuggerUrl) throw new Error('Chrome returned no debugger WebSocket URL.');
 
@@ -121,13 +120,7 @@ try {
   await cdp.send('Page.enable');
   await cdp.send('Page.navigate', { url: APP_URL });
 
-  // Do not assume a fixed startup duration. Probe worlds and glTF parsing can
-  // legitimately cross the old three-second boundary on a busy software-WebGL
-  // runner. Poll for an observable terminal state: active telemetry or a visible
-  // app error. A real hang still fails at the explicit timeout with the last DOM
-  // snapshot attached.
   const state = await waitForBrowserReady(cdp, 15_000);
-
   const failures = [];
   if (!state.errorHidden) failures.push(`visible error panel: ${state.errorText || '(empty)'}`);
   if (!state.status.startsWith('Box3D ')) failures.push(`unexpected status: ${state.status}`);
@@ -142,6 +135,26 @@ try {
   } else if (!state.probes.passed) {
     failures.push(`M6 parity probes failed: ${JSON.stringify(state.probes)}`);
   }
+
+  if (!state.visuals) {
+    failures.push('missing window.__JV_VISUAL_REPORT__');
+  } else {
+    const wheel = state.visuals.wheel;
+    if (!wheel?.loaded) failures.push(`wheel glTF contract did not load: ${wheel?.message ?? 'unknown'}`);
+    if (!wheel?.markerContract) failures.push('wheel marker contract is not active');
+    if (wheel?.cloneCount !== 4) failures.push(`expected four visual wheel clones, got ${wheel?.cloneCount}`);
+    if (!wheel?.independentSkeletons) {
+      failures.push(
+        `wheel skeletons are aliased: unique=${wheel?.uniqueSkeletonCount}, source=${wheel?.sourceSkinnedMeshCount}`,
+      );
+    }
+    if (!wheel?.attachedToWheelBodies) {
+      failures.push(`wheel visuals are detached from Box3D bodies: max error=${wheel?.maxBindingPositionError}`);
+    }
+    if (!(wheel?.radiusError <= 1e-5)) failures.push(`wheel radius contract error=${wheel?.radiusError}`);
+    if (!(wheel?.widthError <= 1e-5)) failures.push(`wheel width contract error=${wheel?.widthError}`);
+  }
+
   if (cdp.exceptions.length > 0) {
     failures.push(`uncaught browser exceptions:\n${cdp.exceptions.join('\n')}`);
   }
@@ -150,6 +163,7 @@ try {
   const straight = state.probes.straight;
   const impact = state.probes.steeringImpact;
   const handling = state.probes.handlingPulse;
+  const wheel = state.visuals.wheel;
   console.log(
     `[browser-smoke] parity ${state.probes.passedCount}/${state.probes.totalCount}: `
     + `straight dx=${straight.forwardMeters.toFixed(2)}m dz=${straight.lateralMeters.toFixed(2)}m `
@@ -163,8 +177,13 @@ try {
     + `yaw=${handling.finalYawRate.toFixed(3)}rad/s`,
   );
   console.log(
-    `[browser-smoke] OK: ${state.status}; canvas ${state.canvasWidth}x${state.canvasHeight}; ` +
-    'telemetry active.',
+    `[browser-smoke] wheels OK: clones=${wheel.cloneCount}, skeletons=${wheel.uniqueSkeletonCount}, `
+    + `authored=${wheel.authoredRadius.toFixed(5)}x${wheel.authoredWidth.toFixed(5)}, `
+    + `scale=${wheel.radialScale.toFixed(5)}/${wheel.axialScale.toFixed(5)}, `
+    + `binding=${wheel.maxBindingPositionError.toExponential(2)}m`,
+  );
+  console.log(
+    `[browser-smoke] OK: ${state.status}; canvas ${state.canvasWidth}x${state.canvasHeight}; telemetry active.`,
   );
   cdp.close();
 } finally {
