@@ -4,15 +4,15 @@ Updated: 2026-08-03
 
 ## Goal
 
-Build a serious browser proof of concept containing a real current JV vehicle, the JV test environment and later a 3D-scan terrain. The project passed the viability gate: the owner has repeatedly run and driven the browser build locally.
+Build a serious browser proof of concept containing a real current JV vehicle, the JV test environment and later a 3D-scan terrain. The owner has repeatedly run and driven the browser build locally, so the basic WebAssembly/browser viability gate is passed.
 
 ## Critical owner constraints
 
 - Do **not** use historical M5 as the vehicle. The authoritative architecture begins with M6 and includes later M7+ work.
 - Native JV remains the source of truth for physics, sessions, model registry data and authored asset contracts.
-- Git Diff Patcher Bridge is categorically forbidden for this project and every other owner project. Use GitHub and ordinary Git only.
+- Git Diff Patcher Bridge is categorically forbidden. Use GitHub and ordinary Git only.
 
-## Authoritative repositories and local layout
+## Repositories and local layout
 
 Native source: current `main` of `Jozzpoly/Box3d_FunProject`.
 
@@ -25,9 +25,9 @@ Box3d_FunProject/
    └─ JV-Box3D-Web-experiment/             # browser repository
 ```
 
-The synchronizer detects this sibling layout structurally. Absolute local paths are not committed.
+The synchronizer detects this sibling layout structurally. Absolute local paths are never committed.
 
-Important native sources include:
+Important native sources:
 
 - `samples/jozz_vehicle_m6_geometry.cpp`
 - `samples/jozz_vehicle_m6_suspension_rig.cpp`
@@ -38,13 +38,11 @@ Important native sources include:
 - `samples/jozz_vehicle_central_test_campus*.cpp`
 - `samples/jozz_vehicle_body_registry.cpp`
 
-## Current branch and PR
+## Branch and PR
 
 - Branch: `agent/bootstrap-web-poc`
 - Draft PR: #1
-- Latest validated head at this update: `6da99769`
-
-Keep the PR as draft until the owner validates the current local-session build, wheel orientation/rotation, remaining suspension visuals and scan behaviour.
+- Keep the PR as draft until the owner validates the local-session wheel placement, low-speed steering behavior, live front-rig visuals and scan behavior.
 
 ## Physics and driving state
 
@@ -52,124 +50,227 @@ Implemented:
 
 - four-corner double-wishbone multi-body topology;
 - physical rack, tie rods, static-toe rest lengths and caster self-alignment;
-- current drive/brake/coast, AWD, ARB and aero behaviour;
+- current drive/brake/coast, AWD, ARB and aero behavior;
 - local `build/jozz_vehicle_m6_session.json` import with factory/`uliczny` fallback;
 - deterministic straight-line and native-P1-style steering-impact probes;
-- explicit finite-rate keyboard driver input model.
+- finite-rate keyboard driver input isolated from the raw mechanism.
 
-The owner confirmed that the finite-rate keyboard model significantly improved steering and unexpectedly resolved a very old digital-input technical debt. It limits the commanded steering rate only; it does not read yaw, slip, wheel force or vehicle state and does not secretly stabilize the car.
+The owner confirmed the finite-rate keyboard model significantly improved steering and resolved a very old digital-input debt.
 
-Latest committed factory probe results:
+Raw committed factory probes remain:
 
-- straight: `dx=32.33 m`, `dz=0.04 m`, lateral ratio `0.001`, chassis tilt `1.0°`;
-- impact recovery: final rack fraction `0.002`, final yaw `-0.003 rad/s`;
-- keyboard tap: peak rack `0.578`, final rack `0.003`, final yaw `-0.008 rad/s`.
+- straight: `dx=32.33 m`, `dz=0.04 m`, ratio `0.001`, tilt `1.0°`;
+- impact recovery: final rack `0.002`, final yaw `-0.003 rad/s`;
+- keyboard tap: peak rack `0.578`, final rack `0.003`, final yaw approximately `-0.005 rad/s`.
+
+## Low-speed steering jam finding
+
+The owner reported intermittent strange steering behavior at standstill and very low speed.
+
+A deterministic cycle probe was added:
+
+```text
+left command → direct right reversal → release
+```
+
+It runs once stationary and once under a small creep command. A non-invasive watchdog measures target, error, rack speed and servo stall frames.
+
+Before the fix:
+
+```text
+stationary final rack ≈ 0.991
+creep final rack      ≈ 1.019
+servo stall           = 1 frame
+```
+
+The servo was not mechanically jammed: it reached both sides and crossed centre. The problem was mode switching. When filtered steer entered `steerInputDeadzone`, the controller inferred hands-off, disabled servo return and enabled 1.4× static rack friction before the rack reached centre.
+
+Fix:
+
+- `DriveInput` now carries optional explicit `steeringEngaged` state;
+- `KeyboardDriverInputModel` stays engaged through return-to-zero and a fixed `0.35 s` centre hold;
+- the hold reads no speed, yaw, slip, rack position, tyre force or vehicle state;
+- controller and watchdog use the same explicit engagement state.
+
+Final committed Chrome result:
+
+```text
+stationary: left=0.988 right=0.999 capture=0.008 final=0.014 stall=1 frame
+creep:      left=0.987 right=1.000 capture=0.006 final=0.326 stall=1 frame
+```
+
+`capture` is rack fraction at the exact servo-release frame. The later creep displacement happens after hands-off and is therefore separated from input jamming.
+
+Keyboard tap and low-speed centre capture are mandatory web-host CI gates; raw physical parity remains separately tested.
 
 ## Runtime boundary hardening
 
-A real owner-found startup failure (`b3MulQuat is not a function`) established that successful TypeScript compilation is insufficient.
+The owner-found `b3MulQuat is not a function` startup failure proved TypeScript compilation alone is insufficient.
 
-Current mandatory gates:
+Mandatory gates include:
 
-- explicit `src/physics/box3d-runtime.ts` native/WASM boundary;
-- one named `b3MulQuat` compatibility shim using the exact Box3D formula;
-- scan of all current `b3.*` calls against an instantiated `box3d.js/inline` module;
-- Node/WASM physics smoke simulation;
+- explicit native/WASM boundary in `src/physics/box3d-runtime.ts`;
+- exact `b3MulQuat` compatibility shim;
+- all source `b3.*` calls checked against instantiated `box3d.js/inline`;
+- Node/WASM physics smoke;
 - production Vite build;
-- real headless Chrome startup and DOM/error/telemetry checks;
-- deterministic physics probes;
-- visual wheel contract checks.
+- real headless Chrome startup, DOM, error and telemetry checks;
+- raw physics probes;
+- keyboard-host probes;
+- wheel and front-rig visual-contract preflights.
 
 Currently 60 distinct Box3D calls are checked against real exports.
 
-## Wheel visual failure and resolution
+## Wheel visual failures and final contract
 
-The owner found that one visual `Offroad_Big_Wheels.gltf` instance was enormous and detached from the car, apparently attached to the world, while the remaining wheel visuals were missing/wrong.
+The owner first found one enormous wheel detached from the vehicle while other wheel visuals were missing. Causes:
 
-Root causes:
+1. `Offroad_Big_Wheels.gltf` is skinned; repeated `Object3D.clone(true)` instances shared skeleton state.
+2. The asset was centered from generic scene bounds.
 
-1. The wheel is a skinned glTF. Repeated `Object3D.clone(true)` copies shared/aliased skeleton state.
-2. The model was centred from generic scene bounds instead of its authored socket and dimension markers.
+This was fixed using `SkeletonUtils.clone` and authored markers. The owner then found a second issue: all four wheels followed physics, but left/right lateral offsets differed and the socket did not align with the knuckle.
 
-The asset contains the authoritative nodes:
+Marker geometry established:
 
-- `Socket_WheelMount`
-- `Marker_TireRadiusOuter`
-- `Marker_TireWidthLeft`
-- `Marker_TireWidthRight`
-- `Axis_WheelSpin_A/B`
+```text
+Marker_TireWidthLeft  = -1.00 BU
+Marker_TireWidthRight = +0.25 BU
+physical tyre centre  = -0.375 BU
+Socket_WheelMount     =  0.00 BU
+```
 
-Implemented in `src/render/wheel-asset-contract.ts`:
+At `0.35 m/BU`, the socket is `0.13125 m` from the tyre centre. It is the inboard hub face, not the physical wheel centre. Aligning it to the wheel-body origin shifted both visuals in the same world direction, producing opposite-looking left/right offsets.
 
-- marker-derived axle/radius/width basis;
-- socket-to-body-origin transform;
-- independent radial and axial scale;
-- `SkeletonUtils.clone` for an independent hierarchy per wheel;
-- four clone/skeleton validation;
-- visual-root versus corresponding Box3D wheel-body position validation;
-- primitive fallback when any contract fails.
+Current `src/render/wheel-asset-contract.ts`:
 
-Headless Chrome validation proved:
+- derives axle and width from the width markers;
+- derives physical tyre centre from their midpoint;
+- derives radius perpendicular to the axle;
+- maps physical tyre centre to the Box3D wheel body;
+- preserves mount socket as a separate offset;
+- uses independent radial and axial scale;
+- clones independent skeletons;
+- validates root, centre, mount axis and dimensions.
+
+Latest Chrome result:
 
 ```text
 clones=4
 skeletons=4
 authored radius=1.46875
 authored width=1.25000
-radial scale=0.35000
-axial scale=0.35000
-root/body binding error=0.00 m
+radial/axial scale=0.35000/0.35000
+root/body error=0.00 m
+physical-centre error=0.00 m
+mount offset=0.13125 m
 ```
 
-The owner must still visually confirm tread orientation, left/right mirroring and rotation in the local current asset/session build.
+The owner must still visually confirm corrected left/right symmetry and the relation to the placeholder knuckle after pulling the latest branch.
 
-## Asset bridge foundation
+## Asset bridge
 
-`tools/sync-jv-assets.mjs` treats the local native working tree as authoritative and synchronizes body, wheel, front rig, rear mount and damper assets.
+`tools/sync-jv-assets.mjs` treats the local native working tree as authoritative and synchronizes:
 
-It now validates required wheel markers and generates:
+- body;
+- wheel;
+- front steering/suspension rig;
+- rear mount;
+- damper;
+- native front-rig JSON contract.
+
+It validates asset-specific required nodes and generates:
 
 ```text
 public/assets/jv-asset-manifest.json
 ```
 
-The manifest records bridge version, native source/ref, SHA-256, byte count, mesh/skin/node counts and socket/marker/axis names. This is the foundation for converting additional vehicle parts through explicit contracts instead of manual visual guessing.
+Manifest bridge version is 2 and records source/ref, SHA-256, bytes and structural metadata.
 
-Architecture and invariants are documented in:
+## Front steering/suspension preflight
+
+Actual live skinned front-rig rendering is not implemented yet, but its bridge is now explicit and CI-gated.
+
+Synchronized inputs:
+
+- `OneSided_Steering_Suspension_Rig.gltf`;
+- `assets/contracts/one_sided_steering_suspension.asset.json`.
+
+Thirteen required nodes are validated before Vite starts. Browser preflight checks asset id, contract version, node uniqueness, skin and skeleton.
+
+Known native semantic drift:
+
+1. original isolated M9 JSON says `Socket_ChassisMount_b.ridesBody = knuckle`;
+2. later M9 work separated it from `WheelCenter` into a non-steering carrier;
+3. current M6 has no carrier body and maps that role to `lowerArm` in `jozz_vehicle_m6_rig_lab_steering_visual.cpp`.
+
+Web role map uses topology-neutral `nonSteeringCarrier`, currently resolved to M6 `lowerArm`. Current M6 runtime code is authoritative for body ownership; JSON remains authoritative for authored identities and socket positions.
+
+Latest Chrome preflight:
 
 ```text
-docs/WEB_CONVERSION_FOUNDATION.md
+nodes=13/13
+skin=1/1
+M6 carrier=lowerArm
+native JSON=knuckle
+knownDrift=true
 ```
+
+Do not attach the whole front rig to one body.
 
 ## Current visual state
 
 Implemented:
 
-- real `rama_rurowa` body with registry/session offset;
-- real marker-bound four-wheel glTF instances;
-- live hardpoint diagnostic wishbones, kingpins, coilovers, rack and links;
+- real `rama_rurowa` body;
+- corrected four-wheel skinned GLTF adapter;
+- live diagnostic cylinder wishbones, kingpins, coilovers, rack and links;
 - orbit/zoom camera;
 - Central Test Campus procedural contracts.
 
+Preflight complete, live binding pending:
+
+- front steering/suspension rig.
+
 Synchronized but not fully bound:
 
-- `OneSided_Steering_Suspension_Rig.gltf`;
-- `One_Sided_wheel_mount.gltf`;
-- `Asset_Dumper.gltf`.
+- rear mount;
+- telescoping damper.
 
-Do not attach the whole front rig to one body. Native JV splits its ownership across chassis, lower arm and knuckle. The next visual work must reproduce that per-bone/socket ownership.
+## Documentation
+
+Primary architecture:
+
+```text
+docs/WEB_CONVERSION_FOUNDATION.md
+```
+
+Additional details:
+
+```text
+docs/PORTING_NOTES.md
+```
 
 ## Next development order
 
-1. Owner pulls and visually validates the four corrected wheel instances, orientation and rotation.
-2. Port front suspension visual bone/socket ownership exactly from native JV.
-3. Port rear mount and telescoping damper binding.
-4. Generate the web config schema/field mapping from the native C++ field table to remove duplicate hand-maintained lists.
-5. Replace remaining Box3D `any` IDs/module calls with branded ID types and a typed runtime facade.
-6. Convert real board/yard visuals without changing procedural physics contracts.
-7. Add cleaned scan visual/collision assets and explicit wheel-contact/internal-edge diagnostics.
-8. Decide whether the mesh binding needs `identifyEdges=true` support.
+1. Owner pulls and validates:
+   - wheel lateral symmetry;
+   - wheel relation to the current placeholder knuckle;
+   - A/D release at standstill and very low speed.
+2. Implement live front-rig adapter in this order:
+   - chassis-owned rigid parts;
+   - `nonSteeringCarrier` parts on M6 lower arm;
+   - knuckle-owned parts;
+   - stretched wishbone arms;
+   - rack-centre to knuckle steering rod;
+   - chassis to lower-arm telescoping damper.
+3. Add visual binding diagnostics for every role/body pair.
+4. Port rear mount and damper.
+5. Generate web config schema/field mapping from native C++ field tables.
+6. Replace remaining Box3D `any` IDs/module calls with branded types and a typed facade.
+7. Convert real board/yard visuals.
+8. Add cleaned scan visual/collision assets and contact/internal-edge diagnostics.
+9. Decide whether `identifyEdges=true` needs an explicit binding extension.
 
 ## Known scan risk
 
-`box3d.js@0.0.2` exposes mesh creation but its simple wrapper does not expose mesh internal-edge identification. Vehicle testing on the scan may require a small, explicit binding extension for `identifyEdges=true`.
+`box3d.js@0.0.2` exposes mesh creation but not mesh internal-edge identification. Scan-wheel testing may require a small explicit binding extension for `identifyEdges=true`.
