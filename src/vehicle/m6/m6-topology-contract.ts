@@ -7,9 +7,7 @@ import type {
 } from "../../physics/box3d-runtime-contract.js";
 import type { LegacySplitWheelReceipt } from "./legacy-split-wheel-backend.js";
 import type { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";
-import type {
-  RateSteeringProfileId,
-} from "./rate-steering-profile.js";
+import type { RateSteeringProfileId } from "./rate-steering-profile.js";
 
 export const M6_TOPOLOGY_COUNTS = Object.freeze({
   bodies: 18,
@@ -18,15 +16,9 @@ export const M6_TOPOLOGY_COUNTS = Object.freeze({
   corners: 4,
 } as const);
 
-export type M6SteeringActuatorState =
-  | "OFF"
-  | "POSITION"
-  | "RATE";
+export type M6SteeringActuatorState = "OFF" | "POSITION" | "RATE";
 
-export type M6HandsOnEdge =
-  | "NONE"
-  | "ENGAGE"
-  | "REVERSE";
+export type M6HandsOnEdge = "NONE" | "ENGAGE" | "REVERSE";
 
 export interface M6SteeringMechanismTrace {
   readonly profileId: RateSteeringProfileId;
@@ -35,6 +27,7 @@ export interface M6SteeringMechanismTrace {
   readonly handsOn: boolean;
   readonly handsOnEdge: M6HandsOnEdge;
   readonly commandedRack: number | null;
+  readonly liveRackAtCommand: number;
   readonly liveRackTranslation: number;
   readonly targetError: number;
   readonly springEnabled: boolean;
