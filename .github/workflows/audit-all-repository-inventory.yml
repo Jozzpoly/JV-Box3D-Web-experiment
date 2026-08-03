@@ -1,11 +1,6 @@
 name: audit-all-repository-inventory
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - .github/workflows/audit-all-repository-inventory.yml
   workflow_dispatch:
 
 permissions:
