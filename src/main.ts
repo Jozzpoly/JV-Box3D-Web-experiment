@@ -33,8 +33,8 @@ async function start(): Promise<void> {
   const usingFactory = runtimeConfig.source === 'factory/uliczny';
   if (usingFactory && !probes.passed) {
     throw new Error(
-      `Factory M6 nie zaliczył sond zachowania (${probes.passedCount}/${probes.totalCount}). `
-      + `straight=${probes.straight.passed}, steeringRelease=${probes.steeringRelease.passed}`,
+      `Factory M6 nie zaliczył sond parytetu (${probes.passedCount}/${probes.totalCount}). `
+      + `straight=${probes.straight.passed}, steeringImpact=${probes.steeringImpact.passed}`,
     );
   }
 
@@ -42,6 +42,7 @@ async function start(): Promise<void> {
     `Box3D ${version.major}.${version.minor}.${version.revision}`,
     runtimeConfig.source,
     `sondy ${probes.passedCount}/${probes.totalCount}`,
+    `handling ${probes.handlingPulse.stable ? 'OK' : 'niestabilny'}`,
   ].join(' · ');
 
   const render = createRenderContext(canvas);
@@ -110,7 +111,8 @@ async function start(): Promise<void> {
         `tarcie racka: ${parity.rackFrictionForce.toFixed(0)} N`,
         `obciążenie drążków: ${parity.transverseTieRodLoad.toFixed(0)} N`,
         `toe F/R: ${rig.config.frontToeDeg.toFixed(2)}° / ${rig.config.rearToeDeg.toFixed(2)}°`,
-        `sondy startowe: ${probes.passedCount}/${probes.totalCount}`,
+        `sondy parytetu: ${probes.passedCount}/${probes.totalCount}`,
+        `handling pulse: ${probes.handlingPulse.stable ? 'OK' : 'NIESTABILNY'}`,
         `fizyka: ${telemetry.physicsMs.toFixed(2)} ms`,
         `body/joint/contact: ${telemetry.bodyCount}/${telemetry.jointCount}/${telemetry.contactCount}`,
       ].join('<br>');
@@ -132,16 +134,22 @@ function exposeProbeReport(report: M6ProbeReport): void {
 
 function logProbeReport(report: M6ProbeReport): void {
   const straight = report.straight;
-  const steering = report.steeringRelease;
+  const impact = report.steeringImpact;
+  const handling = report.handlingPulse;
   console.info(
     `[jv-probe] straight ${straight.passed ? 'PASS' : 'FAIL'}: `
     + `dx=${straight.forwardMeters.toFixed(2)}m, dz=${straight.lateralMeters.toFixed(2)}m, `
     + `ratio=${straight.lateralRatio.toFixed(3)}, tilt=${straight.chassisTiltDeg.toFixed(1)}deg`,
   );
   console.info(
-    `[jv-probe] steering-release ${steering.passed ? 'PASS' : 'FAIL'}: `
-    + `peak=${steering.peakRackFraction.toFixed(3)}, final=${steering.finalRackFraction.toFixed(3)}, `
-    + `yawRate=${steering.finalYawRate.toFixed(3)}rad/s`,
+    `[jv-probe] steering-impact ${impact.passed ? 'PASS' : 'FAIL'}: `
+    + `worst=${impact.worstRackFraction.toFixed(3)}, rest=${impact.atRestRackFraction.toFixed(3)}, `
+    + `final=${impact.finalRackFraction.toFixed(3)}, yaw=${impact.finalYawRate.toFixed(3)}rad/s`,
+  );
+  console.info(
+    `[jv-probe] handling-pulse ${handling.stable ? 'STABLE' : 'UNSTABLE'}: `
+    + `peak=${handling.peakRackFraction.toFixed(3)}, final=${handling.finalRackFraction.toFixed(3)}, `
+    + `yaw=${handling.finalYawRate.toFixed(3)}rad/s`,
   );
 }
 
