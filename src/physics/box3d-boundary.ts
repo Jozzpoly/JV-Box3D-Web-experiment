@@ -1,7 +1,10 @@
 import Box3DFactory from "box3d.js/inline";
 import type { Box3DModule } from "box3d.js";
 import type { NativeFactorySnapshot } from "../config/native-factory-receipt.js";
-import { M6TopologyWorld } from "../vehicle/m6/m6-topology-world.js";
+import {
+  M6TopologyWorld,
+  type RateSteeringProfileId,
+} from "../vehicle/m6/m6-topology-world.js";
 import { NATIVE_INLINE_SHIMS, multiplyQuat } from "./native-inline-compat.js";
 import { MinimalContactFixture } from "./minimal-contact-fixture.js";
 import {
@@ -167,7 +170,7 @@ export class Box3DBoundary {
         `engine=${BOX3D_RUNTIME_IDENTITY.engineCommit}`,
         `runtime=${version.major}.${version.minor}.${version.revision}`,
       ]),
-      createLevel("B1", "PASS", "Required F2/F4 boundary exports are callable.", [
+      createLevel("B1", "PASS", "Required F2/F4/F5 boundary exports are callable.", [
         `exports=${REQUIRED_EXPORTS.length}`,
       ]),
       createLevel("B2", defaultsPass ? "PASS" : "FAIL", "Default definitions and solver sentinels.", [
@@ -205,7 +208,12 @@ export class Box3DBoundary {
     return MinimalContactFixture.create(this.#b3, this.#baseLevels);
   }
 
-  createM6TopologyWorld(receipt: NativeFactorySnapshot): M6TopologyWorld {
-    return new M6TopologyWorld(this.#b3, receipt);
+  createM6TopologyWorld(
+    receipt: NativeFactorySnapshot,
+    rateProfileId?: RateSteeringProfileId,
+  ): M6TopologyWorld {
+    return rateProfileId === undefined
+      ? new M6TopologyWorld(this.#b3, receipt)
+      : new M6TopologyWorld(this.#b3, receipt, rateProfileId);
   }
 }
