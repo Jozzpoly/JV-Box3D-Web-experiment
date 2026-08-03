@@ -35,6 +35,7 @@ interface DynamicSegment {
 }
 
 interface WheelVisualTarget {
+  bodyId: any;
   root: THREE.Group;
   fallback: THREE.Object3D;
 }
@@ -161,7 +162,7 @@ export async function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): Promi
     wheelGroup.add(fallback);
     scene.add(wheelGroup);
     rig.bindings.push({ bodyId: corner.wheelId, object: wheelGroup });
-    wheelTargets.push({ root: wheelGroup, fallback });
+    wheelTargets.push({ bodyId: corner.wheelId, root: wheelGroup, fallback });
   }
 
   const rack = new THREE.Mesh(
@@ -261,6 +262,11 @@ export async function createRigVisuals(scene: THREE.Scene, rig: M6WebRig): Promi
 
   rig.syncVisuals();
   updateRigVisuals();
+  validateWheelBodyBindings(b3, wheelTargets, wheelReport);
+  if (!wheelReport.attachedToWheelBodies) {
+    for (const target of wheelTargets) showWheelFallbackOnly(target);
+  }
+
   return {
     root: chassisRoot,
     report: { bodyLoaded, wheel: wheelReport },
@@ -308,9 +314,7 @@ async function loadRealJvWheels(
     const contract = resolveWheelAssetContract(source, wheelRadius, wheelWidth);
     const batch = cloneWheelAssetBatch(source, contract, targets.length, wheelRadius, wheelWidth);
 
-    if (!batch.report.independentSkeletons) {
-      throw new Error(batch.report.message);
-    }
+    if (!batch.report.independentSkeletons) throw new Error(batch.report.message);
     const dimensionTolerance = 1e-5;
     if (batch.report.radiusError > dimensionTolerance || batch.report.widthError > dimensionTolerance) {
       throw new Error(
@@ -328,8 +332,8 @@ async function loadRealJvWheels(
     }
 
     console.info(
-      `[jv-visual] wheel contract OK: authored r=${batch.report.authoredRadius.toFixed(5)}, `
-      + `w=${batch.report.authoredWidth.toFixed(5)}, scale radial=${batch.report.radialScale.toFixed(5)}, `
+      `[jv-visual] wheel marker contract: authored r=${batch.report.authoredRadius.toFixed(5)}, `
+      + `w=${batch.report.authoredWidth.toFixed(5)}, radial=${batch.report.radialScale.toFixed(5)}, `
       + `axial=${batch.report.axialScale.toFixed(5)}, skeletons=${batch.report.uniqueSkeletonCount}`,
     );
     return batch.report;
@@ -340,16 +344,42 @@ async function loadRealJvWheels(
   }
 }
 
+function validateWheelBodyBindings(
+  b3: any,
+  targets: WheelVisualTarget[],
+  report: WheelAssetReport,
+): void {
+  let maxError = 0;
+  for (const target of targets) {
+    const expected = b3.b3Body_GetPosition(target.bodyId);
+    target.root.updateMatrixWorld(true);
+    const actual = target.root.getWorldPosition(new THREE.Vector3());
+    const error = actual.distanceTo(new THREE.Vector3(expected.x, expected.y, expected.z));
+    maxError = Math.max(maxError, error);
+  }
+  report.maxBindingPositionError = maxError;
+  report.attachedToWheelBodies = report.loaded && maxError <= 1e-5;
+  if (!report.attachedToWheelBodies) {
+    report.message = `wheel visual roots are not attached to wheel bodies; max error=${maxError}`;
+    console.error(`[jv-visual] ${report.message}`);
+  } else {
+    console.info(`[jv-visual] four wheel roots attached to Box3D bodies; max error=${maxError.toExponential(2)}`);
+  }
+}
+
+function showWheelFallbackOnly(target: WheelVisualTarget): void {
+  target.fallback.visible = true;
+  for (const child of target.root.children) {
+    if (child !== target.fallback) child.visible = false;
+  }
+}
+
 function configureJvMaterials(root: THREE.Object3D): void {
   root.traverse((object) => {
     if (!(object instanceof THREE.Mesh)) return;
     object.castShadow = true;
     object.receiveShadow = true;
-    if (object instanceof THREE.SkinnedMesh) {
-      // The asset is tiny and this avoids stale bind-pose bounds causing a wheel
-      // to disappear while its physics body remains visible elsewhere.
-      object.frustumCulled = false;
-    }
+    if (object instanceof THREE.SkinnedMesh) object.frustumCulled = false;
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     for (const material of materials) {
       if ('map' in material && material.map instanceof THREE.Texture) {
