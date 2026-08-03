@@ -56,6 +56,8 @@ const REQUIRED_EXPORTS = [
   "destroyContactsBuffer",
 ] as const satisfies readonly (keyof Box3DModule)[];
 
+let sharedBoundaryPromise: Promise<Box3DBoundary> | null = null;
+
 export class Box3DBoundary {
   readonly #b3: Box3DModule;
   readonly #receipt: Box3DRuntimeReceipt;
@@ -71,7 +73,15 @@ export class Box3DBoundary {
     this.#baseLevels = levels;
   }
 
-  static async load(): Promise<Box3DBoundary> {
+  static load(): Promise<Box3DBoundary> {
+    sharedBoundaryPromise ??= Box3DBoundary.#loadFresh().catch((error: unknown) => {
+      sharedBoundaryPromise = null;
+      throw error;
+    });
+    return sharedBoundaryPromise;
+  }
+
+  static async #loadFresh(): Promise<Box3DBoundary> {
     const b3 = await Box3DFactory();
     const missing = REQUIRED_EXPORTS.filter((name) => typeof b3[name] !== "function");
     if (missing.length > 0) {
