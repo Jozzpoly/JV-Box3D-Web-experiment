@@ -37,10 +37,15 @@ async function start(): Promise<void> {
   logProbeReport(probes);
 
   const usingFactory = runtimeConfig.source === 'factory/uliczny';
-  if (usingFactory && !probes.passed) {
+  const factoryProductReady = probes.passed
+    && probes.handlingPulse.stable
+    && probes.lowSpeedSteering.stable;
+  if (usingFactory && !factoryProductReady) {
     throw new Error(
-      `Factory M6 nie zaliczył sond parytetu (${probes.passedCount}/${probes.totalCount}). `
-      + `straight=${probes.straight.passed}, steeringImpact=${probes.steeringImpact.passed}`,
+      `Factory M6/web input nie zaliczył bramek. `
+      + `parity=${probes.passedCount}/${probes.totalCount}, `
+      + `keyboardTap=${probes.handlingPulse.stable}, `
+      + `lowSpeed=${probes.lowSpeedSteering.stable}`,
     );
   }
 
@@ -134,6 +139,7 @@ async function start(): Promise<void> {
       telemetryElement.innerHTML = [
         `prędkość: <b>${telemetry.speedKmh.toFixed(1)} km/h</b>`,
         `skręt klawisz/model: ${inputTelemetry.rawSteer.toFixed(2)} / ${inputTelemetry.filteredSteer.toFixed(2)}`,
+        `ręce: ${inputTelemetry.steeringEngaged ? 'SERVO' : 'SWOBODNE'} · hold ${inputTelemetry.centreHoldRemaining.toFixed(2)} s`,
         `rack: ${telemetry.rackTravel.toFixed(4)} / ${rig.config.rackTravel.toFixed(4)} m`,
         `rack ${rackResponse.mode}: target ${rackResponse.targetTranslation.toFixed(4)} · err ${rackResponse.error.toFixed(4)} m`,
         `rack v: ${rackResponse.speed.toFixed(4)} m/s · stall ${rackResponse.stalledFrames}/${rackResponse.maxStalledFrames} kl.`,
@@ -143,6 +149,7 @@ async function start(): Promise<void> {
         `sondy parytetu: ${probes.passedCount}/${probes.totalCount}`,
         `keyboard tap: ${probes.handlingPulse.stable ? 'OK' : 'NIESTABILNY'}`,
         `low-speed postój/creep: ${stationary.stable ? 'OK' : 'UWAGA'} / ${creep.stable ? 'OK' : 'UWAGA'}`,
+        `capture racka postój/creep: ${stationary.rackFractionAtServoRelease.toFixed(3)} / ${creep.rackFractionAtServoRelease.toFixed(3)}`,
         `stall sondy postój/creep: ${stationary.maxServoStallFrames}/${creep.maxServoStallFrames} kl.`,
         `koła GLTF: ${wheel.loaded ? `${wheel.cloneCount} · szkielety ${wheel.uniqueSkeletonCount}` : 'fallback'}`,
         `binding kół: ${wheel.attachedToWheelBodies ? 'OK' : 'BŁĄD'} · root ${wheel.maxBindingPositionError.toExponential(1)} m`,
@@ -195,14 +202,15 @@ function logProbeReport(report: M6ProbeReport): void {
   console.info(
     `[jv-probe] low-speed stationary ${stationary.stable ? 'STABLE' : 'UNSTABLE'}: `
     + `left=${stationary.leftPeakFraction.toFixed(3)}, right=${stationary.rightPeakFraction.toFixed(3)}, `
-    + `final=${stationary.finalRackFraction.toFixed(3)}, crossed=${stationary.crossedCentreOnReversal}, `
-    + `stall=${stationary.maxServoStallFrames} frames`,
+    + `capture=${stationary.rackFractionAtServoRelease.toFixed(3)}, final=${stationary.finalRackFraction.toFixed(3)}, `
+    + `crossed=${stationary.crossedCentreOnReversal}, stall=${stationary.maxServoStallFrames} frames`,
   );
   console.info(
     `[jv-probe] low-speed creep ${creep.stable ? 'STABLE' : 'UNSTABLE'}: `
     + `left=${creep.leftPeakFraction.toFixed(3)}, right=${creep.rightPeakFraction.toFixed(3)}, `
-    + `final=${creep.finalRackFraction.toFixed(3)}, crossed=${creep.crossedCentreOnReversal}, `
-    + `stall=${creep.maxServoStallFrames} frames, speed=${creep.finalSpeedMs.toFixed(3)}m/s`,
+    + `capture=${creep.rackFractionAtServoRelease.toFixed(3)}, final=${creep.finalRackFraction.toFixed(3)}, `
+    + `crossed=${creep.crossedCentreOnReversal}, stall=${creep.maxServoStallFrames} frames, `
+    + `speed=${creep.finalSpeedMs.toFixed(3)}m/s`,
   );
 }
 
