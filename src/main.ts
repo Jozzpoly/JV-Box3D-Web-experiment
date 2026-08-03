@@ -3,6 +3,7 @@ import './style.css';
 import { KeyboardInput } from './input';
 import { loadRuntimeM6Config } from './physics/config-loader';
 import { M6ParityController } from './physics/m6-parity-controller';
+import { runM6ParityProbes, type M6ProbeReport } from './physics/m6-probes';
 import { prepareBox3dRuntime } from './physics/box3d-runtime';
 import { M6WebRig } from './physics/m6-rig';
 import { createRenderContext, createRigVisuals } from './render/renderer';
@@ -22,8 +23,26 @@ async function start(): Promise<void> {
   const b3 = prepareBox3dRuntime(rawBox3d);
   const version = b3.b3GetVersion();
   const config = runtimeConfig.config;
-  statusElement.textContent = `Box3D ${version.major}.${version.minor}.${version.revision} · ${runtimeConfig.source}`;
   for (const warning of runtimeConfig.warnings) console.warn(`[jv-config] ${warning}`);
+
+  statusElement.textContent = 'Sondy stabilności M6…';
+  const probes = runM6ParityProbes(b3, config);
+  exposeProbeReport(probes);
+  logProbeReport(probes);
+
+  const usingFactory = runtimeConfig.source === 'factory/uliczny';
+  if (usingFactory && !probes.passed) {
+    throw new Error(
+      `Factory M6 nie zaliczył sond zachowania (${probes.passedCount}/${probes.totalCount}). `
+      + `straight=${probes.straight.passed}, steeringRelease=${probes.steeringRelease.passed}`,
+    );
+  }
+
+  statusElement.textContent = [
+    `Box3D ${version.major}.${version.minor}.${version.revision}`,
+    runtimeConfig.source,
+    `sondy ${probes.passedCount}/${probes.totalCount}`,
+  ].join(' · ');
 
   const render = createRenderContext(canvas);
   const worldDef = b3.b3DefaultWorldDef();
@@ -91,6 +110,7 @@ async function start(): Promise<void> {
         `tarcie racka: ${parity.rackFrictionForce.toFixed(0)} N`,
         `obciążenie drążków: ${parity.transverseTieRodLoad.toFixed(0)} N`,
         `toe F/R: ${rig.config.frontToeDeg.toFixed(2)}° / ${rig.config.rearToeDeg.toFixed(2)}°`,
+        `sondy startowe: ${probes.passedCount}/${probes.totalCount}`,
         `fizyka: ${telemetry.physicsMs.toFixed(2)} ms`,
         `body/joint/contact: ${telemetry.bodyCount}/${telemetry.jointCount}/${telemetry.contactCount}`,
       ].join('<br>');
@@ -104,6 +124,25 @@ async function start(): Promise<void> {
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
+}
+
+function exposeProbeReport(report: M6ProbeReport): void {
+  (window as Window & { __JV_PROBE_REPORT__?: M6ProbeReport }).__JV_PROBE_REPORT__ = report;
+}
+
+function logProbeReport(report: M6ProbeReport): void {
+  const straight = report.straight;
+  const steering = report.steeringRelease;
+  console.info(
+    `[jv-probe] straight ${straight.passed ? 'PASS' : 'FAIL'}: `
+    + `dx=${straight.forwardMeters.toFixed(2)}m, dz=${straight.lateralMeters.toFixed(2)}m, `
+    + `ratio=${straight.lateralRatio.toFixed(3)}, tilt=${straight.chassisTiltDeg.toFixed(1)}deg`,
+  );
+  console.info(
+    `[jv-probe] steering-release ${steering.passed ? 'PASS' : 'FAIL'}: `
+    + `peak=${steering.peakRackFraction.toFixed(3)}, final=${steering.finalRackFraction.toFixed(3)}, `
+    + `yawRate=${steering.finalYawRate.toFixed(3)}rad/s`,
+  );
 }
 
 function requireElement<T extends HTMLElement>(id: string): T {
