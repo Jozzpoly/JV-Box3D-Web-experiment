@@ -135,11 +135,25 @@ try {
   } else if (!state.probes.passed) {
     failures.push(`M6 parity probes failed: ${JSON.stringify(state.probes)}`);
   }
+  if (!state.probes?.handlingPulse?.stable) {
+    failures.push(`keyboard handling pulse is unstable: ${JSON.stringify(state.probes?.handlingPulse)}`);
+  }
   if (!state.probes?.lowSpeedSteering) {
     failures.push('missing low-speed steering diagnostic');
-  } else if (!state.probes.lowSpeedSteering.stationary?.finite
-      || !state.probes.lowSpeedSteering.creep?.finite) {
-    failures.push(`low-speed steering produced non-finite state: ${JSON.stringify(state.probes.lowSpeedSteering)}`);
+  } else {
+    const lowSpeed = state.probes.lowSpeedSteering;
+    if (!lowSpeed.stationary?.finite || !lowSpeed.creep?.finite) {
+      failures.push(`low-speed steering produced non-finite state: ${JSON.stringify(lowSpeed)}`);
+    }
+    if (!lowSpeed.stable) {
+      failures.push(`low-speed steering centre-capture failed: ${JSON.stringify(lowSpeed)}`);
+    }
+    if (!(lowSpeed.stationary?.rackFractionAtServoRelease < 0.1)) {
+      failures.push(`stationary rack was not centred before servo release: ${lowSpeed.stationary?.rackFractionAtServoRelease}`);
+    }
+    if (!(lowSpeed.creep?.rackFractionAtServoRelease < 0.1)) {
+      failures.push(`creep rack was not centred before servo release: ${lowSpeed.creep?.rackFractionAtServoRelease}`);
+    }
   }
 
   if (!state.visuals) {
@@ -195,6 +209,7 @@ try {
     `[browser-smoke] low-speed stationary ${lowSpeed.stationary.stable ? 'STABLE' : 'UNSTABLE'}: `
     + `left=${lowSpeed.stationary.leftPeakFraction.toFixed(3)} `
     + `right=${lowSpeed.stationary.rightPeakFraction.toFixed(3)} `
+    + `capture=${lowSpeed.stationary.rackFractionAtServoRelease.toFixed(3)} `
     + `final=${lowSpeed.stationary.finalRackFraction.toFixed(3)} `
     + `crossed=${lowSpeed.stationary.crossedCentreOnReversal} `
     + `stall=${lowSpeed.stationary.maxServoStallFrames}f`,
@@ -203,6 +218,7 @@ try {
     `[browser-smoke] low-speed creep ${lowSpeed.creep.stable ? 'STABLE' : 'UNSTABLE'}: `
     + `left=${lowSpeed.creep.leftPeakFraction.toFixed(3)} `
     + `right=${lowSpeed.creep.rightPeakFraction.toFixed(3)} `
+    + `capture=${lowSpeed.creep.rackFractionAtServoRelease.toFixed(3)} `
     + `final=${lowSpeed.creep.finalRackFraction.toFixed(3)} `
     + `crossed=${lowSpeed.creep.crossedCentreOnReversal} `
     + `stall=${lowSpeed.creep.maxServoStallFrames}f speed=${lowSpeed.creep.finalSpeedMs.toFixed(3)}m/s`,
