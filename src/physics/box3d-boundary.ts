@@ -1,5 +1,7 @@
 import Box3DFactory from "box3d.js/inline";
 import type { Box3DModule } from "box3d.js";
+import type { NativeFactorySnapshot } from "../config/native-factory-receipt.js";
+import { M6TopologyWorld } from "../vehicle/m6/m6-topology-world.js";
 import { NATIVE_INLINE_SHIMS, multiplyQuat } from "./native-inline-compat.js";
 import { MinimalContactFixture } from "./minimal-contact-fixture.js";
 import {
@@ -21,6 +23,7 @@ export type {
   ValidationStatus,
 } from "./box3d-runtime-contract.js";
 export { MinimalContactFixture } from "./minimal-contact-fixture.js";
+export { M6TopologyWorld } from "../vehicle/m6/m6-topology-world.js";
 
 const REQUIRED_EXPORTS = [
   "b3GetVersion",
@@ -28,22 +31,52 @@ const REQUIRED_EXPORTS = [
   "b3CreateWorld",
   "b3DestroyWorld",
   "b3World_IsValid",
+  "b3World_Step",
+  "b3World_GetCounters",
   "b3DefaultBodyDef",
   "b3CreateBody",
   "b3DestroyBody",
+  "b3Body_IsValid",
   "b3Body_GetPosition",
+  "b3Body_GetRotation",
   "b3Body_GetLinearVelocity",
+  "b3Body_GetAngularVelocity",
   "b3Body_GetMassData",
   "b3Body_SetMassData",
   "b3Shape_ComputeMassData",
   "b3DefaultShapeDef",
   "b3CreateBoxShape",
   "b3CreateSphereShape",
+  "b3CreateHullShape",
+  "b3CreateHull",
+  "b3CreateCylinder",
   "b3Shape_GetFilter",
   "b3Shape_GetSurfaceMaterial",
   "b3ComputeSphereMass",
-  "b3World_Step",
-  "b3World_GetCounters",
+  "b3DefaultPrismaticJointDef",
+  "b3CreatePrismaticJoint",
+  "b3PrismaticJoint_EnableSpring",
+  "b3PrismaticJoint_SetSpringHertz",
+  "b3PrismaticJoint_SetSpringDampingRatio",
+  "b3PrismaticJoint_SetTargetTranslation",
+  "b3PrismaticJoint_GetTranslation",
+  "b3PrismaticJoint_GetSpeed",
+  "b3PrismaticJoint_SetMotorSpeed",
+  "b3PrismaticJoint_SetMaxMotorForce",
+  "b3DefaultDistanceJointDef",
+  "b3CreateDistanceJoint",
+  "b3DistanceJoint_GetCurrentLength",
+  "b3DefaultRevoluteJointDef",
+  "b3CreateRevoluteJoint",
+  "b3RevoluteJoint_GetAngle",
+  "b3DefaultSphericalJointDef",
+  "b3CreateSphericalJoint",
+  "b3DestroyJoint",
+  "b3Joint_IsValid",
+  "b3Joint_WakeBodies",
+  "b3Joint_GetConstraintForce",
+  "b3ComputeQuatBetweenUnitVectors",
+  "b3RotateVector",
   "createEventsBuffer",
   "getEvents",
   "getNumContactBeginEvents",
@@ -134,7 +167,7 @@ export class Box3DBoundary {
         `engine=${BOX3D_RUNTIME_IDENTITY.engineCommit}`,
         `runtime=${version.major}.${version.minor}.${version.revision}`,
       ]),
-      createLevel("B1", "PASS", "Required minimal-boundary exports are callable.", [
+      createLevel("B1", "PASS", "Required F2/F4 boundary exports are callable.", [
         `exports=${REQUIRED_EXPORTS.length}`,
       ]),
       createLevel("B2", defaultsPass ? "PASS" : "FAIL", "Default definitions and solver sentinels.", [
@@ -143,7 +176,7 @@ export class Box3DBoundary {
         `continuous=${world.enableContinuous}`,
         `workers=${world.workerCount}`,
       ]),
-      createLevel("B3", "PENDING", "Live ownership requires a fixture.", []),
+      createLevel("B3", "PENDING", "Live ownership requires a fixture or vehicle world.", []),
       createLevel(
         "B4",
         primitivePass ? "PASS" : "FAIL",
@@ -170,5 +203,9 @@ export class Box3DBoundary {
 
   createMinimalContactFixture(): MinimalContactFixture {
     return MinimalContactFixture.create(this.#b3, this.#baseLevels);
+  }
+
+  createM6TopologyWorld(receipt: NativeFactorySnapshot): M6TopologyWorld {
+    return new M6TopologyWorld(this.#b3, receipt);
   }
 }
