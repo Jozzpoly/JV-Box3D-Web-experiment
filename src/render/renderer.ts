@@ -315,11 +315,17 @@ async function loadRealJvWheels(
     const batch = cloneWheelAssetBatch(source, contract, targets.length, wheelRadius, wheelWidth);
 
     if (!batch.report.independentSkeletons) throw new Error(batch.report.message);
-    const dimensionTolerance = 1e-5;
-    if (batch.report.radiusError > dimensionTolerance || batch.report.widthError > dimensionTolerance) {
+    const geometryTolerance = 1e-5;
+    if (batch.report.radiusError > geometryTolerance || batch.report.widthError > geometryTolerance) {
       throw new Error(
         `wheel marker transform mismatch: radius error=${batch.report.radiusError}, width error=${batch.report.widthError}`,
       );
+    }
+    if (batch.report.centerError > geometryTolerance) {
+      throw new Error(`wheel physical centre misses body origin by ${batch.report.centerError} m`);
+    }
+    if (batch.report.mountAxisError > geometryTolerance) {
+      throw new Error(`wheel mount socket is ${batch.report.mountAxisError} m away from the axle`);
     }
 
     for (let index = 0; index < targets.length; index += 1) {
@@ -332,9 +338,10 @@ async function loadRealJvWheels(
     }
 
     console.info(
-      `[jv-visual] wheel marker contract: authored r=${batch.report.authoredRadius.toFixed(5)}, `
+      `[jv-visual] wheel physical-centre contract: authored r=${batch.report.authoredRadius.toFixed(5)}, `
       + `w=${batch.report.authoredWidth.toFixed(5)}, radial=${batch.report.radialScale.toFixed(5)}, `
-      + `axial=${batch.report.axialScale.toFixed(5)}, skeletons=${batch.report.uniqueSkeletonCount}`,
+      + `axial=${batch.report.axialScale.toFixed(5)}, centre=${batch.report.centerError.toExponential(2)}m, `
+      + `mount=${batch.report.mountOffset.toFixed(5)}m, skeletons=${batch.report.uniqueSkeletonCount}`,
     );
     return batch.report;
   } catch (error) {
@@ -358,12 +365,19 @@ function validateWheelBodyBindings(
     maxError = Math.max(maxError, error);
   }
   report.maxBindingPositionError = maxError;
-  report.attachedToWheelBodies = report.loaded && maxError <= 1e-5;
+  const tolerance = 1e-5;
+  report.attachedToWheelBodies = report.loaded
+    && maxError <= tolerance
+    && report.centerError <= tolerance
+    && report.mountAxisError <= tolerance;
   if (!report.attachedToWheelBodies) {
-    report.message = `wheel visual roots are not attached to wheel bodies; max error=${maxError}`;
+    report.message = `wheel visual contract failed: root=${maxError}, centre=${report.centerError}, mountAxis=${report.mountAxisError}`;
     console.error(`[jv-visual] ${report.message}`);
   } else {
-    console.info(`[jv-visual] four wheel roots attached to Box3D bodies; max error=${maxError.toExponential(2)}`);
+    console.info(
+      `[jv-visual] four tyre centres attached to Box3D wheel bodies; `
+      + `root=${maxError.toExponential(2)}m, centre=${report.centerError.toExponential(2)}m`,
+    );
   }
 }
 
