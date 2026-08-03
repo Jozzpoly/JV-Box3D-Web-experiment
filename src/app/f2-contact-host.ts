@@ -21,6 +21,12 @@ export interface F2ContactHostOptions {
     snapshot: MinimalContactSnapshot,
   ) => void;
   readonly onFrame?: (report: FrameAdvanceReport) => void;
+  readonly onFatalError?: (error: unknown) => void;
+}
+
+interface F2HostState {
+  disposed: boolean;
+  fatalError: unknown | null;
 }
 
 export class F2ContactHost {
@@ -28,22 +34,25 @@ export class F2ContactHost {
   readonly #receipt: Box3DRuntimeReceipt;
   readonly #validation: () => readonly F2ValidationLevel[];
   readonly #snapshot: () => MinimalContactSnapshot;
-  #disposed = false;
+  readonly #state: F2HostState;
 
   private constructor(
     resources: OwnedResourceStack,
     receipt: Box3DRuntimeReceipt,
     validation: () => readonly F2ValidationLevel[],
     snapshot: () => MinimalContactSnapshot,
+    state: F2HostState,
   ) {
     this.#resources = resources;
     this.#receipt = receipt;
     this.#validation = validation;
     this.#snapshot = snapshot;
+    this.#state = state;
   }
 
   static async start(options: F2ContactHostOptions): Promise<F2ContactHost> {
     const resources = new OwnedResourceStack();
+    const state: F2HostState = { disposed: false, fatalError: null };
     try {
       const boundary = await Box3DBoundary.load();
       const fixture = boundary.createMinimalContactFixture();
@@ -60,6 +69,19 @@ export class F2ContactHost {
           options.onPhysicsStep(step, input, snapshot);
         },
         ...(options.onFrame === undefined ? {} : { onFrame: options.onFrame }),
+        onFatalError: (error) => {
+          state.fatalError = error;
+          state.disposed = true;
+          const report = resources.dispose();
+          const fatal =
+            report.failures.length > 0
+              ? new AggregateError(
+                  [error, ...report.failures.map((failure) => failure.error)],
+                  "F2 runtime failed and cleanup reported errors.",
+                )
+              : error;
+          options.onFatalError?.(fatal);
+        },
       });
       resources.defer("clean browser host", () => browserHost.dispose());
 
@@ -68,8 +90,11 @@ export class F2ContactHost {
         boundary.receipt,
         () => fixture.validationLevels(),
         () => fixture.snapshot,
+        state,
       );
     } catch (error: unknown) {
+      state.disposed = true;
+      state.fatalError = error;
       const report = resources.dispose();
       if (report.failures.length > 0) {
         throw new AggregateError(
@@ -85,6 +110,10 @@ export class F2ContactHost {
     return this.#receipt;
   }
 
+  get fatalError(): unknown | null {
+    return this.#state.fatalError;
+  }
+
   get validationLevels(): readonly F2ValidationLevel[] {
     this.#assertActive();
     return this.#validation();
@@ -96,10 +125,10 @@ export class F2ContactHost {
   }
 
   dispose(): void {
-    if (this.#disposed) {
+    if (this.#state.disposed) {
       return;
     }
-    this.#disposed = true;
+    this.#state.disposed = true;
     const report = this.#resources.dispose();
     if (report.failures.length > 0) {
       throw new AggregateError(
@@ -110,7 +139,12 @@ export class F2ContactHost {
   }
 
   #assertActive(): void {
-    if (this.#disposed) {
+    if (this.#state.fatalError !== null) {
+      throw new Error("F2ContactHost is faulted and has been disposed.", {
+        cause: this.#state.fatalError,
+      });
+    }
+    if (this.#state.disposed) {
       throw new Error("F2ContactHost has been disposed.");
     }
   }
