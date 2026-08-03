@@ -27,7 +27,6 @@ export interface M6SteeringMechanismTrace {
   readonly handsOn: boolean;
   readonly handsOnEdge: M6HandsOnEdge;
   readonly commandedRack: number | null;
-  readonly liveRackAtCommand: number;
   readonly liveRackTranslation: number;
   readonly targetError: number;
   readonly springEnabled: boolean;
