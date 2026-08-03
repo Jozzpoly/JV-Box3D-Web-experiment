@@ -163,8 +163,8 @@ async function startHost(): Promise<void> {
     generationElement.textContent = String(generation);
     validationElement.textContent = formatValidation(nextHost.physics.validationLevels);
     statusElement.textContent =
-      `Receipt verified — ${physicsReceipt.identity.packageName}@${physicsReceipt.identity.packageVersion}, ` +
-      `engine ${version.major}.${version.minor}.${version.revision}`;
+      `Running — ${physicsReceipt.identity.packageName}@${physicsReceipt.identity.packageVersion}, ` +
+      `engine ${version.major}.${version.minor}.${version.revision}; native receipt ${receipt.source.commit.slice(0, 8)} verified`;
   } catch (error: unknown) {
     if (generation !== startupGeneration) {
       return;
