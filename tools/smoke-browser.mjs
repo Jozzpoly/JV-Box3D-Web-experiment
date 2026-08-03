@@ -9,6 +9,22 @@ const DEBUG_PORT = 9222;
 const APP_URL = `http://${APP_HOST}:${APP_PORT}/`;
 const DEBUG_URL = `http://127.0.0.1:${DEBUG_PORT}`;
 
+const READ_BROWSER_STATE = `(() => {
+  const status = document.getElementById('status');
+  const telemetry = document.getElementById('telemetry');
+  const error = document.getElementById('error');
+  const canvas = document.getElementById('viewport');
+  return {
+    status: status?.textContent ?? '',
+    telemetry: telemetry?.textContent ?? '',
+    errorHidden: error?.hidden ?? false,
+    errorText: error?.textContent ?? '',
+    canvasWidth: canvas instanceof HTMLCanvasElement ? canvas.width : 0,
+    canvasHeight: canvas instanceof HTMLCanvasElement ? canvas.height : 0,
+    probes: window.__JV_PROBE_REPORT__ ?? null,
+  };
+})()`;
+
 class CdpClient {
   constructor(url) {
     this.url = url;
@@ -104,29 +120,13 @@ try {
   await cdp.send('Runtime.enable');
   await cdp.send('Page.enable');
   await cdp.send('Page.navigate', { url: APP_URL });
-  await sleep(3_000);
 
-  const evaluation = await cdp.send('Runtime.evaluate', {
-    expression: `(() => {
-      const status = document.getElementById('status');
-      const telemetry = document.getElementById('telemetry');
-      const error = document.getElementById('error');
-      const canvas = document.getElementById('viewport');
-      return {
-        status: status?.textContent ?? '',
-        telemetry: telemetry?.textContent ?? '',
-        errorHidden: error?.hidden ?? false,
-        errorText: error?.textContent ?? '',
-        canvasWidth: canvas instanceof HTMLCanvasElement ? canvas.width : 0,
-        canvasHeight: canvas instanceof HTMLCanvasElement ? canvas.height : 0,
-        probes: window.__JV_PROBE_REPORT__ ?? null,
-      };
-    })()`,
-    returnByValue: true,
-    awaitPromise: true,
-  });
-  const state = evaluation.result?.value;
-  if (!state) throw new Error('Browser smoke test received no DOM state.');
+  // Do not assume a fixed startup duration. Probe worlds and glTF parsing can
+  // legitimately cross the old three-second boundary on a busy software-WebGL
+  // runner. Poll for an observable terminal state: active telemetry or a visible
+  // app error. A real hang still fails at the explicit timeout with the last DOM
+  // snapshot attached.
+  const state = await waitForBrowserReady(cdp, 15_000);
 
   const failures = [];
   if (!state.errorHidden) failures.push(`visible error panel: ${state.errorText || '(empty)'}`);
@@ -171,6 +171,29 @@ try {
   await terminateProcessTree(chromeProcess);
   await terminateProcessTree(previewProcess);
   if (chromeProfile) await removeDirectoryBestEffort(chromeProfile);
+}
+
+async function waitForBrowserReady(cdp, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  let lastState = null;
+  while (Date.now() < deadline) {
+    const evaluation = await cdp.send('Runtime.evaluate', {
+      expression: READ_BROWSER_STATE,
+      returnByValue: true,
+      awaitPromise: true,
+    });
+    lastState = evaluation.result?.value ?? null;
+    if (lastState) {
+      const telemetryReady = lastState.telemetry.includes('body/joint/contact');
+      const appFailed = lastState.errorHidden === false;
+      if (telemetryReady || appFailed) return lastState;
+    }
+    await sleep(200);
+  }
+  throw new Error(
+    `Timed out waiting for browser simulation readiness after ${timeoutMs} ms. `
+    + `Last state: ${JSON.stringify(lastState)}`,
+  );
 }
 
 async function findChromeExecutable() {
