@@ -25,6 +25,8 @@ export interface WheelAssetReport {
   sourceSkinnedMeshCount: number;
   uniqueSkeletonCount: number;
   independentSkeletons: boolean;
+  attachedToWheelBodies: boolean;
+  maxBindingPositionError: number;
   authoredRadius: number;
   authoredWidth: number;
   requestedRadius: number;
@@ -172,6 +174,8 @@ export function cloneWheelAssetBatch(
       sourceSkinnedMeshCount: contract.sourceSkinnedMeshCount,
       uniqueSkeletonCount: skeletonIds.size,
       independentSkeletons,
+      attachedToWheelBodies: false,
+      maxBindingPositionError: Number.POSITIVE_INFINITY,
       authoredRadius: contract.authoredRadius,
       authoredWidth: contract.authoredWidth,
       requestedRadius,
@@ -199,6 +203,8 @@ export function failedWheelAssetReport(
     sourceSkinnedMeshCount: 0,
     uniqueSkeletonCount: 0,
     independentSkeletons: false,
+    attachedToWheelBodies: false,
+    maxBindingPositionError: Number.POSITIVE_INFINITY,
     authoredRadius: 0,
     authoredWidth: 0,
     requestedRadius,
