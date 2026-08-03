@@ -178,7 +178,7 @@ test("two M6 instances use unique negative groups, settle, and contact tagged te
   }
 });
 
-test("POSITION moves the physical rack; RELEASE and RATE leave centering actuation off", () => {
+test("POSITION moves the rack; RELEASE turns actuation off; RATE engages K2b", () => {
   const world = new M6TopologyWorld(b3, receiptFixture());
   try {
     const vehicle = world.createVehicle(
@@ -192,6 +192,7 @@ test("POSITION moves the physical rack; RELEASE and RATE leave centering actuati
     const positioned = vehicle.lastTrace;
     assert.ok(positioned !== null);
     assert.equal(positioned.steeringActuator, "POSITION");
+    assert.equal(positioned.steering.springEnabled, true);
     assert.ok(positioned.rackTranslation > 0.02);
 
     vehicle.setSteering({ mode: "RELEASE" });
@@ -200,15 +201,24 @@ test("POSITION moves the physical rack; RELEASE and RATE leave centering actuati
     assert.ok(released !== null);
     assert.equal(released.command.mode, "RELEASE");
     assert.equal(released.steeringActuator, "OFF");
+    assert.equal(released.steering.handsOn, false);
+    assert.equal(released.steering.springEnabled, false);
+    assert.equal(released.steering.commandedRack, null);
+    assert.equal(released.steering.targetTranslation, null);
+    assert.equal(released.steering.requestedMotorSpeed, 0);
     assert.ok(Math.abs(released.rackTranslation) > 0.005);
 
     vehicle.setSteering({ mode: "RATE", value: -0.4 });
     world.step(1);
-    const reserved = vehicle.lastTrace;
-    assert.ok(reserved !== null);
-    assert.equal(reserved.command.mode, "RATE");
-    assert.equal(reserved.steeringActuator, "RATE_RESERVED");
-    assert.ok(Math.abs(reserved.rackTranslation) > 0.005);
+    const rated = vehicle.lastTrace;
+    assert.ok(rated !== null);
+    assert.equal(rated.command.mode, "RATE");
+    assert.equal(rated.steeringActuator, "RATE");
+    assert.equal(rated.steering.handsOn, true);
+    assert.equal(rated.steering.handsOnEdge, "ENGAGE");
+    assert.equal(rated.steering.springEnabled, true);
+    assert.notEqual(rated.steering.commandedRack, null);
+    assert.ok(Math.abs(rated.steering.targetError) <= 0.008 + 1e-9);
   } finally {
     world.dispose();
   }
