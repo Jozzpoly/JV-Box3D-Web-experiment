@@ -26,17 +26,27 @@ export interface CleanBrowserHostOptions {
   readonly isDocumentHidden: () => boolean;
   readonly onStep: (step: FixedStepInterval, input: SteeringTimelineSample) => void;
   readonly onFrame?: (report: FrameAdvanceReport) => void;
+  readonly onFatalError?: (error: unknown) => void;
+}
+
+interface HostState {
+  disposed: boolean;
+  fatalError: unknown | null;
 }
 
 export class CleanBrowserHost {
   readonly #resources: OwnedResourceStack;
-  #disposed = false;
+  readonly #state: HostState;
 
-  private constructor(resources: OwnedResourceStack) {
+  private constructor(resources: OwnedResourceStack, state: HostState) {
     this.#resources = resources;
+    this.#state = state;
   }
 
   static start(options: CleanBrowserHostOptions): CleanBrowserHost {
+    const state: HostState = { disposed: false, fatalError: null };
+    let committedResources: OwnedResourceStack | null = null;
+
     const transaction = runResourceTransaction((resources) => {
       const startTimeMs = options.now();
       const timeline = new SteeringInputTimeline(startTimeMs);
@@ -61,40 +71,66 @@ export class CleanBrowserHost {
         running = false;
         if (animationFrameHandle !== 0) {
           options.animationFrames.cancel(animationFrameHandle);
+          animationFrameHandle = 0;
         }
       });
 
       const frame: FrameRequestCallback = (frameTimeMs) => {
-        if (!running) {
+        if (!running || state.disposed) {
+          return;
+        }
+        animationFrameHandle = 0;
+
+        try {
+          const report = clock.advance(
+            frameTimeMs,
+            (step) => {
+              const input = timeline.consumeInterval(step.startTimeMs, step.endTimeMs);
+              options.onStep(step, input);
+            },
+            (dropped) => {
+              timeline.skipInterval(dropped.startTimeMs, dropped.endTimeMs);
+            },
+          );
+          options.onFrame?.(report);
+        } catch (error: unknown) {
+          running = false;
+          state.disposed = true;
+          state.fatalError = error;
+          const disposal = committedResources?.dispose();
+          const fatal =
+            disposal !== undefined && disposal.failures.length > 0
+              ? new AggregateError(
+                  [error, ...disposal.failures.map((failure) => failure.error)],
+                  "Browser host runtime failed and cleanup reported errors.",
+                )
+              : error;
+          options.onFatalError?.(fatal);
           return;
         }
 
-        const report = clock.advance(
-          frameTimeMs,
-          (step) => {
-            const input = timeline.consumeInterval(step.startTimeMs, step.endTimeMs);
-            options.onStep(step, input);
-          },
-          (dropped) => {
-            timeline.skipInterval(dropped.startTimeMs, dropped.endTimeMs);
-          },
-        );
-        options.onFrame?.(report);
-        animationFrameHandle = options.animationFrames.request(frame);
+        if (running && !state.disposed) {
+          animationFrameHandle = options.animationFrames.request(frame);
+        }
       };
 
       animationFrameHandle = options.animationFrames.request(frame);
       return undefined;
     });
 
-    return new CleanBrowserHost(transaction.resources);
+    committedResources = transaction.resources;
+    return new CleanBrowserHost(transaction.resources, state);
+  }
+
+  get fatalError(): unknown | null {
+    return this.#state.fatalError;
   }
 
   dispose(): void {
-    if (this.#disposed) {
+    if (this.#state.disposed) {
       return;
     }
-    this.#disposed = true;
+    this.#state.disposed = true;
     const report = this.#resources.dispose();
     if (report.failures.length > 0) {
       throw new AggregateError(
