@@ -6,6 +6,9 @@ on:
       - agent/fundamental-audit-rebuild
     paths:
       - .github/workflows/audit-box3d-js-source.yml
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
