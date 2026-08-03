@@ -1,14 +1,15 @@
 {
   "name": "jv-box3d-web-experiment",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "scripts": {
     "sync-assets": "node tools/sync-jv-assets.mjs",
-    "predev": "npm run sync-assets",
+    "verify-runtime": "node tools/check-box3d-runtime.mjs",
+    "predev": "npm run sync-assets && npm run verify-runtime",
     "dev": "vite",
     "prebuild": "npm run sync-assets",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run typecheck && npm run verify-runtime && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview"
   },
