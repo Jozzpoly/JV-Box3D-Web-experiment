@@ -1,5 +1,16 @@
 import type { NativeInlineShimReceipt } from "./native-inline-compat.js";
 
+export type {
+  Box3DModule,
+  EventsBuffer,
+  b3BodyId,
+  b3JointId,
+  b3Quat,
+  b3ShapeId,
+  b3Vec3,
+  b3WorldId,
+} from "box3d.js";
+
 export const BOX3D_RUNTIME_IDENTITY = Object.freeze({
   packageName: "box3d.js",
   packageVersion: "0.0.2",
