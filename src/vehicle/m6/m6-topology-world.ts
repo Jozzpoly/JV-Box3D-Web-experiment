@@ -16,6 +16,12 @@ import {
   type M6TraceFrame,
 } from "./m6-topology-contract.js";
 import { M6VehicleController } from "./m6-vehicle-controller.js";
+import {
+  INITIAL_RATE_STEERING_PROFILE_ID,
+  rateSteeringProfile,
+  type RateSteeringProfile,
+  type RateSteeringProfileId,
+} from "./rate-steering-profile.js";
 
 const FULL_MASK = 0xffff_ffff_ffff_ffffn;
 
@@ -25,10 +31,21 @@ export {
 } from "./m6-topology-contract.js";
 export type {
   M6CornerTrace,
+  M6HandsOnEdge,
   M6SteeringActuatorState,
+  M6SteeringMechanismTrace,
   M6TopologyDisposalReceipt,
   M6TraceFrame,
 } from "./m6-topology-contract.js";
+export {
+  INITIAL_RATE_STEERING_PROFILE_ID,
+  RATE_STEERING_PROFILES,
+  rateSteeringProfile,
+} from "./rate-steering-profile.js";
+export type {
+  RateSteeringProfile,
+  RateSteeringProfileId,
+} from "./rate-steering-profile.js";
 export { M6VehicleController } from "./m6-vehicle-controller.js";
 
 export class M6TopologyWorld {
@@ -37,6 +54,7 @@ export class M6TopologyWorld {
   readonly #events: EventsBuffer;
   readonly #allocator: CollisionGroupAllocator;
   readonly #config: M6TopologyConfig;
+  readonly #rateProfile: RateSteeringProfile;
   readonly #vehicles: M6VehicleController[] = [];
   #stepIndex = 0;
   #disposed = false;
@@ -44,10 +62,13 @@ export class M6TopologyWorld {
   constructor(
     b3: Box3DModule,
     receipt: NativeFactorySnapshot,
+    rateProfileId: RateSteeringProfileId =
+      INITIAL_RATE_STEERING_PROFILE_ID,
     allocator = new CollisionGroupAllocator(),
   ) {
     this.#b3 = b3;
     this.#config = m6TopologyConfigFromReceipt(receipt);
+    this.#rateProfile = rateSteeringProfile(rateProfileId);
     this.#allocator = allocator;
 
     const worldDef = b3.b3DefaultWorldDef();
@@ -107,6 +128,11 @@ export class M6TopologyWorld {
     return this.#config;
   }
 
+  get rateProfile(): RateSteeringProfile {
+    this.#assertActive();
+    return this.#rateProfile;
+  }
+
   get counters() {
     this.#assertActive();
     return this.#b3.b3World_GetCounters(this.#worldId);
@@ -126,6 +152,7 @@ export class M6TopologyWorld {
       this.#b3,
       this.#worldId,
       this.#config,
+      this.#rateProfile,
       spawn,
       generation,
       this.#allocator.allocate(),
@@ -187,7 +214,7 @@ export class M6TopologyWorld {
     }
     if (this.#b3.b3World_IsValid(this.#worldId)) {
       throw new Error(
-        "The F4 Box3D world remained valid after disposal.",
+        "The F5 Box3D world remained valid after disposal.",
       );
     }
     return {
