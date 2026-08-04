@@ -18,18 +18,25 @@ The current browser reference runtime demonstrates:
 - guarded rebuild and disposal without page reload;
 - a portable static-site build intended for localhost, LAN and a future GitHub Pages project path.
 
-The last locally executed demonstrator-foundation gate reached:
+The latest locally executed demonstrator-foundation gate used:
 
 ```text
+commit 2f14d109980c99b844d80b80a080327e1fb4d900
 Node 24.16.0
 npm 11.17.0
+receipt byte-exact
+npm ci PASS
+0 vulnerabilities
+documentation links PASS
 TypeScript PASS
-81/81 tests PASS
-Vite production bundle PASS
-portable validation FAIL: one root-absolute receipt URL
+109 tests: 108 PASS / 1 FAIL
 ```
 
-That failure was useful evidence: the validator prevented a bundle that would work at the domain root but fail under a GitHub Pages repository path. The source URL and its regression test have since been corrected; the newer head still requires a fresh local gate before it can be called green.
+The only failure was adversarial public-report sanitization: an e-mail address embedded in a sensitive path was correctly classified but remained in one serialized report field. The gate stopped before bundle/package validation. No physics or browser-runtime test failed.
+
+A minimal recursive-sanitizer correction is now present on a newer head. That head still requires a fresh local gate before any green package claim.
+
+An earlier gate also correctly rejected a root-absolute receipt URL that would have worked at a domain root but failed under a GitHub Pages repository path. That source URL and its regression test are already corrected.
 
 ## Critical non-claim
 
@@ -149,8 +156,9 @@ scene manifest and spawn metadata
 5. [`docs/decisions/ADR-0004-pages-ready-demonstrator.md`](docs/decisions/ADR-0004-pages-ready-demonstrator.md)
 6. [`docs/contracts/MOBILE_HOST_CONTRACT_PL.md`](docs/contracts/MOBILE_HOST_CONTRACT_PL.md)
 7. [`docs/contracts/SCENE_PACKAGE_CONTRACT_PL.md`](docs/contracts/SCENE_PACKAGE_CONTRACT_PL.md)
+8. [`docs/PUBLIC_COLLABORATION_HISTORY.md`](docs/PUBLIC_COLLABORATION_HISTORY.md)
 
-Historical audits, issues and stacked pull requests remain evidence, not current instructions.
+Historical audits, issues and stacked pull requests remain evidence, not current instructions. The collaboration-history map classifies all thirteen pull requests and records which documents have precedence.
 
 ## Ownership and licensing status
 
@@ -158,7 +166,7 @@ Jozz owns product direction, driving feel, visual acceptance, publication and de
 
 Third-party runtime and tool notices are recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). A project license for JV Web itself has not yet been selected. Do not infer that third-party MIT notices license JV Web code, native JV code, models, scans, textures or scenes.
 
-The repository must not become public until an explicit project `LICENSE`, history/privacy/cloud audit, intended default branch and owner approval exist.
+The repository must not become public until an explicit root project `LICENSE`, history/privacy/cloud audit, intended default branch and owner approval exist.
 
 ## Project rules
 
