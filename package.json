@@ -25,6 +25,7 @@
     "audit:integration:report": "node tools/audit-source-public-integration.mjs --report-only",
     "audit:licenses": "node tools/audit-reachable-licenses.mjs",
     "audit:licenses:report": "node tools/audit-reachable-licenses.mjs --report-only",
+    "archive:orphan-refs": "node tools/archive-orphan-public-refs.mjs",
     "check": "npm run typecheck && npm run test && npm run check:third-party",
     "build:bundle": "vite build",
     "build:portable": "npm run check:third-party && npm run build:bundle && node tools/write-portable-build-manifest.mjs && npm run check:portable",
