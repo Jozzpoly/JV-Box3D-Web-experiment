@@ -40,6 +40,13 @@ test("M6 visual frame requires exact stable part and segment coverage", () => {
   assert.equal(indexed.parts.size, 18);
   assert.equal(indexed.segments.size, 8);
   assert.equal(indexed.parts.get("m6.fl.wheel")?.partId, "m6.fl.wheel");
+  assert.equal(Object.isFrozen(indexed), true);
+  assert.equal(Object.isFrozen(indexed.parts), true);
+  assert.equal(Object.isFrozen(indexed.segments), true);
+  assert.equal(indexed.parts.set, undefined);
+  assert.equal(indexed.parts.delete, undefined);
+  assert.equal(indexed.parts.clear, undefined);
+  assert.equal(indexed.segments.set, undefined);
 });
 
 test("visual frame rejects duplicate identifiers", () => {
