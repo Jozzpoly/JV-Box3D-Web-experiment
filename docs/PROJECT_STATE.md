@@ -11,7 +11,7 @@ branch: agent/jv-web-demonstrator-foundation
 PR: #18
 base: main
 state: draft / not merged
-current candidate: resolve with git rev-parse HEAD or the PR head SHA
+current candidate: 9429008a76ae6e9c62e534f2cee3443c4769d264
 ```
 
 Only `main` and the active development branch remain remotely. Older PRs are closed as historical context.
@@ -43,7 +43,7 @@ Box3D / WebGL / keyboard / multi-touch: observed working
 publication: NOT PERFORMED
 ```
 
-The attached terminal log belongs to this commit. The approximately 1.2 MiB JavaScript chunk remains a warning, not an observed functional failure.
+The earlier attached terminal log belongs to this commit. The approximately 1.2 MiB JavaScript chunk remains a warning, not an observed functional failure.
 
 ### Scene/runtime owner smoke
 
@@ -57,7 +57,23 @@ DRIVE / LEFT / RIGHT / BRAKE / REVERSE working
 destroy and rebuild working
 ```
 
-This is owner-observed runtime evidence. The uploaded terminal log still records `7204993…`, not the newer scene or visual-rig candidate.
+This is owner-observed runtime evidence.
+
+### Visual-rig gate attempt
+
+The exact local run at:
+
+```text
+commit: 49e9eec729101d11635a0dab05184ae1f97dd660
+Node/npm: 24.16.0 / 11.17.0
+receipt: byte-exact
+TypeScript: PASS
+tests: 161/162 PASS
+```
+
+failed only because `tests/f4-backend-contract.test.mjs` still expected the older, smaller backend object after descriptor consolidation. The actual host exposed the intended shared descriptor containing role, authority, parity, known mismatches and visual-frame contract version. The portable build was correctly not started after the failed test gate.
+
+The stale expectation has been replaced with an identity assertion against the one shared frozen backend descriptor. The current candidate also hardens runtime immutability, mobile GLB policy and package-relative asset resolution. A fresh complete gate is still required.
 
 ## Current runtime
 
@@ -87,7 +103,7 @@ trace contract: v1
 visual frame contract: v1
 ```
 
-There is now one concrete legacy backend descriptor shared by the M6 world and browser host. The confirmed drive mismatch remains recorded: native JV treats `maxDriveSpeed = 40` as a wheel motor rad/s limit; the TypeScript fixture historically interprets it as a linear target.
+There is one concrete legacy backend descriptor shared by the M6 world and browser host. The confirmed drive mismatch remains recorded: native JV treats `maxDriveSpeed = 40` as a wheel motor rad/s limit; the TypeScript fixture historically interprets it as a linear target.
 
 Do not add final drivetrain, suspension, tire, aero or steering mechanics to the TypeScript fixture.
 
@@ -139,6 +155,8 @@ Segment endpoints come from the exact local anchors used to create the Box3D joi
 
 Legacy trace fields remain temporarily for the debug renderer. `visualFrame` is the new model/WASM seam; removal of duplicate trace-v1 fields requires an explicit future trace-v2 migration.
 
+Frame indexes now expose real read-only views without runtime `set`, `delete` or `clear` methods.
+
 ### Asset package
 
 `VehicleVisualPackageV1` defines one self-contained GLB with:
@@ -152,18 +170,22 @@ Legacy trace fields remain temporarily for the debug renderer. `visualFrame` is 
 
 V1 deliberately uses a rigid-node rig rather than a skinned character rig. Skins, animation-driven physics, morph targets, external resources and negative scale are rejected.
 
-### GLB byte gate
+### GLB byte and runtime gate
 
 Before future parsing or GPU upload the asset gate checks:
 
 - GLB v2 magic, chunks and declared length;
 - exact package bytes and SHA-256;
-- embedded BIN data;
-- bufferView/accessor ranges;
+- exactly one embedded BIN buffer;
+- bufferView/accessor ranges and alignment;
 - real FLOAT-VEC3 triangle geometry;
+- 8-bit or 16-bit index accessors for WebGL1 portability;
 - unique bound node names;
-- no external URI, skin, animation, morph or extension;
+- bound nodes are independent roots with applied identity transforms;
+- no external URI, skin, animation, morph, sparse accessor or extension;
 - all required bound nodes present.
+
+Asset URLs resolve relative to the visual-package manifest directory and preserve the same relation at the site root and repository subpath.
 
 A dependency-free local inspector is available as:
 
@@ -175,7 +197,7 @@ Authoring rules are in `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`.
 
 ## Deliberate limitations
 
-- current visual-rig source has not passed its fresh Node/build gate;
+- current candidate `9429008…` has not passed its fresh Node/build gate;
 - no GLB model is loaded by the browser yet;
 - no GPU mesh/material/texture loader yet;
 - no final Jozz vehicle asset or visual package manifest yet;
@@ -189,16 +211,17 @@ Authoring rules are in `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`.
 ## Correct next sequence
 
 ```text
-1 validate the exact visual-rig candidate with the complete Node 24 gate
+1 validate exact candidate 9429008… with the complete Node 24 gate
 2 repair only demonstrated compile/test/build failures
-3 create one tiny generated GLB + package as a real portable runtime fixture
-4 implement transactional GLB byte load and CPU parse
-5 render the tiny rigid nodes beside the unchanged debug renderer
-6 drive all 18 parts and 8 segments from VehicleVisualFrameV1
-7 validate disposal/rebuild and phone performance
-8 import the first owner-authored chassis + four-wheel asset
-9 add knuckles, arms, steering links and two-piece coilovers
-10 only then integrate the full body/interior/wheel model
+3 perform a short unchanged debug-renderer smoke if the gate is green
+4 create one tiny generated GLB + package as a real portable runtime fixture
+5 implement transactional GLB byte load and CPU parse
+6 render tiny rigid nodes beside the unchanged debug renderer
+7 drive all 18 parts and 8 segments from VehicleVisualFrameV1
+8 validate disposal/rebuild and phone performance
+9 import the first owner-authored chassis + four-wheel asset
+10 add knuckles, arms, steering links and two-piece coilovers
+11 only then integrate the full body/interior/wheel model
 ```
 
 The final vehicle asset must not be the first file that tests the loader, node binding or GPU lifecycle.
