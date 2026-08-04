@@ -2,7 +2,11 @@ import type {
   GlbRigidCpuAssetV1,
   GlbRigidPrimitiveV1,
 } from "../visual/glb-rigid-mesh-decoder.js";
-import { assertGlbRigidCpuAssetArrayBufferBackedV1 } from "../visual/glb-rigid-array-buffer-contract.js";
+import {
+  assertGlbRigidCpuAssetArrayBufferBackedV1,
+  type OwnedFloat32ArrayV1,
+  type OwnedUint16ArrayV1,
+} from "../visual/glb-rigid-array-buffer-contract.js";
 
 export interface RigidMeshGpuPrimitiveV1 {
   readonly positionBuffer: WebGLBuffer;
@@ -24,6 +28,8 @@ export interface RigidMeshGpuAssetV1 {
   dispose(): void;
 }
 
+type RigidMeshGpuUploadDataV1 = OwnedFloat32ArrayV1 | OwnedUint16ArrayV1;
+
 function assertNoGlError(
   gl: WebGLRenderingContext,
   label: string,
@@ -38,7 +44,7 @@ function uploadBuffer(
   gl: WebGLRenderingContext,
   owned: WebGLBuffer[],
   target: number,
-  data: BufferSource,
+  data: RigidMeshGpuUploadDataV1,
   label: string,
 ): WebGLBuffer {
   const buffer = gl.createBuffer();
