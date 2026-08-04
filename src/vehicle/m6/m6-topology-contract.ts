@@ -6,6 +6,7 @@ import type {
   b3ShapeId,
   b3Vec3,
 } from "../../physics/box3d-runtime-contract.js";
+import type { VehicleVisualFrameV1 } from "../../runtime/vehicle-visual-frame.js";
 import type { LegacySplitWheelReceipt } from "./legacy-split-wheel-backend.js";
 import type { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";
 import type { RateSteeringProfileId } from "./rate-steering-profile.js";
@@ -86,6 +87,7 @@ export interface M6TraceFrame {
   readonly collisionGroupIndex: number;
   readonly wheelBackendId: typeof LEGACY_SPLIT_WHEEL_BACKEND_ID;
   readonly visualGeometry: M6VisualGeometry;
+  readonly visualFrame: VehicleVisualFrameV1;
   readonly chassisPosition: b3Vec3;
   readonly chassisRotation: M6Rotation;
   readonly chassisVelocity: b3Vec3;
@@ -104,6 +106,13 @@ export interface M6TopologyDisposalReceipt {
   readonly worldValidAfterDestroy: false;
 }
 
+export interface M6VisualSegmentRuntime {
+  readonly bodyIdA: b3BodyId;
+  readonly localAnchorA: b3Vec3;
+  readonly bodyIdB: b3BodyId;
+  readonly localAnchorB: b3Vec3;
+}
+
 export interface M6CornerRuntime {
   readonly wheel: LegacySplitWheelReceipt;
   readonly knuckleId: b3BodyId;
@@ -116,6 +125,8 @@ export interface M6CornerRuntime {
   readonly lowerBallId: b3JointId;
   readonly coiloverJointId: b3JointId;
   readonly steeringLinkJointId: b3JointId;
+  readonly coiloverVisual: M6VisualSegmentRuntime;
+  readonly steeringLinkVisual: M6VisualSegmentRuntime;
 }
 
 export interface M6VehicleRuntime {
