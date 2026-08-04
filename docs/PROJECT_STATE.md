@@ -11,49 +11,140 @@ branch: agent/jv-web-demonstrator-foundation
 PR: #18
 base: main
 state: draft / not merged
-current candidate commit: resolve with git rev-parse HEAD or the PR head SHA
+current candidate: resolve with git rev-parse HEAD or the PR head SHA
 ```
 
 All older pull requests are closed as historical. The remote branch surface contains only `main` and the active development branch.
 
-The active branch is a long experimental descendant of `main`. Do not fast-forward its complete history into a future presentation-ready default branch. At publication time choose either:
+Do not fast-forward the complete experimental history into a presentation-ready public default branch. At publication time prefer a clean demonstrator repository/snapshot; an owner-reviewed squash is the secondary option.
+
+No merge, visibility, license or Pages decision has been made.
+
+## Latest owner-validated mobile checkpoint
 
 ```text
-preferred: a clean public demonstrator repository/snapshot
-alternative: an owner-reviewed squash integration
+commit: 7204993a0640e6cff0baa719d849a0b4368c15aa
+Node: 24.16.0
+npm: 11.17.0
+receipt: byte-exact
+npm ci: PASS
+npm audit: 0 vulnerabilities observed
+TypeScript: PASS
+tests: 120/120 PASS
+documentation links: PASS
+third-party verification: PASS
+Vite production bundle: PASS
+portable static validation: PASS
+portable manifest privacy: PASS
+portable network policy: PASS
+portable HTTP at /: PASS
+portable HTTP at /JV-Box3D-Web-experiment/: PASS
+LAN HTTP without SubtleCrypto: PASS
+localhost browser: PASS
+LAN desktop browser: PASS
+real phone browser: PASS
+Box3D / WebGL / keyboard / multi-touch: observed working
+publication: NOT PERFORMED
 ```
 
-No integration, visibility or Pages decision has been made.
+The approximately 1.2 MiB JavaScript chunk remains a recorded warning, not an observed functional failure.
 
-## What works
+## Current runtime
 
-The current reference runtime provides:
+The working demonstrator provides:
 
-- fixed-step simulation with bounded catch-up;
-- timestamped steering and longitudinal input;
+- deterministic fixed-step simulation with bounded catch-up;
+- source-aware timestamped keyboard and Pointer Events input;
+- simultaneous steering and throttle/brake multi-touch;
+- release on pointer cancel, lost capture, blur, hidden page, pagehide and disposal;
 - real Box3D WebAssembly worlds and contacts;
-- an 18-body M6 topology with physical suspension and rack linkage;
+- an 18-body M6 reference topology with physical suspension and rack linkage;
 - `RELEASE | POSITION | RATE` steering;
-- drive, reverse, coast and braking through wheel revolute-joint motors;
-- copied immutable trace data for rendering;
+- reference wheel-joint drive, reverse, coast and braking;
+- immutable renderer-safe trace values;
 - a dependency-free WebGL observer;
-- transactional startup, disposal and rebuild;
-- a portable relative-path static package.
+- transactional startup, rollback, disposal and rebuild;
+- a relative-path portable package that works through localhost and ordinary LAN HTTP.
 
-## What this is not
+## Physics authority
 
 ```text
 backend: legacy_ts_m6
 role: browser reference fixture
-native JV parity: not proven
 product physics authority: false
+native JV parity: NOT_PROVEN
+command contract: v1
+trace contract: v1
 ```
 
-The fixture is useful for browser-host development and mechanism experiments. It must not become a second independently evolving JV physics product.
+The backend identity is now a runtime-owned descriptor rather than documentation-only metadata. The legacy backend cannot elevate itself to product authority or proven native parity.
 
-One confirmed mismatch is drive semantics: native JV treats `maxDriveSpeed = 40` as a wheel motor limit in rad/s; the TypeScript fixture historically interpreted it as a linear target.
+One confirmed mismatch remains: native JV treats `maxDriveSpeed = 40` as a wheel motor limit in rad/s; the TypeScript fixture historically interpreted it as a linear target.
 
-## Product direction
+Do not add final drivetrain, suspension, tire, aero or steering mechanics to the TypeScript fixture.
+
+## Browser environment hardening
+
+The runtime now reports:
+
+- secure, loopback HTTP, LAN HTTP or other transport class;
+- Web Crypto digest availability;
+- local software SHA fallback availability;
+- WebGL API and Pointer Events presence;
+- touch-point count and coarse-pointer status;
+- viewport dimensions and device-pixel ratio.
+
+Receipt validation remains fail-closed. HTTPS/localhost may use Web Crypto; ordinary LAN HTTP uses the tested local SHA-1/SHA-256 fallback without disabling integrity checks.
+
+## Scene foundation candidate
+
+The current unvalidated hardening slice adds `ScenePackageV1` and a canonical synthetic scene:
+
+```text
+public/scenes/synthetic-flat-lab.scene.json
+```
+
+V1 defines only:
+
+- scene identity and display name;
+- meters as the unit;
+- `+X` forward, `+Y` up, `+Z` right;
+- spawn position and yaw;
+- render source: `NONE | GLB`;
+- collision source: `BUILTIN_GROUND_PLANE | TRIANGLE_MESH`;
+- site-relative asset URLs and lowercase SHA-256 fields.
+
+The application now loads and validates the scene package before starting physics. The current legacy backend accepts only:
+
+```text
+render = NONE
+collision = BUILTIN_GROUND_PLANE at y=0
+spawn yawRadians = 0
+```
+
+GLB rendering and triangle-mesh collision are described by the contract but deliberately rejected until their loaders exist.
+
+The synthetic scene is a required portable runtime asset alongside the native receipt.
+
+## Target architecture
+
+```text
+device adapters
+      ↓
+source-aware semantic timelines
+      ↓
+fixed-step browser host
+      ↓
+VehicleRuntimeBackend seam
+      ↓
+legacy_ts_m6 now / native_jv_wasm later
+      ↓
+immutable trace contract
+      ↓
+renderer, UI and scene host
+```
+
+Long-term product physics remains:
 
 ```text
 native JV Core + Box3D source
@@ -62,187 +153,77 @@ native JV Core + Box3D source
               ↓
  stable C ABI + immutable snapshots
               ↓
- TypeScript input, render, UI and scene host
+ TypeScript browser host, renderer and scene system
 ```
 
-Native/WASM remains the long-term authority, but it is not the next immediate product milestone. First stabilize the browser host, mobile controls, scene contract and sharing path using the frozen reference fixture.
-
-## Last green foundation checkpoint
+## Current candidate boundary
 
 ```text
-commit: db7768ebc5d191d96c7ff0022572093c00549453
-Node: 24.16.0
-npm: 11.17.0
-receipt: byte-exact
-npm ci: PASS
-npm audit: 0 vulnerabilities observed
-TypeScript: PASS
-tests: 96/96 PASS
-documentation links: PASS
-third-party notices: PASS
-Vite production bundle: PASS
-portable static validation: PASS
-portable manifest privacy: PASS
-portable network policy: PASS
-loopback HTTP at /: PASS
-loopback HTTP at /JV-Box3D-Web-experiment/: PASS
-publication: NOT PERFORMED
+SOURCE PRESENT:
+backend descriptor and host seam
+browser runtime diagnostics
+ScenePackageV1 validator and loader
+synthetic scene manifest
+scene-driven spawn
+portable runtime-asset gate
+focused contract tests
+
+STILL PENDING:
+fresh local Node 24 gate
+exact desktop browser smoke after scene integration
+exact phone smoke after scene integration
 ```
 
-The bundle warning about the approximately 1.2 MiB JavaScript chunk is recorded but is not a current functional failure.
-
-## Current mobile-control candidate
-
-```text
-exact head: resolve from Git/PR; do not hard-code a moving candidate SHA here
-state: SOURCE PRESENT / STATIC SCOPE REVIEWED
-local Node 24 gate: PENDING
-browser observation: PENDING
-real phone observation: PENDING
-```
-
-Changes since the green checkpoint are limited to:
-
-- source-aware steering and longitudinal timelines;
-- a Pointer Events vehicle-control adapter;
-- browser-host lifecycle ownership;
-- F4 pass-through without physics changes;
-- five-button multi-touch UI;
-- safe-area and responsive mobile layout;
-- focused input, host and 320 px geometry tests;
-- synchronized project documentation.
-
-No file under `src/vehicle/`, `src/physics/` or the renderer was changed in this mobile slice.
-
-## Mobile input semantics
-
-```text
-one pointerId -> one semantic control owner
-one semantic control -> zero or more active sourceId values
-```
-
-Keyboard, touch and future gamepad sources may overlap without releasing one another. Pointer capture occurs before `pressed=true`; capture failure emits no command.
-
-Lifecycle release is covered for:
-
-- pointerup;
-- pointercancel;
-- lostpointercapture;
-- blur;
-- visibility hidden;
-- pagehide;
-- host disposal and rollback.
-
-The first mobile layout provides:
-
-```text
-left cluster:  steer left / steer right
-right cluster: brake / forward / reverse
-canvas free area: orbit camera
-```
-
-The controls are source-present, not owner-approved. Their geometry, size and feel require a real phone gate.
+No current hardening change modifies vehicle physics, steering mechanics, drive mechanics, Box3D topology or mobile input feel.
 
 ## Deliberate limitations
 
-- no approved steering-rate default;
+- no approved steering-rate product default;
 - no final drivetrain model;
 - legacy split-sphere wheel only;
 - no native JV WASM backend;
-- mobile controls not locally built or phone-validated on current head yet;
-- no scene package or scan loader;
+- no GLB renderer or triangle-mesh collision loader;
+- no real scan package yet;
 - diagnostic visuals only;
-- no project reuse license selected yet;
+- initial camera orientation still needs a separate owner-validated correction;
+- no project reuse license selected;
 - repository remains private and Pages remains disabled.
 
-## Repository policy
+## Next sequence
 
-Keep:
+### 1. Validate the hardening slice
 
-- current source and focused tests;
-- exact dependencies and runtime receipt;
-- short architecture/state/development documentation;
-- evidence that changes engineering decisions.
+Run the complete Node 24 gate on the exact current head. Then perform a short desktop and phone smoke proving that the synthetic scene loads and the previous runtime remains unchanged.
 
-Remove or close:
+### 2. Correct and validate the initial camera pose
 
-- obsolete experimental branches;
-- phase-specific runners;
-- duplicated reports and process ledgers;
-- speculative frameworks that are not being implemented;
-- archives kept only because they once existed.
+Change only the initial yaw so the observer begins behind the vehicle. Preserve the already accepted drag directions.
 
-Do not begin another broad cleanup cycle unless a concrete file or dependency obstructs active work.
+### 3. Separate the demonstrator view from bootstrap
 
-## Corrected near-term development plan
+After another green checkpoint, extract HTML/telemetry bindings from `main.ts` without changing behavior. Do not combine this refactor with GLB or collision implementation.
 
-### 1. Validate the mobile-control slice
+### 4. Implement the synthetic scene host
 
-Run the complete Node 24 gate on exact current head. Repair only demonstrated source/test/build failures.
+Introduce a scene runtime that owns render and collision resources. First support the current built-in plane through the same interface that later accepts assets.
 
-### 2. Desktop browser smoke
+### 5. Add real scene assets incrementally
 
-Verify:
-
-- Box3D startup;
-- WebGL rendering;
-- keyboard steering, forward, reverse and brake;
-- pointer controls with a mouse or device emulation;
-- requested inverted camera behavior;
-- destroy/rebuild;
-- no uncaught runtime errors.
-
-### 3. Real phone gate
-
-Validate over LAN:
-
-- simultaneous steering and forward/reverse/brake;
-- pointer cancel and lifecycle release;
-- portrait and landscape layout;
-- safe-area behavior;
-- camera versus control ownership;
-- access to the telemetry panel;
-- performance and dropped time;
-- Jozz control feel.
-
-### 4. Polish the proven mobile UI
-
-Change control geometry, opacity, labels and layout only from observed phone evidence. Do not add analog steering or assists merely because they appear more advanced.
-
-### 5. Scene foundation
-
-Only after mobile input is stable, implement a minimal scene package with explicit units, axes, spawn, render mesh and separate collision representation. Validate on a small synthetic scene before importing a real scan.
-
-### 6. Sharing and publication
-
-After mobile and scene validation:
-
-- choose the project license;
-- choose clean snapshot repository versus squash integration;
-- create the presentation-ready source history;
-- enable Pages only for an owner-accepted exact package.
-
-### 7. Native WASM
-
-Begin behavior-preserving native/WASM parity work after the browser host, input, scene and distribution seams are stable enough not to change underneath the port.
-
-## Immediate work boundary
+Order:
 
 ```text
-ACTIVE NOW:
-current-head Node/build validation
-desktop browser smoke
-real-phone mobile gate
-focused mobile polish
-
-WAITING:
-scene package and synthetic scene
-real scan import
-publication history strategy
-license
-
-NOT ACTIVE YET:
-native JV WASM port
-final vehicle mechanics
-Pages publication
+small GLB render fixture
+small collision fixture
+spawn/alignment validation
+mobile performance budget
+real scan conversion and optimization
 ```
+
+### 6. Publication and native WASM
+
+Only after the mobile scene demonstrator is owner-accepted:
+
+- choose license and clean public-history strategy;
+- prepare the exact shareable package;
+- enable Pages only with explicit owner approval;
+- begin behavior-preserving native JV WASM parity work.
