@@ -2,7 +2,11 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { inspectGlbV2 } from "../.test-dist/visual/glb-container.js";
+import { decodeGlbRigidCpuAssetV1 } from "../.test-dist/visual/glb-rigid-mesh-decoder.js";
+import { sealGlbRigidCpuAssetV1 } from "../.test-dist/visual/rigid-cpu-asset-seal.js";
 import { validateVehicleVisualAssetV1 } from "../.test-dist/visual/vehicle-visual-asset-gate.js";
+import { assertVehicleVisualBudgetV1 } from "../.test-dist/visual/vehicle-visual-budget.js";
+import { assertVehicleVisualCpuOwnershipV1 } from "../.test-dist/visual/vehicle-visual-cpu-gate.js";
 import { validateVehicleVisualPackageV1 } from "../.test-dist/visual/vehicle-visual-package.js";
 import {
   M6_VISUAL_PART_IDS,
@@ -68,10 +72,25 @@ if (manifestArgument !== undefined) {
     JSON.parse(await readFile(manifestPath, "utf8")),
   );
   const receipt = await validateVehicleVisualAssetV1(visual, bytes, null);
-  console.log("\nManifest gate:         PASS");
+  const cpu = sealGlbRigidCpuAssetV1(
+    decodeGlbRigidCpuAssetV1(
+      bytes,
+      visual.bindings.map((binding) => binding.nodeName),
+    ),
+  );
+  const ownership = assertVehicleVisualCpuOwnershipV1(visual, cpu);
+  const budget = assertVehicleVisualBudgetV1(cpu);
+
+  console.log("\nManifest + CPU gate:   PASS");
   console.log(`Manifest:              ${manifestPath}`);
   console.log(`Package:               ${receipt.packageId}`);
-  console.log(`Bound nodes:           ${receipt.boundNodeCount}`);
+  console.log(`Bound roots:           ${ownership.boundRootCount}`);
+  console.log(`Owned mesh nodes:      ${ownership.ownedMeshNodeCount}`);
+  console.log(`Decoded nodes:         ${budget.nodes}`);
+  console.log(`Decoded primitives:    ${budget.primitives}`);
+  console.log(`Decoded triangles:     ${budget.triangles}`);
+  console.log(`Decoded materials:     ${budget.materials}`);
+  console.log(`Geometry bytes:        ${budget.geometryBytes}`);
 } else {
-  console.log("\nManifest gate:         NOT RUN (no package JSON supplied)");
+  console.log("\nManifest + CPU gate:   NOT RUN (no package JSON supplied)");
 }
