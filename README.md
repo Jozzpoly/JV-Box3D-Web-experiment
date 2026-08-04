@@ -30,7 +30,7 @@ npm: 11.17.0
 120/120 tests PASS
 TypeScript PASS
 third-party verification PASS
-portable static/runtime-assets/privacy/network/HTTP validation PASS
+portable static/privacy/network/HTTP validation PASS
 npm audit: 0 vulnerabilities observed
 localhost browser PASS
 LAN desktop browser PASS
@@ -39,7 +39,7 @@ Box3D + WebGL + keyboard + multi-touch observed working
 publication NOT PERFORMED
 ```
 
-The current branch contains a newer scene/backend hardening candidate that still needs a fresh local gate and short browser/phone smoke.
+The current branch contains a newer scene/backend hardening candidate that adds an explicit portable runtime-asset gate and still needs a fresh local gate plus short browser/phone smoke.
 
 ## Run locally
 
