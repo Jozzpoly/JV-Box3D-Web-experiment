@@ -35,6 +35,7 @@ export type VehicleVisualBindingSourceV1 =
       kind: "SEGMENT_STRETCH";
       segmentId: string;
       axis: VehicleVisualAxisV1;
+      referenceLengthMeters: number;
     }>
   | Readonly<{
       kind: "SEGMENT_ENDPOINT_AIM";
@@ -116,6 +117,14 @@ function finite(value: unknown, label: string): number {
     reject(`${label} must be finite`);
   }
   return value;
+}
+
+function positiveFinite(value: unknown, label: string): number {
+  const result = finite(value, label);
+  if (!(result > 0)) {
+    reject(`${label} must be greater than zero`);
+  }
+  return result;
 }
 
 function tuple3(value: unknown, label: string): [number, number, number] {
@@ -208,7 +217,11 @@ function parseSource(
     });
   }
   if (kind === "SEGMENT_STRETCH") {
-    exactKeys(source, ["axis", "kind", "segmentId"], label);
+    exactKeys(
+      source,
+      ["axis", "kind", "referenceLengthMeters", "segmentId"],
+      label,
+    );
     return Object.freeze({
       kind,
       segmentId: requireStableIdentifier(
@@ -216,6 +229,10 @@ function parseSource(
         `${label}.segmentId`,
       ),
       axis: visualAxis(source["axis"], `${label}.axis`),
+      referenceLengthMeters: positiveFinite(
+        source["referenceLengthMeters"],
+        `${label}.referenceLengthMeters`,
+      ),
     });
   }
   if (kind === "SEGMENT_ENDPOINT_AIM") {
