@@ -1,0 +1,84 @@
+import {
+  portableDigestHex,
+  type SubtleDigestProvider,
+} from "../core/portable-digest.js";
+import { inspectGlbV2, type GlbInspectionV1 } from "./glb-container.js";
+import type { VehicleVisualPackageV1 } from "./vehicle-visual-package.js";
+
+export interface VehicleVisualAssetReceiptV1 {
+  readonly packageId: string;
+  readonly url: string;
+  readonly byteLength: number;
+  readonly sha256: string;
+  readonly glb: GlbInspectionV1;
+  readonly boundNodeCount: number;
+}
+
+function reject(message: string): never {
+  throw new Error(`Vehicle visual asset rejected: ${message}`);
+}
+
+export async function validateVehicleVisualAssetV1(
+  visual: VehicleVisualPackageV1,
+  bytes: Uint8Array,
+  subtle?: SubtleDigestProvider | null,
+): Promise<VehicleVisualAssetReceiptV1> {
+  if (bytes.byteLength !== visual.asset.byteLength) {
+    reject(
+      `byteLength ${bytes.byteLength} does not match manifest ${visual.asset.byteLength}`,
+    );
+  }
+  const digest = await portableDigestHex("SHA-256", bytes, subtle);
+  if (digest !== visual.asset.sha256) {
+    reject(`SHA-256 ${digest} does not match the package manifest`);
+  }
+
+  const glb = inspectGlbV2(bytes);
+  if (glb.binaryChunkLength === 0 || glb.meshCount === 0) {
+    reject("V1 requires a GLB with a BIN chunk and at least one mesh");
+  }
+  if (glb.duplicateNodeNames.length > 0) {
+    reject(`duplicate GLB node names: ${glb.duplicateNodeNames.join(", ")}`);
+  }
+  if (glb.externalUris.length > 0) {
+    reject(`external GLB resources are forbidden: ${glb.externalUris.join(", ")}`);
+  }
+  if (glb.animationCount > 0) {
+    reject("animations are outside the rigid-part V1 contract");
+  }
+  if (glb.skinCount > 0) {
+    reject("skins are outside the rigid-part V1 contract");
+  }
+  if (glb.morphTargetPrimitiveCount > 0) {
+    reject("morph targets are outside the rigid-part V1 contract");
+  }
+  if (glb.extensionsUsed.length > 0 || glb.extensionsRequired.length > 0) {
+    reject(
+      `GLB extensions are unsupported in V1: ${[
+        ...new Set([...glb.extensionsUsed, ...glb.extensionsRequired]),
+      ].join(", ")}`,
+    );
+  }
+  if (glb.nonPositiveScaleNodes.length > 0) {
+    reject(
+      `GLB nodes contain zero/negative scale: ${glb.nonPositiveScaleNodes.join(", ")}`,
+    );
+  }
+
+  const nodeNames = new Set(glb.nodeNames);
+  const missingNodes = visual.bindings
+    .map((binding) => binding.nodeName)
+    .filter((name) => !nodeNames.has(name));
+  if (missingNodes.length > 0) {
+    reject(`bound GLB nodes are missing: ${missingNodes.join(", ")}`);
+  }
+
+  return Object.freeze({
+    packageId: visual.id,
+    url: visual.asset.url,
+    byteLength: bytes.byteLength,
+    sha256: digest,
+    glb,
+    boundNodeCount: visual.bindings.length,
+  });
+}
