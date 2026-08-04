@@ -46,6 +46,25 @@ test("passes render only in their declared phase and receive the owned context",
   assert.deepEqual(errors, []);
 });
 
+test("unknown render phases fail before installation and dispose the candidate", async () => {
+  let disposals = 0;
+  const host = new M6SceneRenderPassHostV1({}, () => {});
+
+  await assert.rejects(
+    () =>
+      host.install(async () =>
+        pass({
+          phase: "UNKNOWN_PHASE",
+          dispose() {
+            disposals += 1;
+          },
+        }),
+      ),
+    /Unknown scene render-pass phase/,
+  );
+  assert.equal(disposals, 1);
+});
+
 test("one failing pass is removed without stopping healthy passes", async () => {
   const errors = [];
   const calls = [];
@@ -84,6 +103,41 @@ test("one failing pass is removed without stopping healthy passes", async () => 
   assert.equal(failedDisposals, 1);
   assert.equal(errors.length, 1);
   assert.match(errors[0].message, /pass render failed/);
+});
+
+test("a throwing error reporter cannot stop later healthy passes", async () => {
+  const originalConsoleError = console.error;
+  const reported = [];
+  console.error = (...args) => reported.push(args);
+  try {
+    const calls = [];
+    const host = new M6SceneRenderPassHostV1({}, () => {
+      throw new Error("reporter failed");
+    });
+    await host.install(async () =>
+      pass({
+        render() {
+          throw new Error("render failed");
+        },
+      }),
+    );
+    await host.install(async () =>
+      pass({
+        render() {
+          calls.push("healthy");
+        },
+      }),
+    );
+
+    assert.doesNotThrow(() =>
+      host.render("BEFORE_DEBUG_VEHICLE", viewProjection, trace),
+    );
+    assert.deepEqual(calls, ["healthy"]);
+    assert.equal(reported.length, 1);
+    assert.match(reported[0][0], /error handler failed/);
+  } finally {
+    console.error = originalConsoleError;
+  }
 });
 
 test("uninstall is owned, immediate and idempotent", async () => {
