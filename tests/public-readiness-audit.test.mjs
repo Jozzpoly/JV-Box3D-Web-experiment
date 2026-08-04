@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {
+  mkdir,
   mkdtemp,
   rm,
   writeFile,
@@ -10,12 +11,31 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { auditPublicReadiness } from "../tools/public-readiness-report.mjs";
 
+const PUBLIC_CONTRACT_FIXTURES = Object.freeze({
+  "LICENSE": "fixture license\n",
+  "THIRD_PARTY_NOTICES.md": "fixture notices\n",
+  "SECURITY.md": "# Security fixture\n",
+  "CONTRIBUTING.md": "# Contributing fixture\n",
+  "docs/PROJECT_STATE.md": "# Project-state fixture\n",
+  "docs/PUBLIC_COLLABORATION_HISTORY.md": "# Collaboration-history fixture\n",
+  "docs/PUBLIC_ASSET_RIGHTS_POLICY.md": "# Asset-rights fixture\n",
+  "docs/operations/SOURCE_PUBLIC_RELEASE_RUNBOOK_PL.md":
+    "# Source-public release fixture\n",
+});
+
 function git(root, ...args) {
   return execFileSync("git", args, {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
+}
+
+async function writePublicContracts(root) {
+  await mkdir(resolve(root, "docs", "operations"), { recursive: true });
+  for (const [path, content] of Object.entries(PUBLIC_CONTRACT_FIXTURES)) {
+    await writeFile(resolve(root, path), content, "utf8");
+  }
 }
 
 async function createRepository({ publicContracts = true } = {}) {
@@ -27,12 +47,7 @@ async function createRepository({ publicContracts = true } = {}) {
 
   await writeFile(resolve(root, "README.md"), "# Audit fixture\n", "utf8");
   if (publicContracts) {
-    await writeFile(resolve(root, "LICENSE"), "fixture license\n", "utf8");
-    await writeFile(
-      resolve(root, "THIRD_PARTY_NOTICES.md"),
-      "fixture notices\n",
-      "utf8",
-    );
+    await writePublicContracts(root);
   }
   git(root, "add", "--all");
   git(root, "commit", "-m", "initial fixture");
@@ -48,7 +63,7 @@ async function withRepository(options, callback) {
   }
 }
 
-test("public readiness audit passes a clean minimal repository", async () => {
+test("public readiness audit passes a clean minimal public repository", async () => {
   await withRepository({}, async (root) => {
     const report = await auditPublicReadiness({
       root,
@@ -56,26 +71,60 @@ test("public readiness audit passes a clean minimal repository", async () => {
     });
     assert.equal(report.status, "PUBLIC_READY_AUDIT_PASS");
     assert.deepEqual(report.blockers, []);
-    assert.equal(report.metrics.currentTrackedFiles, 3);
-    assert.ok(report.metrics.reachableBlobs >= 3);
+    assert.equal(report.metrics.currentTrackedFiles, 9);
+    assert.equal(report.metrics.requiredPublicContracts, 9);
+    assert.equal(report.metrics.presentPublicContracts, 9);
+    assert.deepEqual(report.publicContracts.missing, []);
+    assert.ok(report.metrics.reachableBlobs >= 9);
   });
 });
 
-test("public readiness audit blocks missing public contracts", async () => {
+test("public readiness audit blocks the complete missing public surface", async () => {
   await withRepository({ publicContracts: false }, async (root) => {
     const report = await auditPublicReadiness({
       root,
       repository: "fixture/missing-contracts",
     });
     assert.equal(report.status, "PUBLIC_READY_AUDIT_FAIL");
-    assert.ok(
-      report.blockers.some((finding) => finding.signature === "LICENSE"),
-    );
+    for (const requiredPath of [
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.md",
+      "SECURITY.md",
+      "CONTRIBUTING.md",
+      "docs/PROJECT_STATE.md",
+      "docs/PUBLIC_COLLABORATION_HISTORY.md",
+      "docs/PUBLIC_ASSET_RIGHTS_POLICY.md",
+      "docs/operations/SOURCE_PUBLIC_RELEASE_RUNBOOK_PL.md",
+    ]) {
+      assert.ok(
+        report.blockers.some(
+          (finding) => finding.signature === requiredPath,
+        ),
+        `missing blocker for ${requiredPath}`,
+      );
+    }
+    assert.deepEqual(report.publicContracts.present, ["README.md"]);
+    assert.equal(report.publicContracts.missing.length, 8);
+  });
+});
+
+test("public readiness audit blocks one removed public contract", async () => {
+  await withRepository({}, async (root) => {
+    await rm(resolve(root, "SECURITY.md"));
+    git(root, "add", "--all");
+    git(root, "commit", "-m", "remove security fixture");
+
+    const report = await auditPublicReadiness({
+      root,
+      repository: "fixture/one-missing-contract",
+    });
     assert.ok(
       report.blockers.some(
-        (finding) => finding.signature === "THIRD_PARTY_NOTICES.md",
+        (finding) => finding.signature === "SECURITY.md",
       ),
     );
+    assert.deepEqual(report.publicContracts.missing, ["SECURITY.md"]);
+    assert.equal(report.metrics.presentPublicContracts, 8);
   });
 });
 
