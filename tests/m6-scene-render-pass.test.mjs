@@ -11,9 +11,10 @@ function pass({ phase = "BEFORE_DEBUG_VEHICLE", render, dispose }) {
 }
 
 const viewProjection = new Float32Array(16);
+viewProjection[0] = 7;
 const trace = { generation: 1, stepIndex: 1 };
 
-test("passes render only in their declared phase and receive the owned context", async () => {
+test("passes receive isolated camera matrices on the owned context", async () => {
   const gl = { id: "shared-webgl" };
   const errors = [];
   const calls = [];
@@ -26,7 +27,9 @@ test("passes render only in their declared phase and receive the owned context",
       phase: "BEFORE_DEBUG_VEHICLE",
       render(frame) {
         calls.push(`before:${frame.gl.id}:${frame.trace.stepIndex}`);
-        assert.equal(frame.viewProjection, viewProjection);
+        assert.notEqual(frame.viewProjection, viewProjection);
+        assert.equal(frame.viewProjection[0], 7);
+        frame.viewProjection[0] = 999;
       },
     });
   });
@@ -35,6 +38,8 @@ test("passes render only in their declared phase and receive the owned context",
       phase: "AFTER_DEBUG_VEHICLE",
       render(frame) {
         calls.push(`after:${frame.gl.id}:${frame.trace.stepIndex}`);
+        assert.notEqual(frame.viewProjection, viewProjection);
+        assert.equal(frame.viewProjection[0], 7);
       },
     }),
   );
@@ -43,6 +48,7 @@ test("passes render only in their declared phase and receive the owned context",
   host.render("AFTER_DEBUG_VEHICLE", viewProjection, trace);
 
   assert.deepEqual(calls, ["before:shared-webgl:1", "after:shared-webgl:1"]);
+  assert.equal(viewProjection[0], 7);
   assert.deepEqual(errors, []);
 });
 
