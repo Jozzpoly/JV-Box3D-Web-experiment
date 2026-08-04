@@ -45,7 +45,13 @@ function fakeGl({ failAt = -1 } = {}) {
       deleted.push(buffer.id);
     },
   };
-  return { gl, deleted };
+  return {
+    gl,
+    deleted,
+    get allocations() {
+      return allocation;
+    },
+  };
 }
 
 function fixtureFetcher(generated) {
@@ -85,6 +91,36 @@ test("complete load publishes one disposable CPU+GPU resource", async () => {
   assert.deepEqual(fixture.deleted, [4, 3, 2, 1]);
   resource.dispose();
   assert.deepEqual(fixture.deleted, [4, 3, 2, 1]);
+});
+
+test("runtime capability rejection happens before every GPU allocation", async () => {
+  const generated = buildTinyVehicleVisualFixture({
+    partIds: M6_VISUAL_PART_IDS,
+    segmentIds: M6_VISUAL_SEGMENT_IDS,
+  });
+  const fixture = fakeGl();
+  let validatedRuntime = null;
+
+  await assert.rejects(
+    () =>
+      createVehicleVisualRenderResourceV1(
+        fixture.gl,
+        "https://example.test/",
+        "vehicles/tiny/vehicle.visual.json",
+        {
+          fetcher: fixtureFetcher(generated),
+          validateRuntime(runtime) {
+            validatedRuntime = runtime;
+            throw new Error("draw capability rejected");
+          },
+        },
+      ),
+    /draw capability rejected/,
+  );
+
+  assert.equal(validatedRuntime.ownershipReceipt.boundRootCount, 26);
+  assert.equal(fixture.allocations, 0);
+  assert.deepEqual(fixture.deleted, []);
 });
 
 test("GPU allocation failure never publishes a partial render resource", async () => {
