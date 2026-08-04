@@ -15,8 +15,17 @@ class FakeEventTarget {
     this.listeners.get(type)?.delete(listener);
   }
 
+  dispatch(type, event = {}) {
+    for (const listener of this.listeners.get(type) ?? []) {
+      listener({ preventDefault() {}, ...event });
+    }
+  }
+
   listenerCount() {
-    return [...this.listeners.values()].reduce((sum, set) => sum + set.size, 0);
+    return [...this.listeners.values()].reduce(
+      (sum, set) => sum + set.size,
+      0,
+    );
   }
 }
 
@@ -61,23 +70,71 @@ function createOptions(overrides = {}) {
   };
 }
 
-test("host owns listeners and animation frame across start/dispose/rebuild", () => {
+function runOneFixedStep(options) {
+  const firstHandle = [...options.animationFrames.callbacks.keys()][0];
+  options.animationFrames.run(firstHandle, 0);
+  const secondHandle = [...options.animationFrames.callbacks.keys()][0];
+  options.animationFrames.run(secondHandle, 1000 / 60);
+}
+
+test("host owns both keyboard adapters and animation frame across start/dispose/rebuild", () => {
   const options = createOptions();
   const first = CleanBrowserHost.start(options);
-  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 5);
+  assert.equal(
+    options.windowTarget.listenerCount() +
+      options.documentTarget.listenerCount(),
+    10,
+  );
   assert.equal(options.animationFrames.callbacks.size, 1);
 
   first.dispose();
-  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 0);
+  assert.equal(
+    options.windowTarget.listenerCount() +
+      options.documentTarget.listenerCount(),
+    0,
+  );
   assert.equal(options.animationFrames.callbacks.size, 0);
 
   const second = CleanBrowserHost.start(options);
-  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 5);
+  assert.equal(
+    options.windowTarget.listenerCount() +
+      options.documentTarget.listenerCount(),
+    10,
+  );
   second.dispose();
-  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 0);
+  assert.equal(
+    options.windowTarget.listenerCount() +
+      options.documentTarget.listenerCount(),
+    0,
+  );
 });
 
-test("startup failure rolls back listeners and scheduled resources", () => {
+test("one fixed step samples steering and longitudinal controls from the same timeline interval", () => {
+  let observed = null;
+  const options = createOptions({
+    onStep(step, steering, longitudinal) {
+      observed = { step, steering, longitudinal };
+    },
+  });
+  const host = CleanBrowserHost.start(options);
+
+  options.windowTarget.dispatch("keydown", { code: "KeyA" });
+  options.windowTarget.dispatch("keydown", { code: "KeyW" });
+  runOneFixedStep(options);
+
+  assert.equal(observed.step.index, 1);
+  assert.deepEqual(observed.steering.command, {
+    mode: "RATE",
+    value: 1,
+  });
+  assert.deepEqual(observed.longitudinal.command, {
+    throttle: 1,
+    brake: 0,
+  });
+  host.dispose();
+});
+
+test("startup failure rolls back both keyboard adapters and scheduled resources", () => {
   const options = createOptions({
     animationFrames: {
       request() {
@@ -87,11 +144,18 @@ test("startup failure rolls back listeners and scheduled resources", () => {
     },
   });
 
-  assert.throws(() => CleanBrowserHost.start(options), /requestAnimationFrame unavailable/);
-  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 0);
+  assert.throws(
+    () => CleanBrowserHost.start(options),
+    /requestAnimationFrame unavailable/,
+  );
+  assert.equal(
+    options.windowTarget.listenerCount() +
+      options.documentTarget.listenerCount(),
+    0,
+  );
 });
 
-test("runtime step failure disposes listeners and does not schedule another frame", () => {
+test("runtime step failure disposes both keyboard adapters and does not schedule another frame", () => {
   const fatal = new Error("physics step failed");
   let observedFatal = null;
   const options = createOptions({
@@ -104,15 +168,16 @@ test("runtime step failure disposes listeners and does not schedule another fram
   });
   const host = CleanBrowserHost.start(options);
 
-  const firstHandle = [...options.animationFrames.callbacks.keys()][0];
-  options.animationFrames.run(firstHandle, 0);
-  const secondHandle = [...options.animationFrames.callbacks.keys()][0];
-  options.animationFrames.run(secondHandle, 1000 / 60);
+  runOneFixedStep(options);
 
   assert.equal(observedFatal, fatal);
   assert.equal(host.fatalError, fatal);
   assert.equal(options.animationFrames.callbacks.size, 0);
-  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 0);
+  assert.equal(
+    options.windowTarget.listenerCount() +
+      options.documentTarget.listenerCount(),
+    0,
+  );
   host.dispose();
 });
 
@@ -122,11 +187,12 @@ test("dispose called during a step prevents rescheduling", () => {
   options.onStep = () => host.dispose();
   host = CleanBrowserHost.start(options);
 
-  const firstHandle = [...options.animationFrames.callbacks.keys()][0];
-  options.animationFrames.run(firstHandle, 0);
-  const secondHandle = [...options.animationFrames.callbacks.keys()][0];
-  options.animationFrames.run(secondHandle, 1000 / 60);
+  runOneFixedStep(options);
 
   assert.equal(options.animationFrames.callbacks.size, 0);
-  assert.equal(options.windowTarget.listenerCount() + options.documentTarget.listenerCount(), 0);
+  assert.equal(
+    options.windowTarget.listenerCount() +
+      options.documentTarget.listenerCount(),
+    0,
+  );
 });
