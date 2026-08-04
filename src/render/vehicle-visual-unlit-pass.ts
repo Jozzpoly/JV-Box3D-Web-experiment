@@ -62,6 +62,16 @@ function abortError(): DOMException {
   return new DOMException("Vehicle visual unlit pass was aborted.", "AbortError");
 }
 
+function assertNoGlError(
+  gl: WebGLRenderingContext,
+  label: string,
+): void {
+  const error = gl.getError();
+  if (error !== gl.NO_ERROR) {
+    throw new Error(`${label} failed with WebGL error 0x${error.toString(16)}.`);
+  }
+}
+
 function createShader(
   gl: WebGLRenderingContext,
   type: number,
@@ -123,6 +133,7 @@ function createProgram(
         "Vehicle visual unlit program attributes or uniforms are unavailable.",
       );
     }
+    assertNoGlError(gl, "Vehicle visual unlit program creation");
 
     return Object.freeze({
       program,
@@ -172,6 +183,7 @@ function renderFrame(
     resource.runtime,
     frame.trace.visualFrame,
   );
+  assertNoGlError(gl, "Vehicle visual unlit pass entry");
   restoreUnlitState(gl);
   gl.useProgram(program.program);
   gl.uniformMatrix4fv(
@@ -269,6 +281,10 @@ function renderFrame(
         gl.UNSIGNED_SHORT,
         0,
       );
+      assertNoGlError(
+        gl,
+        `Vehicle visual mesh ${command.meshIndex} primitive ${primitiveIndex} draw`,
+      );
       primitiveDrawCount += 1;
     }
   }
@@ -288,7 +304,6 @@ export async function createVehicleVisualUnlitPassV1(
     throw abortError();
   }
 
-  let capability: VehicleVisualUnlitCapabilityReceiptV1 | null = null;
   const resource = await createVehicleVisualRenderResourceV1(
     gl,
     options.pageBaseUrl,
@@ -297,16 +312,13 @@ export async function createVehicleVisualUnlitPassV1(
       signal,
       ...(options.fetcher === undefined ? {} : { fetcher: options.fetcher }),
       validateRuntime(runtime) {
-        capability = assertVehicleVisualUnlitCapabilityV1(runtime.cpuAsset);
+        assertVehicleVisualUnlitCapabilityV1(runtime.cpuAsset);
       },
     },
   );
-  if (capability === null) {
-    resource.dispose();
-    throw new Error(
-      "Vehicle visual unlit capability validation did not produce a receipt.",
-    );
-  }
+  const capability = assertVehicleVisualUnlitCapabilityV1(
+    resource.runtime.cpuAsset,
+  );
   if (signal.aborted) {
     resource.dispose();
     throw abortError();
@@ -322,7 +334,6 @@ export async function createVehicleVisualUnlitPassV1(
     let disposed = false;
     let firstFramePublished = false;
     const ownedProgram = program;
-    const capabilityReceipt = capability;
     return Object.freeze({
       phase: "BEFORE_DEBUG_VEHICLE" as const,
       render(frame: M6SceneRenderFrameV1): void {
@@ -339,7 +350,7 @@ export async function createVehicleVisualUnlitPassV1(
           firstFramePublished = true;
           options.onFirstFrame?.(
             Object.freeze({
-              capability: capabilityReceipt,
+              capability,
               generation: frame.trace.generation,
               stepIndex: frame.trace.stepIndex,
               drawCommandCount: receipt.drawCommandCount,
