@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
-import { auditPublicReadiness } from "../tools/public-readiness-lib.mjs";
+import { auditPublicReadiness } from "../tools/public-readiness-report.mjs";
 
 function git(root, ...args) {
   return execFileSync("git", args, {
@@ -59,6 +59,33 @@ test("public readiness audit blocks and redacts a token-like branch name", async
           /^[0-9a-f]{12}$/.test(entry.fingerprint),
       ),
     );
+  });
+});
+
+test("public readiness report never stores a token-like current branch name", async () => {
+  await withRepository(async (root) => {
+    const fakeToken = `ghp_${"E".repeat(36)}`;
+    git(root, "switch", "-c", `current/${fakeToken}`);
+
+    const report = await auditPublicReadiness({
+      root,
+      repository: "fixture/current-branch-secret",
+    });
+    assert.ok(
+      report.blockers.some(
+        (entry) =>
+          entry.signature === "github-token" &&
+          entry.scope === "source-branch-name",
+      ),
+    );
+    assert.deepEqual(Object.keys(report.sourceRef).sort(), [
+      "fingerprint",
+      "state",
+    ]);
+    assert.equal(report.sourceRef.state, "BRANCH");
+    assert.match(report.sourceRef.fingerprint, /^[0-9a-f]{12}$/);
+    assert.equal("sourceBranch" in report, false);
+    assert.equal(JSON.stringify(report).includes(fakeToken), false);
   });
 });
 
