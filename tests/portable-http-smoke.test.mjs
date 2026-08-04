@@ -58,7 +58,7 @@ async function withFixture(callback) {
   }
 }
 
-test("portable HTTP smoke serves identical bytes at root and project path", async () => {
+test("portable HTTP smoke serves exact entry and payload bytes at root and project path", async () => {
   await withFixture(async (root) => {
     const results = await smokePortableBuildOverHttp(root, [
       "/",
@@ -69,6 +69,7 @@ test("portable HTTP smoke serves identical bytes at root and project path", asyn
       ["/", "/JV-Box3D-Web-experiment/"],
     );
     assert.ok(results.every((result) => result.fileCount === 5));
+    assert.ok(results.every((result) => result.entryPointVerified === true));
     assert.ok(results.every((result) => result.runtimeAssets.length === 1));
     assert.ok(results.every((result) => result.complianceFiles.length === 1));
   });
