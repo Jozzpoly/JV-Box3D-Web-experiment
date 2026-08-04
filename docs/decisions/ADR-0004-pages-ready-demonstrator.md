@@ -47,7 +47,9 @@ public source repository
 + GitHub Pages: Deploy from a branch
 ```
 
-No custom deployment workflow is added. Publishing remains a manual repository-setting decision by Jozz.
+No custom build/deployment workflow is added. Publishing remains a manual repository-setting decision by Jozz.
+
+GitHub Pages always records an internal Actions deployment run, including when the source is a branch. This is a platform deployment step, not permission to restore custom CI or cloud builds. For a public repository, standard GitHub-hosted runner use and GitHub Pages use are free under the current GitHub billing model. The deployment run must still be monitored for accidental repeated triggers and retained artifacts.
 
 The publishing branch contains generated static output only. Development history and generated output are not mixed in the default branch.
 
