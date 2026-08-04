@@ -1,7 +1,8 @@
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { copyFile, readFile, writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   buildPortableFileRecords,
   PORTABLE_MANIFEST_NAME,
@@ -21,6 +22,10 @@ function git(...args) {
   }).trim();
 }
 
+function fingerprint(value) {
+  return createHash("sha256").update(value).digest("hex").slice(0, 12);
+}
+
 const dirtySource = git("status", "--porcelain", "--untracked-files=all");
 if (dirtySource.length > 0) {
   throw new Error(
@@ -34,7 +39,7 @@ for (const path of complianceFiles) {
 }
 
 const sourceCommit = git("rev-parse", "HEAD");
-const sourceBranch = git("branch", "--show-current") || "DETACHED";
+const sourceBranch = git("branch", "--show-current");
 const sourceCommitDate = git("show", "-s", "--format=%cI", "HEAD");
 const files = await buildPortableFileRecords(dist, {
   exclude: [PORTABLE_MANIFEST_NAME],
@@ -49,7 +54,10 @@ const manifest = {
   },
   source: {
     repository: "Jozzpoly/JV-Box3D-Web-experiment",
-    branch: sourceBranch,
+    ref:
+      sourceBranch.length === 0
+        ? { state: "DETACHED", fingerprint: null }
+        : { state: "BRANCH", fingerprint: fingerprint(sourceBranch) },
     commit: sourceCommit,
     commitDate: sourceCommitDate,
     workingTreeClean: true,
