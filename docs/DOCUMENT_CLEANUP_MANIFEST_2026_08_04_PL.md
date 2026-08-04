@@ -1,201 +1,310 @@
-# JV Web — manifest porządkowania dokumentacji
+# JV Web — manifest refoundation i porządkowania
 
 Updated: 2026-08-04
-Status: `ACTIVE CLEANUP MANIFEST`
+Status: `ACTIVE EXECUTION CHECKPOINT`
 Branch: `agent/jv-web-refoundation`
+Base: `agent/f5-dynamic-steering-validation@0d938e402f618ae34e0d959a9862d97c2f88a926`
 
-## 1. Zasada klasyfikacji
+## 1. Cel
 
-Każdy dokument otrzymuje dokładnie jedną rolę:
+Zmniejszać liczbę aktywnych źródeł prawdy, zachowując:
+
+- odtwarzalność dowodów;
+- znane failure modes;
+- aktualne decyzje Jozza;
+- możliwość rozwoju native JV Core, Wheel Scope i JES;
+- małe, odwracalne kroki.
+
+Nie optymalizujemy liczby plików dla samej liczby. Usuwamy sprzeczną narrację i przypadkową władzę historycznych dokumentów.
+
+## 2. Role dokumentów
 
 ```text
-CANONICAL_CURRENT   — potrzebny do rozpoczęcia bieżącej pracy
-CONTRACT_DECISION   — trwały kontrakt lub ADR
-RECEIPT_EVIDENCE    — surowy dowód wykonania, źródła albo artefaktu
-ACTIVE_RESEARCH     — otwarty program badawczy z jasnym pytaniem
-ARCHIVE_EVIDENCE    — wartościowy historycznie, nieaktywny operacyjnie
-DELETE_CANDIDATE    — brak unikalnej wartości poza historią Gita
+CANONICAL_CURRENT
+CONTRACT_DECISION
+RECEIPT_EVIDENCE
+ACTIVE_RESEARCH
+ARCHIVE_EVIDENCE
+DELETE_CANDIDATE
 ```
 
-Archiwizacja nie oznacza akceptacji dawnych wniosków. Oznacza zachowanie śladu bez pozwalania mu sterować bieżącym projektem.
+Archiwizacja nie zatwierdza dawnych wniosków. Indexed removal zachowuje pełną treść w przypiętej historii Gita.
 
-## 2. Docelowy aktywny łańcuch wejściowy
+## 3. Aktualny read-first chain
 
-Maksymalnie pięć pozycji:
+1. `../AI_PROJECT_MEMORY.md`
+2. `PROJECT_STATE.md`
+3. `REFOUNDATION_LOOP_PL.md`
+4. `decisions/ADR-0003-native-jv-core-wasm.md`
+5. właściwy kontrakt lub receipt
 
-1. `AI_PROJECT_MEMORY.md` — krótki operacyjny checkpoint;
-2. `docs/PROJECT_STATE.md` — prawda o bieżącym produkcie i dowodach;
-3. `docs/REFOUNDATION_LOOP_PL.md` — proces pracy;
-4. `docs/decisions/ADR-0003-native-jv-core-wasm.md` — docelowa własność fizyki;
-5. właściwy kontrakt subsystemu lub ostatni receipt.
+Warunek maksymalnie pięciu pozycji jest spełniony.
 
-`README.md` jest wejściem dla człowieka, lecz nie drugim magazynem stanu.
-
-## 3. Klasyfikacja istniejących plików
-
-### Root
-
-| Plik | Klasyfikacja | Działanie |
-|---|---|---|
-| `README.md` | `CANONICAL_CURRENT` | przepisać jako krótki front door; usunąć stary status F1 |
-| `AI_PROJECT_MEMORY.md` | `CANONICAL_CURRENT` | skompresować; stan doprowadzić do refoundation i 75/75 |
-
-### Kanoniczny stan i proces
-
-| Plik | Klasyfikacja | Działanie |
-|---|---|---|
-| `docs/PROJECT_STATE.md` | `CANONICAL_CURRENT` | przepisać; usunąć twierdzenie, że F5 nie wykonano |
-| `docs/DOCUMENT_INDEX.md` | `CANONICAL_CURRENT` | zastąpić krótkim indeksem aktywne/receipts/archive |
-| `docs/REFOUNDATION_LOOP_PL.md` | `CANONICAL_CURRENT` | zachować |
-| `docs/IMPLEMENTATION_ROADMAP.md` | `ARCHIVE_EVIDENCE` | wyekstrahować aktualny kierunek WASM, resztę zarchiwizować |
-| `docs/HANDOFF_2026_08_04_PL.md` | `ARCHIVE_EVIDENCE` | przenieść do `docs/archive/handoffs/`; nie czytać domyślnie |
-
-### Trwałe kontrakty i decyzje
-
-| Plik | Klasyfikacja | Działanie |
-|---|---|---|
-| `docs/NO_ARTIFICIAL_MECHANICS_CONTRACT_PL.md` | `CONTRACT_DECISION` | zachować, skrócić duplikaty stanu |
-| `docs/decisions/ADR-0001-subframe-rate-integration.md` | `CONTRACT_DECISION` | zachować |
-| `docs/decisions/ADR-0002-pinned-box3d-runtime.md` | `CONTRACT_DECISION` | zachować |
-| `docs/WHEEL_ADOPTION_SEAM_2026_08_03_PL.md` | `ACTIVE_RESEARCH` | przemianować później na stabilny kontrakt bez daty |
-| `docs/STEERING_INPUT_RESEARCH_2026_08_03_PL.md` | `ACTIVE_RESEARCH` | skompresować do kontraktu RATE/POSITION/RELEASE |
-| `docs/STEERING_TAP_EXPERIMENT_MATRIX_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | wynikowe reguły do kontraktu, macierz do archiwum |
-| `docs/MOBILE_HOST_READINESS_AUDIT_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | zachować jako przyszłe wymagania, poza aktywnym frontem |
-
-### Receipts i surowe dowody
-
-| Plik | Klasyfikacja | Działanie |
-|---|---|---|
-| `docs/BOX3D_ENGINE_DELTA_RECEIPT_2026_08_03.md` | `RECEIPT_EVIDENCE` | przenieść do `docs/receipts/source/` |
-| `docs/BOX3D_JS_DEPENDENCY_RECEIPT_2026_08_03.md` | `RECEIPT_EVIDENCE` | przenieść do `docs/receipts/source/` |
-| `docs/NATIVE_JV_SOURCE_RECEIPT_2026_08_03.md` | `RECEIPT_EVIDENCE` | przenieść do `docs/receipts/source/` |
-| `docs/REPOSITORY_INVENTORY_RECEIPT_2026_08_03.md` | `RECEIPT_EVIDENCE` | przenieść do `docs/receipts/inventory/` |
-| `docs/EVIDENCE_MATRIX_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | zarchiwizować; poziomy dowodu są już w pętli |
-| `docs/F5_MINIMAL_DRIVE_LOCAL_GATE_2026-08-04.md` | `RECEIPT_EVIDENCE` | przenieść do `docs/receipts/runtime/` i dopisać semantic mismatch |
-| `docs/receipts/F2_BROWSER_SMOKE.json` | `RECEIPT_EVIDENCE` | zachować |
-| `docs/receipts/F2_NODE24_VALIDATION.md` | `RECEIPT_EVIDENCE` | zachować |
-
-### Broad audits — zachować wyłącznie jako archiwum
-
-| Plik | Klasyfikacja | Powód |
-|---|---|---|
-| `docs/FUNDAMENTAL_AUDIT_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | szeroki snapshot sprzed implementacji F1–F5 |
-| `docs/PHYSICS_DELTA_AUDIT_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | część wniosków zastąpiona przez realny runtime i nowy audyt semantyki napędu |
-| `docs/DEEP_HOST_ASSET_VALIDATION_AUDIT_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | wartościowa archeologia, zbyt szeroka jako instrukcja |
-| `docs/CROSS_PROJECT_AUTHORITY_MAP_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | źródła i branche już zmieniły rolę |
-| `docs/NATIVE_VALIDATION_AND_ASSET_AUTHORITY_AUDIT_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | receipt generator istnieje; dokument nie jest bieżącą granicą |
-| `docs/CONFIG_AND_SESSION_SOURCE_AUDIT_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | przed-WASM analiza; trwałe reguły należy przenieść do ABI/kontraktu |
-| `docs/BOX3D_JS_BINDING_SEMANTICS_AUDIT_2026_08_03.md` | `ARCHIVE_EVIDENCE` | zachować do pracy nad custom WASM, nie czytać domyślnie |
-| `docs/AUDIT_ERRATA_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | errata do dokumentów, które same opuszczają aktywny front |
-
-### Koło i historyczny backend
-
-| Plik | Klasyfikacja | Działanie |
-|---|---|---|
-| `docs/CURRENT_JV_WHEEL_PROGRAM_RECEIPT_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | snapshot jest niepełny wobec późniejszego Wheel Scope; zachować z ostrzeżeniem |
-| `docs/LEGACY_M6_WHEEL_FIXTURE_AUDIT_2026_08_03_PL.md` | `CONTRACT_DECISION` | skrócić do roli baseline/fallback; szczegóły zarchiwizować |
-
-### Historia odbudowy i kwarantanny
-
-| Plik | Klasyfikacja | Działanie |
-|---|---|---|
-| `docs/PR1_FILE_CLASSIFICATION_2026_08_03_PL.md` | `ARCHIVE_EVIDENCE` | przenieść do `docs/archive/quarantine/pr1/` |
-| `docs/operations/F1_LOCAL_RUNBOOK_PL.md` | `ARCHIVE_EVIDENCE` | zastąpić jednym aktualnym skryptem/runbookiem |
-
-## 4. Workflows
-
-Obecne workflowy są manual-only, ale nadal zwiększają powierzchnię poznawczą i ryzyko przypadkowego użycia.
-
-| Workflow | Klasyfikacja | Działanie |
-|---|---|---|
-| `audit-all-repository-inventory.yml` | `ARCHIVE_EVIDENCE` | usunąć po zapisaniu wyniku; odtworzenie możliwe z historii Gita |
-| `audit-box3d-engine-delta.yml` | `ARCHIVE_EVIDENCE` | usunąć po potwierdzeniu receipt |
-| `audit-box3d-js-source.yml` | `ARCHIVE_EVIDENCE` | usunąć po potwierdzeniu receipt |
-| `f2-lock-and-validate.yml` | `ARCHIVE_EVIDENCE` | zastąpić lokalnym gate; nie jest bieżącym produktem |
-| `f3-validate.yml` | `ARCHIVE_EVIDENCE` | usunąć po przeniesieniu receiptu |
-| `f4-validate.yml` | `ARCHIVE_EVIDENCE` | usunąć po wprowadzeniu jednego aktualnego gate |
-
-Docelowo `.github/workflows/` pozostaje puste albo zawiera wyłącznie jeden jawnie zatwierdzony, ręczny gate. Żaden workflow nie będzie tworzony w ramach tej fazy bez decyzji Jozza.
-
-## 5. Kandydaci do usunięcia
-
-Na tym etapie żaden dokument źródłowy nie jest jeszcze kasowany bez ekstrakcji. Pierwsi kandydaci po archiwizacji i link audicie:
-
-1. `docs/EVIDENCE_MATRIX_2026_08_03_PL.md` — definicje poziomów są już w kanonicznej pętli;
-2. `docs/AUDIT_ERRATA_2026_08_03_PL.md` — po przeniesieniu wszystkich dokumentów, które koryguje;
-3. stare workflowy audytowe — ich wartością są zapisane receipts, nie wykonywalny YAML;
-4. przestarzały F1 runbook — po powstaniu jednego aktualnego runbooka;
-5. duplikaty branch/status opisów w README, state, memory i handoff.
-
-Kasowanie następuje dopiero, gdy:
-
-- unikalna trwała wiedza została przeniesiona;
-- `git` zachowuje pełną historię;
-- żaden aktywny link nie wskazuje pliku;
-- usunięcie nie utrudnia reprodukcji znanego failure mode.
-
-## 6. Kolejność wykonania
+## 4. Wykonane
 
 ### C0 — bezpieczeństwo
 
-- osobna gałąź `agent/jv-web-refoundation`;
-- brak zmian na historycznych PR-ach;
-- brak merge;
-- brak Actions.
-
-### C1 — nowy front door
-
-- naprawić `README.md`;
-- przepisać `PROJECT_STATE.md`;
-- skrócić `AI_PROJECT_MEMORY.md`;
-- przepisać `DOCUMENT_INDEX.md`.
-
-### C2 — decyzja o rdzeniu
-
-- dodać ADR native JV Core + Box3D jako jeden WASM;
-- oznaczyć TypeScript M6 jako legacy reference backend;
-- zapisać semantic mismatch `maxDriveSpeed`.
-
-### C3 — fizyczna reorganizacja
-
-- utworzyć `docs/archive/2026-08-foundation-audit/`;
-- przenieść broad audits;
-- utworzyć `docs/archive/handoffs/` i `docs/archive/quarantine/`;
-- uporządkować `docs/receipts/`.
-
-### C4 — link audit
-
-- wyszukać stare ścieżki;
-- naprawić odwołania;
-- sprawdzić, czy aktywne dokumenty nie cytują archiwum jako bieżącej decyzji.
-
-### C5 — redukcja workflowów i runbooków
-
-- zachować wynik, usunąć narzędzia jednorazowe;
-- stworzyć jeden aktualny local gate po ustaleniu backendu.
-
-### C6 — code refoundation
-
-- interfejs `VehicleRuntimeBackend`;
-- jawna nazwa `legacy_ts_m6`;
-- native/WASM spike;
-- ABI z jednostkami i stable part IDs;
-- parity harness;
-- dopiero potem rozwój fizyki i Wheel Scope.
-
-## 7. Metryki postępu
-
-Po każdej większej iteracji zapisać:
-
 ```text
-active docs count
-archive docs count
-read-first length
-contradictory current-status claims
-open source-of-truth duplications
-workflows count
-tests count and evidence level
-native/WASM parity scenarios
+DONE
 ```
 
-Celem nie jest minimalna liczba plików. Celem jest minimalna liczba **aktywnych źródeł prawdy** przy zachowaniu pełnej, czytelnej pamięci projektu.
+- osobna gałąź refoundation;
+- historyczne stacked PR-y nietknięte;
+- brak merge i ready transition;
+- brak uruchomionych Actions;
+- brak automatycznego cross-repo work.
+
+### C1 — aktywny front dokumentacji
+
+```text
+DONE
+```
+
+Przepisano:
+
+- `README.md`;
+- `AI_PROJECT_MEMORY.md`;
+- `PROJECT_STATE.md`;
+- `DOCUMENT_INDEX.md`.
+
+Usunięto sprzeczne twierdzenia, że aktywny jest F1 albo że F5 nie otrzymało lokalnego gate’u.
+
+### C2 — własność fizyki
+
+```text
+DONE / IMPLEMENTATION PENDING
+```
+
+- ADR-0003 wybiera native JV Core + Box3D jako jeden moduł WASM;
+- TypeScript host zachowuje input/lifecycle/render/UI;
+- obecny backend ma ID `legacy_ts_m6`;
+- kontrakt zapisuje `productPhysicsAuthority=false` i `nativeParity=NOT_PROVEN`;
+- znany mismatch `maxDriveSpeed` jest testowany jako jawna właściwość backendu.
+
+### C3 — redukcja broad documentation
+
+```text
+DONE FOR FIRST CORPUS
+```
+
+Z aktywnego drzewa usunięto, zachowując exact blob/checkpoint:
+
+- session handoff;
+- starą roadmapę;
+- erratę i evidence matrix;
+- siedem broad audits;
+- dwa raporty sterowania;
+- trzy dokumenty koła;
+- mobile readiness audit;
+- PR #1 file classification;
+- F1 recovery runbook.
+
+Źródła odzysku znajdują się w `docs/archive/`.
+
+### C4 — kontrakty subsystemów
+
+```text
+DONE FOR CURRENT SCOPE
+```
+
+Aktywne:
+
+- `contracts/STEERING_COMMAND_CONTRACT_PL.md`;
+- `contracts/WHEEL_BACKEND_CONTRACT_PL.md`;
+- `contracts/MOBILE_HOST_CONTRACT_PL.md`;
+- `NO_ARTIFICIAL_MECHANICS_CONTRACT_PL.md`.
+
+### C5 — workflow i operacje
+
+```text
+DONE / LOCAL GATE NOT YET EXECUTED ON THIS BRANCH
+```
+
+Usunięto sześć jednorazowych workflowów, w tym historyczny F2 z `contents: write`.
+
+Dodano:
+
+- `tools/check-doc-links.mjs`;
+- `npm run check:docs`;
+- `tools/run-refoundation-gate.ps1`;
+- `operations/REFOUNDATION_LOCAL_GATE_PL.md`.
+
+Link checker przeszedł test składni i syntetyczne scenariusze pass/fail. Nie wykonano jeszcze pełnego auditu świeżego drzewa ani pełnego `npm run check` na branchu refoundation.
+
+## 5. Aktualne źródła prawdy
+
+| Rola | Plik |
+|---|---|
+| stan produktu | `PROJECT_STATE.md` |
+| proces iteracji | `REFOUNDATION_LOOP_PL.md` |
+| własność native/WASM | `decisions/ADR-0003-native-jv-core-wasm.md` |
+| sterowanie | `contracts/STEERING_COMMAND_CONTRACT_PL.md` |
+| koło | `contracts/WHEEL_BACKEND_CONTRACT_PL.md` |
+| mobile | `contracts/MOBILE_HOST_CONTRACT_PL.md` |
+| zakaz sztucznych defaultów | `NO_ARTIFICIAL_MECHANICS_CONTRACT_PL.md` |
+| lokalny gate | `operations/REFOUNDATION_LOCAL_GATE_PL.md` |
+| archive recovery | `archive/*.md` |
+
+`README.md` jest front door, a nie dodatkowym magazynem szczegółowego stanu.
+
+## 6. Pozostałe prace dokumentacyjne
+
+### D1 — receipts
+
+```text
+OPEN
+```
+
+Uporządkować pod:
+
+```text
+receipts/source/
+receipts/runtime/
+receipts/inventory/
+```
+
+Receipts pozostają łatwo dostępne. Nie stosować indexed removal do surowego dowodu, jeżeli przeniesienie pliku jest praktyczne.
+
+### D2 — pełny link audit
+
+```text
+OPEN / TOOL READY
+```
+
+Po lokalnym pullu wykonać:
+
+```text
+npm run check:docs
+```
+
+Naprawić wszystkie odwołania do usuniętych ścieżek przed uznaniem dokumentacji za czystą.
+
+### D3 — kontrakt sztucznych mechanik
+
+```text
+REVIEW NEEDED
+```
+
+Sprawdzić, czy `NO_ARTIFICIAL_MECHANICS_CONTRACT_PL.md` nadal posiada unikalną rolę wobec steering contractu i ADR-0003. Jeśli tylko duplikuje, skompresować; nie usuwać ochrony przed regressions.
+
+### D4 — nazwy historycznych narzędzi
+
+```text
+OPEN
+```
+
+`run-f5-*`, `smoke-f2-*`, `smoke-f4-*` są nadal użytecznymi reproduktorami, ale ich nazwy mogą sugerować aktywne etapy. Najpierw sklasyfikować każdy jako current fixture, archive tool albo delete candidate.
+
+## 7. Pozostałe prace kodowe
+
+### K1 — jawna tożsamość w runtime trace/UI
+
+```text
+OPEN
+```
+
+Przenieść `legacy_ts_m6` przez:
+
+```text
+world
+→ trace
+→ browser telemetry
+→ receipts
+```
+
+Usunąć user-facing sformułowania sugerujące „native drive”. Nie zmieniać mechaniki w tym samym kroku.
+
+### K2 — kontrakt jednostek
+
+```text
+OPEN
+```
+
+Każde pole przyszłego ABI zapisuje:
+
+```text
+name
+type
+unit
+coordinate frame
+range/domain
+semantic meaning
+source authority
+```
+
+### K3 — native core source set
+
+```text
+OPEN
+```
+
+W natywnym repo wyznaczyć najmniejszy zestaw bez Sokol/ImGui:
+
+- Box3D;
+- geometry/config;
+- vehicle build/update;
+- blueprint/stable part IDs;
+- headless snapshot/hash.
+
+### K4 — minimalny WASM spike
+
+```text
+OPEN
+```
+
+```text
+same native core + same Box3D
+→ native executable
+→ WASM module
+→ create/input/step/snapshot
+→ settle+drive comparison
+```
+
+### K5 — parity harness
+
+```text
+OPEN
+```
+
+Nie wystarczy direction/liveness. Porównywać quantized trajectory oraz telemetrykę mechanizmu.
+
+## 8. Bieżące ryzyka
+
+1. Nowy branch nie ma jeszcze pełnego lokalnego gate’u.
+2. Świeże linki nie zostały sprawdzone na całym checkoutcie.
+3. `legacy_ts_m6` identity nie jest jeszcze widoczne w UI/trace.
+4. Receipts nadal są częściowo w root `docs/`.
+5. Published `box3d.js` pozostaje reference boundary; custom WASM build jeszcze nie istnieje.
+6. Najnowszy Wheel Scope może istnieć tylko lokalnie i wymaga nowego exact source receipt.
+7. Zbyt szybkie rozpoczęcie ABI bez source-set audit stworzyłoby pustą abstrakcję zamiast przenośnego core.
+
+## 9. Metryki checkpointu
+
+Na podstawie aktualnego compare z `main`:
+
+```text
+read-first length:                  5
+active subsystem contracts:        4
+accepted ADRs:                     3
+archive index files:               5
+active GitHub workflows:           0
+known product-physics authorities: 1 planned (native core), 0 implemented
+reference backends named:          1 (legacy_ts_m6)
+new branch validation:             pending
+native/WASM parity scenarios:      0
+```
+
+## 10. Następna bezpieczna kolejność
+
+```text
+D1 organize receipts
+→ D3 review no-artificial contract
+→ K1 expose backend identity in trace/UI
+→ local refoundation gate
+→ K2 unit-semantic ABI contract
+→ K3 native source-set audit
+→ K4 minimal native/WASM spike
+→ K5 parity harness
+```
+
+Nie zaczynać nowej fizyki koła, drivetrainu, kampusu ani mobile UI przed wykonaniem tych fundamentów.
