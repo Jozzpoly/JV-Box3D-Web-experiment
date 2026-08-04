@@ -37,9 +37,16 @@ function abortError(): DOMException {
   return new DOMException("Scene render-pass installation was aborted.", "AbortError");
 }
 
+function isRenderPhase(value: string): value is M6SceneRenderPhaseV1 {
+  return (
+    value === "BEFORE_DEBUG_VEHICLE" ||
+    value === "AFTER_DEBUG_VEHICLE"
+  );
+}
+
 export class M6SceneRenderPassHostV1 {
   readonly #gl: WebGLRenderingContext;
-  readonly #reportError: (error: unknown) => void;
+  readonly #reportErrorCallback: (error: unknown) => void;
   readonly #lifecycle = new AbortController();
   readonly #entries: InstalledPassV1[] = [];
   #disposed = false;
@@ -49,7 +56,7 @@ export class M6SceneRenderPassHostV1 {
     reportError: (error: unknown) => void,
   ) {
     this.#gl = gl;
-    this.#reportError = reportError;
+    this.#reportErrorCallback = reportError;
   }
 
   get disposed(): boolean {
@@ -67,6 +74,10 @@ export class M6SceneRenderPassHostV1 {
     if (this.#disposed || this.#lifecycle.signal.aborted) {
       this.#disposePass(pass);
       throw abortError();
+    }
+    if (!isRenderPhase(pass.phase)) {
+      this.#disposePass(pass);
+      throw new Error(`Unknown scene render-pass phase: ${String(pass.phase)}.`);
     }
 
     const entry: InstalledPassV1 = { pass, active: true };
@@ -146,6 +157,18 @@ export class M6SceneRenderPassHostV1 {
       pass.dispose();
     } catch (error: unknown) {
       this.#reportError(error);
+    }
+  }
+
+  #reportError(error: unknown): void {
+    try {
+      this.#reportErrorCallback(error);
+    } catch (reportingError: unknown) {
+      console.error(
+        "Scene render-pass error handler failed.",
+        error,
+        reportingError,
+      );
     }
   }
 }
