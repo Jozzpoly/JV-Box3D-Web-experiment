@@ -3,6 +3,10 @@ import {
   type SubtleDigestProvider,
 } from "../core/portable-digest.js";
 import { inspectGlbV2, type GlbInspectionV1 } from "./glb-container.js";
+import {
+  assertGlbRuntimePolicyV1,
+  type GlbRuntimePolicyReceiptV1,
+} from "./glb-runtime-policy-v1.js";
 import type { VehicleVisualPackageV1 } from "./vehicle-visual-package.js";
 
 export interface VehicleVisualAssetReceiptV1 {
@@ -11,6 +15,7 @@ export interface VehicleVisualAssetReceiptV1 {
   readonly byteLength: number;
   readonly sha256: string;
   readonly glb: GlbInspectionV1;
+  readonly runtimePolicy: GlbRuntimePolicyReceiptV1;
   readonly boundNodeCount: number;
 }
 
@@ -78,13 +83,14 @@ export async function validateVehicleVisualAssetV1(
     );
   }
 
+  const boundNodeNames = visual.bindings.map((binding) => binding.nodeName);
   const nodeNames = new Set(glb.nodeNames);
-  const missingNodes = visual.bindings
-    .map((binding) => binding.nodeName)
-    .filter((name) => !nodeNames.has(name));
+  const missingNodes = boundNodeNames.filter((name) => !nodeNames.has(name));
   if (missingNodes.length > 0) {
     reject(`bound GLB nodes are missing: ${missingNodes.join(", ")}`);
   }
+
+  const runtimePolicy = assertGlbRuntimePolicyV1(bytes, boundNodeNames);
 
   return Object.freeze({
     packageId: visual.id,
@@ -92,6 +98,7 @@ export async function validateVehicleVisualAssetV1(
     byteLength: bytes.byteLength,
     sha256: digest,
     glb,
+    runtimePolicy,
     boundNodeCount: visual.bindings.length,
   });
 }
