@@ -11,9 +11,16 @@ await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
 console.log(`License inventory: ${relative(root, outputPath)}`);
-console.log(`Current license paths: ${report.currentLicensePaths.length}`);
-console.log(`Reachable license-like blobs: ${report.records.length}`);
-console.log(`Detected license classes: ${report.detectedLicenses.join(", ") || "none"}`);
+console.log(
+  `Current project licenses: ${report.currentProjectLicensePaths.length}`,
+);
+console.log(
+  `Current third-party notices: ${report.currentThirdPartyNoticePaths.length}`,
+);
+console.log(`Reachable license/notice blobs: ${report.records.length}`);
+console.log(
+  `Detected project license classes: ${report.detectedProjectLicenses.join(", ") || "none"}`,
+);
 for (const finding of report.findings) {
   const writer = finding.severity === "BLOCKER" ? console.error : console.warn;
   writer(`${finding.severity}: ${finding.id} · ${finding.message}`);
