@@ -3,6 +3,7 @@ import {
   decodeGlbRigidCpuAssetV1,
   type GlbRigidCpuAssetV1,
 } from "./glb-rigid-mesh-decoder.js";
+import { sealGlbRigidCpuAssetV1 } from "./rigid-cpu-asset-seal.js";
 import {
   validateVehicleVisualAssetV1,
   type VehicleVisualAssetReceiptV1,
@@ -102,9 +103,11 @@ export async function loadVehicleVisualRuntimeV1(
     visualPackage,
     bytes,
   );
-  const cpuAsset = decodeGlbRigidCpuAssetV1(
-    bytes,
-    visualPackage.bindings.map((binding) => binding.nodeName),
+  const cpuAsset = sealGlbRigidCpuAssetV1(
+    decodeGlbRigidCpuAssetV1(
+      bytes,
+      visualPackage.bindings.map((binding) => binding.nodeName),
+    ),
   );
   const ownershipReceipt = assertVehicleVisualCpuOwnershipV1(
     visualPackage,
