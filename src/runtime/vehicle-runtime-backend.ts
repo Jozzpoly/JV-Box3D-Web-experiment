@@ -11,6 +11,7 @@ export interface VehicleRuntimeBackendDescriptor {
   readonly nativeParity: NativeParityStatus;
   readonly commandContractVersion: 1;
   readonly traceContractVersion: 1;
+  readonly visualFrameContractVersion: 1;
 }
 
 export const LEGACY_TS_M6_BACKEND: VehicleRuntimeBackendDescriptor =
@@ -21,6 +22,7 @@ export const LEGACY_TS_M6_BACKEND: VehicleRuntimeBackendDescriptor =
     nativeParity: "NOT_PROVEN",
     commandContractVersion: 1,
     traceContractVersion: 1,
+    visualFrameContractVersion: 1,
   });
 
 export function assertVehicleRuntimeBackendDescriptor(
@@ -34,6 +36,11 @@ export function assertVehicleRuntimeBackendDescriptor(
   if (descriptor.traceContractVersion !== 1) {
     throw new Error(
       `Unsupported vehicle trace contract version: ${descriptor.traceContractVersion}`,
+    );
+  }
+  if (descriptor.visualFrameContractVersion !== 1) {
+    throw new Error(
+      `Unsupported vehicle visual frame contract version: ${descriptor.visualFrameContractVersion}`,
     );
   }
   if (
