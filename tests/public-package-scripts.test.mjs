@@ -10,7 +10,7 @@ async function readPackage() {
   return JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 }
 
-test("package exposes strict and report-only public audits", async () => {
+test("package exposes strict, report-only and review-classification audits", async () => {
   const packageJson = await readPackage();
   assert.equal(packageJson.private, true);
   assert.equal(
@@ -20,6 +20,14 @@ test("package exposes strict and report-only public audits", async () => {
   assert.equal(
     packageJson.scripts["audit:public:report"],
     "node tools/audit-public-readiness.mjs --report-only",
+  );
+  assert.equal(
+    packageJson.scripts["audit:public:review-template"],
+    "node tools/write-public-review-ledger.mjs",
+  );
+  assert.equal(
+    packageJson.scripts["audit:public:review-check"],
+    "node tools/validate-public-review-ledger.mjs",
   );
   assert.equal(
     packageJson.scripts["audit:licenses"],
