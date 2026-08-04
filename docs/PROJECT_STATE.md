@@ -4,18 +4,22 @@ Updated: 2026-08-04
 Status: `CANONICAL CURRENT STATE`
 Owner: Jozz
 
-## 1. Produkt i cel
+## 1. Cel produktu
 
 JV Web ma być przeglądarkowym hostem tego samego mechanicznego systemu Jozz Vehicle, a nie niezależną grą imitującą natywne zachowanie.
 
-Docelowy podział odpowiedzialności:
+Docelowy podział:
 
 ```text
 native JV Core + Box3D WASM -> fizyka, blueprint compiler, telemetryka
 TypeScript host             -> input, lifecycle, render, UI, eksperymenty
 ```
 
-Decyzja architektoniczna: `docs/decisions/ADR-0003-native-jv-core-wasm.md`.
+Architecture authority:
+
+```text
+decisions/ADR-0003-native-jv-core-wasm.md
+```
 
 ## 2. Bieżąca gałąź
 
@@ -30,11 +34,11 @@ agent/f5-dynamic-steering-validation
 0d938e402f618ae34e0d959a9862d97c2f88a926
 ```
 
-Refoundation jest odseparowane od wszystkich historycznych stacked PR-ów. Nic nie jest scalane ani oznaczane jako ready bez Jozza.
+Refoundation jest odseparowane od historycznych stacked PR-ów. Nic nie jest scalane ani oznaczane jako ready bez Jozza.
 
-## 3. Co realnie działa
+## 3. Zwalidowany reference baseline
 
-Na zwalidowanym headzie bezpośrednio poprzedzającym refoundation potwierdzono lokalnie:
+Na headzie bezpośrednio poprzedzającym refoundation potwierdzono lokalnie:
 
 ```text
 Node 24.16.0
@@ -45,107 +49,81 @@ Vite production build PASS
 browser startup and physical drive PASS
 ```
 
-Działający reference runtime posiada:
+Receipt:
+
+```text
+receipts/runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md
+```
+
+Działający fixture posiada:
 
 - deterministyczny fixed-step;
-- timestamped steering input;
-- timestamped forward/reverse/brake input;
-- transactional lifecycle i restart świata;
+- timestamped steering i longitudinal input;
+- transactional lifecycle;
 - prawdziwy `box3d.js` WASM;
-- receipt-derived M6 double-wishbone graph;
+- receipt-derived M6 graph;
 - 18 vehicle bodies / 29 joints / 9 shapes;
 - fizyczny rack i tie-rody;
 - `RELEASE | POSITION | RATE`;
-- profile RATE `0.06 / 0.12 / 0.21 / 0.36 m/s`;
-- cztery kontakty koła–teren w zwalidowanych scenariuszach;
+- RATE `0.06 / 0.12 / 0.21 / 0.36 m/s`;
 - read-only WebGL observer;
-- fizyczne wheel-motor drive, reverse, coast i brake;
-- dynamiczną macierz rack excursion.
+- wheel-motor drive/reverse/coast/brake;
+- dynamic rack-excursion matrix.
 
-To są wyniki mechanicznego liveness, determinism i internal consistency. Nie są pełnym native parity ani owner approval całego prowadzenia.
+To są wyniki liveness, determinizmu i internal consistency reference backendu. Nie są pełnym native parity ani owner approval całego prowadzenia.
 
 ## 4. Krytyczna rozbieżność napędu
 
-Receipt zawiera:
+Native JV:
+
+```text
+maxDriveSpeed = wheel rev limit in rad/s
+motor target = ±maxDriveSpeed
+throttle scales available torque
+wheel spin determines torque taper
+```
+
+TypeScript reference backend:
+
+```text
+maxDriveSpeed interpreted as linear m/s target
+throttle scales target speed
+target wheel speed = linear target / wheel radius
+chassis speed determines torque taper
+```
+
+Dla przypiętych wartości:
 
 ```text
 maxDriveSpeed = 40
-maxDriveTorque = 320
-wheelRadius = 0.514062464
-```
-
-Natywne JV definiuje `maxDriveSpeed` jako wheel motor rev limit w `rad/s`.
-
-Obecny TypeScript backend interpretuje tę samą wartość jako liniowy target w `m/s`, następnie oblicza:
-
-```text
-targetWheelAngularSpeed = targetLinearSpeed / wheelRadius
-```
-
-oraz wyznacza torque taper z prędkości chassis, podczas gdy native korzysta z rzeczywistego spin speed danego koła.
-
-Konsekwencja:
-
-```text
+wheelRadius = 0.514062464 m
 native full-throttle target ≈ 40 rad/s
-legacy TS full-throttle target ≈ 77.8 rad/s
+legacy TypeScript target ≈ 77.8 rad/s
 ```
-
-Przy częściowym gazie semantyka również się różni: native utrzymuje rev target i skaluje moment, legacy TS skaluje także prędkość docelową.
 
 Wniosek:
 
 ```text
 legacy_ts_m6 is deterministic and drivable
-legacy_ts_m6 native drive parity = FAIL / NOT PRODUCT AUTHORITY
+native drive semantic parity = FAIL / NOT PRODUCT AUTHORITY
 ```
 
-Nie rozwijać dalej produktu fizycznego przez ręczne dopisywanie kolejnych mechanizmów M7 w TypeScripcie.
+Nie dodawać kolejnych produktowych mechanizmów M7 do TypeScriptu.
 
-## 5. Dynamiczny rack excursion — aktualna interpretacja
-
-Macierz na realnym WASM zmierzyła:
-
-```text
-stationary held RATE peak excess: 0.000 mm
-driving held RATE peak excess:    <= 0.284 mm
-post-RELEASE peak excess:         2.541–2.817 mm
-minimum terrain contacts:         4
-```
-
-To obala hipotezę, że commanded RATE target wychodzi poza natywny rack travel podczas aktywnego sterowania.
-
-Obecny status:
-
-```text
-command clamp: PASS
-held physical compliance: measured, small
-post-RELEASE transient/residual: measured, mechanism not yet isolated
-force-clamp fix: REJECTED WITHOUT NATIVE COMPARISON
-```
-
-Nie stroić ani nie clampować racka tylko po to, aby wyzerować tę liczbę. Najpierw potrzebne są mechanizm-specific trace i porównanie native/WASM.
-
-## 6. Backend status
+## 5. Backend status
 
 ### `legacy_ts_m6`
 
-Obecny kod w `src/vehicle/m6/`.
-
 Rola:
 
-- reference implementation;
-- browser integration fixture;
-- input/lifecycle/render development;
-- A/B baseline;
-- known-failure reproduction.
+```text
+REFERENCE_BROWSER_FIXTURE
+productPhysicsAuthority = false
+nativeParity = NOT_PROVEN
+acceptsNewProductPhysics = false
+```
 
-Nie jest:
-
-- źródłem prawdy mechaniki produktu;
-- pełnym M7;
-- miejscem przyszłej opony;
-- dowodem native parity.
+Jawny contract istnieje w kodzie i ma focused test. World expose’uje backend identity. Trace/UI jeszcze go nie pokazują — to następny mały code step po lokalnym gate/review.
 
 ### `native_jv_wasm`
 
@@ -153,23 +131,98 @@ Status:
 
 ```text
 architecture accepted
+ABI v0 designed
+minimal source set audited
 implementation not started
 ```
 
-Najmniejszy milestone:
+Kontrakty:
 
 ```text
-same JV Core + same Box3D source
-→ native executable
-→ one WASM module
-→ create/input/step/snapshot
-→ one settle+drive scenario
-→ quantized native/WASM comparison
+contracts/NATIVE_WASM_ABI_V0_PL.md
+research/NATIVE_CORE_SOURCE_SET_AUDIT_2026_08_04_PL.md
 ```
 
-## 7. Koło
+## 6. Minimalny native source set
 
-Aktywny reference backend:
+Publiczny audyt refu `JV_VAW-Experimental_Integration` wykazał:
+
+```text
+JOZZ_VEHICLE_CORE_FILES = headless, but not runtime-minimal
+```
+
+Pierwszy behavior-preserving spike linkuje jawnie:
+
+```text
+Box3D
+jozz_vehicle_m5_vehicle.{h,cpp}
+jozz_vehicle_m6_geometry.{h,cpp}
+jozz_vehicle_m6_suspension_rig.{h,cpp}
+new thin ABI/runtime adapter
+```
+
+M5 jest obecnie potrzebne linkowo, ponieważ M6 używa zwalidowanego helpera Ackermanna dla strut branch.
+
+Nie włączać do runtime v0:
+
+- filesystem config IO;
+- JSON/asset paths/metadata;
+- contract import;
+- Sokol/ImGui/renderer;
+- map/campus/scan.
+
+Najpierw niezmienione source files i native/WASM baseline; dopiero potem structural extraction pod ochroną parity.
+
+## 7. ABI v0
+
+ABI contract wymaga:
+
+- C ABI i opaque generational runtime handle;
+- version + struct size;
+- jawnych suffixów jednostek;
+- coordinate frames;
+- stable `partId`, bez eksportu `b3BodyId`;
+- immutable snapshot z tabelami offset/count;
+- jawnego memory lifetime;
+- structured error codes;
+- runtime/source/build identity;
+- control frame niezależnego od urządzenia;
+- native/WASM scenario trace.
+
+Błąd typu `maxDriveSpeed` bez jednostki jest odrzucany przez samą definicję przyszłego schema.
+
+## 8. Sterowanie i rack
+
+Default:
+
+```text
+rackCenteringHertz = 0
+uprightAssist = false
+```
+
+Dynamiczny reference measurement:
+
+```text
+stationary held RATE excess: 0.000 mm
+driving held RATE excess:    <= 0.284 mm
+post-RELEASE peak:            2.541–2.817 mm
+contacts:                     4
+```
+
+Interpretacja:
+
+```text
+command clamp: PASS
+active held compliance: measured, small
+post-RELEASE mechanism: not isolated
+force-clamp fix: rejected without native comparison
+```
+
+Pierwszy native/WASM parity corpus użyje POSITION-like native input. RATE wchodzi dopiero po podstawowym baseline, aby nie łączyć portu M6 i nowego native actuatora w jeden eksperyment.
+
+## 9. Koło
+
+Reference backend:
 
 ```text
 legacy_m6_split_sphere_sidewall
@@ -178,60 +231,82 @@ legacy_m6_split_sphere_sidewall
 Rola:
 
 ```text
-regression baseline / fallback / negative-result reference
+regression baseline / fallback / failure reference
 ```
 
-Nie jest przyszłą architekturą opony.
+Nie jest przyszłą oponą.
 
-Nowy backend ma wejść przez natywny, wymienny seam Wheel Scope/JV Core. Deformacja, ciśnienie, tread, shoulders, sidewalls, bead i rim muszą należeć do jednego współdzielonego systemu stanu, nawet jeśli są modelowane warstwowo.
+Future Wheel Scope wchodzi przez native backend seam opisany w:
 
-## 8. Dokumentacja
+```text
+contracts/WHEEL_BACKEND_CONTRACT_PL.md
+```
 
-Problem zastany:
+Nowszy lokalny Wheel Scope może wykraczać poza publiczny snapshot 2026-08-03 i wymaga nowego exact source receipt.
 
-- około 11,5 tys. linii dokumentacji;
-- wiele broad audits z 2026-08-03;
-- kilka równoległych opisów aktualnego stanu;
-- README nadal opisywał F1 jako aktywny etap;
-- PROJECT_STATE twierdził, że F5 nie wykonano;
-- handoff i memory dublowały branche, wyniki i zakazy.
+## 10. Dokumentacja i operacje
 
-Aktywny program:
+Wykonano:
 
-- `docs/REFOUNDATION_LOOP_PL.md`;
-- `docs/DOCUMENT_CLEANUP_MANIFEST_2026_08_04_PL.md`.
+- skrócony read-first chain do pięciu pozycji;
+- nowe README/state/memory/index;
+- usunięcie broad audits, handoffów i starej roadmapy z aktywnego drzewa;
+- kompresję steering/wheel/mobile do aktywnych kontraktów;
+- indexed recovery z exact blob SHA;
+- fizyczną organizację receiptów na source/runtime/inventory;
+- usunięcie sześciu one-shot workflows;
+- jeden lokalny gate i Markdown link checker;
+- kompresję konstytucji braku sztucznych mechanik.
 
-Docelowy read-first chain ma najwyżej pięć pozycji. Broad audits, handoffy i kwarantanny trafiają do indeksowanego archiwum.
+Indeksy:
 
-## 9. Workflow i bezpieczeństwo
+```text
+DOCUMENT_INDEX.md
+receipts/INDEX.md
+archive/*.md
+```
+
+## 11. Walidacja bieżącego brancha
+
+```text
+new docs/code source: PRESENT
+link checker syntax + synthetic pass/fail: PASS
+full npm run check:docs: NOT YET EXECUTED
+full npm run check: NOT YET EXECUTED
+production build: NOT YET EXECUTED
+browser smoke: NOT REQUIRED YET / NOT EXECUTED
+```
+
+Nie twierdzić, że refoundation branch jest zielony, dopóki nie przejdzie:
+
+```text
+tools/run-refoundation-gate.ps1
+```
+
+## 12. Workflow bezpieczeństwa
 
 - brak merge bez Jozza;
 - brak ready-for-review bez Jozza;
-- brak Actions w refoundation;
+- brak Actions;
 - brak samomodyfikujących workflowów;
 - brak cross-repo commit loop;
 - brak Git Diff Patcher Bridge;
-- historyczne PR-y i branche pozostają nietknięte;
-- każda destrukcyjna redukcja dokumentacji musi być odwracalna z historii Gita i poprzedzona ekstrakcją wiedzy.
+- historyczne PR-y nietknięte;
+- usunięte docs odzyskiwalne z przypiętej historii Gita.
 
-## 10. Najbliższa sekwencja
+## 13. Następna sekwencja
 
 ```text
-C1  skompresować aktywny front dokumentacji
-C2  zarchiwizować broad audits i handoffy
-C3  usunąć sprzeczne aktywne linki i stare workflowy jednorazowe
-C4  nazwać backend legacy_ts_m6 w kodzie i telemetryce
-C5  dodać unit/semantic contract dla drive fields
-C6  zaprojektować versioned native ABI z jednostkami
-C7  zbudować minimalny native JV Core + Box3D WASM spike
-C8  uruchomić native/WASM parity scenarios
-C9  podmienić backend dopiero po dowodzie
+1. pełny lokalny refoundation gate
+2. naprawa linków wykrytych przez check:docs
+3. runtime backend ID przez trace/UI/receipt
+4. exact native local/public source receipt
+5. native unchanged-source POSITION adapter
+6. ten sam adapter w Emscripten/WASM
+7. settle/drive/brake/POSITION parity receipt
+8. structural extraction M5 dependency/types/diagnostics
+9. shared native RATE actuator
+10. Wheel Scope backend dopiero po nowym source receipt
 ```
 
-## 11. Obecne otwarte pytania
-
-1. Jaki najmniejszy zestaw plików natywnego JV można wydzielić z `samples/` bez hosta Sokol/ImGui?
-2. Czy bit-identical trajectory hash jest osiągalny native/WASM, czy potrzebna będzie tolerowana kwantyzowana equivalence?
-3. Jak versionować ABI i snapshot bez uzależniania przeglądarki od `b3BodyId`?
-4. Jak połączyć RATE mapper z natywnym rackiem bez tworzenia trzeciej implementacji dla mobile?
-5. Które elementy najnowszego Wheel Scope istnieją tylko lokalnie i wymagają osobnego, przypiętego source receipt?
+Nie rozpoczynać nowej fizyki koła, drivetrainu, kampusu ani mobile UI przed podstawowym native/WASM parity baseline.
