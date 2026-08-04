@@ -30,17 +30,35 @@ await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
 console.log(`Public-readiness report: ${relative(root, outputPath)}`);
-console.log(`Reachable refs:          ${report.metrics.reachableRefs}`);
-console.log(`Reachable blobs:         ${report.metrics.reachableBlobs}`);
-console.log(`Metadata objects:        ${report.metrics.reachableMetadataObjects}`);
+console.log(`Reachable refs:           ${report.metrics.reachableRefs}`);
+console.log(`Reachable blobs:          ${report.metrics.reachableBlobs}`);
+console.log(`Metadata objects:         ${report.metrics.reachableMetadataObjects}`);
 console.log(
-  `Public contracts:       ${report.metrics.presentPublicContracts}/${report.metrics.requiredPublicContracts}`,
+  `Public contracts:        ${report.metrics.presentPublicContracts}/${report.metrics.requiredPublicContracts}`,
 );
-console.log(`Blockers:                ${report.blockers.length}`);
-console.log(`Review findings:         ${report.reviewFindings.length}`);
+console.log(`Reviewed remote branches: ${report.metrics.reviewedRemoteBranches}`);
+console.log(`Blocked orphan branches:  ${report.metrics.blockedOrphanBranches}`);
+console.log(`Unknown remote branches:  ${report.metrics.unknownRemoteBranches}`);
+console.log(`Unclassified tags:        ${report.metrics.unclassifiedTags}`);
+console.log(`Ref-policy status:        ${report.publicRefPolicy.status}`);
+console.log(`Local HEAD:               ${report.publicRefPolicy.headCommit}`);
+console.log(
+  `origin candidate:         ${report.publicRefPolicy.remoteCandidateCommit ?? "unresolved"}`,
+);
+console.log(`Blockers:                 ${report.blockers.length}`);
+console.log(`Review findings:          ${report.reviewFindings.length}`);
 
 for (const missingPath of report.publicContracts.missing) {
   console.error(`MISSING PUBLIC CONTRACT: ${missingPath}`);
+}
+for (const orphan of report.publicRefPolicy.blockedOrphans) {
+  console.error(`BLOCKED ORPHAN REF: ${orphan.ref} @ ${orphan.commit ?? "unresolved"}`);
+}
+for (const unknown of report.publicRefPolicy.unknown) {
+  console.error(`UNCLASSIFIED REMOTE REF: ${unknown.ref} @ ${unknown.commit ?? "unresolved"}`);
+}
+for (const tag of report.publicRefPolicy.tags) {
+  console.error(`UNCLASSIFIED TAG: ${tag.ref} @ ${tag.commit ?? "unresolved"}`);
 }
 for (const blocker of report.blockers) {
   console.error(
@@ -68,6 +86,6 @@ if (report.blockers.length > 0) {
   );
 } else {
   console.log(
-    "SOURCE-PUBLIC-READY AUDIT: PASS (human and GitHub cloud review still required)",
+    "SOURCE-PUBLIC-READY AUDIT: PASS (review ledger, GitHub cloud/settings and owner approval still remain separate)",
   );
 }
