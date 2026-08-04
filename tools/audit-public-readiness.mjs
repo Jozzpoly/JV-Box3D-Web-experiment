@@ -1,12 +1,12 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  lstat,
   mkdir,
   readFile,
-  stat,
   writeFile,
 } from "node:fs/promises";
-import { basename, extname, relative, resolve, sep } from "node:path";
+import { basename, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -126,6 +126,16 @@ function redactedFingerprint(value) {
   return sha256(value).slice(0, 12);
 }
 
+function lineNumberAt(text, index) {
+  let line = 1;
+  for (let cursor = 0; cursor < index; cursor += 1) {
+    if (text.charCodeAt(cursor) === 10) {
+      line += 1;
+    }
+  }
+  return line;
+}
+
 function scanText({ text, scope, path, blobSha, blockers, reviews }) {
   for (const signature of secretPatterns) {
     signature.pattern.lastIndex = 0;
@@ -135,6 +145,7 @@ function scanText({ text, scope, path, blobSha, blockers, reviews }) {
         signature: signature.id,
         scope,
         path,
+        line: lineNumberAt(text, match.index ?? 0),
         blobSha,
         fingerprint: redactedFingerprint(match[0]),
       });
@@ -152,6 +163,7 @@ function scanText({ text, scope, path, blobSha, blockers, reviews }) {
         signature: signature.id,
         scope,
         path,
+        line: lineNumberAt(text, match.index ?? 0),
         blobSha,
         fingerprint: redactedFingerprint(match[0]),
       });
@@ -167,6 +179,7 @@ function deduplicate(findings) {
       finding.signature,
       finding.scope,
       finding.path,
+      finding.line,
       finding.blobSha,
       finding.fingerprint,
       finding.reason,
@@ -198,6 +211,13 @@ function trackedIndexEntries() {
   return entries;
 }
 
+function readGitBlob(blobSha, maxBuffer) {
+  return git(["cat-file", "blob", blobSha], {
+    encoding: "buffer",
+    maxBuffer,
+  });
+}
+
 async function auditCurrentTree(blockers, reviews, metrics) {
   const entries = trackedIndexEntries();
   metrics.currentTrackedFiles = entries.length;
@@ -216,8 +236,64 @@ async function auditCurrentTree(blockers, reviews, metrics) {
       });
     }
 
+    if (entry.mode === "120000") {
+      const buffer = readGitBlob(entry.blobSha, 1024 * 1024);
+      reviews.push({
+        kind: "tracked-symlink",
+        signature: "manual-symlink-target-review",
+        scope: "current-tree",
+        path,
+        blobSha: entry.blobSha,
+        fingerprint: redactedFingerprint(buffer),
+      });
+      if (isProbablyText(buffer)) {
+        scanText({
+          text: buffer.toString("utf8"),
+          scope: "current-tree-symlink-target",
+          path,
+          blobSha: entry.blobSha,
+          blockers,
+          reviews,
+        });
+      }
+      continue;
+    }
+
+    if (entry.mode === "160000") {
+      blockers.push({
+        kind: "unscanned-gitlink",
+        signature: "submodule-history-not-audited",
+        scope: "current-tree",
+        path,
+        blobSha: entry.blobSha,
+        reason: "Submodule content and history require a separate exact-source audit.",
+      });
+      continue;
+    }
+
+    if (!entry.mode.startsWith("100")) {
+      blockers.push({
+        kind: "unsupported-git-mode",
+        signature: entry.mode,
+        scope: "current-tree",
+        path,
+        blobSha: entry.blobSha,
+      });
+      continue;
+    }
+
     const absolutePath = resolve(root, entry.path);
-    const fileStat = await stat(absolutePath);
+    const fileStat = await lstat(absolutePath);
+    if (!fileStat.isFile()) {
+      blockers.push({
+        kind: "working-tree-type-mismatch",
+        signature: "tracked-regular-file-is-not-regular",
+        scope: "current-tree",
+        path,
+        blobSha: entry.blobSha,
+      });
+      continue;
+    }
     if (fileStat.size > CURRENT_LARGE_FILE_BYTES) {
       reviews.push({
         kind: "large-current-file",
@@ -336,10 +412,10 @@ function auditReachableHistory({
       continue;
     }
 
-    const buffer = git(["cat-file", "blob", blob.sha], {
-      encoding: "buffer",
-      maxBuffer: Math.max(4 * 1024 * 1024, blob.size + 1024),
-    });
+    const buffer = readGitBlob(
+      blob.sha,
+      Math.max(4 * 1024 * 1024, blob.size + 1024),
+    );
     if (!isProbablyText(buffer)) {
       continue;
     }
@@ -377,6 +453,7 @@ function visibleRefs() {
     "--format=%(refname)",
     "refs/heads",
     "refs/remotes/origin",
+    "refs/tags",
   ]);
   return raw.split(/\r?\n/).filter(Boolean);
 }
@@ -416,12 +493,12 @@ console.log(`Review findings:         ${report.reviewFindings.length}`);
 
 for (const blocker of report.blockers) {
   console.error(
-    `BLOCKER: ${blocker.signature} · ${blocker.scope} · ${blocker.path}${blocker.blobSha ? ` · ${blocker.blobSha.slice(0, 12)}` : ""}`,
+    `BLOCKER: ${blocker.signature} · ${blocker.scope} · ${blocker.path}${blocker.line ? `:${blocker.line}` : ""}${blocker.blobSha ? ` · ${blocker.blobSha.slice(0, 12)}` : ""}`,
   );
 }
 for (const finding of report.reviewFindings.slice(0, 20)) {
   console.warn(
-    `REVIEW: ${finding.signature} · ${finding.scope} · ${finding.path}${finding.blobSha ? ` · ${finding.blobSha.slice(0, 12)}` : ""}`,
+    `REVIEW: ${finding.signature} · ${finding.scope} · ${finding.path}${finding.line ? `:${finding.line}` : ""}${finding.blobSha ? ` · ${finding.blobSha.slice(0, 12)}` : ""}`,
   );
 }
 if (report.reviewFindings.length > 20) {
