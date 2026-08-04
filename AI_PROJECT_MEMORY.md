@@ -43,41 +43,35 @@ agent/f5-dynamic-steering-validation
 0d938e402f618ae34e0d959a9862d97c2f88a926
 ```
 
-All earlier stacked PRs remain untouched historical evidence. Do not merge or mark ready without Jozz.
+Earlier stacked PRs remain untouched historical evidence. Do not merge or mark ready without Jozz.
 
 ## 3. Validated reference runtime
 
-Latest pre-refoundation local evidence:
+Pre-refoundation evidence:
 
 ```text
 Node 24.16.0
 npm 11.17.0
 TypeScript PASS
 75/75 tests PASS
-Vite production build PASS
+Vite build PASS
 browser startup and physical drive PASS
 ```
 
-It provides:
-
-- deterministic fixed-step host;
-- timestamped steering and longitudinal timelines;
-- real `box3d.js@0.0.2` WASM;
-- receipt-derived current M6 graph;
-- physical rack/tie-rods;
-- `RELEASE | POSITION | RATE`;
-- RATE candidates `0.06 / 0.12 / 0.21 / 0.36 m/s`;
-- read-only WebGL observer;
-- wheel-motor drive/reverse/coast/brake;
-- dynamic rack-excursion matrix.
-
-This backend is now classified as:
+Receipt:
 
 ```text
-backend id: legacy_ts_m6
-role: reference/browser fixture
-product physics authority: false
-native parity: not proven
+docs/receipts/runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md
+```
+
+Reference backend:
+
+```text
+id: legacy_ts_m6
+role: REFERENCE_BROWSER_FIXTURE
+productPhysicsAuthority: false
+nativeParity: NOT_PROVEN
+acceptsNewProductPhysics: false
 ```
 
 ## 4. Critical drive mismatch
@@ -88,51 +82,47 @@ Native JV:
 maxDriveSpeed unit = rad/s
 motor target = ±maxDriveSpeed
 throttle scales available torque
-wheel spin determines torque taper
+wheel spin drives torque taper
 ```
 
-Current TypeScript reference backend:
+TypeScript fixture:
 
 ```text
 maxDriveSpeed interpreted as m/s
-target wheel speed = throttle * maxDriveSpeed / wheelRadius
-chassis speed determines torque taper
+target wheel speed = throttle * value / wheelRadius
+chassis speed drives torque taper
 ```
 
-With receipt values:
+Pinned values imply approximately:
 
 ```text
-maxDriveSpeed = 40
-wheelRadius = 0.514062464
-native target ≈ 40 rad/s
-legacy TS target ≈ 77.8 rad/s at full throttle
+native target 40 rad/s
+legacy TS target 77.8 rad/s at full throttle
 ```
 
-Therefore successful drive, braking and deterministic replay are not native drive parity.
+Drive direction/liveness/determinism PASS did not prove native behavior.
 
-Do not add further product drivetrain, anti-roll, aero, tire or suspension mechanics to `legacy_ts_m6`.
+Do not add product drivetrain, anti-roll, aero, tire or suspension mechanics to `legacy_ts_m6`.
 
 ## 5. Steering truth
 
-Default realistic mechanics:
+Default:
 
 ```text
 rackCenteringHertz = 0
 uprightAssist = false
 ```
 
-`RELEASE` means:
+`RELEASE` disables hands-on target in the first fixed step. Wheels may remain turned at standstill.
 
-- hands-on spring/servo OFF in the first fixed step;
-- no target toward zero;
-- no centre timer or centre hold;
-- physical friction remains;
-- physical caster/contact/linkage/inertia may move the rack;
-- wheels may remain turned at standstill.
+RATE remains an unapproved rack-space experiment:
 
-RATE remains a named experiment in physical rack-space. No profile is product-approved.
+```text
+0.06 / 0.12 / 0.21 / 0.36 m/s
+max lead 0.008 m
+```
 
-Dynamic measurement:
+Dynamic reference measurement:
 
 ```text
 stationary held excess: 0.000 mm
@@ -141,45 +131,116 @@ post-RELEASE peak:       2.541–2.817 mm
 contacts:                4
 ```
 
-Interpretation:
+Do not force-clamp before native comparison.
 
-- active command clamp works;
-- small loaded limit compliance is measured;
-- post-RELEASE mechanism is not isolated;
-- do not force-clamp the rack before native comparison.
+Contract:
+
+```text
+docs/contracts/STEERING_COMMAND_CONTRACT_PL.md
+```
 
 ## 6. Wheel direction
 
-Current backend:
-
 ```text
 legacy_m6_split_sphere_sidewall
+= regression baseline / fallback / failure reference
 ```
 
-Role:
+Future Wheel Scope physics belongs to native JV Core. Deformation and pressure are foundational shared state, not a later visual patch.
+
+Contract:
 
 ```text
-regression baseline / fallback / failure-reference
+docs/contracts/WHEEL_BACKEND_CONTRACT_PL.md
 ```
 
-It is not the future tire architecture.
+A newer local Wheel Scope requires a fresh exact source receipt before reuse.
 
-Future Wheel Scope work must feed a replaceable native wheel/contact seam in JV Core. Deformation and pressure belong to the foundation of the future wheel system, not a later visual patch.
+## 7. ABI v0
 
-## 7. Refoundation loop
+Contract:
 
-For every iteration:
+```text
+docs/contracts/NATIVE_WASM_ABI_V0_PL.md
+```
+
+Required:
+
+- C ABI;
+- version + struct size;
+- explicit unit suffixes;
+- coordinate frames;
+- opaque generational runtime handles;
+- stable `partId`, never persistent `b3BodyId`;
+- immutable versioned snapshot;
+- explicit memory lifetime;
+- structured errors;
+- runtime/source/build identity;
+- device-independent control frame;
+- native/WASM scenario trace.
+
+Anonymous fields such as `maxDriveSpeed` are not allowed in wire ABI.
+
+## 8. Minimal native source set
+
+Focused audit:
+
+```text
+docs/research/NATIVE_CORE_SOURCE_SET_AUDIT_2026_08_04_PL.md
+```
+
+First behavior-preserving compile set:
+
+```text
+Box3D
+jozz_vehicle_m5_vehicle.{h,cpp}
+jozz_vehicle_m6_geometry.{h,cpp}
+jozz_vehicle_m6_suspension_rig.{h,cpp}
+new thin adapter
+```
+
+`JOZZ_VEHICLE_CORE_FILES` is headless but too broad for runtime v0 because it also includes filesystem config IO, JSON, metadata and asset contract import.
+
+Do not refactor the native files before a native/WASM baseline. Use unchanged source, obtain POSITION parity, then extract shared types/M5 helper/structured diagnostics under trace protection.
+
+RATE is phase two; first parity corpus uses the existing native POSITION-like steering API.
+
+## 9. Documentation refoundation
+
+Completed:
+
+- five-item read-first chain;
+- current README/state/memory/index;
+- broad audits/handoff/old roadmap removed from active tree with exact recovery hashes;
+- steering/wheel/mobile compressed to contracts;
+- receipts organized under `docs/receipts/`;
+- six one-shot workflows removed;
+- one local gate and Markdown link checker;
+- mechanics constitution compressed;
+- focused ABI and native source-set documents added.
+
+Indexes:
+
+```text
+docs/DOCUMENT_INDEX.md
+docs/receipts/INDEX.md
+docs/archive/*.md
+```
+
+Do not create new broad audits or session handoffs.
+
+## 10. Refoundation loop
 
 ```text
 read current state
 → select one smallest contradiction
-→ write hypothesis and invariant
-→ create a falsifying test
-→ make one minimal reversible change
-→ validate at the correct evidence level
-→ criticize the solution
+→ hypothesis/invariant
+→ falsifying test
+→ minimal reversible change
+→ proportional validation
+→ critique
 → compress state
-→ improve the loop after 3–5 iterations
+→ improve loop
 ```
 
 Full process:
@@ -188,59 +249,53 @@ Full process:
 docs/REFOUNDATION_LOOP_PL.md
 ```
 
-## 8. Documentation cleanup
-
-Problem:
-
-- about 11.5k lines of docs;
-- many overlapping broad audits from one day;
-- stale README and state claims;
-- duplicated branch/status histories;
-- old handoffs acting as pseudo-canonical state.
-
-Active manifest:
+## 11. Validation status of this branch
 
 ```text
-docs/DOCUMENT_CLEANUP_MANIFEST_2026_08_04_PL.md
+link checker syntax + synthetic pass/fail: PASS
+full npm run check:docs: NOT EXECUTED
+full npm run check: NOT EXECUTED
+build: NOT EXECUTED
+browser smoke: not yet required / not executed
 ```
 
-Rules:
-
-- extract durable knowledge before archive/delete;
-- broad audits and handoffs move to indexed archive;
-- receipts remain separate from plans/opinions;
-- read-first chain stays at five items or fewer;
-- do not create new broad audit or session handoff files.
-
-## 9. Next program
+Use one command later:
 
 ```text
-C1 compress active documentation front
-C2 archive broad audits, handoffs and quarantine evidence
-C3 remove obsolete one-shot workflows after preserving receipts
-C4 expose legacy_ts_m6 identity in code/UI/trace
-C5 define unit-semantic runtime contracts
-C6 design versioned native ABI and stable part IDs
-C7 build smallest native JV Core + Box3D WASM spike
-C8 run native/WASM parity scenarios
-C9 replace browser backend only after evidence
+tools/run-refoundation-gate.ps1
 ```
 
-## 10. Non-negotiable workflow rules
+Never claim this branch green before that receipt.
+
+## 12. Next program
+
+```text
+1 local refoundation gate and broken-link fixes
+2 backend ID through trace/UI/receipt
+3 exact native source receipt
+4 unchanged-source native adapter
+5 same adapter in Emscripten
+6 settle/drive/brake/POSITION parity
+7 structural native extraction
+8 shared native RATE actuator
+9 fresh Wheel Scope source receipt
+10 future wheel backend
+```
+
+## 13. Workflow rules
 
 - respond to Jozz in Polish;
-- use GitHub connector and ordinary Git only;
-- Git Diff Patcher Bridge is forbidden;
-- do not shift routine repository work onto Jozz;
+- GitHub connector and ordinary Git only;
+- Git Diff Patcher Bridge forbidden;
+- do not shift routine repo work onto Jozz;
 - no merge or ready transition without Jozz;
-- no automatic workflows, self-modifying CI or cross-repo commit loops;
-- no repeated Actions debugging;
+- no Actions, self-modifying CI, cross-repo loops or repeated CI debugging;
 - no owner-feel claim without Jozz;
-- no parity claim from internal green tests alone;
+- no parity claim from internal green tests;
 - no hidden fallback or assist;
-- no destructive deletion until unique knowledge is preserved and links are audited.
+- no destructive deletion without source recovery and link audit.
 
-## 11. Local paths
+## 14. Local paths
 
 ```text
 native:
