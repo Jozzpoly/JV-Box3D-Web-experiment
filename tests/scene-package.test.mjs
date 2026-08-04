@@ -21,6 +21,14 @@ async function defaultSceneJson() {
   );
 }
 
+function glbScene(url) {
+  return {
+    kind: "GLB",
+    url,
+    sha256: "a".repeat(64),
+  };
+}
+
 test("canonical synthetic scene is strict, frozen and supported by legacy M6", async () => {
   const scene = validateScenePackageV1(await defaultSceneJson());
   assert.equal(Object.isFrozen(scene), true);
@@ -60,10 +68,17 @@ test("scene loader uses a site-relative default URL", async () => {
   assert.equal(scene.id, "synthetic-flat-lab");
 });
 
-test("unknown scene fields and coordinate conventions fail closed", async () => {
+test("unknown scene fields, identifiers and coordinate conventions fail closed", async () => {
   const extra = await defaultSceneJson();
   extra.hiddenScale = 0.01;
   assert.throws(() => validateScenePackageV1(extra), /scene keys differ/);
+
+  const invalidId = await defaultSceneJson();
+  invalidId.id = "Synthetic Flat Lab";
+  assert.throws(
+    () => validateScenePackageV1(invalidId),
+    /lowercase kebab-case/,
+  );
 
   const wrongAxes = await defaultSceneJson();
   wrongAxes.axes.forward = "+Z";
@@ -73,34 +88,37 @@ test("unknown scene fields and coordinate conventions fail closed", async () => 
   );
 });
 
-test("scene asset URLs must remain site-relative and inside the package", async () => {
-  const remote = await defaultSceneJson();
-  remote.render = {
-    kind: "GLB",
-    url: "https://example.test/scan.glb",
-    sha256: "a".repeat(64),
-  };
-  assert.throws(() => validateScenePackageV1(remote), /site-relative/);
+test("scene asset URLs remain clean, site-relative and inside the package", async () => {
+  const rejectedUrls = [
+    "https://example.test/scan.glb",
+    "/assets/scan.glb",
+    "../collision.glb",
+    "assets/%2e%2e/collision.glb",
+    "assets\\scan.glb",
+    "assets//scan.glb",
+    "assets/./scan.glb",
+    "assets/scan.glb?version=1",
+    "assets/scan.glb#mesh",
+  ];
 
-  const escaping = await defaultSceneJson();
-  escaping.collision = {
-    kind: "TRIANGLE_MESH",
-    url: "../collision.glb",
-    sha256: "b".repeat(64),
-  };
-  assert.throws(
-    () => validateScenePackageV1(escaping),
-    /cannot escape/,
-  );
+  for (const url of rejectedUrls) {
+    const fixture = await defaultSceneJson();
+    fixture.render = glbScene(url);
+    assert.throws(
+      () => validateScenePackageV1(fixture),
+      /site-relative|inside its scene package/,
+      url,
+    );
+  }
+
+  const valid = await defaultSceneJson();
+  valid.render = glbScene("assets/scan.glb");
+  assert.equal(validateScenePackageV1(valid).render.kind, "GLB");
 });
 
 test("legacy M6 rejects scene features it cannot execute yet", async () => {
   const glb = await defaultSceneJson();
-  glb.render = {
-    kind: "GLB",
-    url: "assets/scan.glb",
-    sha256: "a".repeat(64),
-  };
+  glb.render = glbScene("assets/scan.glb");
   assert.throws(
     () => assertLegacyM6SceneSupport(validateScenePackageV1(glb)),
     /render source GLB/,
@@ -122,6 +140,13 @@ test("legacy M6 rejects scene features it cannot execute yet", async () => {
   assert.throws(
     () => assertLegacyM6SceneSupport(validateScenePackageV1(raisedGround)),
     /ground plane at y=0/,
+  );
+
+  const rotatedSpawn = await defaultSceneJson();
+  rotatedSpawn.spawn.yawRadians = Math.PI;
+  assert.throws(
+    () => assertLegacyM6SceneSupport(validateScenePackageV1(rotatedSpawn)),
+    /yawRadians = 0/,
   );
 });
 
