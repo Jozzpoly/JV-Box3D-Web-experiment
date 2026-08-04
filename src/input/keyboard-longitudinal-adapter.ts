@@ -47,7 +47,7 @@ export class KeyboardLongitudinalAdapter {
       this.#timeline.enqueueButton(
         control,
         true,
-        this.#now(),
+        this.#safeTimestamp(),
         this.#sourceId,
       );
     }
@@ -68,7 +68,7 @@ export class KeyboardLongitudinalAdapter {
       this.#timeline.enqueueButton(
         control,
         false,
-        this.#now(),
+        this.#safeTimestamp(),
         this.#sourceId,
       );
     }
@@ -132,6 +132,10 @@ export class KeyboardLongitudinalAdapter {
     return false;
   }
 
+  #safeTimestamp(): number {
+    return Math.max(this.#now(), this.#timeline.cursorTimeMs);
+  }
+
   #releaseAll(
     reason: "BLUR" | "VISIBILITY_HIDDEN" | "PAGE_HIDE" | "DISPOSE",
   ): void {
@@ -141,7 +145,7 @@ export class KeyboardLongitudinalAdapter {
 
     this.#pressedCodes.clear();
     this.#timeline.enqueueReleaseAll(
-      this.#now(),
+      this.#safeTimestamp(),
       reason,
       this.#sourceId,
     );
