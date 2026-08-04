@@ -37,7 +37,12 @@ async function withRepository(callback) {
     git(root, "config", "user.name", "JV License Fixture");
     git(root, "config", "user.email", "audit@users.noreply.github.com");
     await writeFile(resolve(root, "README.md"), "# Fixture\n", "utf8");
-    git(root, "add", "README.md");
+    await writeFile(
+      resolve(root, "THIRD_PARTY_NOTICES.md"),
+      "fixture third-party notices\n",
+      "utf8",
+    );
+    git(root, "add", "README.md", "THIRD_PARTY_NOTICES.md");
     git(root, "commit", "-m", "initial fixture");
     await callback(root);
   } finally {
@@ -55,14 +60,23 @@ test("license inventory finds MIT that exists only in reachable history", async 
     git(root, "commit", "-m", "remove current license");
 
     const report = inventoryReachableLicenses({ root });
-    assert.equal(report.currentLicensePaths.length, 0);
-    assert.ok(report.detectedLicenses.includes("MIT"));
+    assert.deepEqual(report.currentProjectLicensePaths, []);
+    assert.deepEqual(report.currentThirdPartyNoticePaths, [
+      "THIRD_PARTY_NOTICES.md",
+    ]);
+    assert.ok(report.detectedProjectLicenses.includes("MIT"));
     assert.ok(
       report.records.some(
         (record) =>
+          record.role === "PROJECT_LICENSE" &&
           record.detectedLicense === "MIT" &&
           record.paths.includes("LICENSE") &&
           record.currentPaths.length === 0,
+      ),
+    );
+    assert.ok(
+      report.records.some(
+        (record) => record.role === "THIRD_PARTY_NOTICE",
       ),
     );
     assert.ok(
@@ -70,10 +84,16 @@ test("license inventory finds MIT that exists only in reachable history", async 
         (finding) => finding.id === "CURRENT_PROJECT_LICENSE_MISSING",
       ),
     );
+    assert.equal(
+      report.findings.some(
+        (finding) => finding.id === "CURRENT_THIRD_PARTY_NOTICE_MISSING",
+      ),
+      false,
+    );
   });
 });
 
-test("license inventory exposes distinct historical and current licenses", async () => {
+test("license inventory exposes distinct historical and current project licenses", async () => {
   await withRepository(async (root) => {
     await writeFile(resolve(root, "LICENSE"), MIT_FIXTURE, "utf8");
     git(root, "add", "LICENSE");
@@ -83,12 +103,28 @@ test("license inventory exposes distinct historical and current licenses", async
     git(root, "commit", "-m", "replace with Apache fixture");
 
     const report = inventoryReachableLicenses({ root });
-    assert.deepEqual(report.currentLicensePaths, ["LICENSE"]);
-    assert.ok(report.detectedLicenses.includes("MIT"));
-    assert.ok(report.detectedLicenses.includes("Apache-2.0"));
+    assert.deepEqual(report.currentProjectLicensePaths, ["LICENSE"]);
+    assert.ok(report.detectedProjectLicenses.includes("MIT"));
+    assert.ok(report.detectedProjectLicenses.includes("Apache-2.0"));
     assert.ok(
       report.findings.some(
-        (finding) => finding.id === "MULTIPLE_REACHABLE_LICENSE_TEXTS",
+        (finding) =>
+          finding.id === "MULTIPLE_REACHABLE_PROJECT_LICENSE_TEXTS",
+      ),
+    );
+  });
+});
+
+test("third-party notices never satisfy the project-license requirement", async () => {
+  await withRepository(async (root) => {
+    const report = inventoryReachableLicenses({ root });
+    assert.deepEqual(report.currentProjectLicensePaths, []);
+    assert.deepEqual(report.currentThirdPartyNoticePaths, [
+      "THIRD_PARTY_NOTICES.md",
+    ]);
+    assert.ok(
+      report.findings.some(
+        (finding) => finding.id === "CURRENT_PROJECT_LICENSE_MISSING",
       ),
     );
   });
