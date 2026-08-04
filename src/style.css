@@ -236,6 +236,7 @@ h2 {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: contain;
   transition:
@@ -263,9 +264,20 @@ h2 {
   background: rgba(42, 91, 65, 0.86);
 }
 
+.mobile-control[data-pointer-control="FORWARD"] {
+  grid-column: 2;
+  grid-row: 1;
+}
+
 .mobile-control-brake {
+  grid-column: 1;
   grid-row: 1 / span 2;
   background: rgba(126, 51, 47, 0.88);
+}
+
+.mobile-control[data-pointer-control="REVERSE"] {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 .mobile-control[data-active] {
@@ -484,8 +496,8 @@ summary {
   .scene-panel {
     position: relative;
     top: 0;
-    height: 100svh;
-    min-height: 340px;
+    height: calc(100svh - 68px);
+    min-height: 300px;
     border-radius: 0;
   }
 
