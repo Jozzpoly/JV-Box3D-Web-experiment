@@ -22,14 +22,15 @@ async function withFixture(files, callback) {
   }
 }
 
-test("portable network policy accepts local, data and document links", async () => {
+test("portable network policy accepts local/data resources and public navigation links", async () => {
   await withFixture(
     {
       "index.html": `<!doctype html>
         <script type="module" src="./assets/app.js"></script>
         <link rel="stylesheet" href="./assets/app.css">
         <a href="#about">About</a>
-        <a href="mailto:test@example.com">Contact</a>`,
+        <a href="mailto:test@example.com">Contact</a>
+        <a href="https://github.com/Jozzpoly">Project owner</a>`,
       "assets/app.css": `.icon { background: url("data:image/svg+xml,%3Csvg/%3E"); }
         @import "./theme.css";`,
       "assets/theme.css": ".demo { display: block; }",
@@ -41,15 +42,18 @@ test("portable network policy accepts local, data and document links", async () 
   );
 });
 
-test("portable network policy rejects remote CDN dependencies", async () => {
+test("portable network policy rejects remote CDN resource dependencies", async () => {
   await withFixture(
     {
-      "index.html": '<script src="https://cdn.example.com/game.js"></script>',
+      "index.html": `<script src="https://cdn.example.com/game.js"></script>
+        <img srcset="./small.png 1x, https://cdn.example.com/large.png 2x">`,
       "app.css": '.demo { background: url("//cdn.example.com/texture.png"); }',
     },
     async (root) => {
       const errors = await validatePortableNetworkPolicy(root);
-      assert.ok(errors.some((error) => error.includes("remote HTTP dependency")));
+      assert.ok(
+        errors.filter((error) => error.includes("remote HTTP dependency")).length >= 2,
+      );
       assert.ok(
         errors.some((error) => error.includes("protocol-relative remote URL")),
       );
@@ -57,10 +61,10 @@ test("portable network policy rejects remote CDN dependencies", async () => {
   );
 });
 
-test("portable network policy rejects executable and local-file schemes", async () => {
+test("portable network policy rejects executable and local-file resource schemes", async () => {
   await withFixture(
     {
-      "index.html": `<a href="javascript:alert(1)">bad</a>
+      "index.html": `<iframe src="javascript:alert(1)"></iframe>
         <script src="file:///private/game.js"></script>`,
     },
     async (root) => {
