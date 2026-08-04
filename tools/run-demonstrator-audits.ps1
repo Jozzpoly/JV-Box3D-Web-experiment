@@ -9,6 +9,7 @@ $expectedBranch = "agent/jv-web-demonstrator-foundation"
 $publicReport = ".local-audit/public-readiness.json"
 $licenseReport = ".local-audit/license-inventory.json"
 $reviewLedger = ".local-audit/public-review-classifications.json"
+$integrationReport = ".local-audit/source-public-integration.json"
 
 function Invoke-NpmStep {
     param(
@@ -77,7 +78,8 @@ Write-Host "Repository: $resolvedRepoRoot"
 Write-Host "Branch:     $currentBranch"
 Write-Host "Commit:     $sourceCommit"
 Write-Host "Node:       $nodeVersion"
-Write-Host "Mode:       REPORT ONLY / NO PUBLISHING"
+Write-Host "Mode:       REPORT ONLY / NO REF OR VISIBILITY CHANGE"
+Write-Host "Precondition: run 'git fetch origin --prune' immediately before this script for a current origin/main proof."
 
 Invoke-NpmStep "Generate secret-safe source/history readiness report" @(
     "run",
@@ -91,6 +93,10 @@ Invoke-NpmStep "Prepare the local review-classification ledger" @(
     "run",
     "audit:public:review-template"
 )
+Invoke-NpmStep "Record the nonmutating origin/main integration relation" @(
+    "run",
+    "audit:integration:report"
+)
 
 foreach ($path in @($publicReport, $licenseReport, $reviewLedger)) {
     if (-not (Test-Path $path -PathType Leaf)) {
@@ -103,6 +109,20 @@ foreach ($path in @($publicReport, $licenseReport, $reviewLedger)) {
     if ($report.sourceCommit -ne $sourceCommit) {
         throw "Audit evidence commit mismatch in ${path}: $($report.sourceCommit) != $sourceCommit"
     }
+}
+
+if (-not (Test-Path $integrationReport -PathType Leaf)) {
+    throw "Expected integration proof was not created: $integrationReport"
+}
+$integrationData = Get-Content -Raw -Path $integrationReport | ConvertFrom-Json
+if ($integrationData.schemaVersion -ne 1) {
+    throw "Integration proof schema is missing or unsupported."
+}
+if ($integrationData.candidateCommit -ne $sourceCommit) {
+    throw "Integration proof candidate mismatch: $($integrationData.candidateCommit) != $sourceCommit"
+}
+if ($integrationData.candidateBranch -ne $currentBranch) {
+    throw "Integration proof branch mismatch: $($integrationData.candidateBranch) != $currentBranch"
 }
 
 $publicData = Get-Content -Raw -Path $publicReport | ConvertFrom-Json
@@ -126,12 +146,17 @@ Write-Host "`nDEMONSTRATOR AUDIT REPORTS: GENERATED"
 Write-Host "Public/history report: $resolvedRoot\$publicReport"
 Write-Host "License inventory:     $resolvedRoot\$licenseReport"
 Write-Host "Review ledger:         $resolvedRoot\$reviewLedger"
+Write-Host "Integration proof:     $resolvedRoot\$integrationReport"
 Write-Host "Public contracts:      $($publicData.metrics.presentPublicContracts)/$($publicData.metrics.requiredPublicContracts)"
 Write-Host "Public blockers:       $(@($publicData.blockers).Count)"
 Write-Host "Review findings:       $(@($publicData.reviewFindings).Count)"
 Write-Host "Review pending:        $pendingReviews"
 Write-Host "Review remediation:    $remediationReviews"
 Write-Host "License status:        $($licenseData.status)"
+Write-Host "origin/main base:       $($integrationData.baseCommit)"
+Write-Host "Candidate ahead:       $($integrationData.candidateAhead)"
+Write-Host "Candidate behind:      $($integrationData.candidateBehind)"
+Write-Host "Fast-forward possible: $($integrationData.fastForwardPossible)"
 Write-Host "Publication:           NOT PERFORMED"
-Write-Host "Interpretation:         findings still require classification and owner decisions"
+Write-Host "Interpretation:         findings, GitHub UI surfaces and owner decisions remain separate"
 Write-Host "SOURCE-PUBLIC-READY:    NOT CLAIMED"
