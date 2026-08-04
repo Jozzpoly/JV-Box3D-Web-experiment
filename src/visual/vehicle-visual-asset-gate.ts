@@ -34,8 +34,18 @@ export async function validateVehicleVisualAssetV1(
   }
 
   const glb = inspectGlbV2(bytes);
-  if (glb.binaryChunkLength === 0 || glb.meshCount === 0) {
-    reject("V1 requires a GLB with a BIN chunk and at least one mesh");
+  if (
+    glb.binaryChunkLength === 0 ||
+    glb.meshCount === 0 ||
+    glb.primitiveCount === 0
+  ) {
+    reject("V1 requires a GLB with BIN data and renderable mesh primitives");
+  }
+  if (glb.trianglePrimitiveCount !== glb.primitiveCount) {
+    reject("V1 supports TRIANGLES primitives only");
+  }
+  if (glb.sparseAccessorCount > 0) {
+    reject("sparse accessors are outside the rigid-mesh V1 contract");
   }
   if (glb.duplicateNodeNames.length > 0) {
     reject(`duplicate GLB node names: ${glb.duplicateNodeNames.join(", ")}`);
