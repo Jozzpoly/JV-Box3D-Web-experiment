@@ -20,17 +20,19 @@ function requireRoot(): HTMLElement {
 const app = requireRoot();
 app.innerHTML = `
   <main class="lab-shell">
-    <section class="scene-panel" aria-label="M6 physical observer">
+    <section class="scene-panel" aria-label="M6 physical drive observer">
       <canvas data-scene aria-label="Live WebGL view of the Box3D M6 vehicle"></canvas>
       <header class="scene-header">
         <div>
-          <p class="eyebrow">JV Box3D Web · F5 Visual Observer</p>
-          <h1>Physical steering, finally visible</h1>
+          <p class="eyebrow">JV Box3D Web · F5 Drive Observer</p>
+          <h1>Physical steering and drive</h1>
         </div>
         <p class="scene-state" data-scene-state>WAITING FOR PHYSICS</p>
       </header>
       <div class="scene-readouts" aria-live="polite">
-        <div><span>Command</span><strong data-scene-command>RELEASE</strong></div>
+        <div><span>Steering</span><strong data-scene-command>RELEASE</strong></div>
+        <div><span>Drive</span><strong data-scene-drive>COAST</strong></div>
+        <div><span>Speed</span><strong data-scene-speed>0.0 km/h</strong></div>
         <div><span>Rack</span><strong data-scene-rack>0.0000 m</strong></div>
         <div><span>Chassis drift</span><strong data-scene-displacement>0.000 m</strong></div>
         <div><span>Step</span><strong data-scene-step>0</strong></div>
@@ -42,7 +44,7 @@ app.innerHTML = `
         <span class="legend-steering">Rack / observer links</span>
       </div>
       <p class="scene-help">
-        Drag to orbit · wheel to zoom · A/D steers. Orange lines are visual observer guides to the wheel centres, not exact tie-rod endpoints.
+        A/D steer · W/S drive forward/reverse · Space brakes · drag to orbit · wheel to zoom. Orange lines are observer guides, not exact tie rods.
       </p>
     </section>
 
@@ -50,7 +52,7 @@ app.innerHTML = `
       <div class="panel-heading">
         <div>
           <p class="eyebrow">Live mechanics laboratory</p>
-          <h2>RATE steering</h2>
+          <h2>RATE steering + native drive</h2>
         </div>
         <p class="status" data-status>Validating native receipt and Box3D boundary…</p>
       </div>
@@ -74,11 +76,13 @@ app.innerHTML = `
       <button type="button" data-restart>Destroy and rebuild physical world</button>
 
       <dl class="primary-metrics">
-        <div><dt>Input</dt><dd data-command>RELEASE</dd></div>
-        <div><dt>Actuator</dt><dd data-actuator>OFF</dd></div>
+        <div><dt>Steering input</dt><dd data-command>RELEASE</dd></div>
+        <div><dt>Drive input</dt><dd data-drive>COAST</dd></div>
+        <div><dt>Forward speed</dt><dd data-speed>0.000 m/s · 0.0 km/h</dd></div>
         <div><dt>Live rack</dt><dd data-rack>0.000000 m · 0.000000 m/s</dd></div>
         <div><dt>Drift from initial sample</dt><dd data-displacement>0.000 m</dd></div>
         <div><dt>Contacts</dt><dd data-contacts>0</dd></div>
+        <div><dt>Steering actuator</dt><dd data-actuator>OFF</dd></div>
         <div><dt>Mechanics gate</dt><dd data-validation>NOT STARTED</dd></div>
       </dl>
 
@@ -98,6 +102,8 @@ app.innerHTML = `
           <div><dt>Target error</dt><dd data-target-error>0.000000 m</dd></div>
           <div><dt>Spring / requested motor / force cap</dt><dd data-spring>OFF · 0.000000 m/s · 0.00 N</dd></div>
           <div><dt>Physical rack friction</dt><dd data-friction>40.00 + 0.00 N</dd></div>
+          <div><dt>Drive target</dt><dd data-drive-target>0.000 m/s · 0.000 rad/s · taper 1.000</dd></div>
+          <div><dt>Drive torque</dt><dd data-drive-torque>0.00 Nm/wheel · 0.00 Nm current</dd></div>
           <div><dt>Chassis position</dt><dd data-chassis-position>0.0000, 0.0000, 0.0000 m</dd></div>
           <div><dt>Chassis velocity</dt><dd data-chassis-velocity>0.0000, 0.0000, 0.0000 m/s</dd></div>
           <div><dt>Contact begins</dt><dd data-begins>0</dd></div>
@@ -107,7 +113,7 @@ app.innerHTML = `
       </details>
 
       <p class="hint">
-        RELEASE removes the steering target and disables the spring immediately. The renderer only observes copied Box3D transforms; it does not write back into physics.
+        Steering RELEASE removes the rack target immediately. Drive uses the native receipt values for speed, torque, taper, coast and braking; the renderer remains read-only.
       </p>
     </aside>
   </main>
@@ -124,6 +130,8 @@ function requireElement<T extends Element>(selector: string): T {
 const sceneCanvas = requireElement<HTMLCanvasElement>("[data-scene]");
 const sceneStateElement = requireElement<HTMLElement>("[data-scene-state]");
 const sceneCommandElement = requireElement<HTMLElement>("[data-scene-command]");
+const sceneDriveElement = requireElement<HTMLElement>("[data-scene-drive]");
+const sceneSpeedElement = requireElement<HTMLElement>("[data-scene-speed]");
 const sceneRackElement = requireElement<HTMLElement>("[data-scene-rack]");
 const sceneDisplacementElement = requireElement<HTMLElement>("[data-scene-displacement]");
 const sceneStepElement = requireElement<HTMLElement>("[data-scene-step]");
@@ -137,6 +145,8 @@ const groupElement = requireElement<HTMLElement>("[data-group]");
 const generationElement = requireElement<HTMLElement>("[data-generation]");
 const stepElement = requireElement<HTMLElement>("[data-step]");
 const commandElement = requireElement<HTMLElement>("[data-command]");
+const driveElement = requireElement<HTMLElement>("[data-drive]");
+const speedElement = requireElement<HTMLElement>("[data-speed]");
 const actuatorElement = requireElement<HTMLElement>("[data-actuator]");
 const profileElement = requireElement<HTMLElement>("[data-profile]");
 const edgeElement = requireElement<HTMLElement>("[data-edge]");
@@ -144,6 +154,8 @@ const commandedRackElement = requireElement<HTMLElement>("[data-commanded-rack]"
 const targetErrorElement = requireElement<HTMLElement>("[data-target-error]");
 const springElement = requireElement<HTMLElement>("[data-spring]");
 const frictionElement = requireElement<HTMLElement>("[data-friction]");
+const driveTargetElement = requireElement<HTMLElement>("[data-drive-target]");
+const driveTorqueElement = requireElement<HTMLElement>("[data-drive-torque]");
 const rackElement = requireElement<HTMLElement>("[data-rack]");
 const displacementElement = requireElement<HTMLElement>("[data-displacement]");
 const chassisPositionElement = requireElement<HTMLElement>("[data-chassis-position]");
@@ -199,6 +211,15 @@ function formatCommand(command: SteeringCommand): string {
   }
 }
 
+function formatDrive(trace: M6TraceFrame): string {
+  const drive = trace.drive;
+  return `${drive.mode} · T ${drive.command.throttle.toFixed(2)} · B ${drive.command.brake.toFixed(2)}`;
+}
+
+function formatSpeed(speedMetersPerSecond: number): string {
+  return `${speedMetersPerSecond.toFixed(3)} m/s · ${(speedMetersPerSecond * 3.6).toFixed(1)} km/h`;
+}
+
 function formatVector(
   value: Readonly<{ x: number; y: number; z: number }>,
 ): string {
@@ -211,8 +232,8 @@ function formatCorners(trace: M6TraceFrame): string {
     .map(
       (corner, index) =>
         `${labels[index]} y=${corner.wheelPosition.y.toFixed(3)} ` +
-        `coil=${corner.coiloverLength.toFixed(3)} ` +
-        `spin=${corner.wheelSpinSpeed.toFixed(2)}`,
+        `spin=${corner.wheelSpinSpeed.toFixed(2)} ` +
+        `motor=${corner.driveMotorTorque.toFixed(1)}Nm`,
     )
     .join(" · ");
 }
@@ -245,15 +266,21 @@ function renderTrace(trace: M6TraceFrame): void {
       console.error(error);
     }
   }
+
   const displacement = chassisDisplacement(trace);
   const steering = trace.steering;
+  const drive = trace.drive;
   const command = formatCommand(trace.command);
+  const driveText = formatDrive(trace);
+  const speedText = formatSpeed(drive.forwardSpeedMetersPerSecond);
 
   sceneStateElement.textContent =
     renderer === null
       ? `PHYSICS LIVE · RENDERER OFF · ${trace.worldContacts} CONTACTS`
       : `LIVE · GENERATION ${trace.generation} · ${trace.worldContacts} CONTACTS`;
   sceneCommandElement.textContent = command;
+  sceneDriveElement.textContent = driveText;
+  sceneSpeedElement.textContent = `${(drive.forwardSpeedMetersPerSecond * 3.6).toFixed(1)} km/h`;
   sceneRackElement.textContent = `${trace.rackTranslation.toFixed(4)} m`;
   sceneDisplacementElement.textContent = `${displacement.toFixed(3)} m`;
   sceneStepElement.textContent = String(trace.stepIndex);
@@ -261,6 +288,8 @@ function renderTrace(trace: M6TraceFrame): void {
   generationElement.textContent = String(trace.generation);
   stepElement.textContent = String(trace.stepIndex);
   commandElement.textContent = command;
+  driveElement.textContent = driveText;
+  speedElement.textContent = speedText;
   actuatorElement.textContent = trace.steeringActuator;
   profileElement.textContent =
     `${steering.profileId} · ${steering.rackRateMetersPerSecond.toFixed(2)} m/s · ` +
@@ -277,6 +306,14 @@ function renderTrace(trace: M6TraceFrame): void {
   frictionElement.textContent =
     `${steering.rackFrictionBase.toFixed(2)} + ` +
     `${steering.rackFrictionLoadTerm.toFixed(2)} N`;
+  driveTargetElement.textContent =
+    `${drive.targetLinearSpeedMetersPerSecond.toFixed(3)} m/s · ` +
+    `${drive.targetWheelAngularSpeed.toFixed(3)} rad/s · ` +
+    `taper ${drive.driveTaper.toFixed(3)}`;
+  driveTorqueElement.textContent =
+    `${drive.motorTorqueCapPerWheel.toFixed(2)} Nm/wheel · ` +
+    `${drive.currentMotorTorqueTotal.toFixed(2)} Nm current · ` +
+    `${drive.allWheelDrive ? "AWD" : "RWD"}`;
   rackElement.textContent =
     `${trace.rackTranslation.toFixed(6)} m · ` +
     `${trace.rackSpeed.toFixed(6)} m/s`;
@@ -288,12 +325,14 @@ function renderTrace(trace: M6TraceFrame): void {
   cornersElement.textContent = formatCorners(trace);
   groupElement.textContent = String(trace.collisionGroupIndex);
   wheelBackendElement.textContent = trace.wheelBackendId;
-  validationElement.textContent =
+
+  const steeringGate =
     trace.steeringActuator === "OFF" && trace.command.mode === "RELEASE"
-      ? "RELEASE: spring OFF · motor 0 · no centering target"
-      : trace.steeringActuator === "RATE"
-        ? `RATE active · ${steering.handsOnEdge} · lead ${Math.abs(steering.targetError * 1000).toFixed(2)} mm`
-        : "POSITION baseline drives physical rack";
+      ? "steering RELEASE"
+      : `${trace.steeringActuator} steering`;
+  validationElement.textContent =
+    `${steeringGate} · ${drive.mode} drive · ` +
+    `${drive.drivenCornerCount} driven corners`;
 }
 
 function resetDisplay(): void {
@@ -306,7 +345,13 @@ function resetDisplay(): void {
   validationElement.textContent = "PENDING";
   cornersElement.textContent = "PENDING";
   displacementElement.textContent = "0.000 m";
+  driveElement.textContent = "COAST";
+  speedElement.textContent = "0.000 m/s · 0.0 km/h";
+  driveTargetElement.textContent = "0.000 m/s · 0.000 rad/s · taper 1.000";
+  driveTorqueElement.textContent = "0.00 Nm/wheel · 0.00 Nm current";
   sceneCommandElement.textContent = "RELEASE";
+  sceneDriveElement.textContent = "COAST";
+  sceneSpeedElement.textContent = "0.0 km/h";
   sceneRackElement.textContent = "0.0000 m";
   sceneDisplacementElement.textContent = "0.000 m";
   sceneStepElement.textContent = "0";
@@ -335,7 +380,7 @@ async function startHost(): Promise<void> {
       generation,
       spawn: { x: 0, y: 1.2, z: 0 },
       rateProfileId,
-      onVehicleStep: (_step, _input, trace) => {
+      onVehicleStep: (_step, _steering, _longitudinal, trace) => {
         renderTrace(trace);
       },
       onFrame: (report) => {
@@ -384,7 +429,7 @@ async function startHost(): Promise<void> {
     generationElement.textContent = String(generation);
     statusElement.textContent =
       `Running — ${box3dReceipt.identity.packageName}@${box3dReceipt.identity.packageVersion}; ` +
-      `K2b ${profile.rackRateMetersPerSecond.toFixed(2)} m/s generation ${generation}`;
+      `RATE ${profile.rackRateMetersPerSecond.toFixed(2)} m/s + native wheel drive; generation ${generation}`;
   } catch (error: unknown) {
     if (generation !== startupGeneration) {
       return;
