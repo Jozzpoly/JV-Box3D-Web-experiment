@@ -13,6 +13,10 @@ import {
   type NativeFactorySnapshot,
 } from "../config/native-factory-receipt.js";
 import type { LongitudinalTimelineSample } from "../input/longitudinal-input-timeline.js";
+import type {
+  PointerVehicleControlId,
+  PointerVehicleControlTargets,
+} from "../input/pointer-vehicle-control-adapter.js";
 import type { SteeringTimelineSample } from "../input/steering-input-timeline.js";
 import {
   Box3DBoundary,
@@ -33,6 +37,11 @@ export interface F4VehicleHostOptions {
   readonly windowTarget: EventTarget;
   readonly documentTarget: EventTarget;
   readonly isDocumentHidden: () => boolean;
+  readonly pointerControls?: PointerVehicleControlTargets;
+  readonly onPointerControlStateChange?: (
+    control: PointerVehicleControlId,
+    active: boolean,
+  ) => void;
   readonly generation?: number;
   readonly spawn?: b3Vec3;
   readonly rateProfileId?: RateSteeringProfileId;
@@ -154,6 +163,15 @@ export class F4VehicleHost {
         windowTarget: options.windowTarget,
         documentTarget: options.documentTarget,
         isDocumentHidden: options.isDocumentHidden,
+        ...(options.pointerControls === undefined
+          ? {}
+          : { pointerControls: options.pointerControls }),
+        ...(options.onPointerControlStateChange === undefined
+          ? {}
+          : {
+              onPointerControlStateChange:
+                options.onPointerControlStateChange,
+            }),
         onStep: (step, steering, longitudinal) => {
           vehicle.setSteering(steering.command);
           vehicle.setDrive(longitudinal.command);
