@@ -7,66 +7,25 @@ const CURRENT_LARGE_FILE_BYTES = 10 * 1024 * 1024;
 const HISTORY_LARGE_BLOB_BYTES = 25 * 1024 * 1024;
 
 const SECRET_PATTERNS = [
-  {
-    id: "private-key",
-    pattern: /-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----/g,
-  },
-  {
-    id: "github-token",
-    pattern: /\b(?:gh[pousr]_[A-Za-z0-9]{30,255}|github_pat_[A-Za-z0-9_]{20,255})\b/g,
-  },
-  {
-    id: "openai-key",
-    pattern: /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,255}\b/g,
-  },
-  {
-    id: "aws-access-key",
-    pattern: /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g,
-  },
-  {
-    id: "google-api-key",
-    pattern: /\bAIza[0-9A-Za-z_-]{35}\b/g,
-  },
-  {
-    id: "slack-token",
-    pattern: /\bxox[baprs]-[A-Za-z0-9-]{20,255}\b/g,
-  },
-  {
-    id: "discord-webhook",
-    pattern: /https:\/\/discord(?:app)?\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+/g,
-  },
-  {
-    id: "npm-auth-token",
-    pattern: /\/\/registry\.npmjs\.org\/:_authToken\s*=\s*[^\s]+/g,
-  },
+  ["private-key", /-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----/g],
+  ["github-token", /\b(?:gh[pousr]_[A-Za-z0-9]{30,255}|github_pat_[A-Za-z0-9_]{20,255})\b/g],
+  ["openai-key", /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,255}\b/g],
+  ["aws-access-key", /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g],
+  ["google-api-key", /\bAIza[0-9A-Za-z_-]{35}\b/g],
+  ["slack-token", /\bxox[baprs]-[A-Za-z0-9-]{20,255}\b/g],
+  ["discord-webhook", /https:\/\/discord(?:app)?\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+/g],
+  ["npm-auth-token", /\/\/registry\.npmjs\.org\/:_authToken\s*=\s*[^\s]+/g],
 ];
 
 const REVIEW_PATTERNS = [
-  {
-    id: "windows-user-path",
-    pattern: /\b[A-Za-z]:\\Users\\[^\\\r\n]+/g,
-  },
-  {
-    id: "unix-home-path",
-    pattern: /(?:^|[\s"'`])\/home\/[^/\s"'`]+/gm,
-  },
-  {
-    id: "absolute-windows-path",
-    pattern: /\b[A-Za-z]:\\(?:[^\r\n"'`]+\\)+[^\r\n"'`]*/g,
-  },
-  {
-    id: "generic-secret-assignment",
-    pattern:
-      /\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password)\b\s*[:=]\s*["'][^"'\r\n]{12,}["']/gi,
-  },
-  {
-    id: "email-address",
-    pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
-    ignore: (value) =>
-      value.endsWith("@users.noreply.github.com") ||
-      value.endsWith("@example.com") ||
-      value === "actions@users.noreply.github.com",
-  },
+  ["windows-user-path", /\b[A-Za-z]:\\Users\\[^\\\r\n]+/g],
+  ["unix-home-path", /(?:^|[\s"'`])\/home\/[^/\s"'`]+/gm],
+  ["absolute-windows-path", /\b[A-Za-z]:\\(?:[^\r\n"'`]+\\)+[^\r\n"'`]*/g],
+  [
+    "generic-secret-assignment",
+    /\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password)\b\s*[:=]\s*["'][^"'\r\n]{12,}["']/gi,
+  ],
+  ["email-address", /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi],
 ];
 
 const SENSITIVE_FILE_PATTERNS = [
@@ -93,12 +52,8 @@ function toPosix(path) {
   return path.split(sep).join("/");
 }
 
-function sha256(value) {
-  return createHash("sha256").update(value).digest("hex");
-}
-
-function redactedFingerprint(value) {
-  return sha256(value).slice(0, 12);
+function fingerprint(value) {
+  return createHash("sha256").update(value).digest("hex").slice(0, 12);
 }
 
 function isSensitivePath(path) {
@@ -113,8 +68,7 @@ function isProbablyText(buffer) {
   if (buffer.length === 0) {
     return true;
   }
-  const sample = buffer.subarray(0, Math.min(buffer.length, 8192));
-  return !sample.includes(0);
+  return !buffer.subarray(0, Math.min(buffer.length, 8192)).includes(0);
 }
 
 function lineNumberAt(text, index) {
@@ -127,36 +81,47 @@ function lineNumberAt(text, index) {
   return line;
 }
 
+function ignoreReviewMatch(signature, value) {
+  if (signature !== "email-address") {
+    return false;
+  }
+  return (
+    value.endsWith("@users.noreply.github.com") ||
+    value.endsWith("@example.com") ||
+    value === "actions@users.noreply.github.com"
+  );
+}
+
 function scanText({ text, scope, path, objectSha, blockers, reviews }) {
-  for (const signature of SECRET_PATTERNS) {
-    signature.pattern.lastIndex = 0;
-    for (const match of text.matchAll(signature.pattern)) {
+  for (const [signature, pattern] of SECRET_PATTERNS) {
+    pattern.lastIndex = 0;
+    for (const match of text.matchAll(pattern)) {
       blockers.push({
         kind: "secret-pattern",
-        signature: signature.id,
+        signature,
         scope,
         path,
         line: lineNumberAt(text, match.index ?? 0),
         objectSha,
-        fingerprint: redactedFingerprint(match[0]),
+        fingerprint: fingerprint(match[0]),
       });
     }
   }
 
-  for (const signature of REVIEW_PATTERNS) {
-    signature.pattern.lastIndex = 0;
-    for (const match of text.matchAll(signature.pattern)) {
-      if (signature.ignore?.(match[0])) {
+  for (const [signature, pattern] of REVIEW_PATTERNS) {
+    pattern.lastIndex = 0;
+    for (const match of text.matchAll(pattern)) {
+      if (ignoreReviewMatch(signature, match[0])) {
         continue;
       }
       reviews.push({
         kind: "privacy-review",
-        signature: signature.id,
+        signature,
         scope,
         path,
         line: lineNumberAt(text, match.index ?? 0),
         objectSha,
-        fingerprint: redactedFingerprint(match[0]),
+        fingerprint: fingerprint(match[0]),
       });
     }
   }
@@ -184,32 +149,26 @@ function deduplicate(findings) {
 }
 
 function trackedIndexEntries(git) {
-  const raw = git(["ls-files", "-s", "-z"]);
   const entries = [];
-  for (const record of raw.split("\0")) {
+  for (const record of git(["ls-files", "-s", "-z"]).split("\0")) {
     if (!record) {
       continue;
     }
     const tab = record.indexOf("\t");
-    const metadata = record.slice(0, tab).split(" ");
-    entries.push({
-      mode: metadata[0],
-      objectSha: metadata[1],
-      stage: metadata[2],
-      path: record.slice(tab + 1),
-    });
+    const [mode, objectSha, stage] = record.slice(0, tab).split(" ");
+    entries.push({ mode, objectSha, stage, path: record.slice(tab + 1) });
   }
   return entries;
 }
 
-function readGitObject(git, type, objectSha, maxBuffer) {
+function readGitObject(git, type, objectSha, size) {
   return git(["cat-file", type, objectSha], {
     encoding: "buffer",
-    maxBuffer,
+    maxBuffer: Math.max(4 * 1024 * 1024, size + 1024),
   });
 }
 
-function gitObjectSize(git, objectSha) {
+function objectSize(git, objectSha) {
   return Number(git(["cat-file", "-s", objectSha]).trim());
 }
 
@@ -223,15 +182,15 @@ function auditWorkingTree(git, blockers) {
       signature: "working-tree-not-clean",
       scope: "working-tree",
       path: ".",
-      reason: `${dirty.length} changed or untracked path(s) must be classified before publication.`,
+      reason: `${dirty.length} changed or untracked path(s) require classification.`,
     });
   }
 }
 
 function auditCurrentTree(git, blockers, reviews, metrics) {
   const entries = trackedIndexEntries(git);
-  metrics.currentTrackedFiles = entries.length;
   const currentBlobShas = new Set();
+  metrics.currentTrackedFiles = entries.length;
 
   for (const entry of entries) {
     const path = toPosix(entry.path);
@@ -252,21 +211,21 @@ function auditCurrentTree(git, blockers, reviews, metrics) {
         scope: "current-tree",
         path,
         objectSha: entry.objectSha,
-        reason: "Submodule content and history require a separate exact-source audit.",
+        reason: "Submodule content and history need a separate exact-source audit.",
       });
       continue;
     }
 
     if (entry.mode === "120000") {
       currentBlobShas.add(entry.objectSha);
-      const buffer = readGitObject(git, "blob", entry.objectSha, 1024 * 1024);
+      const buffer = readGitObject(git, "blob", entry.objectSha, 1024);
       reviews.push({
         kind: "tracked-symlink",
         signature: "manual-symlink-target-review",
         scope: "current-tree",
         path,
         objectSha: entry.objectSha,
-        fingerprint: redactedFingerprint(buffer),
+        fingerprint: fingerprint(buffer),
       });
       if (isProbablyText(buffer)) {
         scanText({
@@ -293,7 +252,7 @@ function auditCurrentTree(git, blockers, reviews, metrics) {
     }
 
     currentBlobShas.add(entry.objectSha);
-    const size = gitObjectSize(git, entry.objectSha);
+    const size = objectSize(git, entry.objectSha);
     if (size > CURRENT_LARGE_FILE_BYTES) {
       reviews.push({
         kind: "large-current-file",
@@ -307,59 +266,42 @@ function auditCurrentTree(git, blockers, reviews, metrics) {
     if (size > MAX_TEXT_OBJECT_BYTES) {
       continue;
     }
-
-    const buffer = readGitObject(
-      git,
-      "blob",
-      entry.objectSha,
-      Math.max(4 * 1024 * 1024, size + 1024),
-    );
-    if (!isProbablyText(buffer)) {
-      continue;
+    const buffer = readGitObject(git, "blob", entry.objectSha, size);
+    if (isProbablyText(buffer)) {
+      scanText({
+        text: buffer.toString("utf8"),
+        scope: "current-tree",
+        path,
+        objectSha: entry.objectSha,
+        blockers,
+        reviews,
+      });
     }
-    scanText({
-      text: buffer.toString("utf8"),
-      scope: "current-tree",
-      path,
-      objectSha: entry.objectSha,
-      blockers,
-      reviews,
-    });
   }
-
   return currentBlobShas;
 }
 
 function reachableObjects(root, git) {
-  const raw = git(["rev-list", "--objects", "--all"]);
-  const rows = raw
+  const paths = new Map();
+  for (const line of git(["rev-list", "--objects", "--all"])
     .split(/\r?\n/)
-    .filter(Boolean)
-    .map((line) => {
-      const separator = line.indexOf(" ");
-      return separator === -1
-        ? { sha: line, path: null }
-        : { sha: line.slice(0, separator), path: line.slice(separator + 1) };
-    });
-
-  const unique = new Map();
-  for (const row of rows) {
-    if (!unique.has(row.sha)) {
-      unique.set(row.sha, row.path);
+    .filter(Boolean)) {
+    const separator = line.indexOf(" ");
+    const sha = separator === -1 ? line : line.slice(0, separator);
+    if (!paths.has(sha)) {
+      paths.set(sha, separator === -1 ? null : line.slice(separator + 1));
     }
   }
-
-  if (unique.size === 0) {
+  if (paths.size === 0) {
     return [];
   }
 
-  const input = `${[...unique.keys()].join("\n")}\n`;
   const result = spawnSync(
     "git",
     ["cat-file", "--batch-check=%(objectname) %(objecttype) %(objectsize)"],
     {
       cwd: root,
-      input,
+      input: `${[...paths.keys()].join("\n")}\n`,
       encoding: "utf8",
       maxBuffer: 64 * 1024 * 1024,
     },
@@ -367,18 +309,12 @@ function reachableObjects(root, git) {
   if (result.status !== 0) {
     throw new Error(result.stderr || "git cat-file --batch-check failed");
   }
-
   return result.stdout
     .split(/\r?\n/)
     .filter(Boolean)
     .map((line) => {
       const [sha, type, sizeText] = line.split(" ");
-      return {
-        sha,
-        type,
-        size: Number(sizeText),
-        path: unique.get(sha) ?? null,
-      };
+      return { sha, type, size: Number(sizeText), path: paths.get(sha) ?? null };
     });
 }
 
@@ -392,17 +328,16 @@ function auditReachableHistory({
 }) {
   const objects = reachableObjects(root, git);
   const blobs = objects.filter((object) => object.type === "blob");
-  const metadataObjects = objects.filter(
+  const metadata = objects.filter(
     (object) => object.type === "commit" || object.type === "tag",
   );
   metrics.reachableObjects = objects.length;
   metrics.reachableBlobs = blobs.length;
-  metrics.reachableMetadataObjects = metadataObjects.length;
+  metrics.reachableMetadataObjects = metadata.length;
 
   for (const blob of blobs) {
     const path = toPosix(blob.path ?? `[unmapped blob ${blob.sha.slice(0, 12)}]`);
     const isCurrent = currentBlobShas.has(blob.sha);
-
     if (!isCurrent && isSensitivePath(path)) {
       blockers.push({
         kind: "sensitive-filename",
@@ -412,7 +347,6 @@ function auditReachableHistory({
         objectSha: blob.sha,
       });
     }
-
     if (blob.size > HISTORY_LARGE_BLOB_BYTES) {
       reviews.push({
         kind: "large-history-blob",
@@ -426,55 +360,43 @@ function auditReachableHistory({
     if (isCurrent || blob.size > MAX_TEXT_OBJECT_BYTES) {
       continue;
     }
-
-    const buffer = readGitObject(
-      git,
-      "blob",
-      blob.sha,
-      Math.max(4 * 1024 * 1024, blob.size + 1024),
-    );
-    if (!isProbablyText(buffer)) {
-      continue;
+    const buffer = readGitObject(git, "blob", blob.sha, blob.size);
+    if (isProbablyText(buffer)) {
+      scanText({
+        text: buffer.toString("utf8"),
+        scope: "reachable-history",
+        path,
+        objectSha: blob.sha,
+        blockers,
+        reviews,
+      });
     }
-    scanText({
-      text: buffer.toString("utf8"),
-      scope: "reachable-history",
-      path,
-      objectSha: blob.sha,
-      blockers,
-      reviews,
-    });
   }
 
-  for (const object of metadataObjects) {
+  for (const object of metadata) {
+    const path = `[${object.type} ${object.sha.slice(0, 12)}]`;
     if (object.size > MAX_TEXT_OBJECT_BYTES) {
       reviews.push({
         kind: "large-history-metadata",
         signature: "metadata-object-over-2MiB",
         scope: "reachable-history-metadata",
-        path: `[${object.type} ${object.sha.slice(0, 12)}]`,
+        path,
         objectSha: object.sha,
         bytes: object.size,
       });
       continue;
     }
-    const buffer = readGitObject(
-      git,
-      object.type,
-      object.sha,
-      Math.max(4 * 1024 * 1024, object.size + 1024),
-    );
-    if (!isProbablyText(buffer)) {
-      continue;
+    const buffer = readGitObject(git, object.type, object.sha, object.size);
+    if (isProbablyText(buffer)) {
+      scanText({
+        text: buffer.toString("utf8"),
+        scope: "reachable-history-metadata",
+        path,
+        objectSha: object.sha,
+        blockers,
+        reviews,
+      });
     }
-    scanText({
-      text: buffer.toString("utf8"),
-      scope: "reachable-history-metadata",
-      path: `[${object.type} ${object.sha.slice(0, 12)}]`,
-      objectSha: object.sha,
-      blockers,
-      reviews,
-    });
   }
 }
 
@@ -482,38 +404,39 @@ function auditRequiredFiles(git, blockers) {
   const trackedPaths = new Set(
     trackedIndexEntries(git).map((entry) => toPosix(entry.path)),
   );
-  for (const requirement of ["LICENSE", "THIRD_PARTY_NOTICES.md"]) {
-    if (!trackedPaths.has(requirement)) {
+  for (const path of ["LICENSE", "THIRD_PARTY_NOTICES.md"]) {
+    if (!trackedPaths.has(path)) {
       blockers.push({
         kind: "missing-public-contract",
-        signature: requirement,
+        signature: path,
         scope: "current-tree",
-        path: requirement,
-        reason: `${requirement} is required before repository visibility changes to public.`,
+        path,
+        reason: `${path} is required before public visibility.`,
       });
     }
   }
 }
 
 function visibleRefs(git) {
-  const raw = git([
+  return git([
     "for-each-ref",
     "--format=%(refname)",
     "refs/heads",
     "refs/remotes/origin",
     "refs/tags",
-  ]);
-  return raw.split(/\r?\n/).filter(Boolean);
+  ])
+    .split(/\r?\n/)
+    .filter(Boolean);
 }
 
-function auditRefNames(refs, reviews) {
+function auditRefNames(refs, blockers, reviews) {
   for (const ref of refs) {
     scanText({
       text: ref,
       scope: "git-ref-name",
       path: ref,
       objectSha: null,
-      blockers: [],
+      blockers,
       reviews,
     });
   }
@@ -528,7 +451,6 @@ export async function auditPublicReadiness({
   const blockers = [];
   const reviews = [];
   const metrics = {};
-
   const repositoryRoot = resolve(git(["rev-parse", "--show-toplevel"]).trim());
   if (repositoryRoot !== root) {
     throw new Error(
@@ -549,11 +471,10 @@ export async function auditPublicReadiness({
   auditRequiredFiles(git, blockers);
   const refs = visibleRefs(git);
   metrics.reachableRefs = refs.length;
-  auditRefNames(refs, reviews);
+  auditRefNames(refs, blockers, reviews);
 
-  const deduplicatedBlockers = deduplicate(blockers);
-  const deduplicatedReviews = deduplicate(reviews);
-
+  const finalBlockers = deduplicate(blockers);
+  const finalReviews = deduplicate(reviews);
   return {
     schemaVersion: 1,
     repository,
@@ -561,14 +482,14 @@ export async function auditPublicReadiness({
     sourceBranch: git(["branch", "--show-current"]).trim() || "DETACHED",
     generatedAtUtc: new Date().toISOString(),
     status:
-      deduplicatedBlockers.length === 0
+      finalBlockers.length === 0
         ? "PUBLIC_READY_AUDIT_PASS"
         : "PUBLIC_READY_AUDIT_FAIL",
     note:
       "Pattern scanning reduces risk but cannot prove the absence of every secret, private fact, licensing problem or unwanted historical artifact. Every review finding requires human classification.",
     metrics,
     refs,
-    blockers: deduplicatedBlockers,
-    reviewFindings: deduplicatedReviews,
+    blockers: finalBlockers,
+    reviewFindings: finalReviews,
   };
 }
