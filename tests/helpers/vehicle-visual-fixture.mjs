@@ -96,10 +96,10 @@ export function buildGlb(jsonOverrides = {}, binary = triangleBinary()) {
   const root = {
     asset: { version: "2.0", generator: "JV visual test fixture" },
     scene: 0,
-    scenes: [{ nodes: [0] }],
-    nodes: bindings.map((binding, index) => ({
+    scenes: [{ nodes: bindings.map((_, index) => index) }],
+    nodes: bindings.map((binding) => ({
       name: binding.nodeName,
-      ...(index === 0 ? { mesh: 0 } : {}),
+      mesh: 0,
     })),
     ...validTriangleGeometryJson(binary.byteLength),
     ...jsonOverrides,
