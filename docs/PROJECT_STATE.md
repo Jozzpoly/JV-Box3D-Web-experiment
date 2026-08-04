@@ -11,7 +11,7 @@ branch: agent/jv-web-demonstrator-foundation
 PR: #18
 base: main
 state: draft / not merged
-exact candidate: resolve with git rev-parse HEAD or PR head SHA
+exact candidate: resolve with git rev-parse HEAD or the PR head SHA
 ```
 
 Only `main` and the active development branch remain remotely. Do not fast-forward the long experimental history into a presentation-ready public default branch. Prefer a clean demonstrator snapshot/repository or an owner-reviewed squash later.
@@ -182,7 +182,7 @@ owned render-pass host
        ↓
 BEFORE_DEBUG_VEHICLE / AFTER_DEBUG_VEHICLE phases
        ↓
-shared viewProjection + live M6TraceFrame
+per-pass viewProjection copy + live M6TraceFrame
 ```
 
 Lifecycle guarantees:
@@ -192,10 +192,13 @@ Lifecycle guarantees:
 - one failing pass is removed without killing the debug observer;
 - installed passes dispose in reverse order;
 - context loss and renderer disposal abort pending work;
+- each pass receives its own reusable camera-matrix storage, refreshed from the renderer every frame;
+- a pass cannot mutate the renderer's camera matrix or another pass's matrix;
 - the debug WebGL baseline is restored between pass phases;
+- debug shader/program/mesh startup is transactional under partial allocation or compilation failure;
 - the debug vehicle can later be hidden while preserving the same camera and grid.
 
-`VehicleVisualRenderResourceV1` now accepts a runtime capability validator before any GPU allocation.
+`VehicleVisualRenderResourceV1` accepts a runtime capability validator before any GPU allocation.
 
 This preparation is **source-present but requires a fresh exact-head gate and unchanged browser/mobile smoke**. The green evidence at `d6aa218…` must not be projected onto a newer commit.
 
