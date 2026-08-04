@@ -8,7 +8,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
-import { auditPublicReadiness } from "../tools/public-readiness-lib.mjs";
+import { auditPublicReadiness } from "../tools/public-readiness-report.mjs";
 
 function git(root, ...args) {
   return execFileSync("git", args, {
@@ -157,5 +157,28 @@ test("public readiness audit records a tracked symlink without following it", as
           finding.path === "external-link",
       ),
     );
+  });
+});
+
+test("public readiness report redacts a token-like filename everywhere", async () => {
+  await withRepository({}, async (root) => {
+    const fakeToken = `ghp_${"D".repeat(36)}`;
+    const filename = `${fakeToken}.txt`;
+    await writeFile(resolve(root, filename), "safe fixture body\n", "utf8");
+    git(root, "add", filename);
+    git(root, "commit", "-m", "add token-like filename fixture");
+
+    const report = await auditPublicReadiness({
+      root,
+      repository: "fixture/filename-secret",
+    });
+    assert.ok(
+      report.blockers.some(
+        (finding) =>
+          finding.signature === "github-token" &&
+          finding.scope === "git-path-name",
+      ),
+    );
+    assert.equal(JSON.stringify(report).includes(fakeToken), false);
   });
 });
