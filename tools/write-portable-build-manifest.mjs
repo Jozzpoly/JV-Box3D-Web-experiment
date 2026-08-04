@@ -21,6 +21,13 @@ function git(...args) {
   }).trim();
 }
 
+const dirtySource = git("status", "--porcelain", "--untracked-files=all");
+if (dirtySource.length > 0) {
+  throw new Error(
+    "Portable build manifest refused a dirty source tree. Commit or remove source changes before packaging.",
+  );
+}
+
 const sourceCommit = git("rev-parse", "HEAD");
 const sourceBranch = git("branch", "--show-current") || "DETACHED";
 const sourceCommitDate = git("show", "-s", "--format=%cI", "HEAD");
@@ -40,6 +47,7 @@ const manifest = {
     branch: sourceBranch,
     commit: sourceCommit,
     commitDate: sourceCommitDate,
+    workingTreeClean: true,
   },
   runtimeBackend: {
     id: "legacy_ts_m6",
@@ -47,6 +55,7 @@ const manifest = {
     productPhysicsAuthority: false,
     nativeParity: "NOT_PROVEN",
   },
+  runtimeAssets: ["receipts/jv_m6_factory_receipt.json"],
   publication: {
     mode: "DORMANT",
     pathPortableCandidate: true,
