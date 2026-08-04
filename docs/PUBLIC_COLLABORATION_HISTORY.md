@@ -6,7 +6,7 @@ Owner: Jozz
 
 ## Purpose
 
-JV Web was developed through a deliberately stacked sequence of draft pull requests. GitHub will expose those pull requests when the repository becomes public, but their open state must not be interpreted as twelve competing merge proposals.
+JV Web was developed through a deliberately stacked sequence of draft pull requests. GitHub will expose those pull requests when the repository becomes public, but their open state must not be interpreted as thirteen competing merge proposals.
 
 This document classifies the complete pull-request set observed on 2026-08-04. It preserves evidence while identifying the current authority.
 
@@ -53,13 +53,13 @@ The intended public default branch has not yet been selected or updated. `main` 
 
 ## Complete observed public discussion surface
 
-The repository owner had twelve pull requests at the time of this inventory:
+The repository contained thirteen pull-request records at the time of this inventory:
 
 ```text
 #1, #2, #4, #6, #8, #9, #11, #13, #14, #15, #16, #17, #18
 ```
 
-Correction: the sequence above contains thirteen numbers because PR numbers are sparse and all thirteen listed PR records were returned by the GitHub repository query. The canonical count is therefore:
+Canonical count:
 
 ```text
 13 pull requests total
