@@ -14,17 +14,6 @@ export interface VehicleRuntimeBackendDescriptor {
   readonly visualFrameContractVersion: 1;
 }
 
-export const LEGACY_TS_M6_BACKEND: VehicleRuntimeBackendDescriptor =
-  Object.freeze({
-    id: "legacy_ts_m6",
-    displayName: "Legacy TypeScript M6 reference fixture",
-    productPhysicsAuthority: false,
-    nativeParity: "NOT_PROVEN",
-    commandContractVersion: 1,
-    traceContractVersion: 1,
-    visualFrameContractVersion: 1,
-  });
-
 export function assertVehicleRuntimeBackendDescriptor(
   descriptor: VehicleRuntimeBackendDescriptor,
 ): void {
@@ -52,3 +41,8 @@ export function assertVehicleRuntimeBackendDescriptor(
     );
   }
 }
+
+// Compatibility re-export. The concrete legacy descriptor has one source of
+// truth in the M6 backend module; F4/browser code may continue importing it
+// from the generic runtime boundary.
+export { LEGACY_TS_M6_BACKEND } from "../vehicle/m6/legacy-ts-m6-backend.js";
