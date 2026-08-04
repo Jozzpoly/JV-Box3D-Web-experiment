@@ -9,7 +9,7 @@ export interface BrowserRuntimeReport {
   readonly secureContext: boolean;
   readonly webCryptoDigest: boolean;
   readonly softwareDigestFallback: true;
-  readonly webgl: boolean;
+  readonly webglApi: boolean;
   readonly pointerEvents: boolean;
   readonly maxTouchPoints: number;
   readonly coarsePointer: boolean;
@@ -23,13 +23,13 @@ export interface BrowserRuntimeProbeEnvironment {
   readonly hostname: string;
   readonly secureContext: boolean;
   readonly cryptoLike: unknown;
+  readonly webglRenderingContextLike: unknown;
   readonly pointerEventLike: unknown;
   readonly maxTouchPoints: number;
   readonly coarsePointer: boolean;
   readonly viewportWidth: number;
   readonly viewportHeight: number;
   readonly devicePixelRatio: number;
-  readonly webgl: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -83,7 +83,8 @@ export function inspectBrowserRuntime(
     secureContext: environment.secureContext,
     webCryptoDigest: hasWebCryptoDigest(environment.cryptoLike),
     softwareDigestFallback: true,
-    webgl: environment.webgl,
+    webglApi:
+      typeof environment.webglRenderingContextLike === "function",
     pointerEvents:
       typeof environment.pointerEventLike === "function",
     maxTouchPoints: Math.trunc(
@@ -99,21 +100,19 @@ export function inspectBrowserRuntime(
   });
 }
 
-export function inspectCurrentBrowserRuntime(
-  webgl: boolean,
-): BrowserRuntimeReport {
+export function inspectCurrentBrowserRuntime(): BrowserRuntimeReport {
   return inspectBrowserRuntime({
     protocol: window.location.protocol,
     hostname: window.location.hostname,
     secureContext: globalThis.isSecureContext,
     cryptoLike: globalThis.crypto,
+    webglRenderingContextLike: globalThis.WebGLRenderingContext,
     pointerEventLike: globalThis.PointerEvent,
     maxTouchPoints: navigator.maxTouchPoints,
     coarsePointer: window.matchMedia("(pointer: coarse)").matches,
     viewportWidth: window.innerWidth,
     viewportHeight: window.innerHeight,
     devicePixelRatio: window.devicePixelRatio,
-    webgl,
   });
 }
 
@@ -125,7 +124,7 @@ export function formatBrowserRuntimeReport(
     : "software SHA fallback";
   return [
     report.transport,
-    `WebGL ${report.webgl ? "ON" : "OFF"}`,
+    `WebGL API ${report.webglApi ? "ON" : "OFF"}`,
     `Pointer ${report.pointerEvents ? "ON" : "OFF"}`,
     `touch ${report.maxTouchPoints}`,
     digest,
