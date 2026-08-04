@@ -17,6 +17,20 @@ function paddedJson(value) {
   return bytes;
 }
 
+function float32LittleEndian(values) {
+  const bytes = new Uint8Array(values.length * 4);
+  const view = new DataView(bytes.buffer);
+  values.forEach((value, index) => view.setFloat32(index * 4, value, true));
+  return bytes;
+}
+
+function uint16LittleEndian(values) {
+  const bytes = new Uint8Array(values.length * 2);
+  const view = new DataView(bytes.buffer);
+  values.forEach((value, index) => view.setUint16(index * 2, value, true));
+  return bytes;
+}
+
 function boxGeometry(halfX, halfY, halfZ) {
   return {
     positions: [
@@ -29,6 +43,8 @@ function boxGeometry(halfX, halfY, halfZ) {
       halfX, halfY, halfZ,
       -halfX, halfY, halfZ,
     ],
+    positionMin: [-halfX, -halfY, -halfZ],
+    positionMax: [halfX, halfY, halfZ],
     indices: [
       0, 1, 2, 0, 2, 3,
       4, 6, 5, 4, 7, 6,
@@ -41,19 +57,19 @@ function boxGeometry(halfX, halfY, halfZ) {
 }
 
 function appendGeometry(binaryParts, geometry) {
-  const positionBytes = new Uint8Array(
-    new Float32Array(geometry.positions).buffer,
-  );
+  const positionBytes = float32LittleEndian(geometry.positions);
   const positionOffset = binaryParts.byteLength;
   binaryParts.chunks.push(positionBytes);
   binaryParts.byteLength += positionBytes.byteLength;
   const indexOffset = binaryParts.byteLength;
-  const indexBytes = new Uint8Array(new Uint16Array(geometry.indices).buffer);
+  const indexBytes = uint16LittleEndian(geometry.indices);
   binaryParts.chunks.push(indexBytes);
   binaryParts.byteLength += indexBytes.byteLength;
   return {
     positionOffset,
     positionByteLength: positionBytes.byteLength,
+    positionMin: geometry.positionMin,
+    positionMax: geometry.positionMax,
     vertexCount: geometry.positions.length / 3,
     indexOffset,
     indexByteLength: indexBytes.byteLength,
@@ -118,6 +134,8 @@ export function buildTinyVehicleVisualFixture({ partIds, segmentIds }) {
       componentType: 5126,
       count: geometry.vertexCount,
       type: "VEC3",
+      min: geometry.positionMin,
+      max: geometry.positionMax,
     });
     const indexAccessor = accessors.length;
     accessors.push({
