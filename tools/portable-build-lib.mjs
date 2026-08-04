@@ -214,6 +214,51 @@ async function validateKnownRuntimePaths(root, files, errors) {
   }
 }
 
+function validateDeclaredPayloadPaths({
+  manifest,
+  field,
+  requiredPaths,
+  actualByPath,
+  recordedPaths,
+  errors,
+}) {
+  const declared = manifest[field];
+  if (!Array.isArray(declared) || declared.length === 0) {
+    errors.push(`${PORTABLE_MANIFEST_NAME} must contain ${field}.`);
+    return;
+  }
+
+  const uniquePaths = new Set();
+  for (const declaredPath of declared) {
+    if (!isSafePortablePath(declaredPath)) {
+      errors.push(
+        `${PORTABLE_MANIFEST_NAME} contains unsafe ${field} path ${String(declaredPath)}.`,
+      );
+      continue;
+    }
+    if (uniquePaths.has(declaredPath)) {
+      errors.push(
+        `${PORTABLE_MANIFEST_NAME} repeats ${field} entry ${declaredPath}.`,
+      );
+      continue;
+    }
+    uniquePaths.add(declaredPath);
+    if (!actualByPath.has(declaredPath) || !recordedPaths.has(declaredPath)) {
+      errors.push(
+        `${PORTABLE_MANIFEST_NAME} ${field} entry is missing from the payload table: ${declaredPath}.`,
+      );
+    }
+  }
+
+  for (const requiredPath of requiredPaths) {
+    if (!uniquePaths.has(requiredPath)) {
+      errors.push(
+        `${PORTABLE_MANIFEST_NAME} must declare ${requiredPath} in ${field}.`,
+      );
+    }
+  }
+}
+
 async function validateManifest(root, errors) {
   const manifestPath = resolve(root, PORTABLE_MANIFEST_NAME);
   if (!(await exists(manifestPath))) {
@@ -338,32 +383,22 @@ async function validateManifest(root, errors) {
     }
   }
 
-  if (!Array.isArray(manifest.runtimeAssets) || manifest.runtimeAssets.length === 0) {
-    errors.push(`${PORTABLE_MANIFEST_NAME} must contain runtimeAssets.`);
-  } else {
-    const runtimeAssets = new Set();
-    for (const assetPath of manifest.runtimeAssets) {
-      if (!isSafePortablePath(assetPath)) {
-        errors.push(`${PORTABLE_MANIFEST_NAME} contains unsafe runtime asset path ${String(assetPath)}.`);
-        continue;
-      }
-      if (runtimeAssets.has(assetPath)) {
-        errors.push(`${PORTABLE_MANIFEST_NAME} repeats runtime asset ${assetPath}.`);
-        continue;
-      }
-      runtimeAssets.add(assetPath);
-      if (!actualByPath.has(assetPath) || !recordedPaths.has(assetPath)) {
-        errors.push(
-          `${PORTABLE_MANIFEST_NAME} runtime asset is missing from the payload table: ${assetPath}.`,
-        );
-      }
-    }
-    if (!runtimeAssets.has("receipts/jv_m6_factory_receipt.json")) {
-      errors.push(
-        `${PORTABLE_MANIFEST_NAME} must declare the pinned native receipt as a runtime asset.`,
-      );
-    }
-  }
+  validateDeclaredPayloadPaths({
+    manifest,
+    field: "runtimeAssets",
+    requiredPaths: ["receipts/jv_m6_factory_receipt.json"],
+    actualByPath,
+    recordedPaths,
+    errors,
+  });
+  validateDeclaredPayloadPaths({
+    manifest,
+    field: "complianceFiles",
+    requiredPaths: ["THIRD_PARTY_NOTICES.md"],
+    actualByPath,
+    recordedPaths,
+    errors,
+  });
 
   return manifest;
 }
