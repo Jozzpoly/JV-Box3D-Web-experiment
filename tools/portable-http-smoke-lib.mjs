@@ -104,7 +104,7 @@ async function startStaticServer(root, prefixes) {
   };
 }
 
-async function fetchBytes(url) {
+async function fetchResponse(url) {
   const response = await fetch(url, {
     redirect: "error",
     cache: "no-store",
@@ -112,7 +112,11 @@ async function fetchBytes(url) {
   if (!response.ok) {
     throw new Error(`Portable HTTP smoke received ${response.status} for ${url}`);
   }
-  return Buffer.from(await response.arrayBuffer());
+  return response;
+}
+
+async function fetchBytes(url) {
+  return Buffer.from(await (await fetchResponse(url)).arrayBuffer());
 }
 
 async function smokePrefix(origin, prefix) {
@@ -124,6 +128,9 @@ async function smokePrefix(origin, prefix) {
   }
 
   const fetched = [];
+  const recordsByPath = new Map(
+    manifest.files.map((record) => [record.path, record]),
+  );
   for (const record of manifest.files) {
     const bytes = await fetchBytes(new URL(record.path, baseUrl));
     if (bytes.byteLength !== record.bytes) {
@@ -140,18 +147,27 @@ async function smokePrefix(origin, prefix) {
     fetched.push(record.path);
   }
 
-  const indexResponse = await fetch(new URL("index.html", baseUrl), {
-    redirect: "error",
-    cache: "no-store",
-  });
-  const indexType = indexResponse.headers.get("content-type") ?? "";
-  if (!indexResponse.ok || !indexType.startsWith("text/html")) {
-    throw new Error(`${prefix}index.html was not served as HTML.`);
+  const indexRecord = recordsByPath.get("index.html");
+  if (!indexRecord) {
+    throw new Error(`Portable manifest served at ${prefix} does not record index.html.`);
+  }
+  const baseResponse = await fetchResponse(baseUrl);
+  const baseType = baseResponse.headers.get("content-type") ?? "";
+  if (!baseType.startsWith("text/html")) {
+    throw new Error(`${prefix} was not served as HTML.`);
+  }
+  const baseBytes = Buffer.from(await baseResponse.arrayBuffer());
+  if (
+    baseBytes.byteLength !== indexRecord.bytes ||
+    sha256(baseBytes) !== indexRecord.sha256
+  ) {
+    throw new Error(`${prefix} did not serve the recorded index.html bytes.`);
   }
 
   return {
     prefix,
     fileCount: fetched.length,
+    entryPointVerified: true,
     runtimeAssets: manifest.runtimeAssets ?? [],
     complianceFiles: manifest.complianceFiles ?? [],
   };
