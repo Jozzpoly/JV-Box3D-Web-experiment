@@ -6,6 +6,29 @@ function isRecord(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function exactKeys(value, expected, label, errors) {
+  if (!isRecord(value)) {
+    errors.push(`${PORTABLE_MANIFEST_NAME} ${label} must be an object.`);
+    return false;
+  }
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  if (
+    actual.length !== wanted.length ||
+    actual.some((key, index) => key !== wanted[index])
+  ) {
+    const unknown = actual.filter((key) => !wanted.includes(key));
+    const missing = wanted.filter((key) => !actual.includes(key));
+    errors.push(
+      `${PORTABLE_MANIFEST_NAME} ${label} keys differ` +
+        `${unknown.length ? `; unknown: ${unknown.join(", ")}` : ""}` +
+        `${missing.length ? `; missing: ${missing.join(", ")}` : ""}.`,
+    );
+    return false;
+  }
+  return true;
+}
+
 export async function validatePortableManifestPolicy(root) {
   const errors = [];
   let manifest;
@@ -21,15 +44,65 @@ export async function validatePortableManifestPolicy(root) {
     ];
   }
 
-  if (!isRecord(manifest) || !isRecord(manifest.source)) {
-    return [`${PORTABLE_MANIFEST_NAME} must contain a source object.`];
+  if (!isRecord(manifest)) {
+    return [`${PORTABLE_MANIFEST_NAME} must contain an object.`];
   }
-  if (Object.hasOwn(manifest.source, "branch")) {
+
+  exactKeys(
+    manifest,
+    [
+      "schemaVersion",
+      "distribution",
+      "project",
+      "source",
+      "runtimeBackend",
+      "runtimeAssets",
+      "complianceFiles",
+      "publication",
+      "files",
+    ],
+    "root",
+    errors,
+  );
+  exactKeys(manifest.project, ["id", "version"], "project", errors);
+  exactKeys(
+    manifest.source,
+    ["repository", "ref", "commit", "commitDate", "workingTreeClean"],
+    "source",
+    errors,
+  );
+  exactKeys(manifest.source?.ref, ["state", "fingerprint"], "source.ref", errors);
+  exactKeys(
+    manifest.runtimeBackend,
+    ["id", "role", "productPhysicsAuthority", "nativeParity"],
+    "runtimeBackend",
+    errors,
+  );
+  exactKeys(
+    manifest.publication,
+    [
+      "mode",
+      "pathPortableCandidate",
+      "publicReady",
+      "pagesPublicationApproved",
+      "publishedByBuild",
+    ],
+    "publication",
+    errors,
+  );
+
+  if (Array.isArray(manifest.files)) {
+    manifest.files.forEach((record, index) => {
+      exactKeys(record, ["path", "bytes", "sha256"], `files[${index}]`, errors);
+    });
+  }
+
+  if (Object.hasOwn(manifest.source ?? {}, "branch")) {
     errors.push(
       `${PORTABLE_MANIFEST_NAME} must not expose the source branch name.`,
     );
   }
-  if (!isRecord(manifest.source.ref)) {
+  if (!isRecord(manifest.source?.ref)) {
     errors.push(`${PORTABLE_MANIFEST_NAME} must contain source.ref.`);
     return errors;
   }
