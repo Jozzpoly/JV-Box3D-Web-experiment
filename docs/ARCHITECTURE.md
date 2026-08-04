@@ -4,7 +4,7 @@
 
 JV Web is a deterministic browser host for vehicle research, mobile interaction, owner-authored vehicle/scene assets and eventually native JV physics compiled with Box3D into one WASM module.
 
-The architecture separates device input, physics authority, immutable observation, asset validation, CPU mesh ownership, GPU resources and scenes.
+The architecture separates device input, physics authority, immutable observation, asset validation, CPU mesh ownership, renderer capabilities, GPU resources and scenes.
 
 ## Current execution path
 
@@ -21,10 +21,14 @@ legacy_ts_m6 reference vehicle
           ↓
 M6 trace v1 + VehicleVisualFrameV1
           ↓
-debug WebGL observer + telemetry UI
+renderer-owned WebGL context
+          ↓
+debug observer + optional owned render passes
 ```
 
-The working browser still uses the debug observer. The new GLB path is source-present but waits for its full gate and browser integration.
+The visible browser still uses the debug observer. The generated tiny GLB is packaged but not installed or drawn by `main.ts` yet.
+
+The vehicle asset foundation is proven at exact commit `d6aa218064c2653f918cf7956d2fcd20a940caf3` with TypeScript, 218 tests, documentation, notices, Vite and all portable root/subpath checks passing. The later render-pass preparation remains an exact-head candidate requiring its own gate.
 
 Before physics starts:
 
@@ -97,7 +101,7 @@ package-relative GLB URL
         ↓
 exact byte/hash gate
         ↓
-GLB V1 feature policy
+GLB V1 transport policy
 ```
 
 Bindings:
@@ -118,9 +122,9 @@ Segment aim uses deterministic shortest-arc rotation. V1 stretch geometry is axi
 
 Bound nodes are independent identity roots. Every bound root owns at least one mesh descendant and every mesh node belongs to exactly one binding root.
 
-## GLB V1 policy
+## GLB transport policy versus renderer capability
 
-The first mobile subset accepts:
+The GLB transport/CPU layer may accept and preserve:
 
 - one embedded BIN buffer;
 - aligned bufferViews/accessors;
@@ -128,12 +132,22 @@ The first mobile subset accepts:
 - unsigned 8/16-bit indices;
 - FLOAT-VEC3 POSITION with min/max;
 - optional NORMAL and TEXCOORD_0;
-- base-colour material factors;
+- base-colour material factors and `doubleSided`;
 - package-relative URLs.
 
 It rejects external resources, images/textures, unknown vertex attributes, skins, animations, morph targets, sparse accessors, extensions, 32-bit indices, invalid root ownership and byte/hash drift.
 
-Textures are a later explicit subsystem with image decode, sampler/texture GPU ownership and mobile memory budgets.
+Transport support does **not** grant a shader permission to ignore a stream. Every renderer validates a named capability before any GPU allocation.
+
+The first browser draw profile is:
+
+```text
+UNLIT_POSITION_BASE_COLOR_V1
+accepts: POSITION, baseColorFactor, doubleSided
+rejects: NORMAL, TEXCOORD_0
+```
+
+NORMAL remains rejected by this profile until a lighting shader consumes it. TEXCOORD_0 remains rejected until image decode, sampler/texture ownership and a texture-memory budget exist. Later renderers introduce new explicit capability IDs rather than silently widening the first profile.
 
 See [`contracts/VEHICLE_VISUAL_PACKAGE_V1.md`](contracts/VEHICLE_VISUAL_PACKAGE_V1.md).
 
@@ -142,16 +156,18 @@ See [`contracts/VEHICLE_VISUAL_PACKAGE_V1.md`](contracts/VEHICLE_VISUAL_PACKAGE_
 ```text
 GLB bytes
   ↓
-container/policy validation
+container/transport validation
   ↓
 rigid CPU decoder
   ↓
-sealed immutable CPU asset
+sealed CPU asset
   ↓
 ownership and budget receipts
+  ↓
+renderer-specific capability receipt
 ```
 
-The decoder copies positions, optional normals/UVs and 8/16-bit indices into owned typed arrays, parses a minimal material subset, validates node hierarchy and rejects cycles or invalid references.
+The decoder copies positions, optional normals/UVs and 8/16-bit indices into owned `ArrayBuffer`-backed typed arrays, parses the material subset, validates node hierarchy and rejects cycles or invalid references.
 
 A seal step prevents callers—including `forEach` callbacks—from reaching a mutable internal node-name map.
 
@@ -184,6 +200,8 @@ The generic draw-plan builder knows meshes and hierarchy, not Box3D, `partId` or
 ```text
 sealed CPU asset
         ↓
+renderer capability validation
+        ↓
 transactional WebGL buffer allocation/upload
         ↓
 complete RigidMeshGpuAssetV1 or no asset
@@ -191,7 +209,40 @@ complete RigidMeshGpuAssetV1 or no asset
 
 POSITION, optional NORMAL/UV and index buffers are owned as one resource. Allocation or upload failure rolls back in reverse order. Disposal is idempotent.
 
-`VehicleVisualRenderResourceV1` combines network load, CPU receipts and GPU ownership transactionally. It does not yet create shaders or draw into the current observer.
+`VehicleVisualRenderResourceV1` combines network load, CPU receipts, a pre-GPU renderer validator and GPU ownership transactionally. It does not create a shader or install itself into the live renderer.
+
+## Renderer-owned WebGL pass boundary
+
+`M6DebugRenderer` remains the sole owner of the canvas WebGL context, camera and `viewProjection`. Additional drawing is installed through an owned pass host rather than by requesting a second context or exposing mutable renderer internals.
+
+```text
+M6DebugRenderer frame
+  ├─ grid/origin
+  ├─ BEFORE_DEBUG_VEHICLE passes
+  ├─ debug vehicle, unless explicitly hidden
+  └─ AFTER_DEBUG_VEHICLE passes
+```
+
+Each pass receives:
+
+```text
+the same WebGLRenderingContext
+the same viewProjection for the frame
+the live immutable M6TraceFrame
+```
+
+Lifecycle rules:
+
+- async installation receives an `AbortSignal`;
+- a pass resolving after shutdown is disposed and never published;
+- unknown phases fail closed;
+- one failing pass is removed without stopping the debug observer or healthy passes;
+- pass disposal is reverse-order and idempotent;
+- context loss aborts pending work and disposes installed passes;
+- the debug renderer restores its required WebGL state after external passes;
+- debug shader, program and mesh construction is transactional as well.
+
+The pass seam is source-present but inactive: `main.ts` currently installs no GLB pass.
 
 ## Deterministic tiny proof
 
@@ -222,7 +273,7 @@ See [`contracts/SCENE_PACKAGE_V1.md`](contracts/SCENE_PACKAGE_V1.md) and [`contr
 
 ## Portable build
 
-Required runtime assets now include:
+Required runtime assets include:
 
 ```text
 receipts/jv_m6_factory_receipt.json
@@ -251,15 +302,16 @@ Stable visual IDs remain independent from native runtime handles. Native parity 
 
 ## Next structural change
 
-After the current source passes its exact gate:
+After the exact render-pass preparation head passes its gate and unchanged desktop/mobile smoke:
 
 ```text
-1 load the generated tiny package in the browser
-2 compile live draw plans from VehicleVisualFrameV1
-3 add a minimal GLB shader/draw layer beside the debug observer
-4 prove all 18 parts and 8 segments
-5 prove destroy/rebuild and phone performance
-6 then import owner-authored simple chassis and wheels
+1 implement one unlit tiny-vehicle pass through installRenderPass()
+2 load the generated package on the renderer-owned context
+3 validate UNLIT_POSITION_BASE_COLOR_V1 before GPU allocation
+4 compile live draw plans from trace.visualFrame
+5 prove all 18 parts and 8 segments
+6 prove pass fallback, destroy/rebuild, context lifecycle and phone performance
+7 then import owner-authored simple chassis and wheels
 ```
 
-Do not combine the first browser draw proof with textures, the final vehicle, scan collision or native WASM.
+Do not combine the first browser draw proof with normals, textures, the final vehicle, scan collision or native WASM.
