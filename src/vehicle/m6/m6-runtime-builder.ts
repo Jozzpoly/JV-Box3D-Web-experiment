@@ -11,6 +11,7 @@ import { createLegacySplitWheel } from "./legacy-split-wheel-backend.js";
 import {
   M6_DEGREES_TO_RADIANS,
   add3,
+  clone3,
   distance3,
   isFrontCorner,
   isLeftCorner,
@@ -384,15 +385,16 @@ export function createM6VehicleRuntime(
       const preload = isFrontCorner(corner)
         ? config.suspensionPreloadFront
         : config.suspensionPreloadRear;
-      const coiloverDef = b3.b3DefaultDistanceJointDef();
-      coiloverDef.base.bodyIdA = chassisId;
-      coiloverDef.base.bodyIdB = knuckleId;
-      coiloverDef.base.localFrameA.p =
-        hardpoints.coiloverChassis;
-      coiloverDef.base.localFrameB.p = sub3(
+      const coiloverAnchorA = clone3(hardpoints.coiloverChassis);
+      const coiloverAnchorB = sub3(
         hardpoints.coiloverKnuckle,
         restLocal,
       );
+      const coiloverDef = b3.b3DefaultDistanceJointDef();
+      coiloverDef.base.bodyIdA = chassisId;
+      coiloverDef.base.bodyIdB = knuckleId;
+      coiloverDef.base.localFrameA.p = coiloverAnchorA;
+      coiloverDef.base.localFrameB.p = coiloverAnchorB;
       coiloverDef.base.collideConnected = false;
       coiloverDef.length = designLength + preload;
       coiloverDef.enableSpring = true;
@@ -492,6 +494,18 @@ export function createM6VehicleRuntime(
         lowerBallId: lower.ballId,
         coiloverJointId,
         steeringLinkJointId,
+        coiloverVisual: {
+          bodyIdA: chassisId,
+          localAnchorA: clone3(coiloverAnchorA),
+          bodyIdB: knuckleId,
+          localAnchorB: clone3(coiloverAnchorB),
+        },
+        steeringLinkVisual: {
+          bodyIdA: steeringDef.base.bodyIdA,
+          localAnchorA: clone3(steeringDef.base.localFrameA.p),
+          bodyIdB: steeringDef.base.bodyIdB,
+          localAnchorB: clone3(steeringDef.base.localFrameB.p),
+        },
       });
     }
 
