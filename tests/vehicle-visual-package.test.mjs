@@ -29,7 +29,12 @@ function validPackage() {
   const segmentBindings = M6_VISUAL_SEGMENT_IDS.map((segmentId) => ({
     bindingId: `bind.${segmentId}`,
     nodeName: nodeName(segmentId),
-    source: { kind: "SEGMENT_STRETCH", segmentId, axis: "+Y" },
+    source: {
+      kind: "SEGMENT_STRETCH",
+      segmentId,
+      axis: "+Y",
+      referenceLengthMeters: 1,
+    },
     localFromSource: identityTransform,
   }));
   return {
@@ -56,6 +61,26 @@ test("strict M6 full-rig package accepts complete rigid and segment coverage", (
   assert.equal(visual.bindings.length, 26);
   assert.equal(visual.asset.url, "models/m6-demonstrator.glb");
   assert.equal(visual.rigProfile, "M6_FULL_RIG_V1");
+});
+
+test("stretch bindings require an explicit positive authored baseline", () => {
+  const missing = validPackage();
+  delete missing.bindings.find(
+    (binding) => binding.source.kind === "SEGMENT_STRETCH",
+  ).source.referenceLengthMeters;
+  assert.throws(
+    () => validateVehicleVisualPackageV1(missing),
+    /keys differ|referenceLengthMeters/,
+  );
+
+  const zero = validPackage();
+  zero.bindings.find(
+    (binding) => binding.source.kind === "SEGMENT_STRETCH",
+  ).source.referenceLengthMeters = 0;
+  assert.throws(
+    () => validateVehicleVisualPackageV1(zero),
+    /greater than zero/,
+  );
 });
 
 test("multiple visual nodes may follow one physical source", () => {
