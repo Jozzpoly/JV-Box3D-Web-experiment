@@ -6,9 +6,9 @@ Owner: Jozz
 
 ## Mission
 
-Build a serious browser demonstrator for Jozz Vehicle that runs on desktop and phone, uses deliberately designed mobile controls, drives through prepared real-world scenes and later replaces the reference physics with the same native JV core compiled to WebAssembly.
+Build a serious browser demonstrator for Jozz Vehicle that runs on desktop and phone, uses deliberate mobile controls, supports owner-authored vehicle/scene assets and later replaces the reference physics with native JV Core + Box3D compiled into one WebAssembly module.
 
-The repository must remain compact, readable and technically honest. Preserve durable knowledge, not every experimental branch or process artifact.
+Keep the repository compact, readable and technically honest. Preserve durable contracts and evidence, not every historical experiment.
 
 ## Active line
 
@@ -16,220 +16,229 @@ The repository must remain compact, readable and technically honest. Preserve du
 branch: agent/jv-web-demonstrator-foundation
 PR: #18, direct to main, draft
 remote branches: main + active branch only
-older PRs: closed as historical
-current exact candidate: resolve with git rev-parse HEAD or the PR head SHA
+current exact candidate: git rev-parse HEAD or PR head SHA
 ```
 
-Do not merge, mark Ready, change repository visibility or enable Pages without Jozz.
+Do not merge, mark Ready, change visibility or enable Pages without Jozz. Do not fast-forward the long experimental history into a presentation-ready public main; prefer a clean public snapshot repo or owner-reviewed squash later.
 
-Jozz authorized removal of obsolete branches and files. Fourteen obsolete remote branches were removed after a green local gate. Keep only material with continuing engineering value; do not rebuild an archive museum.
+Git Diff Patcher Bridge is forbidden. Use GitHub connector and ordinary Git only. No custom Actions without explicit owner request.
 
-The active branch is a long experimental descendant of `main`. Do not fast-forward that complete history into a presentation-ready public default branch. At publication time prefer a clean demonstrator repository/snapshot; an owner-reviewed squash is the secondary option.
+## Evidence boundary
 
-## Latest owner-validated mobile checkpoint
+### Exact logged + owner-validated checkpoint
 
 ```text
 commit: 7204993a0640e6cff0baa719d849a0b4368c15aa
-Node: 24.16.0
-npm: 11.17.0
+Node/npm: 24.16.0 / 11.17.0
 receipt: byte-exact
-npm ci: PASS
-npm audit: 0 vulnerabilities observed
 TypeScript: PASS
 tests: 120/120 PASS
-docs links: PASS
-third-party verification: PASS
-Vite bundle: PASS
-portable static/privacy/network/root+subpath HTTP: PASS
+docs/notices/build/portable root+subpath HTTP: PASS
 LAN HTTP without SubtleCrypto: PASS
-localhost browser: PASS
-LAN desktop browser: PASS
-real phone browser: PASS
+localhost + LAN desktop + real phone: PASS
 Box3D / WebGL / keyboard / multi-touch: observed working
 publication: NOT PERFORMED
 ```
 
-The software SHA-1/SHA-256 fallback preserves receipt integrity on ordinary LAN HTTP where `crypto.subtle` is unavailable. Do not remove it or replace it with disabled validation.
+The uploaded terminal log is for this commit. The software SHA fallback is required for strict receipt validation on ordinary LAN HTTP.
+
+### Newer owner runtime observation
+
+After scene/runtime hardening Jozz confirmed LIVE, 4 contacts, vehicle visible, all drive controls and destroy/rebuild working. Treat this as manual runtime evidence; the attached log still identifies `7204993…`.
+
+### Current candidate
+
+Vehicle model/rig source is present and statically reviewed but has **not** passed a fresh local gate. Never claim it is compiled or working before the owner gate.
 
 ## Physics authority
 
 ```text
 backend: legacy_ts_m6
-role: browser reference fixture
+role: REFERENCE_BROWSER_FIXTURE
 productPhysicsAuthority: false
 nativeParity: NOT_PROVEN
+acceptsNewProductPhysics: false
 commandContractVersion: 1
 traceContractVersion: 1
+visualFrameContractVersion: 1
 ```
 
-The backend identity is now represented by a runtime descriptor and exposed by `F4VehicleHost`.
-
-Product physics belongs in native JV Core compiled together with Box3D into one WASM module. Do not add final drivetrain, suspension, tire, aero or steering mechanics to the TypeScript fixture.
-
-Confirmed semantic mismatch:
+There is one concrete legacy descriptor shared across runtime and M6 modules. Confirmed mismatch:
 
 ```text
-native maxDriveSpeed = 40 rad/s wheel motor limit
-legacy TypeScript     = historically treated as linear target
+native maxDriveSpeed = 40 rad/s wheel limit
+legacy TypeScript     = chassis-linear target semantics
 ```
 
-## Steering and input rules
+Do not add final drivetrain, suspension, tire, aero or steering mechanics to the TypeScript fixture.
+
+## Existing browser foundation
+
+- deterministic fixed-step host;
+- source-aware keyboard and multi-touch Pointer Events input;
+- fail-safe lifecycle release and transactional rebuild;
+- real Box3D/WASM contacts;
+- 18-body / 29-joint / 9-shape M6 fixture;
+- physical rack `RELEASE | POSITION | RATE` steering;
+- reference drive/brake/reverse;
+- dependency-free WebGL debug observer;
+- portable relative-path build;
+- browser transport/capability report;
+- strict `ScenePackageV1` and synthetic scene-driven spawn.
+
+## Vehicle visual architecture
+
+### Do not use a character rig as the physics foundation
+
+V1 is a rigid-part GLB node rig:
 
 ```text
-SteeringCommand = RELEASE | POSITION | RATE
-RELEASE = hands off in the first fixed step
+physics/native snapshot
+        ↓
+VehicleVisualFrameV1
+        ↓
+stable partId / segmentId
+        ↓
+VehicleVisualPackageV1
+        ↓
+GLB nodes
 ```
 
-No hidden return-to-centre, centre hold, upright stabilization or speed-sensitive steering in the default path. Optional assists must be explicit and disabled by default.
+GLB nodes never store or depend on `b3BodyId`/`b3JointId`. The visual model is read-only and never drives physics.
 
-Each physical input stream has a stable `sourceId`. Semantic state is a set of active sources per side/control, not one global boolean.
+### Runtime channels
+
+M6 visual frame provides exactly:
 
 ```text
-one pointerId -> one semantic control owner
+18 PART transforms:
+  chassis, rack
+  wheel/knuckle/upper-arm/lower-arm × 4
+
+8 SEGMENT channels:
+  coilover × 4
+  steering-link × 4
 ```
 
-Pointer controls must:
+Transforms come from real Box3D bodies. Segment endpoints come from the exact local anchors used to build the joints.
 
-- use Pointer Events;
-- allow simultaneous steering and drive/brake;
-- capture before emitting `pressed=true`;
-- fail closed when capture is unavailable;
-- release on pointerup, pointercancel, lostpointercapture, blur, visibility hidden, pagehide and disposal;
-- use timestamps clamped to the consumed timeline cursor;
-- never manipulate physics or Box3D directly;
-- never let camera handling steal an owned control pointer.
-
-## Current hardening candidate
-
-The current branch contains source that has not yet received its fresh local gate after the validated `7204993…` checkpoint.
-
-Added boundaries:
+Wheel ownership:
 
 ```text
-VehicleRuntimeBackend descriptor/seam
-browser transport and capability report
-ScenePackageV1 strict validator and loader
-canonical synthetic scene manifest
-scene-driven vehicle spawn
-portable required-runtime-asset contract
-focused backend/runtime/scene tests
+tire + rim + rotating disc → m6.<corner>.wheel
+knuckle + fixed caliper    → m6.<corner>.knuckle
 ```
 
-No hardening change modifies vehicle physics, steering mechanics, drive mechanics, Box3D topology, input feel or renderer mechanics.
-
-## ScenePackageV1 rules
-
-Canonical scene:
+Coilover ownership:
 
 ```text
-public/scenes/synthetic-flat-lab.scene.json
+whole spring/rod → SEGMENT_STRETCH
+upper body       → START endpoint aim
+lower shaft      → END endpoint aim
 ```
 
-Coordinate contract:
+### Asset package
+
+`VehicleVisualPackageV1` requires:
+
+- one self-contained `.glb`;
+- meters, +X forward, +Y up, +Z right;
+- exact SHA-256 and byteLength;
+- unique binding IDs and node names;
+- positive correction transforms;
+- complete `M6_FULL_RIG_V1` coverage;
+- binding modes `PART`, `SEGMENT_STRETCH`, `SEGMENT_ENDPOINT_AIM`.
+
+Reject in V1:
+
+- external resources;
+- negative scale;
+- missing/duplicate bound nodes;
+- skins;
+- animations for physics parts;
+- morph targets;
+- sparse accessors;
+- non-triangle primitives;
+- unsupported GLB extensions;
+- byte/hash drift.
+
+Authoring contract: `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`.
+
+Local inspection command:
 
 ```text
-units: meter
-forward: +X
-up: +Y
-right: +Z
+npm run inspect:vehicle-glb -- <model.glb> [vehicle.visual.json]
 ```
 
-V1 describes:
-
-- scene identity;
-- spawn position and yaw;
-- render source: `NONE | GLB`;
-- collision source: `BUILTIN_GROUND_PLANE | TRIANGLE_MESH`;
-- clean site-relative asset URLs;
-- lowercase SHA-256 fields for external scene assets.
-
-The current `legacy_ts_m6` backend accepts only:
+## Model implementation sequence
 
 ```text
-render = NONE
-collision = BUILTIN_GROUND_PLANE at y=0
-spawn yawRadians = 0
+1 fresh local gate on current visual-rig source
+2 tiny generated renderable GLB + strict package fixture
+3 transactional fetch/hash/GLB CPU parse
+4 minimal mesh renderer beside unchanged debug observer
+5 drive all 18 rigid parts and 8 segments from visual frame
+6 prove rebuild/disposal and phone budget
+7 owner-authored simple chassis + four wheels
+8 knuckles, arms, tie rods and two-piece coilovers
+9 full body/interior/wheel asset
+10 optional LOD/compression only from measured need
 ```
 
-GLB rendering and triangle-mesh collision are schema-ready but intentionally fail backend support until their loaders exist.
+The final Jozz model must never be the first loader/GPU lifecycle test.
 
-The portable runtime assets must include:
+## Scene and native direction
+
+`ScenePackageV1` remains strict. Current backend supports only the synthetic built-in plane. Real GLB scene and triangle collision loaders come after the vehicle tiny-fixture path is stable.
+
+Long-term product physics:
 
 ```text
-receipts/jv_m6_factory_receipt.json
-scenes/synthetic-flat-lab.scene.json
+native JV Core + Box3D
+        ↓ one WASM module
+stable C ABI + immutable snapshots
+        ↓
+VehicleVisualFrameV1
+        ↓
+existing TypeScript renderer/assets/UI
 ```
-
-## Browser runtime report
-
-The demonstrator reports:
-
-- secure, loopback HTTP, LAN HTTP or other transport;
-- Web Crypto digest availability;
-- software SHA fallback availability;
-- WebGL API and Pointer Events presence;
-- touch/coarse-pointer state;
-- viewport and device-pixel ratio.
-
-This report is diagnostic. Actual renderer construction still determines whether WebGL starts.
-
-## Corrected near-term sequence
-
-```text
-1 run fresh Node 24 gate on the exact hardening head
-2 perform short desktop + phone smoke through the synthetic scene
-3 correct only the initial camera yaw; preserve accepted drag directions
-4 extract DOM/view bindings from main.ts without behavior changes
-5 create a scene runtime that owns render and collision resources
-6 validate a tiny GLB render fixture
-7 validate a tiny collision fixture
-8 convert and optimize the real scan
-9 choose license and clean public-history strategy
-10 publish only an owner-accepted exact package
-11 begin native JV WASM parity after host/input/scene seams stabilize
-```
-
-Native WASM is the long-term physics authority, not the immediate next milestone.
 
 ## Working rules
 
 - communicate with Jozz in Polish;
-- use GitHub connector and ordinary Git only;
-- Git Diff Patcher Bridge is forbidden;
-- prefer one active branch and one active PR;
-- close/delete obsolete branches after useful knowledge is compressed;
-- no custom GitHub Actions unless Jozz explicitly asks;
-- no destructive local reset/clean/stash without explicit need;
-- preserve exact runtime configuration and dependency identities;
-- distinguish source presence, automated tests, browser observation and owner acceptance;
-- provide one safe pasteable local command when user validation becomes necessary;
-- keep progress updates concrete during long work.
+- distinguish source presence, automated PASS, browser observation and owner acceptance;
+- no hidden physics assists or automatic steering centering;
+- no destructive local reset/clean/stash unless explicitly necessary;
+- preserve exact receipt and dependency identities;
+- use one safe pasteable local command for owner validation;
+- keep progress updates concrete;
+- do not rebuild documentation bureaucracy.
 
 ## Read next
 
 1. `docs/PROJECT_STATE.md`
-2. `docs/ARCHITECTURE.md`
-3. `docs/contracts/SCENE_PACKAGE_V1.md`
-4. `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`
-5. `docs/DEVELOPMENT.md`
+2. `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`
+3. `docs/ARCHITECTURE.md`
+4. `docs/contracts/SCENE_PACKAGE_V1.md`
+5. `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`
 6. `docs/decisions/ADR-0003-native-jv-core-wasm.md`
 
 ## Immediate boundary
 
 ```text
 SOURCE PRESENT:
-backend/runtime/scene contracts
-synthetic scene startup
-portable scene asset gate
-focused tests
+visual frame v1
+M6 stable part/segment identities
+strict GLB package and byte gate
+real Box3D visual-frame integration
+local GLB inspector
+focused positive/negative tests
 
 PENDING:
-fresh local gate
-desktop smoke
-phone smoke
+TypeScript/test/build gate
+browser regression smoke
 
 AFTER GREEN:
-initial camera yaw
-main.ts view/bootstrap extraction
-scene runtime ownership
+tiny runtime GLB fixture and CPU parser
+then minimal rendering
 ```
