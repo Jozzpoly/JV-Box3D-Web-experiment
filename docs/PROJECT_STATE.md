@@ -111,7 +111,7 @@ SEGMENT_STRETCH
 SEGMENT_ENDPOINT_AIM
 ```
 
-`SEGMENT_STRETCH` has an explicit `referenceLengthMeters`. Runtime composition is fixed as:
+`SEGMENT_STRETCH` has an explicit authored baseline between `0.001` and `10` metres. Stretch roots must use identity `localFromSource`; this prevents shear and ambiguous physical endpoints. Runtime composition is fixed as:
 
 ```text
 worldFromNode = worldFromRuntimeSource × localFromSource
@@ -130,10 +130,11 @@ Before CPU/GPU publication the pipeline requires:
 - `POSITION`, optional `NORMAL`, optional `TEXCOORD_0` only;
 - finite POSITION min/max;
 - independent identity bound roots;
+- rendered material fields limited to `baseColorFactor` and `doubleSided`;
 - no external URI, image, texture, skin, animation, morph, sparse accessor or extension;
-- no silently ignored vertex attributes.
+- no silently ignored vertex or material fields.
 
-Textures are intentionally rejected until image decode, sampler/texture ownership and mobile texture-memory budgets exist.
+Textures are intentionally rejected until image decode, sampler/texture ownership and mobile texture-memory budgets exist. Metallic/roughness and other PBR fields remain rejected until the shader actually preserves and renders them.
 
 ### CPU pipeline
 
@@ -143,11 +144,13 @@ manifest + package-relative URL
 → byte/hash gate
 → GLB policy
 → CPU decode
-→ sealed immutable CPU asset
+→ sealed ownership graph + owned typed arrays
 → complete binding ownership
 → mobile geometry budget
 → draw plan
 ```
+
+The ownership graph and name index expose no mutation path. Decoded typed arrays are owned by the asset and passed to the transactional GPU upload path; they are not described as deeply immutable bytes.
 
 Every bound root must own at least one renderable mesh descendant, and every mesh node must belong to exactly one binding root.
 
@@ -245,7 +248,7 @@ input → fixed-step commands → VehicleRuntimeBackend
                               ↓
                     VehicleVisualPackageV1
                               ↓
-            sealed CPU asset → draw plan → GPU asset
+        sealed ownership graph → draw plan → GPU asset
 
 static scene package → same CPU/GPU mesh path
 native_jv_wasm later → same visual frame contract
