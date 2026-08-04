@@ -229,11 +229,13 @@ export function assertGlbRuntimePolicyV1(
           childValue,
           `glTF nodes[${index}].children[${childOffset}]`,
         );
-        if (parentCounts[child] === undefined) {
+        const currentParentCount = parentCounts[child];
+        if (currentParentCount === undefined) {
           reject(`glTF nodes[${index}] references missing child ${child}`);
         }
-        parentCounts[child] += 1;
-        if (parentCounts[child] > 1) {
+        const nextParentCount = currentParentCount + 1;
+        parentCounts[child] = nextParentCount;
+        if (nextParentCount > 1) {
           reject(`glTF node ${child} has more than one parent`);
         }
       }
