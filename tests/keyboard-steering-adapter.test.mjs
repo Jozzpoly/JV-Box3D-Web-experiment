@@ -100,3 +100,28 @@ test("visibility loss releases active steering at the captured timestamp", () =>
   assert.deepEqual(timeline.consumeInterval(0, 10).command, { mode: "RATE", value: -0.5 });
   adapter.dispose();
 });
+
+test("dispose clamps steering release to the consumed timeline cursor", () => {
+  const windowTarget = new FakeEventTarget();
+  const documentTarget = new FakeEventTarget();
+  const timeline = new SteeringInputTimeline(0);
+  const adapter = new KeyboardSteeringAdapter({
+    windowTarget,
+    documentTarget,
+    timeline,
+    now: () => 0,
+    isDocumentHidden: () => false,
+  });
+
+  windowTarget.dispatch("keydown", { code: "KeyA" });
+  assert.deepEqual(timeline.consumeInterval(0, 10).command, {
+    mode: "RATE",
+    value: 1,
+  });
+
+  assert.doesNotThrow(() => adapter.dispose());
+  assert.deepEqual(timeline.consumeInterval(10, 20).command, {
+    mode: "RELEASE",
+  });
+  assert.equal(windowTarget.listenerCount() + documentTarget.listenerCount(), 0);
+});
