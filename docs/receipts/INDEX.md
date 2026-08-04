@@ -12,7 +12,7 @@ Receipts are immutable evidence records. A later interpretation does not rewrite
 | `source/NATIVE_JV_SOURCE_2026_08_03.md` | pinned native JV audit input and critical source blobs |
 | `source/BOX3D_JS_DEPENDENCY_2026_08_03.md` | exact published `box3d.js@0.0.2` artifact, binding and upstream engine identity |
 | `source/BOX3D_ENGINE_DELTA_2026_08_03.md` | source delta between upstream engine used by npm and the pinned JV fork |
-| `../../public/receipts/jv_m6_factory_receipt.json` | byte-pinned native factory configuration artifact consumed by the reference backend |
+| `../../public/receipts/jv_m6_factory_receipt.json` | byte-pinned native factory configuration consumed by the reference backend |
 
 ## Runtime evidence
 
@@ -20,62 +20,100 @@ Receipts are immutable evidence records. A later interpretation does not rewrite
 |---|---|
 | `runtime/F2_NODE24_VALIDATION.md` | F2 Node/toolchain, tests and browser validation |
 | `runtime/F2_BROWSER_SMOKE.json` | machine-readable F2 browser generation/rebuild receipt |
-| `runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md` | 75/75 reference runtime, build/browser liveness, dynamic rack matrix and later semantic drive verdict |
+| `runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md` | reference runtime, browser liveness, steering matrix and semantic drive verdict |
 | `runtime/history/F5_MINIMAL_DRIVE_ATTEMPT_1_2026_08_04.md` | incomplete 70/71 attempt that exposed stale-clock disposal behavior |
 
-The first demonstrator-foundation gate is preserved in PR #18 comments rather than rewritten as a green receipt:
+Demonstrator-foundation gates are preserved as falsification evidence, not rewritten as green receipts:
 
 ```text
-81/81 tests PASS
-TypeScript and Vite bundle PASS
-portable validation correctly FAILed on root-absolute receipt URL
+67067c5d46fc...
+81/81 PASS + bundle PASS
+portable FAIL on root-absolute receipt URL
+
+2f14d109980c...
+109 tests: 108 PASS / 1 public-report sanitizer FAIL
+foundation gate stopped before package validation
 ```
 
-A newer full demonstrator receipt must be created only after a fresh local gate.
+A new full demonstrator receipt may be created only after the current exact head passes the complete local foundation gate.
 
 ## Inventory evidence
 
 | Receipt | Scope |
 |---|---|
 | `inventory/REPOSITORY_INVENTORY_2026_08_03.md` | byte-level public repository snapshots and explicit coverage limits |
-| `inventory/GITHUB_CLOUD_SURFACE_2026_08_04.md` | partial PR/issue/workflow/artifact inventory and explicit unverified cloud surfaces |
+| `inventory/GITHUB_CLOUD_SURFACE_2026_08_04.md` | PR/issue/workflow/artifact/repository metadata inventory; exact artifact ZIP byte review |
+| `inventory/GITHUB_ACTIONS_LOG_REVIEW_2026_08_04.md` | raw log review for source-audit, F3 and F4; unresolved manual F2/cache/all-runs scope |
 
-Local generated reports are intentionally ignored by Git:
+Cloud facts currently pinned:
+
+```text
+artifact 8856776966
+ZIP SHA-256 1e6d198dcdb9b9bde45cd6a5142b28d47c7ff96473c99e74880aee5c5918f884
+unsafe paths 0
+symlinks 0
+secret findings 0
+JV/Jozz/local-owner data observed 0
+
+raw logs reviewed
+91694046725 source audit
+91826090330 F3
+91834173347 F4
+```
+
+## Local source-public evidence
+
+Generated locally and intentionally ignored:
 
 ```text
 .local-audit/public-readiness.json
 .local-audit/license-inventory.json
+.local-audit/public-review-classifications.json
 ```
 
-They become committed receipts only after findings are classified and sensitive values remain redacted.
+Meaning:
+
+- `public-readiness.json` records sanitized current/history/ref/path findings for one exact commit;
+- `license-inventory.json` separates root project license, notices and nested vendor licenses;
+- `public-review-classifications.json` requires an explicit disposition for every sanitized review finding.
+
+These files do not become committed receipts automatically. Before any committed summary:
+
+1. source commit must match the exact candidate;
+2. blockers must be remediated, not waived;
+3. every review finding must be classified;
+4. ledger rationales must not copy private identifiers;
+5. owner decisions and manual GitHub UI findings must be added separately.
 
 ## Evidence interpretation rules
 
 ```text
-SOURCE_FACT             source bytes or source semantics at an exact identity
-MEASURED_FACT           named runtime measurement
-MECHANISM_FALSIFICATION test that distinguishes competing mechanisms
-INTERNAL_CONSISTENCY    implementation agrees with its own contract
-LIVENESS_SMOKE          runtime starts and progresses
-PORTABLE_STATIC_PASS    file/path/hash/compliance contract
-LOOPBACK_HTTP_PASS      exact artifact bytes under root and project subpath
-DESKTOP_BROWSER_PASS    real browser execution without uncaught errors
-LAN_PHONE_PASS          real phone interaction/performance evidence
-SCENARIO_EQUIVALENCE    two named scenarios compared under a stated tolerance
-VISUAL_OBSERVATION      observed render/UI behavior
-OWNER_VALIDATED         Jozz issued the manual verdict
-PUBLIC_READY_PASS       source/history/license/cloud surfaces accepted
-PAGES_HTTPS_PASS        exact package works from real Pages URL
+SOURCE_FACT                   exact source bytes or semantics
+MEASURED_FACT                 named runtime or repository measurement
+MECHANISM_FALSIFICATION       test distinguishing competing mechanisms
+INTERNAL_CONSISTENCY          implementation agrees with its own contract
+LIVENESS_SMOKE                runtime starts and progresses
+PORTABLE_STATIC_PASS          file/path/hash/compliance contract
+LOOPBACK_HTTP_PASS            exact bytes under root and project subpath
+DESKTOP_BROWSER_PASS          real browser execution without uncaught errors
+LAN_PHONE_PASS                real phone interaction/performance evidence
+SCENARIO_EQUIVALENCE          named scenarios compared under a stated tolerance
+VISUAL_OBSERVATION            observed render/UI behavior
+OWNER_VALIDATED               Jozz issued the manual verdict
+SOURCE_PUBLIC_READY_PASS      source/history/license/cloud/default branch accepted
+DEMONSTRATOR_PACKAGE_READY    exact portable package and desktop browser accepted
+PAGES_PUBLISH_READY_PASS      phone/package/release branch accepted for publication
+PAGES_HTTPS_PASS              exact package works from the real Pages URL
 ```
 
-A green internal test is not automatically native parity, mobile readiness, public readiness or owner validation.
+A green internal test is not automatically native parity, mobile readiness, source-public readiness, Pages readiness or owner acceptance.
 
 ## Freshness
 
 Every receipt is valid only for its pinned source/toolchain/config scope. Before reuse:
 
 1. compare exact source identities;
-2. review changed blobs or ABI fields;
+2. review changed blobs, ABI or contract fields;
 3. preserve the older receipt;
 4. create a new delta/measurement record;
-5. do not silently update dates or hashes in historical evidence.
+5. do not silently update dates, hashes or verdicts in historical evidence.
