@@ -264,7 +264,11 @@ test("all authoring axes and exact opposite directions resolve deterministically
       "bind.m6.fl.coilover",
     );
     closePoint(
-      transformVehicleVisualPointV1(resolved.worldFromNode, localAxis),
+      transformVehicleVisualPointV1(resolved.worldFromNode, {
+        x: -localAxis.x,
+        y: -localAxis.y,
+        z: -localAxis.z,
+      }),
       { x: 0, y: 0, z: 0 },
     );
   }
