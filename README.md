@@ -1,6 +1,6 @@
 # JV Web
 
-JV Web is a browser-based vehicle-physics experiment built around Box3D WebAssembly. It is the current public-facing research host for Jozz Vehicle: a place to test deterministic input, vehicle topology, steering, drive, rendering and eventually a native JV physics core in the browser.
+JV Web is a browser-based vehicle-physics experiment built around Box3D WebAssembly. It is the current research host for Jozz Vehicle: a place to develop deterministic input, vehicle topology, steering, drive, rendering, mobile interaction and eventually the native JV physics core in the browser.
 
 The project is experimental, but the repository is intended to remain understandable and runnable rather than becoming a collection of disconnected prototypes.
 
@@ -17,6 +17,21 @@ The browser build currently contains:
 - a dependency-free WebGL observer;
 - rebuild and disposal without reloading the page;
 - a relative-path portable build suitable for localhost, LAN and future GitHub Pages.
+
+Validated foundation checkpoint:
+
+```text
+commit: db7768ebc5d191d96c7ff0022572093c00549453
+Node: 24.16.0
+npm: 11.17.0
+96/96 tests PASS
+TypeScript PASS
+third-party verification PASS
+portable static/privacy/network/HTTP validation PASS
+npm audit: 0 vulnerabilities observed
+```
+
+This proves the tested source and portable-package contracts. It is not yet a current desktop-browser, phone, driving-feel or native-parity acceptance.
 
 ## Run locally
 
@@ -41,7 +56,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ".\tools\run-demonstrator-fo
 Preview the generated package:
 
 ```powershell
-npm run preview -- --host 0.0.0.0
+npm run preview -- --host 0.0.0.0 --port 4173 --strictPort
 ```
 
 ## Controls
@@ -51,9 +66,11 @@ A / D or Left / Right   steering
 W / Up                  forward
 S / Down                reverse
 Space                   brake
-mouse drag               orbit camera
+mouse or touch drag      orbit camera
 mouse wheel              zoom
 ```
+
+Dedicated mobile driving controls are the next active development milestone. They will feed the same semantic fixed-step input timelines as the keyboard rather than manipulating physics directly.
 
 ## Architecture truth
 
@@ -94,14 +111,18 @@ docs/HISTORY.md              compressed project history
 docs/NATIVE_PORT_NOTES.md    native/WASM migration notes
 ```
 
+The remote branch surface has been reduced to `main` plus one active development branch. Older pull requests are closed as historical context.
+
 ## Known limitations
 
+- exact current-head browser interaction still needs a fresh manual smoke;
+- dedicated mobile controls and real-phone validation are not implemented yet;
+- no scene package or real scan scene yet;
 - driving feel and steering profiles are not approved product defaults;
 - the legacy split-sphere wheel is a regression fixture, not the future tire;
 - no native JV WASM backend yet;
-- no mobile UI or real scan scene yet;
 - the current renderer is diagnostic rather than final art;
-- a fresh local gate is required after the current repository cleanup.
+- the active experimental history should not be fast-forwarded wholesale to a future presentation-ready `main`.
 
 ## License and assets
 
