@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { auditPublicReadiness } from "./public-readiness-lib.mjs";
+import { auditPublicReadiness } from "./public-readiness-report.mjs";
 
 const defaultRoot = fileURLToPath(new URL("../", import.meta.url));
 
