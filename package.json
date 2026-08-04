@@ -14,6 +14,7 @@
     "check:third-party": "node tools/verify-third-party-notices.mjs",
     "check:portable": "node tools/validate-portable-build.mjs",
     "audit:public": "node tools/audit-public-readiness.mjs",
+    "audit:licenses": "node tools/audit-reachable-licenses.mjs",
     "check": "npm run typecheck && npm run test && npm run check:third-party",
     "build:bundle": "vite build",
     "build:portable": "npm run build:bundle && node tools/write-portable-build-manifest.mjs && npm run check:portable",
