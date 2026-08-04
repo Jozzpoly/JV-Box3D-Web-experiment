@@ -82,3 +82,30 @@ test("same-timestamp longitudinal events preserve insertion order", () => {
   assert.equal(sample.forwardPressedAtEnd, false);
   assert.equal(sample.reversePressedAtEnd, true);
 });
+
+test("releasing one source does not cancel another source on the same control", () => {
+  const timeline = new LongitudinalInputTimeline(0);
+  timeline.enqueueButton("FORWARD", true, 0, "keyboard");
+  timeline.enqueueButton("FORWARD", true, 2, "touch");
+  timeline.enqueueButton("FORWARD", false, 4, "touch");
+  timeline.enqueueButton("FORWARD", false, 8, "keyboard");
+
+  const sample = timeline.consumeInterval(0, 10);
+  assert.deepEqual(sample.command, { throttle: 0.8, brake: 0 });
+  assert.equal(sample.forwardPressedAtEnd, false);
+});
+
+test("release-all only clears longitudinal controls owned by its source", () => {
+  const timeline = new LongitudinalInputTimeline(0);
+  timeline.enqueueButton("FORWARD", true, 0, "keyboard");
+  timeline.enqueueButton("FORWARD", true, 2, "touch");
+  timeline.enqueueButton("BRAKE", true, 2, "touch");
+  timeline.enqueueReleaseAll(4, "DISPOSE", "keyboard");
+  timeline.enqueueButton("FORWARD", false, 8, "touch");
+  timeline.enqueueButton("BRAKE", false, 8, "touch");
+
+  const sample = timeline.consumeInterval(0, 10);
+  assert.deepEqual(sample.command, { throttle: 0.8, brake: 0.6 });
+  assert.equal(sample.forwardPressedAtEnd, false);
+  assert.equal(sample.brakePressedAtEnd, false);
+});
