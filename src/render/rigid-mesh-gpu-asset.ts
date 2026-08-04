@@ -2,6 +2,7 @@ import type {
   GlbRigidCpuAssetV1,
   GlbRigidPrimitiveV1,
 } from "../visual/glb-rigid-mesh-decoder.js";
+import { assertGlbRigidCpuAssetArrayBufferBackedV1 } from "../visual/glb-rigid-array-buffer-contract.js";
 
 export interface RigidMeshGpuPrimitiveV1 {
   readonly positionBuffer: WebGLBuffer;
@@ -64,9 +65,11 @@ export function createRigidMeshGpuAssetV1(
   gl: WebGLRenderingContext,
   cpuAsset: GlbRigidCpuAssetV1,
 ): RigidMeshGpuAssetV1 {
+  assertGlbRigidCpuAssetArrayBufferBackedV1(cpuAsset);
+  const uploadAsset = cpuAsset;
   const owned: WebGLBuffer[] = [];
   try {
-    const meshes = cpuAsset.meshes.map((mesh, meshIndex) =>
+    const meshes = uploadAsset.meshes.map((mesh, meshIndex) =>
       Object.freeze({
         primitives: Object.freeze(
           mesh.primitives.map((primitive, primitiveIndex) => {
@@ -123,7 +126,7 @@ export function createRigidMeshGpuAssetV1(
     let isDisposed = false;
     return Object.freeze({
       meshes: Object.freeze(meshes),
-      gpuByteLength: cpuAsset.meshes.reduce(
+      gpuByteLength: uploadAsset.meshes.reduce(
         (total, mesh) =>
           total +
           mesh.primitives.reduce(
