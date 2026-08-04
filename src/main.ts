@@ -7,6 +7,14 @@ import type {
 import type { SteeringCommand } from "./input/steering-command.js";
 import { M6DebugRenderer } from "./render/m6-debug-renderer.js";
 import {
+  formatBrowserRuntimeReport,
+  inspectCurrentBrowserRuntime,
+} from "./runtime/browser-runtime-report.js";
+import {
+  assertLegacyM6SceneSupport,
+  loadScenePackageV1,
+} from "./scene/scene-package.js";
+import {
   INITIAL_RATE_STEERING_PROFILE_ID,
   RATE_STEERING_PROFILES,
   type M6TraceFrame,
@@ -114,9 +122,9 @@ app.innerHTML = `
       <div class="panel-heading">
         <div>
           <p class="eyebrow">Live mechanics laboratory</p>
-          <h2>RATE steering + native drive</h2>
+          <h2>RATE steering + reference drive</h2>
         </div>
-        <p class="status" data-status>Validating native receipt and Box3D boundary…</p>
+        <p class="status" data-status>Validating scene, receipt and Box3D boundary…</p>
       </div>
 
       <label class="profile-control">
@@ -151,6 +159,9 @@ app.innerHTML = `
       <details>
         <summary>Full trace and provenance</summary>
         <dl class="telemetry-grid">
+          <div><dt>Browser runtime</dt><dd data-browser-runtime>PENDING</dd></div>
+          <div><dt>Vehicle backend</dt><dd data-runtime-backend>PENDING</dd></div>
+          <div><dt>Scene package</dt><dd data-scene-package>PENDING</dd></div>
           <div><dt>Native source</dt><dd data-native-source>PENDING</dd></div>
           <div><dt>Box3D</dt><dd data-box3d>PENDING</dd></div>
           <div><dt>Topology</dt><dd data-topology>PENDING</dd></div>
@@ -199,6 +210,9 @@ const sceneDisplacementElement = requireElement<HTMLElement>("[data-scene-displa
 const sceneStepElement = requireElement<HTMLElement>("[data-scene-step]");
 const statusElement = requireElement<HTMLElement>("[data-status]");
 const profileSelect = requireElement<HTMLSelectElement>("[data-rate-profile]");
+const browserRuntimeElement = requireElement<HTMLElement>("[data-browser-runtime]");
+const runtimeBackendElement = requireElement<HTMLElement>("[data-runtime-backend]");
+const scenePackageElement = requireElement<HTMLElement>("[data-scene-package]");
 const nativeSourceElement = requireElement<HTMLElement>("[data-native-source]");
 const box3dElement = requireElement<HTMLElement>("[data-box3d]");
 const topologyElement = requireElement<HTMLElement>("[data-topology]");
@@ -274,6 +288,11 @@ function resetPointerControlStates(): void {
     setPointerControlState(control, false);
   }
 }
+
+const browserRuntimeReport = inspectCurrentBrowserRuntime();
+browserRuntimeElement.textContent = formatBrowserRuntimeReport(
+  browserRuntimeReport,
+);
 
 const animationFrames = {
   request: (callback: FrameRequestCallback) =>
@@ -445,6 +464,8 @@ function renderTrace(trace: M6TraceFrame): void {
 
 function resetDisplay(): void {
   resetPointerControlStates();
+  runtimeBackendElement.textContent = "PENDING";
+  scenePackageElement.textContent = "PENDING";
   nativeSourceElement.textContent = "PENDING";
   box3dElement.textContent = "PENDING";
   topologyElement.textContent = "PENDING";
@@ -474,12 +495,27 @@ async function startHost(): Promise<void> {
   restartButton.disabled = true;
   profileSelect.disabled = true;
   resetDisplay();
-  statusElement.textContent = "Validating native receipt and Box3D boundary…";
+  statusElement.textContent =
+    "Loading scene package and validating runtime boundaries…";
   host?.dispose();
   host = null;
   let droppedTotalMs = 0;
 
   try {
+    const scene = await loadScenePackageV1();
+    assertLegacyM6SceneSupport(scene);
+    if (Math.abs(scene.spawn.yawRadians) > 1e-9) {
+      throw new Error(
+        "legacy_ts_m6 currently requires scene spawn yawRadians = 0.",
+      );
+    }
+    if (generation !== startupGeneration) {
+      return;
+    }
+    const [spawnX, spawnY, spawnZ] = scene.spawn.position;
+    scenePackageElement.textContent =
+      `${scene.id} · ${scene.units} · ${scene.collision.kind}`;
+
     const nextHost = await F4VehicleHost.start({
       now: () => performance.now(),
       animationFrames,
@@ -489,7 +525,7 @@ async function startHost(): Promise<void> {
       pointerControls,
       onPointerControlStateChange: setPointerControlState,
       generation,
-      spawn: { x: 0, y: 1.2, z: 0 },
+      spawn: { x: spawnX, y: spawnY, z: spawnZ },
       rateProfileId,
       onVehicleStep: (_step, _steering, _longitudinal, trace) => {
         renderTrace(trace);
@@ -519,12 +555,17 @@ async function startHost(): Promise<void> {
     }
 
     host = nextHost;
+    const backend = nextHost.backend;
     const nativeReceipt = nextHost.nativeReceipt;
     const box3dReceipt = nextHost.box3dReceipt;
     const version = box3dReceipt.engineVersion;
     const counters = nextHost.counters;
     const profile = nextHost.rateProfile;
 
+    runtimeBackendElement.textContent =
+      `${backend.id} · authority ${backend.productPhysicsAuthority ? "YES" : "NO"} · ` +
+      `parity ${backend.nativeParity} · command v${backend.commandContractVersion} · ` +
+      `trace v${backend.traceContractVersion}`;
     nativeSourceElement.textContent =
       `${nativeReceipt.source.commit.slice(0, 8)} · ` +
       `${nativeReceipt.serializedFieldCount}/76 fields`;
@@ -539,8 +580,10 @@ async function startHost(): Promise<void> {
       `${(profile.maxTargetLeadMeters * 1000).toFixed(0)} mm cap`;
     generationElement.textContent = String(generation);
     statusElement.textContent =
-      `Running — ${box3dReceipt.identity.packageName}@${box3dReceipt.identity.packageVersion}; ` +
-      `RATE ${profile.rackRateMetersPerSecond.toFixed(2)} m/s + native wheel drive; keyboard + pointer controls; generation ${generation}`;
+      `Running — ${scene.id}; ${backend.id}; ` +
+      `${box3dReceipt.identity.packageName}@${box3dReceipt.identity.packageVersion}; ` +
+      `RATE ${profile.rackRateMetersPerSecond.toFixed(2)} m/s + reference wheel drive; ` +
+      `keyboard + pointer controls; generation ${generation}`;
   } catch (error: unknown) {
     if (generation !== startupGeneration) {
       return;
