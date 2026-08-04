@@ -33,10 +33,10 @@ export function requirePositiveInteger(
   value: unknown,
   label: string,
 ): number {
-  if (!Number.isInteger(value) || !(value as number > 0)) {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
     throw new Error(`${label} must be a positive integer.`);
   }
-  return value as number;
+  return value;
 }
 
 export function requireCleanSiteRelativeUrl(
