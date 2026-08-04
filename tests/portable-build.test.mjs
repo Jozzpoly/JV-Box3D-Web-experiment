@@ -16,6 +16,7 @@ import {
 } from "../tools/portable-build-lib.mjs";
 
 const RECEIPT_PATH = "receipts/jv_m6_factory_receipt.json";
+const NOTICE_PATH = "THIRD_PARTY_NOTICES.md";
 
 async function createFixture() {
   const root = await mkdtemp(resolve(tmpdir(), "jv-portable-build-"));
@@ -35,6 +36,7 @@ async function createFixture() {
   );
   await writeFile(resolve(root, "assets", "texture.bin"), "texture", "utf8");
   await writeFile(resolve(root, RECEIPT_PATH), "{}\n", "utf8");
+  await writeFile(resolve(root, NOTICE_PATH), "fixture notices\n", "utf8");
   return root;
 }
 
@@ -63,6 +65,7 @@ async function writeManifest(root, mutate = () => {}) {
       nativeParity: "NOT_PROVEN",
     },
     runtimeAssets: [RECEIPT_PATH],
+    complianceFiles: [NOTICE_PATH],
     publication: {
       mode: "DORMANT",
       pathPortableCandidate: true,
@@ -100,7 +103,7 @@ async function withFixture(callback) {
   }
 }
 
-test("portable package accepts relative HTML, CSS and runtime assets", async () => {
+test("portable package accepts relative paths, runtime assets and compliance files", async () => {
   await withFixture(async (root) => {
     await writeManifest(root);
     const result = await validatePortableBuild(root);
@@ -108,6 +111,7 @@ test("portable package accepts relative HTML, CSS and runtime assets", async () 
     assert.equal(result.manifest.publication.publicReady, false);
     assert.equal(result.manifest.publication.pagesPublicationApproved, false);
     assert.deepEqual(result.manifest.runtimeAssets, [RECEIPT_PATH]);
+    assert.deepEqual(result.manifest.complianceFiles, [NOTICE_PATH]);
   });
 });
 
@@ -185,7 +189,7 @@ test("portable package cannot elevate the legacy backend to product authority", 
   });
 });
 
-test("portable package rejects an undeclared or escaping runtime asset", async () => {
+test("portable package rejects an escaping runtime asset", async () => {
   await withFixture(async (root) => {
     await writeManifest(root);
     await rewriteManifest(root, (manifest) => {
@@ -193,11 +197,31 @@ test("portable package rejects an undeclared or escaping runtime asset", async (
     });
     const result = await validatePortableBuild(root);
     assert.ok(
-      result.errors.some((error) => error.includes("unsafe runtime asset path")),
+      result.errors.some((error) => error.includes("unsafe runtimeAssets path")),
     );
     assert.ok(
       result.errors.some((error) =>
-        error.includes("must declare the pinned native receipt"),
+        error.includes(`must declare ${RECEIPT_PATH} in runtimeAssets`),
+      ),
+    );
+  });
+});
+
+test("portable package rejects missing or escaping compliance notices", async () => {
+  await withFixture(async (root) => {
+    await writeManifest(root);
+    await rewriteManifest(root, (manifest) => {
+      manifest.complianceFiles = ["../private/notice.txt"];
+    });
+    const result = await validatePortableBuild(root);
+    assert.ok(
+      result.errors.some((error) =>
+        error.includes("unsafe complianceFiles path"),
+      ),
+    );
+    assert.ok(
+      result.errors.some((error) =>
+        error.includes(`must declare ${NOTICE_PATH} in complianceFiles`),
       ),
     );
   });
