@@ -65,9 +65,6 @@ test("every platform budget fails closed independently", () => {
       ),
     /material count/,
   );
-  const oversizedPositions = new Float32Array(
-    Math.floor(limits.maxGeometryBytes / 4) + 1,
-  );
   assert.throws(
     () =>
       assertVehicleVisualBudgetV1(
@@ -77,10 +74,12 @@ test("every platform budget fails closed independently", () => {
               name: null,
               primitives: [
                 {
-                  positions: oversizedPositions,
+                  positions: {
+                    byteLength: limits.maxGeometryBytes + 1,
+                  },
                   normals: null,
                   texcoord0: null,
-                  indices: new Uint16Array(3),
+                  indices: { byteLength: 0 },
                   materialIndex: null,
                 },
               ],
