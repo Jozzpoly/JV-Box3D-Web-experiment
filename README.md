@@ -1,159 +1,119 @@
-# JV Box3D Web Experiment
+# JV Box3D Web
 
-Browser research and development line for bringing the current Jozz Vehicle architecture to WebAssembly without replacing physical behavior with hidden host-side assists.
+Browser host and research environment for Jozz Vehicle, currently undergoing a fundamental architecture and documentation refoundation.
 
 ## Read first
 
 1. [`AI_PROJECT_MEMORY.md`](AI_PROJECT_MEMORY.md)
 2. [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md)
-3. [`docs/DOCUMENT_INDEX.md`](docs/DOCUMENT_INDEX.md)
-4. [`docs/IMPLEMENTATION_ROADMAP.md`](docs/IMPLEMENTATION_ROADMAP.md)
-5. [`docs/AUDIT_ERRATA_2026_08_03_PL.md`](docs/AUDIT_ERRATA_2026_08_03_PL.md)
+3. [`docs/REFOUNDATION_LOOP_PL.md`](docs/REFOUNDATION_LOOP_PL.md)
+4. [`docs/decisions/ADR-0003-native-jv-core-wasm.md`](docs/decisions/ADR-0003-native-jv-core-wasm.md)
 
-## Branches
+Historical audits and handoffs are evidence, not active instructions. Their classification and migration are tracked in [`docs/DOCUMENT_CLEANUP_MANIFEST_2026_08_04_PL.md`](docs/DOCUMENT_CLEANUP_MANIFEST_2026_08_04_PL.md).
 
-### `agent/bootstrap-web-poc`
+## Current truth
 
-Historical runnable prototype, draft PR #1.
+The browser runtime already demonstrates:
 
-```text
-QUARANTINED IMPLEMENTATION EVIDENCE
-```
+- deterministic fixed-step ownership;
+- timestamped steering and longitudinal input;
+- real `box3d.js` WASM worlds and contacts;
+- a receipt-derived multi-body M6 reference vehicle;
+- physical rack steering with `RELEASE | POSITION | RATE`;
+- a read-only WebGL observer;
+- physical wheel-motor drive, reverse, coast and braking;
+- 75/75 local tests, TypeScript check, production build and browser execution on the latest validated pre-refoundation head.
 
-It proved browser/WASM viability and contains some recoverable experiments, but also rejected behavior such as automatic steering return-to-zero and centre hold. Do not continue it as the product foundation and do not merge it wholesale.
+This is a serious browser research fixture, but **not yet a native-parity JV product runtime**.
 
-### `agent/fundamental-audit-rebuild`
+A critical audit found that the current TypeScript drive path interprets native `maxDriveSpeed = 40` as a linear target in `m/s`, while native JV defines it as a wheel rev limit in `rad/s` and scales torque rather than target speed with throttle. Green liveness and determinism tests therefore did not prove behavioral parity.
 
-Audit, source receipts, architecture contracts and errata, draft PR #2.
+## Architecture direction
 
-```text
-FOUNDATION DOCUMENTATION
-NO PRODUCT RUNTIME
-```
-
-### `agent/clean-browser-core`
-
-Active clean implementation destination.
+The product physics authority will be:
 
 ```text
-DEVELOP NEW CODE HERE
+Box3D source + portable native JV Core
+                    ↓
+          one WebAssembly module
+                    ↓
+      stable C ABI + immutable snapshots
+                    ↓
+        TypeScript browser host/render/UI
 ```
 
-It starts from the consolidated foundation rather than from PR #1.
-
-## Active work
-
-Current implementation issue:
+The current TypeScript vehicle becomes the named reference backend:
 
 ```text
-#3 — F1 Clean host and deterministic input timeline
+legacy_ts_m6
 ```
 
-Current draft implementation review:
+It remains useful for browser integration, lifecycle, input, rendering, A/B comparisons and known failure reproduction. It is not the destination for further product physics or future tire development.
+
+## Owner rules
+
+- Jozz owns feel, visual and product-default decisions.
+- No hidden steering centering or other artificial default mechanics.
+- `RELEASE` means hands off in the first fixed step.
+- Legacy split sphere/sidewall is a regression baseline, not the future tire.
+- Wheel Scope feeds knowledge and validated native backends, not automatic code promotion.
+- No merge or ready-for-review transition without Jozz.
+- No automatic workflow loops, self-modifying CI or Git Diff Patcher Bridge.
+
+## Current working line
 
 ```text
-#4 — F1 deterministic browser host and semantic steering timeline
+agent/jv-web-refoundation
 ```
 
-Current clean checkpoint:
+It starts from:
 
 ```text
-commit a73540e863c9f1dc878964fa3d32786a86d7677b
+agent/f5-dynamic-steering-validation
+0d938e402f618ae34e0d959a9862d97c2f88a926
 ```
 
-Implemented at this checkpoint:
+Historical stacked draft PRs remain untouched as evidence. Refoundation changes are isolated and reversible.
 
-- strict TypeScript project shell;
-- transactional resource ownership and startup rollback;
-- bounded fixed-step clock with explicit dropped-time intervals;
-- timestamped input timeline;
-- semantic steering commands `RELEASE | POSITION | RATE`;
-- proportional preservation of sub-frame taps;
-- disposable keyboard/focus lifecycle;
-- restartable browser host without page reload;
-- deterministic unit tests independent of render cadence.
+## Local reference runtime
 
-Deliberately absent:
-
-- Box3D;
-- vehicle topology or controller;
-- Three.js and real assets;
-- touch controls;
-- campus and scan;
-- startup physics probes.
-
-The active issue is the operational progress log. Broad audit documents are not used as day-to-day TODO lists.
-
-## Current F1 gate
-
-The source has passed isolated strict compilation and 16 deterministic tests with the available local validation toolchain. F1 is not complete yet because the clean branch still needs:
-
-1. a generated and committed `package-lock.json` from the exact declared versions;
-2. `npm ci`, `npm run check` and `npm run build` on the target Node 24 environment;
-3. a real browser smoke of the host and keyboard lifecycle.
-
-No GitHub Actions workflow is used automatically for this work.
-
-## Current first milestone
-
-`Clean Browser Core M0`:
-
-- deterministic fixed-step host;
-- timestamped input event timeline;
-- semantic steering commands `RELEASE | POSITION | RATE`;
-- transactional lifecycle;
-- pinned Box3D/WASM boundary;
-- native-generated config/factory receipt;
-- minimal current M6 topology with one controller;
-- no artificial steering centering;
-- desktop short-tap steering experiment;
-- primitive diagnostics before real visual assets.
-
-Full campus, scans, real suspension assets, touch UI and a new tire backend are deliberately later stages.
-
-## Core owner rules
-
-- Current architecture begins with M6/M7+, not historical M5.
-- Default realistic mechanics contain no hidden artificial stabilization.
-- Steering release means immediate hands-off; physical caster/contact may move the rack while rolling.
-- Small digital steering taps are valuable and are recovered through a bounded `RATE` command, not automatic return-to-zero.
-- Legacy sphere/split wheel is only a regression fixture, not the future tire architecture.
-- Mobile uses the same physics profile with a different input and render host.
-- Feel and visual verdicts belong to Jozz.
-- Git Diff Patcher Bridge is forbidden for this project.
-
-## Native source snapshots used by the current foundation
+Target environment:
 
 ```text
-Jozzpoly/Box3d_FunProject
-main@959aefb78587ce60cf2b8eb03ff82797a4165142
-
-current wheel research snapshot:
-jozz-scan-terrain-f0@761bd3ef60992f7dec3bcdddf1945fdbc1cb0825
+Node 24.x
+npm 11.x
 ```
 
-GitHub snapshots do not prove Jozz's local uncommitted working tree.
+From the repository root:
 
-## Tool and evidence policy
-
-- GitHub connector for repository work;
-- ordinary local Git commands only when local state must be changed;
-- no Git Diff Patcher Bridge;
-- no automatic forensic workflows;
-- no GitHub Actions run merely to generate files or repeat known evidence;
-- local/Node tests before browser tests;
-- browser smoke before Box3D integration;
-- every claim names its evidence level.
-
-The three forensic workflows in the repository are manual-only:
-
-```yaml
-on:
-  workflow_dispatch:
+```powershell
+npm ci
+npm run check
+npm run build
+npm run dev
 ```
 
-They are not ordinary product CI.
+The current reference runtime uses `box3d.js@0.0.2`. A custom native JV Core + Box3D WASM build is the next architectural milestone, not yet present on this branch.
 
-## Status
+## Repository roles
 
-The foundation is consolidated and the first clean implementation layer now exists. It is not yet F1-complete, physics-capable or parity-proven. Development proceeds on `agent/clean-browser-core` according to issue #3 and the gated roadmap.
+```text
+src/core/        fixed-step and resource ownership
+src/input/       semantic timestamped input
+src/physics/     current box3d.js boundary
+src/vehicle/m6/  legacy_ts_m6 reference backend
+tests/           logic and real-WASM reference tests
+docs/decisions/  accepted architecture decisions
+docs/receipts/   measurements and immutable evidence
+docs/archive/    historical audits, handoffs and quarantine evidence
+```
+
+## Immediate program
+
+1. compress and archive stale documentation;
+2. remove contradictory active status claims;
+3. make the legacy backend identity explicit;
+4. define units and semantics at every runtime boundary;
+5. build the smallest native JV Core + Box3D WASM spike;
+6. compare native and WASM scenario traces;
+7. replace the browser physics backend only after parity evidence.
