@@ -34,7 +34,9 @@ Box3D + WebGL + keyboard + multi-touch observed working
 publication NOT PERFORMED
 ```
 
-Jozz also confirmed the newer scene/runtime path as LIVE with four contacts, all drive controls and destroy/rebuild working. The uploaded terminal log still identifies `7204993…`; the current vehicle visual-rig source needs its own fresh gate.
+Jozz also confirmed the newer scene/runtime path as LIVE with four contacts, all drive controls and destroy/rebuild working.
+
+The first visual-rig gate at `49e9eec…` produced TypeScript PASS and 161/162 tests. The sole failure was an outdated test expectation after the intended backend-descriptor consolidation; the host exposed the correct shared descriptor. The current PR head contains that test correction plus additional visual/GLB hardening and still requires one fresh complete gate.
 
 ## Run locally
 
@@ -147,7 +149,17 @@ M6 visual channels cover chassis, rack, four wheels, four knuckles, eight contro
 
 The first rig is a rigid-node vehicle rig, not a skinned character rig. Tire/rim/rotating disc follow the wheel; upright and fixed caliper follow the knuckle. Deformable tires remain a separate future contract.
 
-Before future GPU upload the GLB gate verifies exact bytes, SHA-256, GLB v2 structure, buffer/accessor ranges, triangle geometry, node ownership and a strict no-skins/no-animation/no-morph/no-external-resource V1 policy.
+Before future GPU upload the GLB gate verifies:
+
+- exact bytes and SHA-256;
+- GLB v2 structure and one embedded BIN buffer;
+- buffer/accessor bounds and alignment;
+- triangle geometry with WebGL1-portable 8/16-bit indices;
+- unique bound-node ownership;
+- bound roots with applied identity transforms;
+- no external resource, skin, animation, morph, sparse accessor or unsupported extension.
+
+Vehicle asset paths resolve relative to the visual-package manifest directory, preserving the same relationship at the site root and repository subpath.
 
 See [`docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`](docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md).
 
@@ -161,7 +173,7 @@ src/runtime/                 capabilities, backend and visual-frame contracts
 src/scene/                   scene package validation
 src/physics/                 typed Box3D boundary
 src/vehicle/m6/              reference vehicle and stable visual channels
-src/visual/                  GLB/package/asset validation
+src/visual/                  GLB/package/runtime-policy validation
 src/render/                  diagnostic WebGL observer
 public/receipts/             pinned runtime configuration
 public/scenes/               portable scene manifests
@@ -173,21 +185,23 @@ docs/PROJECT_STATE.md        canonical current state
 ## Correct model implementation order
 
 ```text
-1 green gate for the current visual-rig source
-2 tiny generated GLB + package runtime fixture
-3 transactional CPU load/parse
-4 minimal rigid-node rendering beside the debug observer
-5 rebuild/disposal and phone performance
-6 simple owner-authored chassis + wheels
-7 suspension, steering links and coilovers
-8 full body/interior/wheel asset
+1 green gate for the exact current PR head
+2 unchanged debug-renderer browser smoke
+3 tiny generated GLB + package runtime fixture
+4 transactional CPU load/parse
+5 tested transform composition and SEGMENT_STRETCH baseline semantics
+6 minimal rigid-node rendering beside the debug observer
+7 rebuild/disposal and phone performance
+8 simple owner-authored chassis + wheels
+9 suspension, steering links and coilovers
+10 full body/interior/wheel asset
 ```
 
-The final Jozz model must not be the first file testing the loader or GPU lifecycle.
+The final Jozz model must not be the first file testing the loader, transform math or GPU lifecycle.
 
 ## Known limitations
 
-- current visual-rig source has not passed its fresh local gate;
+- the exact current PR head has not passed its fresh local gate;
 - no browser GLB loader or model renderer yet;
 - no final vehicle asset or package manifest yet;
 - no triangle-mesh scene collision or real scan package;
