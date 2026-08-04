@@ -1,6 +1,8 @@
 export const REQUIRED_RUNTIME_ASSETS = Object.freeze([
   "receipts/jv_m6_factory_receipt.json",
   "scenes/synthetic-flat-lab.scene.json",
+  "vehicles/tiny/vehicle.visual.json",
+  "vehicles/tiny/models/m6-rig-proof.glb",
 ]);
 
 export function validateRuntimeAssetContract(manifest) {
