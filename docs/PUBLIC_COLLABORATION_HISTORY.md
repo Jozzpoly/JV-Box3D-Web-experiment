@@ -16,6 +16,8 @@ Detailed branch receipt:
 docs/receipts/inventory/GITHUB_BRANCH_SURFACE_2026_08_04.md
 ```
 
+Exact orphan commit identities are intentionally kept out of this future-public map. They belong only in ignored private recovery evidence.
+
 ## Current authority
 
 ```text
@@ -84,9 +86,9 @@ The two final refs have no PR and therefore no public discussion context.
 ### `agent/f3-regression-snapshot-2026-08-03`
 
 ```text
-tip: d583d3f573300335446b1b1f99fdd8ce29d2e7df
-87 commits ahead of main
-7 commits unique relative to the current clean lineage at the measured checkpoint
+87 commits ahead of main at measurement
+7 commits unique relative to the clean lineage at measurement
+exact tip: private recovery receipt only
 ```
 
 Contains the rejected self-modifying/write-capable F3 workflow era. The tip workflow edits TypeScript, commits as a validation bot and pushes source changes to another branch.
@@ -102,22 +104,34 @@ PRIVATE RECOVERY REQUIRED BEFORE ANY OWNER-APPROVED REF DELETION
 ### `agent/terrain-scan-integration`
 
 ```text
-tip: 9c4172fead575a85d4d47466a4b5194cc5612c57
-136 commits ahead of main
+136 commits ahead of main at measurement
 no PR
+exact tip: private recovery receipt only
 ```
 
-Contains an old duplicate TypeScript vehicle/terrain implementation, manual workflow, asset synchronizer, local native-root detection, model/session copying into `public/assets/` and unresolved 136-commit rights/privacy history.
+Contains an old duplicate TypeScript vehicle/terrain implementation, manual workflow, asset synchronizer, local native-root detection, model/session copying into public assets and unresolved rights/privacy history.
 
 Classification:
 
 ```text
 ORPHAN TERRAIN/ASSET RESEARCH LINE
 PUBLIC REF BLOCKER
-PRIVATE RECOVERY + FULL HISTORY/ASSET REVIEW REQUIRED
+PRIVATE RECOVERY + FOCUSED UNIQUE-HISTORY/ASSET REVIEW REQUIRED
 ```
 
 Neither orphan ref is deleted, moved, merged or rewritten automatically.
+
+## Ref deletion is not data purging
+
+Removing a remote branch may reduce the visible ref list but does not prove immediate removal of every underlying object from hosting infrastructure.
+
+Therefore:
+
+- exact orphan tips are not published in current documentation;
+- focused unique-history analysis is required before choosing a remediation;
+- if a real credential, private capture, personal record or unlicensed asset is found, simple branch deletion is insufficient;
+- remediation may require credential rotation, history rewriting, a sanitized public repository and/or hosting-provider purge/support procedures;
+- the remedy depends on the exact finding and requires Jozz approval.
 
 ## Historical claims with explicit precedence
 
@@ -156,11 +170,12 @@ Before `SOURCE_PUBLIC_READY_PASS`:
 3. PR #1/#8 remain quarantined;
 4. README/state identify #17/#18 as authorities;
 5. all sixteen branches have a disposition;
-6. orphan refs receive verified private Git bundles or private archive receipts;
-7. any remote-ref deletion requires explicit Jozz approval;
-8. fetch/prune and all-refs audit are repeated after a ref change;
-9. no PR is merged merely to simplify the public list;
-10. history is not rewritten to manufacture a cleaner past.
+6. orphan refs pass focused unique-history analysis;
+7. orphan refs receive verified private Git bundles or private archive receipts;
+8. any ref remediation/deletion requires explicit Jozz approval;
+9. fetch/prune and all audits are repeated after a ref change;
+10. no PR is merged merely to simplify the public list;
+11. history is not rewritten to manufacture a cleaner past.
 
 ## Owner decisions still required
 
@@ -176,13 +191,13 @@ Closing is presentation policy, not a security substitute.
 
 ### Orphan refs
 
-Recommended:
+Recommended sequence:
 
 ```text
-private verified Git bundle/archive
+focused unique-history report
+→ private verified Git bundle/archive
 → owner recovery verification
-→ explicit owner decision
-→ optional deletion of only the two orphan remote refs
+→ explicit remediation/ref decision
 → fetch/prune and all-history audit again
 ```
 
