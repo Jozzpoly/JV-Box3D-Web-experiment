@@ -5,26 +5,28 @@ Status: `CANONICAL INDEX`
 
 ## 1. Read first
 
-Czytaj tylko w tej kolejności:
+Czytaj w tej kolejności:
 
 1. `../AI_PROJECT_MEMORY.md`
 2. `PROJECT_STATE.md`
 3. `REFOUNDATION_LOOP_PL.md`
 4. `DEMONSTRATOR_VALIDATION_POLISH_LOOP_PL.md`
-5. właściwy ADR, kontrakt subsystemu albo receipt
+5. właściwy ADR, kontrakt, runbook albo receipt
 
 Nie czytaj całego `docs/` przed pracą. Archiwum służy do odpowiedzi na konkretne pytanie historyczne.
 
-## 2. Aktywny stan i proces
+## 2. Aktywny stan i publiczna powierzchnia
 
 | Dokument | Rola |
 |---|---|
-| `PROJECT_STATE.md` | bieżąca prawda o produkcie, dowodach i otwartych problemach |
-| `REFOUNDATION_LOOP_PL.md` | rekurencyjna pętla małych, falsyfikowalnych iteracji |
-| `DEMONSTRATOR_VALIDATION_POLISH_LOOP_PL.md` | drabina dowodów, stop conditions, mobile/scan/Pages gates i kolejność polishu |
-| `DOCUMENT_CLEANUP_MANIFEST_2026_08_04_PL.md` | wykonany zakres cleanupu, ryzyka i pozostałe bramki |
-| `NO_ARTIFICIAL_MECHANICS_CONTRACT_PL.md` | konstytucja jednej fizyki, jawnych eksperymentów i assistów |
-| `../THIRD_PARTY_NOTICES.md` | exact zależności runtime/tooling; nie jest licencją kodu ani assetów JV |
+| `PROJECT_STATE.md` | bieżąca prawda o produkcie, dowodach i blockerach |
+| `DEMONSTRATOR_VALIDATION_POLISH_LOOP_PL.md` | oddzielne source/package/mobile/parity/scene/Pages gates |
+| `PUBLIC_COLLABORATION_HISTORY.md` | klasyfikacja wszystkich 13 PR-ów i pięciu milestone issues |
+| `PUBLIC_ASSET_RIGHTS_POLICY.md` | default-deny prawa do modeli, skanów, fotografii, tekstur, fontów, audio i scen |
+| `../README.md` | przyszła publiczna landing surface |
+| `../SECURITY.md` | bezpieczne zgłaszanie podatności |
+| `../CONTRIBUTING.md` | wkłady, physics boundary, dependencies i asset rules |
+| `../THIRD_PARTY_NOTICES.md` | exact software dependencies; nie jest licencją JV ani assetów |
 
 ## 3. Decyzje
 
@@ -32,35 +34,36 @@ Nie czytaj całego `docs/` przed pracą. Archiwum służy do odpowiedzi na konkr
 |---|---|
 | `decisions/ADR-0001-subframe-rate-integration.md` | accepted |
 | `decisions/ADR-0002-pinned-box3d-runtime.md` | accepted for `legacy_ts_m6` reference backend |
-| `decisions/ADR-0003-native-jv-core-wasm.md` | accepted physics architecture authority |
-| `decisions/ADR-0004-pages-ready-demonstrator.md` | accepted distribution/publication authority |
+| `decisions/ADR-0003-native-jv-core-wasm.md` | accepted physics authority |
+| `decisions/ADR-0004-pages-ready-demonstrator.md` | accepted source-public/package/Pages separation |
+| `decisions/ADR-0005-project-license.md` | proposed; explicit Jozz decision required |
 
-ADR-0003 ma pierwszeństwo nad dawnym ręcznym portowaniem mechaniki M6/M7 do TypeScriptu.
+ADR-0003 ma pierwszeństwo nad rozwijaniem drugiej produktowej fizyki w TypeScripcie.
 
-ADR-0004 ma pierwszeństwo nad pojedynczym-HTML jako formatem produktu, automatycznym deploymentem i publikacją bez public-readiness gate.
+ADR-0004 ma pierwszeństwo nad jednym spłaszczonym `PUBLIC-READY`, automatycznym deploymentem i jednym wielkim HTML-em jako założonym formatem produktu.
+
+ADR-0005 nie wybiera licencji. Nie dodawać `LICENSE` bez decyzji Jozza.
 
 ## 4. Kontrakty subsystemów
 
 | Dokument | Rola |
 |---|---|
-| `contracts/STEERING_COMMAND_CONTRACT_PL.md` | `RELEASE | POSITION | RATE`, timestamped timeline, K2b i owner gate |
-| `contracts/WHEEL_BACKEND_CONTRACT_PL.md` | WheelSpec, native contact seam, observer, legacy baseline i Wheel Scope transfer gates |
-| `contracts/MOBILE_HOST_CONTRACT_PL.md` | jeden physics profile, multi-touch ownership, render profile i mobile gates |
-| `contracts/NATIVE_WASM_ABI_V0_PL.md` | versioned C ABI, jednostki, pamięć, stable part IDs, snapshot i parity trace |
+| `contracts/STEERING_COMMAND_CONTRACT_PL.md` | `RELEASE | POSITION | RATE`, timestamped timeline i owner gate |
+| `contracts/WHEEL_BACKEND_CONTRACT_PL.md` | WheelSpec, native contact seam i legacy baseline |
+| `contracts/MOBILE_HOST_CONTRACT_PL.md` | Pointer Events, ownership, lifecycle i phone gates |
+| `contracts/SCENE_PACKAGE_CONTRACT_PL.md` | units/axes, render/collision separation, manifest, rights i scan gates |
+| `contracts/NATIVE_WASM_ABI_V0_PL.md` | C ABI, units, memory, stable IDs, snapshot i parity trace |
 
 ## 5. Aktywne badanie
 
 | Dokument | Pytanie |
 |---|---|
-| `research/NATIVE_CORE_SOURCE_SET_AUDIT_2026_08_04_PL.md` | najmniejszy behavior-preserving M6 source set dla native/WASM spike |
-
-Wniosek:
+| `research/NATIVE_CORE_SOURCE_SET_AUDIT_2026_08_04_PL.md` | minimalny behavior-preserving native/WASM M6 source set |
 
 ```text
-niezmienione M5 + M6 geometry + M6 runtime + Box3D
-+ cienki adapter
+unchanged M5 + M6 geometry/runtime + Box3D + thin adapter
 → native/WASM baseline
-→ dopiero refactor zależności
+→ dopiero structural refactor
 ```
 
 ## 6. Receipts
@@ -71,66 +74,85 @@ Kanoniczny indeks:
 receipts/INDEX.md
 ```
 
-Struktura:
-
-```text
-receipts/source/
-receipts/runtime/
-receipts/runtime/history/
-receipts/inventory/
-../../public/receipts/
-```
-
-Najświeższy pełny zielony reference runtime:
+Kluczowe:
 
 ```text
 receipts/runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md
+receipts/inventory/GITHUB_CLOUD_SURFACE_2026_08_04.md
+receipts/inventory/GITHUB_ACTIONS_LOG_REVIEW_2026_08_04.md
 ```
 
-Pierwszy demonstrator gate jest zapisany jako użyteczna falsyfikacja na PR #18: `81/81` i bundle PASS, portable FAIL dla root-absolute receipt URL. Nowszy head czeka na ponowny gate.
+Latest local demonstrator evidence remains:
 
-## 7. Operacje — zwykła walidacja
+```text
+2f14d109980c...
+109 tests: 108 PASS / 1 sanitizer FAIL
+```
 
-| Dokument/narzędzie | Rola |
-|---|---|
-| `operations/REFOUNDATION_LOCAL_GATE_PL.md` | znaczenie historycznego refoundation gate |
-| `../tools/run-refoundation-gate.ps1` | Windows gate zielonego checkpointu refoundation |
-| `../tools/run-demonstrator-foundation-gate.ps1` | bieżący Node/test/portable gate bez publikacji |
-| `../tools/check-doc-links.mjs` | lokalny audit linków Markdown |
-| `../tools/verify-third-party-notices.mjs` | exact installed versions/licenses kontra notice |
+Nowszy head zawiera poprawkę i dalsze gates, ale czeka na świeże wykonanie.
 
-## 8. Operacje — portable artifact
+## 7. Operacje — foundation/package
 
 | Narzędzie | Rola |
 |---|---|
-| `../tools/write-portable-build-manifest.mjs` | clean-source manifest, exact commit, fingerprint refu i SHA-256 payloadu |
-| `../tools/validate-portable-build.mjs` | statyczne ścieżki, assets, compliance, authority i integralność |
-| `../tools/validate-portable-manifest-policy.mjs` | zakaz ujawniania nazwy źródłowego brancha |
-| `../tools/validate-portable-http.mjs` | loopback HTTP root/project-subpath i exact bytes |
-| `../tools/portable-build-lib.mjs` | wspólny statyczny validator |
-| `../tools/portable-http-smoke-lib.mjs` | niepublikujący loopback server/smoke |
+| `../tools/run-demonstrator-foundation-gate.ps1` | exact-commit Node/test/compliance/portable gate; never publishes |
+| `../tools/check-doc-links.mjs` | local Markdown link audit |
+| `../tools/verify-third-party-notices.mjs` | installed versions/licenses and exact runtime notices |
+| `../tools/write-portable-build-manifest.mjs` | clean-source manifest, fingerprinted ref and SHA-256 table |
+| `../tools/validate-portable-build.mjs` | paths/assets/hash/authority/publication contract |
+| `../tools/validate-portable-manifest-policy.mjs` | exact schema, no unknown/private fields |
+| `../tools/validate-portable-network-policy.mjs` | no hidden remote HTML/CSS runtime resources |
+| `../tools/validate-portable-http.mjs` | exact root/project-subpath loopback bytes |
 
-`dist/` jest generowany i ignorowany. Build nie ma funkcji publikowania.
+`dist/` jest generowany i ignorowany. Build nie zawiera publish/deploy/Pages path.
 
-## 9. Operacje — public readiness i licencje
+## 8. Operacje — source-public audit
 
 | Narzędzie | Rola |
 |---|---|
-| `../tools/audit-public-readiness.mjs` | bezpieczny CLI zapisujący lokalny raport |
+| `../tools/run-demonstrator-audits.ps1` | one-command report-only public/license/review-ledger generation |
+| `../tools/audit-public-readiness.mjs` | strict albo explicit `--report-only` CLI |
 | `../tools/public-readiness-lib.mjs` | current/history Git object scanner |
-| `../tools/public-readiness-identifiers.mjs` | path/branch identifier findings z redakcją |
-| `../tools/public-readiness-report.mjs` | końcowa rekurencyjna sanitizacja całego raportu |
-| `../tools/audit-reachable-licenses.mjs` | reachable `LICENSE/LICENCE/COPYING/NOTICE` inventory |
-| `../tools/license-inventory-lib.mjs` | exact blob/hash/license classification |
+| `../tools/public-readiness-identifiers.mjs` | ref/path/current-branch identifier scan |
+| `../tools/public-readiness-report.mjs` | merge findings, public contracts, safe-file policy i final sanitizer |
+| `../tools/public-contracts-lib.mjs` | exact nine-file public landing contract |
+| `../tools/public-known-safe-files.mjs` | exact credential-free current `.npmrc` exception only |
+| `../tools/audit-reachable-licenses.mjs` | strict/report-only license inventory CLI |
+| `../tools/license-inventory-lib.mjs` | root project vs notice vs nested vendor licenses |
+| `../tools/write-public-review-ledger.mjs` | generate ignored PENDING classification ledger |
+| `../tools/validate-public-review-ledger.mjs` | reject pending/stale/remediate/private rationale |
+| `../tools/public-review-ledger-lib.mjs` | stable sanitized finding identities and validation |
 
-Lokalne, ignorowane raporty:
+Lokalne, ignorowane evidence:
 
 ```text
 .local-audit/public-readiness.json
 .local-audit/license-inventory.json
+.local-audit/public-review-classifications.json
 ```
 
-Nie zastępują manualnego auditu PR-ów, issues, Actions logs/artifacts, releases i packages.
+## 9. Source-public release
+
+Runbook:
+
+```text
+operations/SOURCE_PUBLIC_RELEASE_RUNBOOK_PL.md
+```
+
+Obejmuje:
+
+- freeze exact candidate;
+- foundation gate;
+- local history/license reports;
+- review classification;
+- Jozz license decision;
+- asset-rights audit;
+- GitHub Actions/releases/packages/settings manual audit;
+- exact `main` fast-forward proof;
+- explicit owner approval receipt;
+- manual visibility change;
+- immediate anonymous/public clone verification;
+- Pages pozostające disabled.
 
 ## 10. Archiwum
 
@@ -146,26 +168,16 @@ archive/MOBILE_HOST_AUDIT_2026_08_03_INDEX.md
 archive/QUARANTINE_AND_F1_OPERATIONS_2026_08_03_INDEX.md
 ```
 
-## 11. Statusy dokumentów
-
-```text
-CANONICAL_CURRENT
-CONTRACT_DECISION
-RECEIPT_EVIDENCE
-ACTIVE_RESEARCH
-ARCHIVE_EVIDENCE
-DELETE_CANDIDATE
-```
-
-## 12. Reguła nowych dokumentów
+## 11. Reguła nowych dokumentów
 
 Nowy plik powstaje tylko jako:
 
 - ADR;
-- trwały kontrakt subsystemu;
-- surowy receipt;
-- focused research z jednym pytaniem i stop condition;
+- trwały kontrakt;
+- immutable receipt;
+- focused research z jednym pytaniem/stop condition;
 - kanoniczny state/process;
+- public policy/runbook;
 - indeksowane archiwum z unikalną historią.
 
-Nie tworzyć kolejnych broad audits ani session handoffów, jeżeli informację można skompresować do `AI_PROJECT_MEMORY.md`, `PROJECT_STATE.md`, istniejącego ADR/contractu albo receiptu.
+Nie tworzyć broad session handoffów, jeżeli informację można skompresować do pamięci, state, ADR, contractu, runbooka albo receiptu.
