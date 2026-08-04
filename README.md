@@ -102,7 +102,7 @@ VehicleVisualPackageV1
         ↓
 fetch / hash / GLB policy
         ↓
-sealed CPU asset
+sealed CPU ownership graph + owned typed arrays
         ↓
 ownership + mobile budget
         ↓
@@ -121,7 +121,7 @@ SEGMENT_STRETCH(referenceLengthMeters)
 SEGMENT_ENDPOINT_AIM
 ```
 
-The V1 GLB subset accepts triangles, 8/16-bit indices, POSITION and optional NORMAL/TEXCOORD_0. It currently rejects textures, external resources, unknown vertex attributes, skins, animations, morphs and extensions rather than silently discarding them.
+The V1 GLB subset accepts triangles, 8/16-bit indices, POSITION and optional NORMAL/TEXCOORD_0. Its rendered material subset is currently limited to `baseColorFactor` and `doubleSided`. It rejects textures, external resources, unknown vertex attributes, unrendered PBR fields, skins, animations, morphs and extensions rather than silently discarding them.
 
 Protective mobile geometry limits:
 
@@ -172,7 +172,7 @@ src/vehicle/m6/              reference vehicle and visual channels
 src/visual/                  GLB, CPU, binding and draw-plan pipeline
 src/render/                  debug observer and transactional GPU assets
 public/                      generated/pinned runtime assets
-_tests/ tests/               deterministic and adversarial gates
+tests/                       deterministic and adversarial gates
 tools/                       build, packaging and asset inspection
 docs/PROJECT_STATE.md        canonical current state
 ```
