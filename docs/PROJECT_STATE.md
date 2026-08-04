@@ -1,4 +1,4 @@
-# JV Box3D Web — kanoniczny stan projektu
+# JV Web — kanoniczny stan projektu
 
 Updated: 2026-08-04
 Status: `CANONICAL CURRENT STATE`
@@ -10,19 +10,19 @@ JV Web ma stać się poważnym demonstratorem Jozz Vehicle:
 
 - uruchamianym na desktopie i telefonie;
 - posiadającym przemyślane sterowanie mobilne;
-- docelowo pozwalającym jeździć po zoptymalizowanym skanie;
+- docelowo pozwalającym jeździć po przygotowanym skanie;
 - łatwym do pokazania przez zwykły link GitHub Pages;
-- bez własnego serwera i bez automatycznej publikacji;
-- uczciwie odróżniającym reference backend od rzeczywistego native parity.
+- niewymagającym własnego serwera ani własnego cloud CI;
+- uczciwie odróżniającym browser fixture od rzeczywistego native parity.
 
-Repo ma docelowo stać się publiczne. Zmiana widoczności oraz włączenie Pages są dwiema osobnymi, ręcznymi decyzjami po odpowiednich gate’ach.
+Repo ma docelowo stać się publiczne. Zmiana widoczności repo i włączenie Pages są dwiema osobnymi decyzjami Jozza.
 
-## 2. Architektura produktu
+## 2. Architektura
 
 ```text
-native JV Core + Box3D WASM -> fizyka, blueprint compiler, telemetryka
-TypeScript host             -> input, lifecycle, render, UI, mobile, sceny
-portable static package     -> lokalny HTTP, LAN phone test, przyszłe Pages
+native JV Core + Box3D WASM -> product physics authority
+TypeScript host             -> input, lifecycle, render, UI, mobile, scenes
+portable static package     -> localhost, LAN phone test, future Pages
 ```
 
 Authority:
@@ -32,257 +32,319 @@ decisions/ADR-0003-native-jv-core-wasm.md
 decisions/ADR-0004-pages-ready-demonstrator.md
 ```
 
+Nie rozwijać drugiej produktowej fizyki w TypeScripcie.
+
 ## 3. Aktywna linia
 
-Zwalidowana baza:
+Zielona baza refoundation:
 
 ```text
-branch: agent/jv-web-refoundation
-commit: f06853467408d6c633ca806d985062c634b3a666
+agent/jv-web-refoundation
+f06853467408d6c633ca806d985062c634b3a666
+77/77 tests PASS
 ```
 
 Aktywna gałąź demonstratora:
 
 ```text
 agent/jv-web-demonstrator-foundation
+current recorded head: f41b89bb4e83e438011286ee168db923f8a1be7f
+PR #18: DRAFT / DO NOT MERGE / DO NOT PUBLISH
 ```
 
-Jest bezpośrednio odgałęziona od zielonego refoundation headu. Nic nie jest scalane, oznaczane jako ready, upubliczniane ani publikowane bez Jozza.
+Nic nie jest scalane, oznaczane jako ready, upubliczniane ani publikowane bez Jozza.
 
-## 4. Zwalidowany reference baseline
+## 4. Pierwszy demonstrator gate — prawidłowa falsyfikacja
 
-Na dokładnym refoundation headzie Jozz potwierdził lokalnie:
+Jozz wykonał lokalnie gate na:
 
 ```text
+67067c5d46fc9ed45481a731efae4b3adf8d4ad8
 Node 24.16.0
 npm 11.17.0
-native receipt byte-exact
-Markdown links PASS
-TypeScript PASS
-77/77 tests PASS
-Vite production build PASS
+receipt byte-exact
 ```
 
-Wcześniejszy browser owner smoke potwierdził fizyczną jazdę.
-
-Działający fixture posiada:
-
-- deterministyczny fixed-step;
-- timestamped steering i longitudinal input;
-- transactional lifecycle;
-- prawdziwy `box3d.js` WASM;
-- receipt-derived M6 graph;
-- 18 vehicle bodies / 29 joints / 9 shapes;
-- fizyczny rack i tie-rody;
-- `RELEASE | POSITION | RATE`;
-- read-only WebGL observer;
-- wheel-motor drive/reverse/coast/brake;
-- dynamic rack-excursion matrix.
-
-To są dowody liveness, determinizmu i internal consistency reference backendu. Nie są pełnym native parity ani zatwierdzeniem finalnego prowadzenia.
-
-## 5. Krytyczna rozbieżność napędu
-
-Native JV:
+Wynik:
 
 ```text
-maxDriveSpeed = wheel rev limit in rad/s
-motor target = ±maxDriveSpeed
-throttle scales available torque
-wheel spin determines torque taper
+npm ci: PASS
+0 vulnerabilities
+Markdown links: PASS
+TypeScript: PASS
+tests: 81/81 PASS
+Vite bundle: PASS
+portable validation: FAIL
 ```
 
-TypeScript reference backend:
+Jedyny błąd artefaktu:
 
 ```text
-maxDriveSpeed interpreted as linear m/s target
-throttle scales target speed
-target wheel speed = linear target / wheel radius
-chassis speed determines torque taper
+/receipts/jv_m6_factory_receipt.json
 ```
 
-Dla przypiętych wartości legacy TS target przy pełnym gazie wynosi około `77.8 rad/s`, podczas gdy native target wynosi `40 rad/s`.
+był zakotwiczony w root domeny i zepsułby GitHub Pages pod ścieżką repo. Validator poprawnie zatrzymał paczkę.
 
-Wniosek:
+Naprawiono źródło i dodano regresję:
 
 ```text
-legacy_ts_m6 = deterministic and drivable reference fixture
-native drive semantic parity = FAIL / NOT PRODUCT AUTHORITY
+./receipts/jv_m6_factory_receipt.json
 ```
 
-Nie dodawać nowych produktowych mechanizmów fizycznych M7, drivetrainu ani przyszłej opony do TypeScriptu.
+Nowszy head zawiera dalsze wzmocnienia i **nie jest jeszcze lokalnie zwalidowany**.
 
-## 6. Backend status
-
-### `legacy_ts_m6`
+## 5. Reference backend
 
 ```text
+id: legacy_ts_m6
 role: REFERENCE_BROWSER_FIXTURE
 productPhysicsAuthority: false
 nativeParity: NOT_PROVEN
 acceptsNewProductPhysics: false
 ```
 
-Kontrakt istnieje w kodzie i ma focused test. World expose’uje backend identity. Trace/UI nadal wymagają jawnego pokazania tej prawdy.
+Fixture jest drivable i deterministyczny, ale nie jest wiernym portem native JV.
 
-### `native_jv_wasm`
+Krytyczna rozbieżność:
 
 ```text
-architecture: accepted
-ABI v0: designed
-minimal source set: audited
-implementation: not started
+native maxDriveSpeed = 40 rad/s wheel rev limit
+legacy TS             = 40 m/s linear target interpreted through radius
 ```
 
-Pierwszy spike użyje niezmienionych źródeł M5/M6 oraz cienkiego adaptera. Refactor natywnego core nastąpi dopiero pod ochroną parity trace.
+Native throttle skaluje moment i używa wheel spin do taperu. Legacy TS skaluje także target speed i używa chassis speed.
 
-## 7. Dwa zsynchronizowane tory
+Nie dodawać do legacy TS nowych mechanizmów drivetrainu, anti-roll, aero, zawieszenia ani przyszłej opony.
+
+## 6. Dwa zsynchronizowane tory
 
 ### Tor A — demonstrator
 
-Może rozwijać na zamrożonym `legacy_ts_m6`:
+Dozwolone na zamrożonym fixture:
 
 - portable package;
 - Demo/Lab separation;
-- loading i failure UX;
-- responsive/mobile shell;
+- loading/failure UX;
+- responsive mobile shell;
 - multi-touch ownership;
 - kamera i reset;
 - scene manifest;
 - synthetic campus;
 - quality profiles;
-- lokalne testy LAN;
+- LAN i phone smoke;
 - Pages packaging.
-
-Nie może dodawać ani stroić produktowej fizyki.
 
 ### Tor B — physics authority
 
 - Box3D + JV Core w jednym WASM;
 - C ABI z jednostkami;
 - stable `partId`;
-- immutable snapshot;
+- immutable snapshots;
 - native/WASM scenario comparison;
 - backend swap;
-- późniejszy Wheel Scope seam.
+- późniejszy Wheel Scope backend seam.
 
 Oba tory spotykają się przez stabilny backend/snapshot contract.
 
-## 8. Portable demonstrator foundation
+## 7. Portable package — obecny kontrakt
 
-Na aktywnej gałęzi są obecnie źródłowo przygotowane:
-
-- Vite `base: "./"`;
-- `.nojekyll`;
-- deterministyczny `build-manifest.json` z SHA-256 plików;
-- jawne `publicReady=false`, `pagesPublicationApproved=false` i `publishedByBuild=false`;
-- validator root/nested paths, brakujących assetów, source maps i driftu bajtów;
-- cztery syntetyczne testy przeciwne;
-- lokalny demonstrator gate bez publikacji;
-- current-tree i reachable-history public audit;
-- osobna pętla walidacyjna i polishująca.
-
-Stan tej gałęzi:
+Artefakt:
 
 ```text
-source present
-static review in progress
-full Node 24 gate: NOT YET EXECUTED
-portable artifact receipt: NOT YET RECORDED
-LAN/phone smoke: NOT YET EXECUTED
+index.html
+assets/
+receipts/
+THIRD_PARTY_NOTICES.md
+build-manifest.json
+.nojekyll
 ```
 
-Nie nazywać foundation zielonym przed lokalnym gate’em.
+Generator wymaga czystego source tree i zapisuje:
 
-## 9. Public repository readiness
+- exact commit;
+- clean-source status;
+- backend identity;
+- runtime assets;
+- compliance files;
+- rozmiar i SHA-256 każdego pliku;
+- `publicReady=false`;
+- `pagesPublicationApproved=false`;
+- `publishedByBuild=false`.
 
-Decyzja produktowa:
+Validator odrzuca:
+
+- root-absolute runtime paths;
+- brakujące HTML/CSS/runtime assets;
+- nested CSS errors;
+- source maps;
+- symlinki/nietypowe wpisy;
+- payload drift;
+- unsafe/escaping paths;
+- brak notice’a;
+- fałszywe parity/product authority;
+- samodzielne nadanie public/Pages approval.
+
+Dodatkowy loopback HTTP smoke:
 
 ```text
-repository will become public after PUBLIC-READY PASS
+/
+/JV-Box3D-Web-experiment/
 ```
 
-Aktualnie:
+pobiera każdy plik z manifestu i porównuje jego bytes/SHA-256. Nie publikuje i nie zastępuje browser/phone smoke.
+
+## 8. Testy dodane po pierwszym gate
+
+Źródłowo obecne, lokalnie jeszcze niewykonane na bieżącym headzie:
+
+- relative receipt URL;
+- manifest truth/authority/publication challenges;
+- runtime/compliance asset contract;
+- real temporary Git history audit;
+- secret removed from current tree but retained in history;
+- dirty working tree;
+- indexed symlink without following it;
+- token-like branch name detection and report redaction;
+- annotated tag metadata scanning;
+- reachable-license inventory;
+- root/nested-path HTTP byte smoke.
+
+Aktualna liczba testów jest nieznana do następnego Node 24 gate’u.
+
+## 9. Public-readiness audit
+
+Repo nadal:
 
 ```text
-repository visibility: PRIVATE
+visibility: PRIVATE
 Pages: DISABLED
-LICENSE: MISSING / OWNER DECISION PENDING
-THIRD_PARTY_NOTICES.md: MISSING
-current/history local audit: IMPLEMENTED, NOT YET RUN
-GitHub metadata audit: STARTED
-public README: NOT READY
-owner public approval: NOT YET GIVEN FOR A SPECIFIC HEAD
 ```
 
-Public audit obejmuje:
+Zaimplementowany audit skanuje:
 
-- current tree;
-- wszystkie osiągalne bloby i refy;
-- PR bodies/comments/reviews;
-- issues;
-- Actions logs/artifacts;
-- releases/packages;
-- branch/tag names;
-- prywatne/source scan assets;
-- licencje kodu, zależności, modeli i skanu.
+- current index blobs;
+- dirty/untracked state jako blocker;
+- wszystkie lokalnie osiągalne Git blobs;
+- commit/tag metadata;
+- heads/remotes/tags;
+- sensitive filenames;
+- token/key patterns;
+- privacy-review patterns;
+- duże historyczne bloby;
+- symlinki i gitlinks;
+- brak wymaganych public contracts.
 
-Wstępny audit dostępnych PR-ów nie ujawnił sekretu, ale wykazał historyczne twierdzenia wymagające prominentnego erratum. PR #15 w starym opisie interpretuje `maxDriveSpeed` jako `40 m/s`; przed publicznym repo musi zostać jawnie oznaczony jako superseded semantic error.
+Raport nie zapisuje wartości sekretów. Nazwy refów są skanowane w pamięci, lecz w JSON trafia wyłącznie namespace i fingerprint.
 
-## 10. Model dystrybucji
+Audit jest narzędziem redukcji ryzyka, nie matematycznym dowodem braku każdego sekretu.
 
-Produktowy artefakt:
+## 10. GitHub cloud-surface audit
+
+Sprawdzono dotąd:
+
+- wszystkie widoczne bodies/comments głównych stacked PR-ów;
+- open i closed milestone issues;
+- formal reviews i inline review threads na PR #1, #15, #17 i #18.
+
+Nie znaleziono formalnych reviews ani inline threads na tych PR-ach. Nie zauważono oczywistego sekretu w dostępnych bodies/comments.
+
+Wykryte problemy prezentacyjne:
+
+- PR #15 miał błędne `40 m/s`; dodano prominentne erratum;
+- issue #12 otrzymało status historycznego RATE eksperymentu;
+- stare issues linkują do dokumentów, które obecnie są archiwalne;
+- PR #1 pozostaje kwarantannowym prototypem.
+
+Nadal wymagają audytu:
+
+- wszystkie stare workflow logs i artifacts;
+- releases;
+- packages;
+- wszystkie pozostałe issue comments;
+- ostateczna klasyfikacja branchy/tagów po lokalnym audit report.
+
+## 11. Licencje
+
+`THIRD_PARTY_NOTICES.md` istnieje i zawiera exact provenance/licencje:
 
 ```text
-portable multi-file static site
+box3d.js@0.0.2 / binding 2617a0f... / MIT
+embedded Box3D 8441b4a... / MIT
+Vite 8.1.5 / MIT
+TypeScript 7.0.2 / Apache-2.0
 ```
 
-Docelowa publikacja:
+Lokalny check porównuje notice z rzeczywiście zainstalowanymi pakietami i exact hash pliku `box3d.js/LICENSE`.
+
+Projektowy `LICENSE` na aktualnym HEAD nadal nie istnieje i wymaga decyzji Jozza.
+
+Krytyczny historyczny fakt:
 
 ```text
-public source repo
-+ osobna generated publishing branch
-+ GitHub Pages: Deploy from a branch
+agent/bootstrap-web-poc / PR #1
+LICENSE = MIT
+Copyright (c) 2026 Jozz Vehicle contributors
 ```
 
-Brak własnego deployment workflowa. Build lokalny nigdy nie publikuje.
+Powstał reachable-license inventory, który raportuje wszystkie osiągalne `LICENSE/LICENCE/COPYING/NOTICE`, ich blob/hash, wykryty typ i obecność na HEAD. Publiczna decyzja musi być spójna z historycznym MIT albo wymagać osobnej strategii ref/history cleanup.
 
-Pojedynczy HTML pozostaje opcjonalnym małym eksperymentem, nie formatem skanu.
+## 12. Default branch blocker
 
-## 11. Mobile
+GitHub default branch nadal jest `main`.
 
-Mobile jest osobnym host/input problemem, nie osobną fizyką.
+Aktualny `main` posiada jedynie krótki prywatny PoC README i nie zawiera refoundation/demonstratora. Repo nie może zostać upublicznione w tym stanie.
 
-Default badawczy:
+Przed PUBLIC-READY potrzebna jest jawna decyzja integracyjna:
+
+```text
+current public candidate
+→ reviewed integration into intended default branch
+→ exact owner approval
+→ dopiero visibility change
+```
+
+Nie zmieniać default branch ani nie scalać bez Jozza.
+
+## 13. Public README
+
+README na aktywnej gałęzi został przepisany jako uczciwa powierzchnia przyszłego publicznego repo. Opisuje:
+
+- demonstrator desktop/phone/scan;
+- non-authoritative backend;
+- portable artifact;
+- brak aktywnego Pages;
+- dwa tory rozwoju;
+- mobile/scene direction;
+- pending project license.
+
+Nie jest jeszcze publiczny i nie znajduje się na `main`.
+
+## 14. Mobile i scene seam
+
+Mobile jest host/input problemem, nie osobną fizyką.
+
+Inwarianty:
 
 - landscape-first;
-- relative RATE steering pad;
-- key-up/touch-up = `RELEASE`, nie `POSITION(0)`;
-- oddzielny throttle i brake/reverse;
-- camera gesture z własnym pointer ownership;
-- blur, visibility, touchcancel i dispose zwalniają wszystkie aktywne komendy;
-- AUTO quality zmienia render, nigdy fixed-step ani fizykę.
+- relative RATE pad jako pierwszy eksperyment;
+- touch-up = `RELEASE`, nie `POSITION(0)`;
+- exclusive pointer ownership;
+- throttle/brake/reverse/camera nie kradną pointerów;
+- `touchcancel`, blur, visibility i dispose zwalniają input;
+- quality profile zmienia render, nigdy fixed-step ani fizykę.
 
-Owner feel na realnym telefonie jest obowiązkowy.
+Skan wymaga oddzielnych reprezentacji:
 
-## 12. Skan
+```text
+source scan
+render mesh / LOD
+simplified collision mesh
+scene manifest + spawn/bounds metadata
+```
 
-Skan źródłowy, render mesh i collision mesh są oddzielne.
+Surowy photogrammetry mesh nie jest domyślnym colliderem.
 
-Przed integracją lokalnych plików potrzebny będzie audit:
-
-- formatów, jednostek i osi;
-- liczby trójkątów;
-- tekstur i UV;
-- rozmiaru transferu i decoded memory;
-- dziur/szumu;
-- playable bounds;
-- collision proxy;
-- praw do publikacji source/render/collision assets.
-
-Surowy noisy photogrammetry mesh nie jest domyślnym colliderem.
-
-## 13. Sterowanie i rack — reference measurement
+## 15. Reference steering measurement
 
 ```text
 stationary held RATE excess: 0.000 mm
@@ -291,45 +353,37 @@ post-RELEASE peak:            2.541–2.817 mm
 contacts:                     4
 ```
 
-Command clamp jest poprawny. Post-RELEASE mechanism nie został odizolowany. Force clamp pozostaje odrzucony bez native comparison.
+Command clamp PASS. Post-RELEASE mechanism nie został odizolowany. Force clamp odrzucony bez native comparison.
 
-## 14. Koło
+## 16. Workflow bezpieczeństwa
 
-```text
-legacy_m6_split_sphere_sidewall
-```
-
-pozostaje regression baseline/failure reference, nie przyszłą oponą. Future Wheel Scope wchodzi wyłącznie przez native backend seam po nowym exact source receipt.
-
-## 15. Workflow bezpieczeństwa
-
-- brak merge bez Jozza;
-- brak ready-for-review bez Jozza;
-- brak automatycznej zmiany visibility;
-- brak automatycznego Pages deploy;
+- brak merge/ready bez Jozza;
+- brak visibility/Pages change bez Jozza;
 - brak custom GitHub Actions;
-- brak samomodyfikujących workflowów;
+- Pages może później użyć wyłącznie nieuniknionego systemowego deploymentu;
+- brak self-modifying CI;
 - brak cross-repo commit loop;
-- brak Git Diff Patcher Bridge;
-- lokalne audity zapisują wyniki w ignorowanym `.local-audit/`;
-- publikowanie jest osobnym owner gate’em.
+- Git Diff Patcher Bridge zakazany;
+- lokalne audity zapisują tylko do ignorowanego `.local-audit/`;
+- build nie ma funkcji publikowania.
 
-## 16. Następna sekwencja
+## 17. Następne bramki
 
 ```text
-1. lokalny demonstrator foundation gate
-2. uruchomienie public audit i klasyfikacja wyników
-3. decyzja LICENSE + exact THIRD_PARTY_NOTICES
-4. prominent errata/superseded status historycznych PR-ów
-5. public README i default-branch consolidation plan
-6. runtime backend identity przez trace/UI/receipt
-7. Demo/Lab separation
-8. mobile shell + touch ownership experiment
-9. równolegle pierwszy native JV WASM parity spike
-10. scene manifest + synthetic campus
-11. audit i konwersja przesłanego skanu
-12. phone owner gate
-13. PUBLIC-READY owner approval
-14. ręczna zmiana visibility
-15. PAGES-PUBLISH gate i ręczne włączenie Pages
+1. statyczny review bieżącego PR #18
+2. pełny lokalny demonstrator gate na nowym headzie
+3. audit:public + klasyfikacja JSON
+4. audit:licenses + decyzja Jozza o projekcie LICENSE
+5. dokończenie GitHub logs/artifacts/releases/packages audit
+6. default-branch integration plan
+7. backend identity przez trace/UI/receipt
+8. Demo/Lab split
+9. mobile input ownership prototype
+10. równolegle native JV WASM parity spike
+11. scene manifest + synthetic campus
+12. scan audit/conversion po otrzymaniu plików
+13. phone owner gate
+14. PUBLIC-READY owner approval
+15. manual visibility change
+16. PAGES-PUBLISH gate i manualne Pages enable
 ```
