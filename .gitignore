@@ -5,6 +5,8 @@ dist/
 .local-assets/
 .local-scans/
 .private-work/
+public/vehicles/tiny/models/m6-rig-proof.glb
+public/vehicles/tiny/vehicle.visual.json
 *.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*
