@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { F4VehicleHost } from "../.test-dist/app/f4-vehicle-host.js";
+import { LEGACY_TS_M6_BACKEND } from "../.test-dist/runtime/vehicle-runtime-backend.js";
 
 function nativeReceiptStub() {
   return {
@@ -35,7 +36,7 @@ function box3dReceiptStub() {
   };
 }
 
-test("F4 host exposes the explicit non-authoritative runtime backend", async () => {
+test("F4 host exposes the one shared non-authoritative runtime backend", async () => {
   const host = await F4VehicleHost.start(
     {
       now: () => 0,
@@ -90,14 +91,12 @@ test("F4 host exposes the explicit non-authoritative runtime backend", async () 
     },
   );
 
-  assert.deepEqual(host.backend, {
-    id: "legacy_ts_m6",
-    displayName: "Legacy TypeScript M6 reference fixture",
-    productPhysicsAuthority: false,
-    nativeParity: "NOT_PROVEN",
-    commandContractVersion: 1,
-    traceContractVersion: 1,
-  });
+  assert.equal(host.backend, LEGACY_TS_M6_BACKEND);
+  assert.equal(Object.isFrozen(host.backend), true);
+  assert.equal(host.backend.productPhysicsAuthority, false);
+  assert.equal(host.backend.nativeParity, "NOT_PROVEN");
+  assert.equal(host.backend.acceptsNewProductPhysics, false);
+  assert.equal(host.backend.visualFrameContractVersion, 1);
 
   host.dispose();
 });
