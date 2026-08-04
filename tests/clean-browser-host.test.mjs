@@ -122,7 +122,21 @@ test("one fixed step samples steering and longitudinal controls from the same ti
   options.windowTarget.dispatch("keydown", { code: "KeyW" });
   runOneFixedStep(options);
 
-  assert.equal(observed.step.index, 1);
+  assert.notEqual(observed, null);
+  assert.equal(observed.step.index, 0);
+  assert.equal(observed.step.startTimeMs, 0);
+  assert.equal(observed.step.endTimeMs, 1000 / 60);
+  assert.equal(observed.step.durationMs, 1000 / 60);
+  assert.equal(observed.steering.startTimeMs, observed.step.startTimeMs);
+  assert.equal(observed.steering.endTimeMs, observed.step.endTimeMs);
+  assert.equal(
+    observed.longitudinal.startTimeMs,
+    observed.step.startTimeMs,
+  );
+  assert.equal(
+    observed.longitudinal.endTimeMs,
+    observed.step.endTimeMs,
+  );
   assert.deepEqual(observed.steering.command, {
     mode: "RATE",
     value: 1,
