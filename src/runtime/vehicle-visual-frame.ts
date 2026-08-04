@@ -86,6 +86,45 @@ function distance(
   );
 }
 
+function immutableReadonlyMap<K, V>(
+  entries: Iterable<readonly [K, V]>,
+): ReadonlyMap<K, V> {
+  const owned = new Map<K, V>(entries);
+  let view: ReadonlyMap<K, V>;
+  view = Object.freeze({
+    get size(): number {
+      return owned.size;
+    },
+    get(key: K): V | undefined {
+      return owned.get(key);
+    },
+    has(key: K): boolean {
+      return owned.has(key);
+    },
+    forEach(
+      callback: (value: V, key: K, map: ReadonlyMap<K, V>) => void,
+      thisArg?: unknown,
+    ): void {
+      owned.forEach((value, key) => {
+        callback.call(thisArg, value, key, view);
+      });
+    },
+    entries(): MapIterator<[K, V]> {
+      return owned.entries();
+    },
+    keys(): MapIterator<K> {
+      return owned.keys();
+    },
+    values(): MapIterator<V> {
+      return owned.values();
+    },
+    [Symbol.iterator](): MapIterator<[K, V]> {
+      return owned[Symbol.iterator]();
+    },
+  });
+  return view;
+}
+
 export function assertVehicleVisualFrameV1(
   frame: VehicleVisualFrameV1,
 ): void {
@@ -142,9 +181,11 @@ export function indexVehicleVisualFrameV1(
 }> {
   assertVehicleVisualFrameV1(frame);
   return Object.freeze({
-    parts: new Map(frame.parts.map((part) => [part.partId, part])),
-    segments: new Map(
-      frame.segments.map((segment) => [segment.segmentId, segment]),
+    parts: immutableReadonlyMap(
+      frame.parts.map((part) => [part.partId, part] as const),
+    ),
+    segments: immutableReadonlyMap(
+      frame.segments.map((segment) => [segment.segmentId, segment] as const),
     ),
   });
 }
