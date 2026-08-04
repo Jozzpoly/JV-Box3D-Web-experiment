@@ -18,6 +18,27 @@ async function exists(path) {
   }
 }
 
+function isRecord(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isSafePortablePath(path) {
+  if (
+    typeof path !== "string" ||
+    path.length === 0 ||
+    path.startsWith("/") ||
+    path.includes("\\") ||
+    path.includes("?") ||
+    path.includes("#")
+  ) {
+    return false;
+  }
+  const segments = path.split("/");
+  return segments.every(
+    (segment) => segment.length > 0 && segment !== "." && segment !== "..",
+  );
+}
+
 export async function collectPortableFiles(root) {
   const files = [];
 
@@ -210,12 +231,49 @@ async function validateManifest(root, errors) {
     return null;
   }
 
+  if (!isRecord(manifest)) {
+    errors.push(`${PORTABLE_MANIFEST_NAME} must contain an object.`);
+    return null;
+  }
   if (manifest.schemaVersion !== 1) {
     errors.push(`${PORTABLE_MANIFEST_NAME} must use schemaVersion 1.`);
   }
   if (manifest.distribution !== "portable_site") {
     errors.push(
       `${PORTABLE_MANIFEST_NAME} must declare distribution portable_site.`,
+    );
+  }
+  if (manifest.project?.id !== "jv_web_demonstrator") {
+    errors.push(
+      `${PORTABLE_MANIFEST_NAME} must identify project jv_web_demonstrator.`,
+    );
+  }
+  if (
+    manifest.source?.repository !== "Jozzpoly/JV-Box3D-Web-experiment" ||
+    typeof manifest.source?.commit !== "string" ||
+    !/^[0-9a-f]{40}$/.test(manifest.source.commit) ||
+    manifest.source?.workingTreeClean !== true
+  ) {
+    errors.push(
+      `${PORTABLE_MANIFEST_NAME} must record the exact repository commit and a clean source tree.`,
+    );
+  }
+  if (
+    manifest.runtimeBackend?.id !== "legacy_ts_m6" ||
+    manifest.runtimeBackend?.role !== "REFERENCE_BROWSER_FIXTURE" ||
+    manifest.runtimeBackend?.productPhysicsAuthority !== false ||
+    manifest.runtimeBackend?.nativeParity !== "NOT_PROVEN"
+  ) {
+    errors.push(
+      `${PORTABLE_MANIFEST_NAME} must preserve the non-authoritative legacy_ts_m6 backend identity.`,
+    );
+  }
+  if (
+    manifest.publication?.mode !== "DORMANT" ||
+    manifest.publication?.pathPortableCandidate !== true
+  ) {
+    errors.push(
+      `${PORTABLE_MANIFEST_NAME} must describe a dormant path-portable candidate.`,
     );
   }
   if (manifest.publication?.publishedByBuild !== false) {
@@ -255,6 +313,10 @@ async function validateManifest(root, errors) {
       errors.push(`${PORTABLE_MANIFEST_NAME} contains an invalid file record.`);
       continue;
     }
+    if (!isSafePortablePath(record.path) && record.path !== ".nojekyll") {
+      errors.push(`${PORTABLE_MANIFEST_NAME} contains unsafe file path ${record.path}.`);
+      continue;
+    }
     if (recordedPaths.has(record.path)) {
       errors.push(`${PORTABLE_MANIFEST_NAME} repeats ${record.path}.`);
       continue;
@@ -273,6 +335,33 @@ async function validateManifest(root, errors) {
   for (const actual of actualRecords) {
     if (!recordedPaths.has(actual.path)) {
       errors.push(`${actual.path} is absent from ${PORTABLE_MANIFEST_NAME}.`);
+    }
+  }
+
+  if (!Array.isArray(manifest.runtimeAssets) || manifest.runtimeAssets.length === 0) {
+    errors.push(`${PORTABLE_MANIFEST_NAME} must contain runtimeAssets.`);
+  } else {
+    const runtimeAssets = new Set();
+    for (const assetPath of manifest.runtimeAssets) {
+      if (!isSafePortablePath(assetPath)) {
+        errors.push(`${PORTABLE_MANIFEST_NAME} contains unsafe runtime asset path ${String(assetPath)}.`);
+        continue;
+      }
+      if (runtimeAssets.has(assetPath)) {
+        errors.push(`${PORTABLE_MANIFEST_NAME} repeats runtime asset ${assetPath}.`);
+        continue;
+      }
+      runtimeAssets.add(assetPath);
+      if (!actualByPath.has(assetPath) || !recordedPaths.has(assetPath)) {
+        errors.push(
+          `${PORTABLE_MANIFEST_NAME} runtime asset is missing from the payload table: ${assetPath}.`,
+        );
+      }
+    }
+    if (!runtimeAssets.has("receipts/jv_m6_factory_receipt.json")) {
+      errors.push(
+        `${PORTABLE_MANIFEST_NAME} must declare the pinned native receipt as a runtime asset.`,
+      );
     }
   }
 
