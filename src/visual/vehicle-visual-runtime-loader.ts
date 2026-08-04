@@ -9,6 +9,10 @@ import {
   type VehicleVisualAssetReceiptV1,
 } from "./vehicle-visual-asset-gate.js";
 import {
+  assertVehicleVisualBudgetV1,
+  type VehicleVisualBudgetReceiptV1,
+} from "./vehicle-visual-budget.js";
+import {
   assertVehicleVisualCpuOwnershipV1,
   type VehicleVisualCpuOwnershipReceiptV1,
 } from "./vehicle-visual-cpu-gate.js";
@@ -36,6 +40,7 @@ export interface LoadedVehicleVisualRuntimeV1 {
   readonly visualPackage: VehicleVisualPackageV1;
   readonly assetReceipt: VehicleVisualAssetReceiptV1;
   readonly ownershipReceipt: VehicleVisualCpuOwnershipReceiptV1;
+  readonly budgetReceipt: VehicleVisualBudgetReceiptV1;
   readonly cpuAsset: GlbRigidCpuAssetV1;
 }
 
@@ -113,6 +118,7 @@ export async function loadVehicleVisualRuntimeV1(
     visualPackage,
     cpuAsset,
   );
+  const budgetReceipt = assertVehicleVisualBudgetV1(cpuAsset);
 
   return Object.freeze({
     packageUrl: packageAbsoluteUrl,
@@ -120,6 +126,7 @@ export async function loadVehicleVisualRuntimeV1(
     visualPackage,
     assetReceipt,
     ownershipReceipt,
+    budgetReceipt,
     cpuAsset,
   });
 }
