@@ -27,6 +27,12 @@ export interface M6TopologyConfig {
   readonly wheelWidth: number;
   readonly wheelEnvelopeMode: 3;
   readonly terrainCategoryBits: 2n;
+  readonly maxDriveSpeed: number;
+  readonly maxDriveTorque: number;
+  readonly driveTaperStart: number;
+  readonly brakeTorque: number;
+  readonly coastTorque: number;
+  readonly allWheelDrive: boolean;
   readonly suspensionHertz: number;
   readonly suspensionDampingRatio: number;
   readonly frontSuspensionScale: number;
@@ -88,6 +94,14 @@ function number(root: JsonRecord, path: string): number {
 function positive(root: JsonRecord, path: string): number {
   const value = number(root, path);
   if (!(value > 0)) {
+    fail(path);
+  }
+  return value;
+}
+
+function fraction(root: JsonRecord, path: string): number {
+  const value = number(root, path);
+  if (value < 0 || value >= 1) {
     fail(path);
   }
   return value;
@@ -177,6 +191,12 @@ export function m6TopologyConfigFromReceipt(
     wheelWidth: snapshot.derived.wheelWidth,
     wheelEnvelopeMode: 3,
     terrainCategoryBits: 2n,
+    maxDriveSpeed: positive(config, "maxDriveSpeed"),
+    maxDriveTorque: positive(config, "maxDriveTorque"),
+    driveTaperStart: fraction(config, "driveTaperStart"),
+    brakeTorque: positive(config, "brakeTorque"),
+    coastTorque: positive(config, "coastTorque"),
+    allWheelDrive: bool(config, "allWheelDrive"),
     suspensionHertz: positive(config, "suspensionHertz"),
     suspensionDampingRatio: number(config, "suspensionDampingRatio"),
     frontSuspensionScale: positive(config, "frontSuspensionScale"),
