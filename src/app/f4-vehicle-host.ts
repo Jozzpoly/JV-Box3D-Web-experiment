@@ -12,6 +12,7 @@ import {
   loadPinnedNativeFactoryReceipt,
   type NativeFactorySnapshot,
 } from "../config/native-factory-receipt.js";
+import type { LongitudinalTimelineSample } from "../input/longitudinal-input-timeline.js";
 import type { SteeringTimelineSample } from "../input/steering-input-timeline.js";
 import {
   Box3DBoundary,
@@ -37,7 +38,8 @@ export interface F4VehicleHostOptions {
   readonly rateProfileId?: RateSteeringProfileId;
   readonly onVehicleStep: (
     step: FixedStepInterval,
-    input: SteeringTimelineSample,
+    steering: SteeringTimelineSample,
+    longitudinal: LongitudinalTimelineSample,
     trace: M6TraceFrame,
   ) => void;
   readonly onFrame?: (report: FrameAdvanceReport) => void;
@@ -47,6 +49,7 @@ export interface F4VehicleHostOptions {
 interface F4VehicleControllerRuntime {
   readonly lastTrace: M6TraceFrame | null;
   setSteering(command: SteeringTimelineSample["command"]): void;
+  setDrive(command: LongitudinalTimelineSample["command"]): void;
 }
 
 interface F4WorldRuntime {
@@ -135,8 +138,7 @@ export class F4VehicleHost {
       const boundary = await dependencies.loadBoundary();
       const world = boundary.createM6TopologyWorld(
         nativeReceipt,
-        options.rateProfileId ??
-          INITIAL_RATE_STEERING_PROFILE_ID,
+        options.rateProfileId ?? INITIAL_RATE_STEERING_PROFILE_ID,
       );
       resources.defer("current M6 topology world", () => {
         world.dispose();
@@ -152,15 +154,21 @@ export class F4VehicleHost {
         windowTarget: options.windowTarget,
         documentTarget: options.documentTarget,
         isDocumentHidden: options.isDocumentHidden,
-        onStep: (step, input) => {
-          vehicle.setSteering(input.command);
+        onStep: (step, steering, longitudinal) => {
+          vehicle.setSteering(steering.command);
+          vehicle.setDrive(longitudinal.command);
           const trace = world.step(1)[0];
           if (trace === undefined) {
             throw new Error(
               "M6 world produced no trace for its owned vehicle.",
             );
           }
-          options.onVehicleStep(step, input, trace);
+          options.onVehicleStep(
+            step,
+            steering,
+            longitudinal,
+            trace,
+          );
         },
         ...(options.onFrame === undefined
           ? {}
@@ -204,9 +212,7 @@ export class F4VehicleHost {
         throw new AggregateError(
           [
             error,
-            ...report.failures.map(
-              (failure) => failure.error,
-            ),
+            ...report.failures.map((failure) => failure.error),
           ],
           "M6 startup and rollback both failed.",
         );
