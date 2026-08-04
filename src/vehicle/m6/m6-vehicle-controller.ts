@@ -410,7 +410,11 @@ export class M6VehicleController {
       motorTorqueCapPerWheel = this.#config.coastTorque;
     }
 
-    for (let index = 0; index < this.#runtime.corners.length; index += 1) {
+    for (
+      let index = 0;
+      index < this.#runtime.corners.length;
+      index += 1
+    ) {
       const corner = this.#runtime.corners[index]!;
       const driven = this.#config.allWheelDrive || index >= 2;
       const active = mode === "BRAKE" || driven;
@@ -449,7 +453,7 @@ export class M6VehicleController {
   }
 
   #driveTaper(throttle: number, forwardSpeed: number): number {
-    const alignedSpeed = throttle * forwardSpeed;
+    const alignedSpeed = Math.sign(throttle) * forwardSpeed;
     if (alignedSpeed <= 0) {
       return 1;
     }
@@ -462,7 +466,8 @@ export class M6VehicleController {
       return 1;
     }
     return clampNumber(
-      (1 - speedFraction) / (1 - this.#config.driveTaperStart),
+      (1 - speedFraction) /
+        (1 - this.#config.driveTaperStart),
       0,
       1,
     );
@@ -483,7 +488,10 @@ export class M6VehicleController {
     return dot3(chassisVelocity, forwardAxis);
   }
 
-  #enableHandsOnTarget(target: number, liveRack: number): number {
+  #enableHandsOnTarget(
+    target: number,
+    liveRack: number,
+  ): number {
     const rackJointId = this.#runtime.rackJointId;
     this.#b3.b3PrismaticJoint_EnableSpring(rackJointId, true);
     this.#b3.b3PrismaticJoint_SetSpringHertz(
