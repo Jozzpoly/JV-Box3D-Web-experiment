@@ -37,7 +37,12 @@ export class KeyboardSteeringAdapter {
     const wasSideActive = this.#isSideActive(side);
     this.#pressedCodes.add(keyboardEvent.code);
     if (!wasSideActive) {
-      this.#timeline.enqueueButton(side, true, this.#now(), this.#sourceId);
+      this.#timeline.enqueueButton(
+        side,
+        true,
+        this.#safeTimestamp(),
+        this.#sourceId,
+      );
     }
     keyboardEvent.preventDefault();
   };
@@ -50,7 +55,12 @@ export class KeyboardSteeringAdapter {
     }
 
     if (!this.#isSideActive(side)) {
-      this.#timeline.enqueueButton(side, false, this.#now(), this.#sourceId);
+      this.#timeline.enqueueButton(
+        side,
+        false,
+        this.#safeTimestamp(),
+        this.#sourceId,
+      );
     }
     keyboardEvent.preventDefault();
   };
@@ -106,12 +116,20 @@ export class KeyboardSteeringAdapter {
     return false;
   }
 
+  #safeTimestamp(): number {
+    return Math.max(this.#now(), this.#timeline.cursorTimeMs);
+  }
+
   #releaseAll(reason: "BLUR" | "VISIBILITY_HIDDEN" | "PAGE_HIDE" | "DISPOSE"): void {
     if (this.#pressedCodes.size === 0) {
       return;
     }
 
     this.#pressedCodes.clear();
-    this.#timeline.enqueueReleaseAll(this.#now(), reason, this.#sourceId);
+    this.#timeline.enqueueReleaseAll(
+      this.#safeTimestamp(),
+      reason,
+      this.#sourceId,
+    );
   }
 }
