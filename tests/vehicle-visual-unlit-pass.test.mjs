@@ -285,7 +285,7 @@ test("a failed draw cannot publish the first-frame receipt", async () => {
   pass.dispose();
 });
 
-test("a WebGL draw error cannot publish the first-frame receipt", async () => {
+test("a WebGL frame error cannot publish the first-frame receipt", async () => {
   const generated = generatedFixture();
   const fixture = fakeGl({ drawGlErrorAt: 10 });
   const firstFrames = [];
@@ -304,7 +304,7 @@ test("a WebGL draw error cannot publish the first-frame receipt", async () => {
     () => pass.render(renderFrame(fixture.gl)),
     /WebGL error 0x502/,
   );
-  assert.equal(fixture.draws.length, 10);
+  assert.equal(fixture.draws.length, 26);
   assert.deepEqual(firstFrames, []);
   pass.dispose();
 });
