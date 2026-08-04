@@ -4,6 +4,8 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repositoryRoot
 
 $expectedBranch = "agent/f5-visual-observer"
+$receiptPath = "public/receipts/jv_m6_factory_receipt.json"
+
 $currentBranch = (git branch --show-current).Trim()
 if ($LASTEXITCODE -ne 0) {
   throw "Could not determine the current Git branch."
@@ -12,16 +14,29 @@ if ($currentBranch -ne $expectedBranch) {
   throw "Expected branch '$expectedBranch', but current branch is '$currentBranch'."
 }
 
-$workingTree = git status --porcelain
+$statusLines = @(git status --porcelain=v1 --untracked-files=all)
 if ($LASTEXITCODE -ne 0) {
   throw "Could not inspect the working tree."
 }
-if ($workingTree) {
-  throw "The working tree is not clean. Nothing was changed. Review 'git status' before continuing."
+
+$receiptPattern = '^[ MARCUD?!]{2} public/receipts/jv_m6_factory_receipt\.json$'
+$otherChanges = @(
+  $statusLines | Where-Object {
+    $_ -and ($_ -notmatch $receiptPattern)
+  }
+)
+if ($otherChanges.Count -gt 0) {
+  Write-Host "[JV F5 Visual] Unrelated local changes were found; nothing was changed:" -ForegroundColor Yellow
+  $otherChanges | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+  throw "The working tree contains changes other than the known Windows receipt drift."
 }
 
-$receiptPath = "public/receipts/jv_m6_factory_receipt.json"
-Write-Host "[JV F5 Visual] Restoring the byte-pinned native receipt..."
+if ($statusLines.Count -gt 0) {
+  Write-Host "[JV F5 Visual] Known Windows receipt drift detected. Restoring only the pinned receipt..."
+} else {
+  Write-Host "[JV F5 Visual] Restoring the byte-pinned native receipt..."
+}
+
 if (Test-Path $receiptPath) {
   Remove-Item -Force $receiptPath
 }
@@ -41,7 +56,19 @@ if ($LASTEXITCODE -ne 0) {
 if ($actualReceipt -ne $expectedReceipt) {
   throw "Receipt bytes differ. Expected $expectedReceipt, received $actualReceipt."
 }
+
+$remainingChanges = @(git status --porcelain=v1 --untracked-files=all)
+if ($LASTEXITCODE -ne 0) {
+  throw "Could not verify the working tree after restoring the receipt."
+}
+if ($remainingChanges.Count -gt 0) {
+  Write-Host "[JV F5 Visual] The working tree is still not clean after the safe receipt repair:" -ForegroundColor Yellow
+  $remainingChanges | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+  throw "Validation stopped before npm commands."
+}
+
 Write-Host "[JV F5 Visual] Receipt OK: $actualReceipt"
+Write-Host "[JV F5 Visual] Working tree clean."
 
 Write-Host "[JV F5 Visual] Installing the locked dependencies..."
 npm ci
