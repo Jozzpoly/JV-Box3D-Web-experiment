@@ -10,10 +10,10 @@ Build a serious JV Web Demonstrator that:
 
 - runs on desktop and phone;
 - uses deliberately designed mobile controls;
-- eventually drives over an optimized real-world scan;
+- later drives over an optimized real-world scan;
 - can be shared through GitHub Pages without a custom server;
-- remains truthful about backend authority and native parity;
-- supplies validated knowledge to future JES work.
+- remains truthful about backend authority, native parity and owner acceptance;
+- transfers validated knowledge to future JES work.
 
 Do not evolve a second product physics implementation in TypeScript.
 
@@ -25,40 +25,39 @@ docs/REFOUNDATION_LOOP_PL.md
 docs/DEMONSTRATOR_VALIDATION_POLISH_LOOP_PL.md
 docs/decisions/ADR-0003-native-jv-core-wasm.md
 docs/decisions/ADR-0004-pages-ready-demonstrator.md
+docs/decisions/ADR-0005-project-license.md
 ```
 
 ## 2. Active line
 
 ```text
-base: agent/jv-web-refoundation@f06853467408d6c633ca806d985062c634b3a666
+base:   agent/jv-web-refoundation@f06853467408d6c633ca806d985062c634b3a666
 active: agent/jv-web-demonstrator-foundation
-PR: #18 draft / do not merge / do not publish
+PR #18: draft / do not merge / do not publish
 ```
 
-Never merge, mark ready, change visibility, enable Pages or select a product default without Jozz.
+Resolve current head with Git; do not store a changing SHA here.
+
+Never merge, mark Ready, move `main`, change visibility, enable Pages or choose a product default without Jozz.
 
 ## 3. Evidence boundary
 
 Green refoundation base:
 
 ```text
-Node 24.16.0
-npm 11.17.0
 77/77 tests PASS
 TypeScript PASS
 Vite build PASS
 ```
 
-First demonstrator gate at `67067c5d46fc...`:
+Earlier portable falsification:
 
 ```text
+67067c5d46fc...
 81/81 tests PASS
-TypeScript PASS
-Vite bundle PASS
-portable validation FAIL
+bundle PASS
+portable FAIL on root-absolute /receipts URL
 ```
-
-The fail was correct: bundled JS embedded root-absolute `/receipts/...`, which would break under a GitHub Pages project path.
 
 Fixed source:
 
@@ -66,7 +65,18 @@ Fixed source:
 ./receipts/jv_m6_factory_receipt.json
 ```
 
-The newer head has many additional tests and gates and is **not yet locally green**. Do not infer a new pass count.
+Latest local foundation gate:
+
+```text
+2f14d109980c99b844d80b80a080327e1fb4d900
+Node 24.16.0
+npm 11.17.0
+receipt byte-exact
+npm ci/docs/TypeScript PASS
+109 tests: 108 PASS / 1 FAIL
+```
+
+Only fail: privacy identifier remained in one public-report field. No physics/runtime test failed. Final recursive sanitizer has since been corrected, but the newer head is **not locally green yet**. Never invent the new test count or package PASS.
 
 ## 4. Backend truth
 
@@ -85,9 +95,9 @@ native maxDriveSpeed = 40 rad/s wheel rev limit
 legacy TS             = 40 m/s linear target interpreted through radius
 ```
 
-Do not add product drivetrain, anti-roll, aero, suspension or future tire mechanics to this backend.
+Do not add product drivetrain, steering, suspension, aero, contact or tire mechanics to this backend.
 
-## 5. Product architecture
+Product authority:
 
 ```text
 Box3D source + portable native JV Core
@@ -99,35 +109,25 @@ Box3D source + portable native JV Core
  TypeScript input/render/mobile/scene/UI host
 ```
 
-First native spike uses unchanged M5/M6 sources plus a thin adapter. Obtain POSITION-like native/WASM baseline before structural refactor or shared native RATE.
+## 5. Three readiness gates
 
-## 6. Two tracks
+### SOURCE-PUBLIC-READY
 
-### Track A — demonstrator
+Requires exact default-branch candidate, owner-approved project license/rights strategy, current/history/ref/path scan, reachable-license inventory, classified review findings, GitHub cloud/settings audit, public documentation, asset-rights classification and owner approval.
 
-Allowed on frozen legacy fixture:
+### DEMONSTRATOR-PACKAGE-READY
 
-- portable package;
-- Demo/Lab split;
-- loading/error UX;
-- mobile input ownership;
-- camera/reset;
-- scene seam and synthetic campus;
-- quality profiles;
-- LAN/phone testing;
-- Pages packaging.
+Requires local Node 24 foundation PASS, portable static/privacy/network/compliance PASS, loopback root/subpath HTTP PASS, desktop browser smoke and exact package receipt.
 
-### Track B — physics authority
+### PAGES-PUBLISH-READY
 
-- Box3D + JV Core WASM;
-- ABI/stable IDs/snapshots;
-- native/WASM scenario parity;
-- backend swap;
-- later Wheel Scope backend.
+Requires public source, package readiness, mobile lifecycle/performance PASS, owner mobile acceptance, release-only publishing branch and owner approval exact package.
 
-## 7. Portable artifact truth
+Never collapse them into one `PUBLIC-READY` label.
 
-Current artifact contains:
+## 6. Portable/build truth
+
+Artifact contract:
 
 ```text
 index.html
@@ -138,58 +138,59 @@ build-manifest.json
 .nojekyll
 ```
 
-Generator requires a clean source tree. Manifest records exact commit, backend identity, runtime/compliance files and SHA-256 payload table.
+Manifest records exact commit, fingerprinted ref, backend identity, runtime/compliance assets and payload SHA-256. It must never expose branch/private metadata, claim parity/product authority or grant public/Pages approval.
 
-It must remain:
+Foundation runner now pins exact branch/commit through the entire build, checks final clean tree and verifies manifest source/publication fields.
 
-```text
-publicReady=false
-pagesPublicationApproved=false
-publishedByBuild=false
-nativeParity=NOT_PROVEN
-```
+Package scripts contain no publish/deploy/pages function. Build never publishes.
 
-Validation layers:
+## 7. Public-history safety
 
-1. static paths/file table/hash/authority/publication checks;
-2. loopback HTTP byte smoke at `/` and `/JV-Box3D-Web-experiment/`;
-3. later real browser desktop smoke;
-4. later LAN phone smoke;
-5. later exact Pages package smoke.
+Audit scans:
 
-Build never publishes.
+- current index and dirty/untracked state;
+- all reachable blobs;
+- commit and annotated-tag metadata;
+- refs and current/historical path identifiers;
+- sensitive filenames and credential patterns;
+- symlinks and gitlinks;
+- large/unscanned objects;
+- final recursive report sanitization.
 
-## 8. Public readiness
-
-Decision:
+Exact current `.npmrc` may be accepted only when bytes equal:
 
 ```text
-PUBLIC-READY PASS
-→ owner approval
-→ manual repository visibility change
-→ PAGES-PUBLISH PASS
-→ owner approval
-→ manual Pages enablement
+engine-strict=true
+save-exact=true
 ```
 
-Current status:
+Any drift or historical `.npmrc` remains blocked.
+
+The report requires nine public contracts. Eight exist; root `LICENSE` is intentionally missing pending Jozz.
+
+## 8. Review ledger
+
+Ignored local evidence:
 
 ```text
-repository PRIVATE
-Pages DISABLED
-current project LICENSE MISSING
-THIRD_PARTY_NOTICES PRESENT
-public README candidate PRESENT on active branch
-main/default branch NOT READY
+.local-audit/public-readiness.json
+.local-audit/license-inventory.json
+.local-audit/public-review-classifications.json
 ```
 
-Public audit scans current index, dirty state, all reachable blobs, commit/tag metadata and refs. Values resembling secrets are fingerprinted; ref names are redacted from the report.
+Every review finding must be:
 
-Cloud audit must separately cover PRs/comments/reviews, issues, Actions logs/artifacts, releases and packages.
+```text
+ACCEPTED + safe rationale + reviewer + UTC timestamp
+or
+REMEDIATE
+```
+
+`PENDING`, stale/missing entries, wrong source commit or rationale containing private identifiers fail. The audit runner generates reports and the pending ledger but never accepts findings automatically.
 
 ## 9. Licensing truth
 
-Exact notices currently cover:
+Exact notices cover:
 
 ```text
 box3d.js@0.0.2 / MIT
@@ -198,105 +199,133 @@ Vite 8.1.5 / MIT
 TypeScript 7.0.2 / Apache-2.0
 ```
 
-Installed package metadata and exact `box3d.js/LICENSE` hash are verified during `npm run check` and portable build.
+Inventory separates:
+
+```text
+root project license
+third-party notice
+nested vendor license
+```
+
+A nested license never satisfies the project-license requirement.
 
 Historical fact:
 
 ```text
-agent/bootstrap-web-poc / PR #1 contains MIT LICENSE
+PR #1 contains MIT License
 Copyright (c) 2026 Jozz Vehicle contributors
 ```
 
-A reachable-license inventory now reports all historical license-like blobs. Jozz still must explicitly choose the current project license. Do not silently add MIT even though it is the lowest-conflict candidate.
+ADR-0005 recommends MIT as the least-conflicting option but **does not select it**. Jozz must choose exact strategy, holder text and year. Do not add `LICENSE` silently.
 
-Licensing code does not automatically license models, scans, textures, scenes or native JV assets.
+Code licensing does not automatically license models, scans, photographs, textures, fonts, audio, logos, scenes or native JV assets.
 
-## 10. GitHub history truth
+## 10. GitHub collaboration/cloud truth
 
-- PR #15 has a prominent drive-unit erratum;
-- issue #12 is marked as historical RATE research;
-- PR #1 remains quarantined and carries historical MIT;
-- no formal reviews/inline threads were found on PR #1, #15, #17 or #18;
-- obvious secrets were not seen in inspected bodies/comments;
-- logs/artifacts/releases/packages audit remains incomplete.
-
-Default `main` is stale and cannot be the public landing branch. Do not update/merge/change default without Jozz.
-
-## 11. Mobile and scene invariants
-
-Mobile:
-
-- landscape-first;
-- exclusive pointer ownership;
-- relative RATE pad is the first experiment;
-- pointer release/cancel = semantic `RELEASE`, never hidden centre target;
-- throttle/brake/reverse/camera cannot steal pointers;
-- blur/visibility/pagehide/dispose release controls;
-- quality changes render only.
-
-Scene:
+Canonical map:
 
 ```text
-source scan
-render mesh / LOD
-simplified collision mesh
-scene manifest + spawn/bounds metadata
+docs/PUBLIC_COLLABORATION_HISTORY.md
 ```
 
-Never use a raw noisy photogrammetry mesh as the default collider.
-
-## 12. Steering/wheel truth
-
-Reference measurements:
+Observed:
 
 ```text
-stationary held excess: 0.000 mm
-driving held excess:    <= 0.284 mm
-post-RELEASE peak:       2.541–2.817 mm
-contacts:                4
+13 PR records
+12 open drafts
+1 closed quarantine (#8)
+0 merged
+issues #3/#5/#7/#10/#12
 ```
 
-Do not force-clamp before native comparison.
+Available bodies/comments were reviewed; no obvious credential, Jozz-local path or private owner e-mail observed. #1/#8 quarantined, #15 has drive erratum, #17 architecture authority, #18 active candidate.
+
+Artifact `8856776966` was byte-reviewed and hash-matched; no unsafe path, secret or JV/Jozz owner data found.
+
+Raw logs reviewed: source audit, F3 and F4. Tokens were masked; hosted-runner paths only. F2 manual-dispatch raw log, Actions caches, exhaustive runs, releases, packages and settings remain manual UI items.
+
+## 11. Main integration truth
+
+Measured checkpoint:
 
 ```text
-legacy_m6_split_sphere_sidewall
-= regression baseline / failure reference
+main@5c64903d753f893adc42be90e0c3d8053a95a922
+candidate behind: 0
+merge base: exact main
 ```
 
-Future wheel physics belongs to native JV Core after a fresh exact Wheel Scope source receipt.
+Candidate was a pure descendant. Remeasure before decision. Preferred owner-approved integration is an exact fast-forward of `main`, not merging every stacked PR, squash, merge commit or force update.
 
-## 13. Workflow rules
+No `main` or default-branch change has been made.
+
+## 12. Public policy surface
+
+Present:
+
+```text
+README.md
+THIRD_PARTY_NOTICES.md
+SECURITY.md
+CONTRIBUTING.md
+docs/PROJECT_STATE.md
+docs/PUBLIC_COLLABORATION_HISTORY.md
+docs/PUBLIC_ASSET_RIGHTS_POLICY.md
+docs/operations/SOURCE_PUBLIC_RELEASE_RUNBOOK_PL.md
+```
+
+Missing intentionally:
+
+```text
+LICENSE
+```
+
+Private workspaces:
+
+```text
+.local-assets/
+.local-scans/
+.private-work/
+```
+
+Asset policy is default-deny.
+
+## 13. Mobile/scene truth
+
+Mobile contract uses Pointer Events, exclusive pointer ownership and semantic RELEASE on up/cancel/lostcapture/background. Quality profiles never change physics.
+
+Scene contract separates source scan, render representation and collision proxy with units, spawn, bounds, rights and file hashes.
+
+Mobile implementation and scene loader wait for a green foundation checkpoint.
+
+## 14. Workflow rules
 
 - respond to Jozz in Polish;
 - GitHub connector and ordinary Git only;
 - Git Diff Patcher Bridge forbidden;
-- always guide Jozz safely through local updates;
-- no destructive reset/clean/stash without explicit owner decision;
-- no merge/ready/visibility/Pages change without Jozz;
+- keep frequent progress checkpoints;
+- guide local updates safely;
+- no destructive reset/clean/stash without owner decision;
+- no merge/Ready/main/default/visibility/Pages change without Jozz;
 - no custom Actions, self-modifying CI or cross-repo loop;
-- no parity claim from internal tests;
-- no owner-feel claim without Jozz;
+- no parity, owner-feel or readiness claim from the wrong evidence level;
 - no hidden assist/fallback;
-- no unindexed destructive documentation removal;
-- update this memory and `PROJECT_STATE.md` after meaningful checkpoints.
+- update this memory and PROJECT_STATE after meaningful checkpoints.
 
-## 14. Immediate sequence
+## 15. Immediate sequence
 
 ```text
-1 static review current PR #18
-2 one fresh local demonstrator gate
-3 audit:public and classify findings
-4 audit:licenses and obtain Jozz license decision
-5 finish logs/artifacts/releases/packages cloud audit
-6 prepare owner-approved default-branch integration
-7 backend identity through trace/UI/receipt
-8 Demo/Lab split
-9 mobile pointer-ownership prototype
-10 parallel native JV WASM parity spike
-11 scene manifest + synthetic campus
-12 scan audit/conversion when files arrive
-13 phone owner gate
-14 PUBLIC-READY decision
-15 manual visibility change
-16 PAGES-PUBLISH gate and manual enablement
+1 fresh Node 24 foundation gate on current head
+2 report-only public/history + license audits
+3 generate review ledger
+4 classify every finding
+5 obtain Jozz exact project-license decision
+6 add exact LICENSE and rerun dependent gates
+7 finish manual GitHub UI audit
+8 remeasure main fast-forward proof
+9 prepare exact owner approval receipt
+10 owner-approved fast-forward main
+11 owner-approved private -> public
+12 immediate public/anonymous clone verification
+13 keep Pages disabled
+14 continue Demo/Lab, mobile, native WASM and scene work
 ```
