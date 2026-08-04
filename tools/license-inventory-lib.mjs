@@ -3,7 +3,15 @@ import { createHash } from "node:crypto";
 import { basename, resolve } from "node:path";
 
 const MAX_LICENSE_BYTES = 1024 * 1024;
-const LICENSE_NAME_PATTERN = /^(?:LICENSE|LICENCE|COPYING|NOTICE)(?:\..+)?$/i;
+const PROJECT_LICENSE_PATTERN = /^(?:LICENSE|LICENCE|COPYING)(?:\..+)?$/i;
+const NOTICE_PATTERN = /^(?:NOTICE|THIRD[-_.]?PARTY[-_.]?(?:NOTICES?|LICENSES?))(?:\..+)?$/i;
+const SENSITIVE_IDENTIFIER_PATTERNS = [
+  /\b(?:gh[pousr]_[A-Za-z0-9]{30,255}|github_pat_[A-Za-z0-9_]{20,255})\b/,
+  /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,255}\b/,
+  /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/,
+  /\b[A-Za-z]:\\Users\\[^\\\r\n]+/,
+  /(?:^|[\s"'`])\/home\/[^/\s"'`]+/,
+];
 
 function createGit(root) {
   return (args, options = {}) =>
@@ -23,7 +31,29 @@ function sha256(text) {
   return createHash("sha256").update(text).digest("hex");
 }
 
-function detectLicense(text) {
+function fingerprint(value) {
+  return sha256(value).slice(0, 12);
+}
+
+function safePath(path) {
+  if (!SENSITIVE_IDENTIFIER_PATTERNS.some((pattern) => pattern.test(path))) {
+    return path;
+  }
+  return `[redacted license path ${fingerprint(path)}]`;
+}
+
+function classifyPath(path) {
+  const name = basename(path);
+  if (PROJECT_LICENSE_PATTERN.test(name)) {
+    return "PROJECT_LICENSE";
+  }
+  if (NOTICE_PATTERN.test(name)) {
+    return "THIRD_PARTY_NOTICE";
+  }
+  return null;
+}
+
+function detectProjectLicense(text) {
   const normalized = normalizeText(text);
   if (
     normalized.startsWith("MIT License\n") &&
@@ -43,8 +73,8 @@ function detectLicense(text) {
   return "UNKNOWN";
 }
 
-function reachableLicenseObjects(git) {
-  const pathsByObject = new Map();
+function reachableDocuments(git) {
+  const documents = new Map();
   for (const line of git(["rev-list", "--objects", "--all"])
     .split(/\r?\n/)
     .filter(Boolean)) {
@@ -53,24 +83,38 @@ function reachableLicenseObjects(git) {
       continue;
     }
     const objectSha = line.slice(0, separator);
-    const path = line.slice(separator + 1);
-    if (!LICENSE_NAME_PATTERN.test(basename(path))) {
+    const rawPath = line.slice(separator + 1).replaceAll("\\", "/");
+    const role = classifyPath(rawPath);
+    if (role === null) {
       continue;
     }
-    const paths = pathsByObject.get(objectSha) ?? new Set();
-    paths.add(path.replaceAll("\\", "/"));
-    pathsByObject.set(objectSha, paths);
+    const key = `${role}:${objectSha}`;
+    const entry = documents.get(key) ?? {
+      role,
+      objectSha,
+      paths: new Set(),
+    };
+    entry.paths.add(safePath(rawPath));
+    documents.set(key, entry);
   }
-  return pathsByObject;
+  return [...documents.values()];
 }
 
-function currentLicensePaths(git) {
-  return git(["ls-tree", "-r", "--name-only", "HEAD"])
+function currentPathsByRole(git) {
+  const result = {
+    PROJECT_LICENSE: new Set(),
+    THIRD_PARTY_NOTICE: new Set(),
+  };
+  for (const rawPath of git(["ls-tree", "-r", "--name-only", "HEAD"])
     .split(/\r?\n/)
     .filter(Boolean)
-    .map((path) => path.replaceAll("\\", "/"))
-    .filter((path) => LICENSE_NAME_PATTERN.test(basename(path)))
-    .sort();
+    .map((path) => path.replaceAll("\\", "/"))) {
+    const role = classifyPath(rawPath);
+    if (role !== null) {
+      result[role].add(safePath(rawPath));
+    }
+  }
+  return result;
 }
 
 export function inventoryReachableLicenses({ root: requestedRoot }) {
@@ -83,77 +127,99 @@ export function inventoryReachableLicenses({ root: requestedRoot }) {
     );
   }
 
-  const currentPaths = new Set(currentLicensePaths(git));
+  const current = currentPathsByRole(git);
   const records = [];
-  for (const [objectSha, pathSet] of reachableLicenseObjects(git)) {
-    const size = Number(git(["cat-file", "-s", objectSha]).trim());
-    const paths = [...pathSet].sort();
+  for (const document of reachableDocuments(git)) {
+    const size = Number(git(["cat-file", "-s", document.objectSha]).trim());
+    const paths = [...document.paths].sort();
+    const currentPaths = paths.filter((path) => current[document.role].has(path));
     if (size > MAX_LICENSE_BYTES) {
       records.push({
-        objectSha,
+        role: document.role,
+        objectSha: document.objectSha,
         bytes: size,
         textSha256: null,
-        detectedLicense: "UNSCANNED_OVERSIZE",
+        detectedLicense:
+          document.role === "PROJECT_LICENSE" ? "UNSCANNED_OVERSIZE" : null,
         paths,
-        currentPaths: paths.filter((path) => currentPaths.has(path)),
+        currentPaths,
       });
       continue;
     }
-    const text = git(["cat-file", "blob", objectSha]);
+
+    const text = git(["cat-file", "blob", document.objectSha]);
     records.push({
-      objectSha,
+      role: document.role,
+      objectSha: document.objectSha,
       bytes: Buffer.byteLength(text),
       textSha256: sha256(normalizeText(text)),
-      detectedLicense: detectLicense(text),
+      detectedLicense:
+        document.role === "PROJECT_LICENSE"
+          ? detectProjectLicense(text)
+          : null,
       paths,
-      currentPaths: paths.filter((path) => currentPaths.has(path)),
+      currentPaths,
     });
   }
 
   records.sort((left, right) =>
-    `${left.detectedLicense}:${left.objectSha}`.localeCompare(
-      `${right.detectedLicense}:${right.objectSha}`,
+    `${left.role}:${left.detectedLicense ?? ""}:${left.objectSha}`.localeCompare(
+      `${right.role}:${right.detectedLicense ?? ""}:${right.objectSha}`,
     ),
   );
-  const distinctTexts = new Set(
-    records.map((record) => record.textSha256).filter(Boolean),
+
+  const projectRecords = records.filter(
+    (record) => record.role === "PROJECT_LICENSE",
   );
-  const detectedLicenses = [
-    ...new Set(records.map((record) => record.detectedLicense)),
+  const distinctProjectTexts = new Set(
+    projectRecords.map((record) => record.textSha256).filter(Boolean),
+  );
+  const detectedProjectLicenses = [
+    ...new Set(projectRecords.map((record) => record.detectedLicense)),
   ].sort();
 
   const findings = [];
-  if (currentPaths.size === 0) {
+  if (current.PROJECT_LICENSE.size === 0) {
     findings.push({
       severity: "BLOCKER",
       id: "CURRENT_PROJECT_LICENSE_MISSING",
-      message: "HEAD has no project LICENSE/COPYING file.",
+      message: "HEAD has no project LICENSE/LICENCE/COPYING file.",
     });
   }
-  if (distinctTexts.size > 1) {
+  if (current.THIRD_PARTY_NOTICE.size === 0) {
     findings.push({
-      severity: "REVIEW",
-      id: "MULTIPLE_REACHABLE_LICENSE_TEXTS",
-      message: `${distinctTexts.size} distinct reachable license/notice texts require owner classification.`,
+      severity: "BLOCKER",
+      id: "CURRENT_THIRD_PARTY_NOTICE_MISSING",
+      message: "HEAD has no THIRD_PARTY_NOTICES/NOTICE file.",
     });
   }
-  if (detectedLicenses.includes("UNKNOWN")) {
+  if (distinctProjectTexts.size > 1) {
     findings.push({
       severity: "REVIEW",
-      id: "UNKNOWN_REACHABLE_LICENSE_TEXT",
-      message: "At least one reachable license-like file was not classified.",
+      id: "MULTIPLE_REACHABLE_PROJECT_LICENSE_TEXTS",
+      message: `${distinctProjectTexts.size} distinct reachable project-license texts require owner classification.`,
+    });
+  }
+  if (detectedProjectLicenses.includes("UNKNOWN")) {
+    findings.push({
+      severity: "REVIEW",
+      id: "UNKNOWN_REACHABLE_PROJECT_LICENSE_TEXT",
+      message: "At least one reachable project-license file was not classified.",
     });
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sourceCommit: git(["rev-parse", "HEAD"]).trim(),
-    currentLicensePaths: [...currentPaths].sort(),
-    detectedLicenses,
+    currentProjectLicensePaths: [...current.PROJECT_LICENSE].sort(),
+    currentThirdPartyNoticePaths: [...current.THIRD_PARTY_NOTICE].sort(),
+    detectedProjectLicenses,
     records,
     findings,
     status: findings.some((finding) => finding.severity === "BLOCKER")
       ? "LICENSE_INVENTORY_BLOCKED"
-      : "LICENSE_INVENTORY_REVIEW",
+      : findings.length > 0
+        ? "LICENSE_INVENTORY_REVIEW"
+        : "LICENSE_INVENTORY_PASS",
   };
 }
