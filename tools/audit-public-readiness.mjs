@@ -17,6 +17,7 @@ function argument(name) {
   return value;
 }
 
+const reportOnly = process.argv.includes("--report-only");
 const root = resolve(argument("--root") ?? defaultRoot);
 const outputPath = resolve(
   argument("--output") ?? resolve(root, ".local-audit", "public-readiness.json"),
@@ -32,9 +33,15 @@ console.log(`Public-readiness report: ${relative(root, outputPath)}`);
 console.log(`Reachable refs:          ${report.metrics.reachableRefs}`);
 console.log(`Reachable blobs:         ${report.metrics.reachableBlobs}`);
 console.log(`Metadata objects:        ${report.metrics.reachableMetadataObjects}`);
+console.log(
+  `Public contracts:       ${report.metrics.presentPublicContracts}/${report.metrics.requiredPublicContracts}`,
+);
 console.log(`Blockers:                ${report.blockers.length}`);
 console.log(`Review findings:         ${report.reviewFindings.length}`);
 
+for (const missingPath of report.publicContracts.missing) {
+  console.error(`MISSING PUBLIC CONTRACT: ${missingPath}`);
+}
 for (const blocker of report.blockers) {
   console.error(
     `BLOCKER: ${blocker.signature} · ${blocker.scope} · ${blocker.path}${blocker.line ? `:${blocker.line}` : ""}${blocker.objectSha ? ` · ${blocker.objectSha.slice(0, 12)}` : ""}`,
@@ -52,8 +59,15 @@ if (report.reviewFindings.length > 20) {
 }
 
 if (report.blockers.length > 0) {
-  console.error("PUBLIC-READY AUDIT: FAIL");
-  process.exit(1);
+  console.error("SOURCE-PUBLIC-READY AUDIT: FAIL");
+  if (!reportOnly) {
+    process.exit(1);
+  }
+  console.log(
+    "Report-only mode: blocker findings were preserved without treating the completed scan as a process crash.",
+  );
+} else {
+  console.log(
+    "SOURCE-PUBLIC-READY AUDIT: PASS (human and GitHub cloud review still required)",
+  );
 }
-
-console.log("PUBLIC-READY AUDIT: PASS (human review still required)");
