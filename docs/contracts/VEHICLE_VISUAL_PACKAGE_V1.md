@@ -32,7 +32,7 @@ right:   +Z
 left:    -Z
 ```
 
-Blender/Blockbench export must arrive in this runtime convention. Apply object rotation and scale before export. Package bindings allow explicit positive correction transforms, but they are not a substitute for an inconsistent source scene.
+Blender/Blockbench export must arrive in this runtime convention. Apply object location, rotation and scale before export. Package bindings allow explicit positive correction transforms, but they are not a substitute for an inconsistent source scene.
 
 Negative scale and hidden mirror transforms are rejected. Create left/right geometry explicitly or apply the mirror before export.
 
@@ -163,6 +163,22 @@ Repeat `_FR`, `_RL`, `_RR` for the other corners.
 
 Every bound node name must be unique in the GLB. One node cannot be controlled by two bindings. Several nodes may intentionally follow the same runtime source.
 
+## Bound-node ownership
+
+Every node named directly by a binding must be an independent GLB root node with applied transforms:
+
+```text
+parent:      none
+matrix:      absent
+translation: absent or [0, 0, 0]
+rotation:    absent or [0, 0, 0, 1]
+scale:       absent or [1, 1, 1]
+```
+
+`localFromSource` is the only explicit correction between the runtime source frame and a bound visual root. This prevents parent transforms, authoring transforms and runtime transforms from being applied twice.
+
+A bound root may own unbound descendant nodes containing static sub-geometry. A descendant cannot also be bound to another runtime source in V1.
+
 ## Required pivots and axes
 
 ### Chassis
@@ -217,17 +233,33 @@ Author the node’s declared aim/stretch axis along its length. Keep the pivot a
 
 ```text
 format: self-contained .glb
+buffers: exactly one embedded BIN buffer
 external textures: forbidden for V1
-asset URL: clean site-relative path
+asset URL: clean path relative to the package manifest directory
 integrity: exact SHA-256
 size: exact byteLength
 units: meters
-transforms: applied
+bound-node transforms: applied / identity
 node names: unique
+bufferView offsets and strides: 4-byte aligned
+accessors: aligned to component size
+indices: unsigned 8-bit or 16-bit only
 animations: not used for physics-driven parts
 ```
 
-The runtime will verify file bytes before parsing the GLB. A changed model requires an updated hash and byte length.
+The 8/16-bit index rule is deliberate for the first WebGL1 mobile renderer. Large geometry must be split into multiple primitives rather than silently depending on a device extension for 32-bit indices.
+
+The asset URL is resolved relative to the manifest, not directly relative to the page. Example:
+
+```text
+manifest: vehicles/m6/vehicle.visual.json
+asset:    models/m6.glb
+result:   vehicles/m6/models/m6.glb
+```
+
+This relation remains identical at the site root and under a repository subpath.
+
+The runtime verifies file bytes before parsing the GLB. A changed model requires an updated hash and byte length.
 
 ## Full-rig coverage
 
@@ -238,8 +270,13 @@ Fail-closed examples:
 - missing rear lower arm;
 - unknown `partId`;
 - duplicate bound node;
+- parented bound node;
+- non-identity transform or matrix on a bound node;
 - negative scale correction;
 - non-normalized correction quaternion;
+- multiple embedded buffers;
+- misaligned bufferView/accessor data;
+- 32-bit index accessor;
 - `.gltf` with external resources;
 - absolute/CDN/local-file URL;
 - asset byte/hash mismatch.
