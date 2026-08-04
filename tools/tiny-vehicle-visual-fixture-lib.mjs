@@ -187,16 +187,12 @@ export function buildTinyVehicleVisualFixture({ partIds, segmentIds }) {
         name: "JV Tiny Parts",
         pbrMetallicRoughness: {
           baseColorFactor: [0.18, 0.52, 0.95, 1],
-          metallicFactor: 0,
-          roughnessFactor: 0.8,
         },
       },
       {
         name: "JV Tiny Segments",
         pbrMetallicRoughness: {
           baseColorFactor: [0.98, 0.58, 0.12, 1],
-          metallicFactor: 0,
-          roughnessFactor: 0.8,
         },
       },
     ],
