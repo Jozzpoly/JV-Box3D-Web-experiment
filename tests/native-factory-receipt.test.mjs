@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import {
   canonicalSha256,
   gitBlobSha1,
+  loadPinnedNativeFactoryReceipt,
+  PINNED_NATIVE_FACTORY_RECEIPT_URL,
   validateNativeFactoryReceipt,
 } from "../.test-dist/config/native-factory-receipt.js";
 
@@ -133,6 +135,29 @@ async function makeFixture() {
 async function refreshHash(receipt) {
   receipt.payloadReceipt.canonicalSha256 = await canonicalSha256(receipt.payload);
 }
+
+test("pinned receipt loader uses a site-relative URL", async () => {
+  let requestedUrl = null;
+  await assert.rejects(
+    loadPinnedNativeFactoryReceipt(async (url) => {
+      requestedUrl = url;
+      return {
+        ok: false,
+        status: 404,
+        async text() {
+          return "";
+        },
+      };
+    }),
+    /HTTP 404/,
+  );
+  assert.equal(
+    PINNED_NATIVE_FACTORY_RECEIPT_URL,
+    "./receipts/jv_m6_factory_receipt.json",
+  );
+  assert.equal(requestedUrl, PINNED_NATIVE_FACTORY_RECEIPT_URL);
+  assert.equal(PINNED_NATIVE_FACTORY_RECEIPT_URL.startsWith("/"), false);
+});
 
 test("valid native factory receipt produces a strict effective snapshot", async () => {
   const receipt = await makeFixture();
