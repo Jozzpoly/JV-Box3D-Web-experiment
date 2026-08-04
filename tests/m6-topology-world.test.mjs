@@ -31,6 +31,12 @@ function receiptFixture() {
     wheelFriction: 1.25,
     wheelRollingResistance: 0.02,
     wheelEnvelope: { mode: 3 },
+    maxDriveSpeed: 40,
+    maxDriveTorque: 320,
+    driveTaperStart: 0.6,
+    brakeTorque: 650,
+    coastTorque: 8,
+    allWheelDrive: true,
     suspensionHertz: 6,
     suspensionDampingRatio: 0.7,
     frontSuspensionScale: 1,
@@ -103,12 +109,25 @@ test("F4 config is derived from the F3 receipt and rejects artificial assists", 
   assert.equal(config.wheelWidth, receipt.derived.wheelWidth);
   assert.equal(config.rackCenteringHertz, 0);
   assert.equal(config.uprightAssist, false);
+  assert.equal(config.maxDriveSpeed, 40);
+  assert.equal(config.maxDriveTorque, 320);
+  assert.equal(config.driveTaperStart, 0.6);
+  assert.equal(config.brakeTorque, 650);
+  assert.equal(config.coastTorque, 8);
+  assert.equal(config.allWheelDrive, true);
 
   const rejected = structuredClone(receipt);
   rejected.activeFeatures.rackCenteringAssistEnabled = true;
   assert.throws(
     () => m6TopologyConfigFromReceipt(rejected),
     /optional assists/,
+  );
+
+  const rejectedDrive = structuredClone(receipt);
+  rejectedDrive.config.maxDriveTorque = 0;
+  assert.throws(
+    () => m6TopologyConfigFromReceipt(rejectedDrive),
+    /maxDriveTorque/,
   );
 });
 
@@ -164,6 +183,8 @@ test("two M6 instances use unique negative groups, settle, and contact tagged te
       "legacy_m6_split_sphere_sidewall",
     );
     assert.equal(leftTrace.corners.length, 4);
+    assert.equal(leftTrace.drive.mode, "COAST");
+    assert.equal(leftTrace.drive.allWheelDrive, true);
     assert.ok(leftTrace.worldContacts >= 8);
     assert.ok(
       leftTrace.chassisPosition.y > 0.8 &&
@@ -218,7 +239,9 @@ test("POSITION moves the rack; RELEASE turns actuation off; RATE engages K2b", (
     assert.equal(rated.steering.handsOnEdge, "ENGAGE");
     assert.equal(rated.steering.springEnabled, true);
     assert.notEqual(rated.steering.commandedRack, null);
-    assert.ok(Math.abs(rated.steering.targetError) <= 0.008 + 1e-9);
+    assert.ok(
+      Math.abs(rated.steering.targetError) <= 0.008 + 1e-9,
+    );
   } finally {
     world.dispose();
   }
@@ -248,6 +271,7 @@ test("same receipt and commands produce deterministic F4 trace values", () => {
   assert.ok(first !== null && second !== null);
   assert.equal(first.stepIndex, second.stepIndex);
   assert.equal(first.command.mode, second.command.mode);
+  assert.equal(first.drive.mode, second.drive.mode);
   close(
     first.rackTranslation,
     second.rackTranslation,
