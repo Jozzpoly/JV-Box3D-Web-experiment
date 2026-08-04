@@ -14,6 +14,7 @@ test("legacy runtime descriptor is frozen and explicitly non-authoritative", () 
     nativeParity: "NOT_PROVEN",
     commandContractVersion: 1,
     traceContractVersion: 1,
+    visualFrameContractVersion: 1,
   });
   assert.doesNotThrow(() =>
     assertVehicleRuntimeBackendDescriptor(LEGACY_TS_M6_BACKEND),
@@ -39,7 +40,7 @@ test("legacy runtime cannot elevate itself to product authority", () => {
   );
 });
 
-test("unknown command and trace contracts fail closed", () => {
+test("unknown command, trace and visual contracts fail closed", () => {
   assert.throws(
     () =>
       assertVehicleRuntimeBackendDescriptor({
@@ -55,5 +56,13 @@ test("unknown command and trace contracts fail closed", () => {
         traceContractVersion: 2,
       }),
     /trace contract version/,
+  );
+  assert.throws(
+    () =>
+      assertVehicleRuntimeBackendDescriptor({
+        ...LEGACY_TS_M6_BACKEND,
+        visualFrameContractVersion: 2,
+      }),
+    /visual frame contract version/,
   );
 });
