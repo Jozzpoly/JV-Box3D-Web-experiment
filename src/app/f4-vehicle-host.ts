@@ -24,6 +24,11 @@ import {
 } from "../physics/box3d-boundary.js";
 import type { b3Vec3 } from "../physics/box3d-runtime-contract.js";
 import {
+  assertVehicleRuntimeBackendDescriptor,
+  LEGACY_TS_M6_BACKEND,
+  type VehicleRuntimeBackendDescriptor,
+} from "../runtime/vehicle-runtime-backend.js";
+import {
   INITIAL_RATE_STEERING_PROFILE_ID,
   type M6TopologyDisposalReceipt,
   type M6TraceFrame,
@@ -110,6 +115,7 @@ interface F4HostState {
 
 export class F4VehicleHost {
   readonly #resources: OwnedResourceStack;
+  readonly #backend: VehicleRuntimeBackendDescriptor;
   readonly #nativeReceipt: NativeFactorySnapshot;
   readonly #box3dReceipt: Box3DRuntimeReceipt;
   readonly #world: F4WorldRuntime;
@@ -118,6 +124,7 @@ export class F4VehicleHost {
 
   private constructor(
     resources: OwnedResourceStack,
+    backend: VehicleRuntimeBackendDescriptor,
     nativeReceipt: NativeFactorySnapshot,
     box3dReceipt: Box3DRuntimeReceipt,
     world: F4WorldRuntime,
@@ -125,6 +132,7 @@ export class F4VehicleHost {
     state: F4HostState,
   ) {
     this.#resources = resources;
+    this.#backend = backend;
     this.#nativeReceipt = nativeReceipt;
     this.#box3dReceipt = box3dReceipt;
     this.#world = world;
@@ -143,6 +151,7 @@ export class F4VehicleHost {
     };
 
     try {
+      assertVehicleRuntimeBackendDescriptor(LEGACY_TS_M6_BACKEND);
       const nativeReceipt = await dependencies.loadReceipt();
       const boundary = await dependencies.loadBoundary();
       const world = boundary.createM6TopologyWorld(
@@ -216,6 +225,7 @@ export class F4VehicleHost {
 
       return new F4VehicleHost(
         resources,
+        LEGACY_TS_M6_BACKEND,
         nativeReceipt,
         boundary.receipt,
         world,
@@ -237,6 +247,10 @@ export class F4VehicleHost {
       }
       throw error;
     }
+  }
+
+  get backend(): VehicleRuntimeBackendDescriptor {
+    return this.#backend;
   }
 
   get nativeReceipt(): NativeFactorySnapshot {
