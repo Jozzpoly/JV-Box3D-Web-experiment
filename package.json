@@ -10,6 +10,7 @@
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "test": "node tools/run-tests.mjs",
+    "check:docs": "node tools/check-doc-links.mjs",
     "check": "npm run typecheck && npm run test",
     "build": "npm run check && vite build",
     "preview": "vite preview"
