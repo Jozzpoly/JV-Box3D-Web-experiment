@@ -6,15 +6,13 @@ function toPosix(path) {
   return path.replaceAll("\\", "/");
 }
 
-function classify(reference) {
+function classifyResource(reference) {
   const value = reference.trim().replace(/^['"]|['"]$/g, "");
   if (
     value.length === 0 ||
     value.startsWith("#") ||
     value.startsWith("data:") ||
-    value.startsWith("blob:") ||
-    value.startsWith("mailto:") ||
-    value.startsWith("tel:")
+    value.startsWith("blob:")
   ) {
     return { allowed: true, value };
   }
@@ -26,13 +24,57 @@ function classify(reference) {
     return { allowed: false, reason: "remote HTTP dependency", value };
   }
   if (scheme !== undefined) {
-    return { allowed: false, reason: `unsafe or unsupported URL scheme ${scheme}:`, value };
+    return {
+      allowed: false,
+      reason: `unsafe or unsupported resource URL scheme ${scheme}:`,
+      value,
+    };
   }
   return { allowed: true, value };
 }
 
-function scanReferences(text, patterns) {
+function attribute(tag, name) {
+  return tag.match(
+    new RegExp(`\\b${name}\\s*=\\s*["']([^"']+)["']`, "i"),
+  )?.[1] ?? null;
+}
+
+function htmlResourceReferences(text) {
   const references = [];
+  const tagPattern = /<(script|link|img|source|audio|video|iframe)\b[^>]*>/gi;
+  let match;
+  while ((match = tagPattern.exec(text)) !== null) {
+    const tagName = match[1].toLowerCase();
+    const tag = match[0];
+    const primary = attribute(tag, tagName === "link" ? "href" : "src");
+    if (primary !== null) {
+      references.push(primary);
+    }
+
+    const srcset = attribute(tag, "srcset");
+    if (srcset !== null) {
+      for (const candidate of srcset.split(",")) {
+        const url = candidate.trim().split(/\s+/, 1)[0];
+        if (url.length > 0) {
+          references.push(url);
+        }
+      }
+    }
+  }
+
+  const stylePattern = /\bstyle\s*=\s*["']([^"']+)["']/gi;
+  while ((match = stylePattern.exec(text)) !== null) {
+    references.push(...cssReferences(match[1]));
+  }
+  return references;
+}
+
+function cssReferences(text) {
+  const references = [];
+  const patterns = [
+    /url\(([^)]+)\)/gi,
+    /@import\s+(?:url\()?\s*["']([^"']+)["']/gi,
+  ];
   for (const pattern of patterns) {
     pattern.lastIndex = 0;
     let match;
@@ -49,23 +91,19 @@ export async function validatePortableNetworkPolicy(root) {
 
   for (const absolutePath of files) {
     const extension = extname(absolutePath).toLowerCase();
-    let patterns;
-    if (extension === ".html") {
-      patterns = [/(?:src|href)\s*=\s*["']([^"']+)["']/gi];
-    } else if (extension === ".css") {
-      patterns = [/url\(([^)]+)\)/gi, /@import\s+(?:url\()?\s*["']([^"']+)["']/gi];
-    } else {
-      continue;
-    }
-
     const sourcePath = toPosix(relative(root, absolutePath));
     const text = await readFile(absolutePath, "utf8");
-    for (const reference of scanReferences(text, patterns)) {
-      const result = classify(reference);
+    const references =
+      extension === ".html"
+        ? htmlResourceReferences(text)
+        : extension === ".css"
+          ? cssReferences(text)
+          : [];
+
+    for (const reference of references) {
+      const result = classifyResource(reference);
       if (!result.allowed) {
-        errors.push(
-          `${sourcePath} uses ${result.reason}: ${result.value}`,
-        );
+        errors.push(`${sourcePath} uses ${result.reason}: ${result.value}`);
       }
     }
   }
