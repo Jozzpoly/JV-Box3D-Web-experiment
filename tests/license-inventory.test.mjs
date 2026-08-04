@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { inventoryReachableLicenses } from "../tools/license-inventory-lib.mjs";
@@ -50,7 +50,7 @@ async function withRepository(callback) {
   }
 }
 
-test("license inventory finds MIT that exists only in reachable history", async () => {
+test("license inventory finds root MIT that exists only in reachable history", async () => {
   await withRepository(async (root) => {
     await writeFile(resolve(root, "LICENSE"), MIT_FIXTURE, "utf8");
     git(root, "add", "LICENSE");
@@ -64,6 +64,7 @@ test("license inventory finds MIT that exists only in reachable history", async 
     assert.deepEqual(report.currentThirdPartyNoticePaths, [
       "THIRD_PARTY_NOTICES.md",
     ]);
+    assert.deepEqual(report.currentThirdPartyLicensePaths, []);
     assert.ok(report.detectedProjectLicenses.includes("MIT"));
     assert.ok(
       report.records.some(
@@ -72,11 +73,6 @@ test("license inventory finds MIT that exists only in reachable history", async 
           record.detectedLicense === "MIT" &&
           record.paths.includes("LICENSE") &&
           record.currentPaths.length === 0,
-      ),
-    );
-    assert.ok(
-      report.records.some(
-        (record) => record.role === "THIRD_PARTY_NOTICE",
       ),
     );
     assert.ok(
@@ -93,7 +89,7 @@ test("license inventory finds MIT that exists only in reachable history", async 
   });
 });
 
-test("license inventory exposes distinct historical and current project licenses", async () => {
+test("license inventory exposes distinct historical and current root project licenses", async () => {
   await withRepository(async (root) => {
     await writeFile(resolve(root, "LICENSE"), MIT_FIXTURE, "utf8");
     git(root, "add", "LICENSE");
@@ -122,6 +118,37 @@ test("third-party notices never satisfy the project-license requirement", async 
     assert.deepEqual(report.currentThirdPartyNoticePaths, [
       "THIRD_PARTY_NOTICES.md",
     ]);
+    assert.ok(
+      report.findings.some(
+        (finding) => finding.id === "CURRENT_PROJECT_LICENSE_MISSING",
+      ),
+    );
+  });
+});
+
+test("nested vendor LICENSE is third-party evidence, never the project license", async () => {
+  await withRepository(async (root) => {
+    await mkdir(resolve(root, "vendor", "box3d"), { recursive: true });
+    await writeFile(
+      resolve(root, "vendor", "box3d", "LICENSE"),
+      MIT_FIXTURE,
+      "utf8",
+    );
+    git(root, "add", "vendor/box3d/LICENSE");
+    git(root, "commit", "-m", "add vendored license fixture");
+
+    const report = inventoryReachableLicenses({ root });
+    assert.deepEqual(report.currentProjectLicensePaths, []);
+    assert.deepEqual(report.currentThirdPartyLicensePaths, [
+      "vendor/box3d/LICENSE",
+    ]);
+    assert.ok(
+      report.records.some(
+        (record) =>
+          record.role === "THIRD_PARTY_LICENSE" &&
+          record.detectedLicense === "MIT",
+      ),
+    );
     assert.ok(
       report.findings.some(
         (finding) => finding.id === "CURRENT_PROJECT_LICENSE_MISSING",
