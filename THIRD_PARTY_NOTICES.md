@@ -106,11 +106,12 @@ TypeScript is distributed under Apache License 2.0 by Microsoft and contributors
 
 ## Validation sources
 
-The exact dependency and engine provenance is recorded in:
+Dependency identity is pinned by:
 
 ```text
-docs/receipts/source/BOX3D_JS_DEPENDENCY_2026_08_03.md
+package.json
 package-lock.json
+docs/decisions/ADR-0002-pinned-box3d-runtime.md
 ```
 
-The local demonstrator gate verifies the installed package versions, declared licenses and the normalized `box3d.js` license text before accepting a portable artifact.
+The local foundation gate verifies installed package versions, declared licenses and the normalized `box3d.js` license text before accepting a portable artifact.
