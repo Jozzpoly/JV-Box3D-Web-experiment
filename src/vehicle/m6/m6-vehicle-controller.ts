@@ -36,6 +36,7 @@ import {
   type M6TraceFrame,
   type M6VehicleRuntime,
 } from "./m6-topology-contract.js";
+import { buildM6VisualFrameV1 } from "./m6-visual-frame-builder.js";
 import type { RateSteeringProfile } from "./rate-steering-profile.js";
 
 const RACK_STICTION_RATIO = 1.4;
@@ -349,6 +350,12 @@ export class M6VehicleController {
         wheelWidth: this.#config.wheelWidth,
         rackHalfWidth: this.#config.rackHalfWidth,
       },
+      visualFrame: buildM6VisualFrameV1(
+        this.#b3,
+        this.#runtime,
+        this.#generation,
+        stepIndex,
+      ),
       chassisPosition,
       chassisRotation,
       chassisVelocity,
