@@ -56,6 +56,8 @@ test("runtime loader resolves package-relative GLB and returns one complete CPU 
   ]);
   assert.equal(runtime.visualPackage.id, "m6-demonstrator-full-rig");
   assert.equal(runtime.assetReceipt.sha256, visualPackage.asset.sha256);
+  assert.equal(runtime.ownershipReceipt.boundRootCount, 26);
+  assert.equal(runtime.ownershipReceipt.ownedMeshNodeCount, 26);
   assert.equal(runtime.cpuAsset.nodes.length, 26);
   assert.equal(runtime.cpuAsset.triangleCount, 1);
 });
