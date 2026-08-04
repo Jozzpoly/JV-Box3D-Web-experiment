@@ -18,7 +18,7 @@ Odzyskanie pojedynczego pliku:
 git show 0d938e402f618ae34e0d959a9862d97c2f88a926:<ścieżka>
 ```
 
-Usunięcie z aktywnego drzewa nie oznacza, że dokument nigdy nie miał wartości. Oznacza, że został zastąpiony krótszym, aktualnym źródłem prawdy i nie powinien być domyślnie czytany przez kolejnych agentów.
+Usunięcie z aktywnego drzewa nie oznacza, że dokument lub narzędzie nigdy nie miało wartości. Oznacza, że zostało zastąpione krótszym, aktualnym źródłem prawdy albo było jednorazowym narzędziem historycznego etapu.
 
 ## Pierwsza seria redukcji — aktywny front i stare sterowanie planem
 
@@ -41,9 +41,22 @@ Usunięcie z aktywnego drzewa nie oznacza, że dokument nigdy nie miał wartośc
 | `docs/CONFIG_AND_SESSION_SOURCE_AUDIT_2026_08_03_PL.md` | `c67afc0067007954b2f9a780e20322ba5447211c` | analiza poprzedzała działający receipt i ujawniony problem jednostek; nie może sterować nowym ABI | ADR-0003 i przyszły unit-semantic ABI contract |
 | `docs/BOX3D_JS_BINDING_SEMANTICS_AUDIT_2026_08_03.md` | `7337718b18bcde12521715f33092ac560b4a4ecf` | dotyczy published `box3d.js` jako głównej granicy; po ADR-0003 pozostaje historią reference backendu | historia Gita; ADR-0002 dla pinning reference backendu |
 
+## Trzecia seria redukcji — jednorazowe workflowy
+
+| Dawna ścieżka | Blob SHA | Powód usunięcia | Zachowany wynik |
+|---|---|---|---|
+| `.github/workflows/audit-all-repository-inventory.yml` | `6632bf064da024e6790729c7a6d308b220169ce0` | jednorazowy inventory generator; utrzymywanie wykonywalnego narzędzia zwiększa powierzchnię i pokusę powtarzania kosztownego audytu | `docs/REPOSITORY_INVENTORY_RECEIPT_2026_08_03.md` |
+| `.github/workflows/audit-box3d-engine-delta.yml` | `f78f6a827f5288c057a9a8d5b531a8fd3869b4d0` | jednorazowe źródło historycznego engine-delta receipt | `docs/BOX3D_ENGINE_DELTA_RECEIPT_2026_08_03.md` |
+| `.github/workflows/audit-box3d-js-source.yml` | `2bbeb172b39e0b3bd28c40cefaa197a362946a98` | jednorazowe źródło dependency receipt dla reference backendu | `docs/BOX3D_JS_DEPENDENCY_RECEIPT_2026_08_03.md` |
+| `.github/workflows/f2-lock-and-validate.yml` | `fe4544a500879f4c2a4efc1e5535d2a3e6cff88b` | historyczny workflow posiadał `contents: write`; jest niezgodny z refoundation policy i nie powinien pozostać dostępny do uruchomienia | committed lockfile + F2 receipts |
+| `.github/workflows/f3-validate.yml` | `103128a833378483e93a44f4b0b0ab8d9db6e292` | walidował zamknięty etap F3, nie bieżącą architekturę | static receipt + parser tests |
+| `.github/workflows/f4-validate.yml` | `8b849d7fceefe02e1341258d30f2535f77451bca` | walidował zamknięty etap F4, nie refoundation/native WASM | tests and historical PR receipt |
+
+W refoundation nie powstaje zastępczy workflow. Walidacja pozostaje lokalna i proporcjonalna do etapu, dopóki Jozz nie zatwierdzi jednej nowej, minimalnej automatyzacji.
+
 ## Kontrola przed usunięciem
 
-Przed pierwszą i drugą serią wykonano:
+Przed seriami wykonano:
 
 - odtworzenie bieżącego stanu i dowodów w `PROJECT_STATE.md`;
 - zapis nowego procesu w `REFOUNDATION_LOOP_PL.md`;
@@ -51,13 +64,13 @@ Przed pierwszą i drugą serią wykonano:
 - skrócenie `README.md`, `DOCUMENT_INDEX.md` i `AI_PROJECT_MEMORY.md`;
 - przypięcie źródłowego commita i blob SHA każdego usuwanego pliku;
 - utworzenie jawnego kontraktu `legacy_ts_m6`, który zapisuje najważniejszą nową rozbieżność semantyczną;
-- pozostawienie source receipts i focused contracts poza tą serią redukcji.
+- potwierdzenie, że wyniki jednorazowych workflowów mają zapisane receipts albo testy w repo.
 
 ## Link audit
 
 Świeża gałąź nie jest wiarygodnie indeksowana przez GitHub code search. Pełny link audit pozostaje obowiązkowym gate’em przed końcową redukcją. Aktywny `README.md`, `AI_PROJECT_MEMORY.md`, `PROJECT_STATE.md` i `DOCUMENT_INDEX.md` nie wskazują usuniętych plików.
 
-Pozostałe odwołania w broad audits nie blokują tej serii, ponieważ same broad audits są usuwane jako jedna warstwa.
+Pozostałe odwołania w broad audits nie blokują redukcji, ponieważ same broad audits są usuwane jako jedna warstwa.
 
 ## Następne serie
 
