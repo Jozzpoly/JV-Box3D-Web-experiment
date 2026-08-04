@@ -1,19 +1,19 @@
-# AI project memory — JV Box3D Web
+# AI project memory — JV Web
 
 Updated: 2026-08-04
 Status: `CANONICAL / READ_FIRST`
 Owner: Jozz
 
-## 1. Current mission
+## 1. Mission
 
 Build a serious JV Web Demonstrator that:
 
 - runs on desktop and phone;
-- has deliberately designed mobile controls;
-- eventually drives over an optimized scan;
+- uses deliberately designed mobile controls;
+- eventually drives over an optimized real-world scan;
 - can be shared through GitHub Pages without a custom server;
-- uses truthful backend/parity labels;
-- remains a useful future JES research surface.
+- remains truthful about backend authority and native parity;
+- supplies validated knowledge to future JES work.
 
 Do not evolve a second product physics implementation in TypeScript.
 
@@ -27,40 +27,48 @@ docs/decisions/ADR-0003-native-jv-core-wasm.md
 docs/decisions/ADR-0004-pages-ready-demonstrator.md
 ```
 
-## 2. Active branch and proven base
-
-Proven refoundation base:
+## 2. Active line
 
 ```text
-agent/jv-web-refoundation
-f06853467408d6c633ca806d985062c634b3a666
+base: agent/jv-web-refoundation@f06853467408d6c633ca806d985062c634b3a666
+active: agent/jv-web-demonstrator-foundation
+PR: #18 draft / do not merge / do not publish
 ```
 
-Active branch:
+Never merge, mark ready, change visibility, enable Pages or select a product default without Jozz.
 
-```text
-agent/jv-web-demonstrator-foundation
-```
+## 3. Evidence boundary
 
-Do not merge, mark ready, change visibility or enable Pages without Jozz.
-
-## 3. Validated reference runtime
-
-Exact refoundation head passed locally:
+Green refoundation base:
 
 ```text
 Node 24.16.0
 npm 11.17.0
-native receipt byte-exact
-Markdown links PASS
-TypeScript PASS
 77/77 tests PASS
+TypeScript PASS
 Vite build PASS
 ```
 
-Earlier owner browser smoke confirmed physical driving.
+First demonstrator gate at `67067c5d46fc...`:
 
-Reference backend:
+```text
+81/81 tests PASS
+TypeScript PASS
+Vite bundle PASS
+portable validation FAIL
+```
+
+The fail was correct: bundled JS embedded root-absolute `/receipts/...`, which would break under a GitHub Pages project path.
+
+Fixed source:
+
+```text
+./receipts/jv_m6_factory_receipt.json
+```
+
+The newer head has many additional tests and gates and is **not yet locally green**. Do not infer a new pass count.
+
+## 4. Backend truth
 
 ```text
 id: legacy_ts_m6
@@ -70,37 +78,16 @@ nativeParity: NOT_PROVEN
 acceptsNewProductPhysics: false
 ```
 
-## 4. Critical drive mismatch
-
-Native JV:
+Critical mismatch:
 
 ```text
-maxDriveSpeed unit = rad/s
-motor target = ±maxDriveSpeed
-throttle scales available torque
-wheel spin drives torque taper
+native maxDriveSpeed = 40 rad/s wheel rev limit
+legacy TS             = 40 m/s linear target interpreted through radius
 ```
 
-TypeScript fixture:
+Do not add product drivetrain, anti-roll, aero, suspension or future tire mechanics to this backend.
 
-```text
-maxDriveSpeed interpreted as m/s
-target wheel speed = throttle * value / wheelRadius
-chassis speed drives torque taper
-```
-
-Pinned values imply approximately:
-
-```text
-native target 40 rad/s
-legacy TS target 77.8 rad/s at full throttle
-```
-
-Drive direction/liveness/determinism PASS did not prove native behavior.
-
-Do not add product drivetrain, anti-roll, aero, tire or suspension mechanics to `legacy_ts_m6`.
-
-## 5. Accepted architecture
+## 5. Product architecture
 
 ```text
 Box3D source + portable native JV Core
@@ -112,115 +99,155 @@ Box3D source + portable native JV Core
  TypeScript input/render/mobile/scene/UI host
 ```
 
-ABI requires explicit unit suffixes, coordinate frames, opaque generational handles, stable `partId`, immutable snapshots, memory lifetime, structured errors and native/WASM traces.
+First native spike uses unchanged M5/M6 sources plus a thin adapter. Obtain POSITION-like native/WASM baseline before structural refactor or shared native RATE.
 
-First native compile set uses unchanged M5/M6 source plus a thin adapter. Obtain native/WASM POSITION baseline before structural refactor or native RATE work.
+## 6. Two tracks
 
-## 6. Two synchronized tracks
+### Track A — demonstrator
 
-### Track A — demonstrator shell
+Allowed on frozen legacy fixture:
 
-Allowed on frozen `legacy_ts_m6`:
-
-- portable package and Pages compatibility;
-- Demo/Lab separation;
+- portable package;
+- Demo/Lab split;
 - loading/error UX;
-- mobile shell and touch ownership;
+- mobile input ownership;
 - camera/reset;
-- scene manifest and synthetic campus;
-- render quality profiles;
-- LAN phone testing.
-
-No new product physics.
+- scene seam and synthetic campus;
+- quality profiles;
+- LAN/phone testing;
+- Pages packaging.
 
 ### Track B — physics authority
 
 - Box3D + JV Core WASM;
-- ABI and stable IDs;
-- native/WASM parity corpus;
+- ABI/stable IDs/snapshots;
+- native/WASM scenario parity;
 - backend swap;
-- future Wheel Scope seam.
+- later Wheel Scope backend.
 
-## 7. Demonstrator/public decision
+## 7. Portable artifact truth
 
-Jozz decided that the repository will become public after a dedicated gate. This is not permission to change visibility immediately.
+Current artifact contains:
 
-Required sequence:
+```text
+index.html
+assets/
+receipts/
+THIRD_PARTY_NOTICES.md
+build-manifest.json
+.nojekyll
+```
+
+Generator requires a clean source tree. Manifest records exact commit, backend identity, runtime/compliance files and SHA-256 payload table.
+
+It must remain:
+
+```text
+publicReady=false
+pagesPublicationApproved=false
+publishedByBuild=false
+nativeParity=NOT_PROVEN
+```
+
+Validation layers:
+
+1. static paths/file table/hash/authority/publication checks;
+2. loopback HTTP byte smoke at `/` and `/JV-Box3D-Web-experiment/`;
+3. later real browser desktop smoke;
+4. later LAN phone smoke;
+5. later exact Pages package smoke.
+
+Build never publishes.
+
+## 8. Public readiness
+
+Decision:
 
 ```text
 PUBLIC-READY PASS
-→ explicit owner approval for exact head
+→ owner approval
 → manual repository visibility change
 → PAGES-PUBLISH PASS
+→ owner approval
 → manual Pages enablement
 ```
 
 Current status:
 
 ```text
-repository: PRIVATE
-Pages: DISABLED
-LICENSE: MISSING / DECISION PENDING
-THIRD_PARTY_NOTICES.md: MISSING
-current/history audit tool: PRESENT / NOT RUN
-GitHub metadata audit: STARTED
-public README: NOT READY
+repository PRIVATE
+Pages DISABLED
+current project LICENSE MISSING
+THIRD_PARTY_NOTICES PRESENT
+public README candidate PRESENT on active branch
+main/default branch NOT READY
 ```
 
-Public audit includes current tree, all reachable Git blobs/refs, PRs/comments/reviews, issues, Actions logs/artifacts, releases/packages, branch names, assets and licenses.
+Public audit scans current index, dirty state, all reachable blobs, commit/tag metadata and refs. Values resembling secrets are fingerprinted; ref names are redacted from the report.
 
-Historical PR #15 contains the now-known wrong `40 m/s` drive interpretation and needs a prominent superseded/erratum marker before public visibility.
+Cloud audit must separately cover PRs/comments/reviews, issues, Actions logs/artifacts, releases and packages.
 
-## 8. Portable package foundation
+## 9. Licensing truth
 
-Active branch contains:
-
-- Vite relative base `./`;
-- `.nojekyll`;
-- deterministic file manifest with SHA-256;
-- explicit `publicReady=false` and `publishedByBuild=false`;
-- nested-path/integrity validator;
-- adversarial package tests;
-- non-publishing Windows gate;
-- public current/history scanner;
-- demonstrator validation and polish loop.
-
-Validation status of this branch:
+Exact notices currently cover:
 
 ```text
-source: PRESENT
-static review: IN PROGRESS
-full Node 24 gate: NOT EXECUTED
-portable artifact receipt: NOT RECORDED
-LAN/phone smoke: NOT EXECUTED
+box3d.js@0.0.2 / MIT
+embedded Box3D 8441b4a... / MIT
+Vite 8.1.5 / MIT
+TypeScript 7.0.2 / Apache-2.0
 ```
 
-Use:
+Installed package metadata and exact `box3d.js/LICENSE` hash are verified during `npm run check` and portable build.
+
+Historical fact:
 
 ```text
-tools/run-demonstrator-foundation-gate.ps1
+agent/bootstrap-web-poc / PR #1 contains MIT LICENSE
+Copyright (c) 2026 Jozz Vehicle contributors
 ```
 
-Never claim this branch green before the local receipt.
+A reachable-license inventory now reports all historical license-like blobs. Jozz still must explicitly choose the current project license. Do not silently add MIT even though it is the lowest-conflict candidate.
 
-## 9. Steering truth
+Licensing code does not automatically license models, scans, textures, scenes or native JV assets.
 
-Default:
+## 10. GitHub history truth
+
+- PR #15 has a prominent drive-unit erratum;
+- issue #12 is marked as historical RATE research;
+- PR #1 remains quarantined and carries historical MIT;
+- no formal reviews/inline threads were found on PR #1, #15, #17 or #18;
+- obvious secrets were not seen in inspected bodies/comments;
+- logs/artifacts/releases/packages audit remains incomplete.
+
+Default `main` is stale and cannot be the public landing branch. Do not update/merge/change default without Jozz.
+
+## 11. Mobile and scene invariants
+
+Mobile:
+
+- landscape-first;
+- exclusive pointer ownership;
+- relative RATE pad is the first experiment;
+- pointer release/cancel = semantic `RELEASE`, never hidden centre target;
+- throttle/brake/reverse/camera cannot steal pointers;
+- blur/visibility/pagehide/dispose release controls;
+- quality changes render only.
+
+Scene:
 
 ```text
-rackCenteringHertz = 0
-uprightAssist = false
+source scan
+render mesh / LOD
+simplified collision mesh
+scene manifest + spawn/bounds metadata
 ```
 
-`RELEASE` disables hands-on target in the first fixed step. Wheels may remain turned at standstill.
+Never use a raw noisy photogrammetry mesh as the default collider.
 
-RATE candidates remain unapproved:
+## 12. Steering/wheel truth
 
-```text
-0.06 / 0.12 / 0.21 / 0.36 m/s
-```
-
-Measured reference behavior:
+Reference measurements:
 
 ```text
 stationary held excess: 0.000 mm
@@ -231,75 +258,45 @@ contacts:                4
 
 Do not force-clamp before native comparison.
 
-## 10. Mobile truth
-
-Mobile is another host/input surface, not another physics profile.
-
-Initial research direction:
-
-- landscape-first;
-- relative RATE steering pad;
-- touch-up = `RELEASE`, never hidden `POSITION(0)`;
-- separate throttle and brake/reverse ownership;
-- camera gestures own different pointers;
-- touchcancel, blur, visibility and dispose release all commands;
-- AUTO quality changes rendering only.
-
-Owner feel on Jozz's real phone is mandatory.
-
-## 11. Wheel and scan
-
 ```text
 legacy_m6_split_sphere_sidewall
-= regression baseline / fallback / failure reference
+= regression baseline / failure reference
 ```
 
-Future Wheel Scope belongs to native JV Core.
+Future wheel physics belongs to native JV Core after a fresh exact Wheel Scope source receipt.
 
-For scan integration keep separate:
-
-```text
-source scan
-render mesh
-collision mesh
-scene manifest
-```
-
-Never treat a raw noisy photogrammetry mesh as the default collider. Audit ownership/licensing before any scan asset enters a public branch.
-
-## 12. Workflow rules
+## 13. Workflow rules
 
 - respond to Jozz in Polish;
-- use GitHub connector and ordinary Git only;
-- Git Diff Patcher Bridge is forbidden;
-- do not shift routine repo work onto Jozz;
-- always guide Jozz safely through local repo updates;
-- never assume local paths; resolve repo root or use the exact path Jozz provided in the current task;
-- no merge or ready transition without Jozz;
-- no visibility or Pages change without Jozz;
-- no Actions, self-modifying CI, cross-repo loops or repeated CI debugging;
+- GitHub connector and ordinary Git only;
+- Git Diff Patcher Bridge forbidden;
+- always guide Jozz safely through local updates;
+- no destructive reset/clean/stash without explicit owner decision;
+- no merge/ready/visibility/Pages change without Jozz;
+- no custom Actions, self-modifying CI or cross-repo loop;
+- no parity claim from internal tests;
 - no owner-feel claim without Jozz;
-- no parity claim from internal green tests;
-- no hidden fallback or assist;
-- no destructive deletion without recovery evidence and link audit;
-- after web search, keep factual claims sourced.
+- no hidden assist/fallback;
+- no unindexed destructive documentation removal;
+- update this memory and `PROJECT_STATE.md` after meaningful checkpoints.
 
-## 13. Immediate sequence
+## 14. Immediate sequence
 
 ```text
-1 local demonstrator foundation gate
-2 run public audit and classify findings
-3 decide project LICENSE and exact third-party notices
-4 mark historical PR corrections prominently
-5 public README/default-branch consolidation
-6 backend ID through trace/UI/receipt
-7 Demo/Lab split
-8 mobile input experiment
-9 parallel native JV WASM spike
-10 scene seam and synthetic campus
-11 scan audit/conversion after local files arrive
-12 phone owner gate
-13 PUBLIC-READY decision
-14 manual visibility change
-15 PAGES-PUBLISH gate and manual enablement
+1 static review current PR #18
+2 one fresh local demonstrator gate
+3 audit:public and classify findings
+4 audit:licenses and obtain Jozz license decision
+5 finish logs/artifacts/releases/packages cloud audit
+6 prepare owner-approved default-branch integration
+7 backend identity through trace/UI/receipt
+8 Demo/Lab split
+9 mobile pointer-ownership prototype
+10 parallel native JV WASM parity spike
+11 scene manifest + synthetic campus
+12 scan audit/conversion when files arrive
+13 phone owner gate
+14 PUBLIC-READY decision
+15 manual visibility change
+16 PAGES-PUBLISH gate and manual enablement
 ```
