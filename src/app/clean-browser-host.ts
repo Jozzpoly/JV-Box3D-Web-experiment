@@ -7,7 +7,12 @@ import {
   OwnedResourceStack,
   runResourceTransaction,
 } from "../core/owned-resource-stack.js";
+import { KeyboardLongitudinalAdapter } from "../input/keyboard-longitudinal-adapter.js";
 import { KeyboardSteeringAdapter } from "../input/keyboard-steering-adapter.js";
+import {
+  LongitudinalInputTimeline,
+  type LongitudinalTimelineSample,
+} from "../input/longitudinal-input-timeline.js";
 import {
   SteeringInputTimeline,
   type SteeringTimelineSample,
@@ -24,7 +29,11 @@ export interface CleanBrowserHostOptions {
   readonly windowTarget: EventTarget;
   readonly documentTarget: EventTarget;
   readonly isDocumentHidden: () => boolean;
-  readonly onStep: (step: FixedStepInterval, input: SteeringTimelineSample) => void;
+  readonly onStep: (
+    step: FixedStepInterval,
+    steering: SteeringTimelineSample,
+    longitudinal: LongitudinalTimelineSample,
+  ) => void;
   readonly onFrame?: (report: FrameAdvanceReport) => void;
   readonly onFatalError?: (error: unknown) => void;
 }
@@ -49,15 +58,32 @@ export class CleanBrowserHost {
 
     const transaction = runResourceTransaction((resources) => {
       const startTimeMs = options.now();
-      const timeline = new SteeringInputTimeline(startTimeMs);
-      const keyboard = new KeyboardSteeringAdapter({
+      const steeringTimeline = new SteeringInputTimeline(startTimeMs);
+      const longitudinalTimeline = new LongitudinalInputTimeline(
+        startTimeMs,
+      );
+      const steeringKeyboard = new KeyboardSteeringAdapter({
         windowTarget: options.windowTarget,
         documentTarget: options.documentTarget,
-        timeline,
+        timeline: steeringTimeline,
         now: options.now,
         isDocumentHidden: options.isDocumentHidden,
       });
-      resources.defer("keyboard steering adapter", () => keyboard.dispose());
+      resources.defer(
+        "keyboard steering adapter",
+        () => steeringKeyboard.dispose(),
+      );
+      const longitudinalKeyboard = new KeyboardLongitudinalAdapter({
+        windowTarget: options.windowTarget,
+        documentTarget: options.documentTarget,
+        timeline: longitudinalTimeline,
+        now: options.now,
+        isDocumentHidden: options.isDocumentHidden,
+      });
+      resources.defer(
+        "keyboard longitudinal adapter",
+        () => longitudinalKeyboard.dispose(),
+      );
 
       const clock = new FixedStepClock(startTimeMs, {
         fixedStepMs: 1000 / 60,
@@ -85,11 +111,25 @@ export class CleanBrowserHost {
           const report = clock.advance(
             frameTimeMs,
             (step) => {
-              const input = timeline.consumeInterval(step.startTimeMs, step.endTimeMs);
-              options.onStep(step, input);
+              const steering = steeringTimeline.consumeInterval(
+                step.startTimeMs,
+                step.endTimeMs,
+              );
+              const longitudinal = longitudinalTimeline.consumeInterval(
+                step.startTimeMs,
+                step.endTimeMs,
+              );
+              options.onStep(step, steering, longitudinal);
             },
             (dropped) => {
-              timeline.skipInterval(dropped.startTimeMs, dropped.endTimeMs);
+              steeringTimeline.skipInterval(
+                dropped.startTimeMs,
+                dropped.endTimeMs,
+              );
+              longitudinalTimeline.skipInterval(
+                dropped.startTimeMs,
+                dropped.endTimeMs,
+              );
             },
           );
           options.onFrame?.(report);
@@ -101,7 +141,12 @@ export class CleanBrowserHost {
           const fatal =
             disposal !== undefined && disposal.failures.length > 0
               ? new AggregateError(
-                  [error, ...disposal.failures.map((failure) => failure.error)],
+                  [
+                    error,
+                    ...disposal.failures.map(
+                      (failure) => failure.error,
+                    ),
+                  ],
                   "Browser host runtime failed and cleanup reported errors.",
                 )
               : error;
