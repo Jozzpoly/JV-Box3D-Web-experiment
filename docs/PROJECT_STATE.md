@@ -4,96 +4,112 @@ Updated: 2026-08-04
 Status: `CANONICAL CURRENT STATE`
 Owner: Jozz
 
-## 1. Cel produktu
+## 1. Cel
 
 JV Web ma stać się poważnym demonstratorem Jozz Vehicle:
 
 - uruchamianym na desktopie i telefonie;
 - posiadającym przemyślane sterowanie mobilne;
 - docelowo pozwalającym jeździć po przygotowanym skanie;
-- łatwym do pokazania przez zwykły link GitHub Pages;
+- łatwym do udostępnienia przez GitHub Pages;
 - niewymagającym własnego serwera ani własnego cloud CI;
-- uczciwie odróżniającym browser fixture od rzeczywistego native parity.
+- uczciwie odróżniającym reference fixture, native parity i owner acceptance.
 
-Repo ma docelowo stać się publiczne. Zmiana widoczności repo i włączenie Pages są dwiema osobnymi decyzjami Jozza.
+Upublicznienie źródła i publikacja gry przez Pages są oddzielnymi decyzjami i bramkami.
 
-## 2. Architektura
-
-```text
-native JV Core + Box3D WASM -> product physics authority
-TypeScript host             -> input, lifecycle, render, UI, mobile, scenes
-portable static package     -> localhost, LAN phone test, future Pages
-```
-
-Authority:
+## 2. Aktywna linia
 
 ```text
-decisions/ADR-0003-native-jv-core-wasm.md
-decisions/ADR-0004-pages-ready-demonstrator.md
+base:   agent/jv-web-refoundation@f06853467408d6c633ca806d985062c634b3a666
+active: agent/jv-web-demonstrator-foundation
+PR:     #18 draft / do not merge / do not publish
 ```
 
-Nie rozwijać drugiej produktowej fizyki w TypeScripcie.
+Dokument nie zapisuje szybko starzejącego się bieżącego HEAD. Ustal go przez:
 
-## 3. Aktywna linia
+```text
+git rev-parse HEAD
+```
+
+Niczego nie scalać, nie oznaczać Ready, nie zmieniać `main`, visibility ani Pages bez jawnej decyzji Jozza.
+
+## 3. Granica dowodów
 
 Zielona baza refoundation:
 
 ```text
-agent/jv-web-refoundation
 f06853467408d6c633ca806d985062c634b3a666
+Node 24.16.0
+npm 11.17.0
 77/77 tests PASS
+TypeScript PASS
+Vite build PASS
 ```
 
-Aktywna gałąź demonstratora:
-
-```text
-agent/jv-web-demonstrator-foundation
-current recorded head: f41b89bb4e83e438011286ee168db923f8a1be7f
-PR #18: DRAFT / DO NOT MERGE / DO NOT PUBLISH
-```
-
-Nic nie jest scalane, oznaczane jako ready, upubliczniane ani publikowane bez Jozza.
-
-## 4. Pierwszy demonstrator gate — prawidłowa falsyfikacja
-
-Jozz wykonał lokalnie gate na:
+Pierwszy demonstrator gate:
 
 ```text
 67067c5d46fc9ed45481a731efae4b3adf8d4ad8
-Node 24.16.0
-npm 11.17.0
-receipt byte-exact
+81/81 tests PASS
+TypeScript PASS
+Vite bundle PASS
+portable validation FAIL
 ```
 
-Wynik:
-
-```text
-npm ci: PASS
-0 vulnerabilities
-Markdown links: PASS
-TypeScript: PASS
-tests: 81/81 PASS
-Vite bundle: PASS
-portable validation: FAIL
-```
-
-Jedyny błąd artefaktu:
+Prawidłowo wykryty problem:
 
 ```text
 /receipts/jv_m6_factory_receipt.json
 ```
 
-był zakotwiczony w root domeny i zepsułby GitHub Pages pod ścieżką repo. Validator poprawnie zatrzymał paczkę.
-
-Naprawiono źródło i dodano regresję:
+Naprawiono na:
 
 ```text
 ./receipts/jv_m6_factory_receipt.json
 ```
 
-Nowszy head zawiera dalsze wzmocnienia i **nie jest jeszcze lokalnie zwalidowany**.
+i przypięto test regresyjny.
 
-## 5. Reference backend
+Najnowszy lokalnie wykonany foundation gate:
+
+```text
+2f14d109980c99b844d80b80a080327e1fb4d900
+Node 24.16.0
+npm 11.17.0
+receipt byte-exact
+npm ci PASS
+0 vulnerabilities
+Markdown links PASS
+TypeScript PASS
+109 tests: 108 PASS / 1 FAIL
+```
+
+Jedyny FAIL:
+
+```text
+public readiness report redacts privacy identifiers inside blocker paths
+```
+
+Skaner wykrył e-mail w sensitive path, ale finalny raport pozostawił jedną kopię wartości. Gate zatrzymał się przed bundle/package validation. Żaden test fizyki ani browser runtime nie zawiódł.
+
+Minimalna poprawka finalnego sanitizatora oraz wiele dalszych public-readiness wzmocnień są obecne na nowszym headzie, ale **nie zostały jeszcze lokalnie wykonane**. Nie podawać nowej liczby testów ani PASS przed świeżym Node 24 gate.
+
+## 4. Architektura produktu
+
+```text
+native JV Core + Box3D WASM -> product physics authority
+TypeScript host             -> input, lifecycle, render, UI, mobile, scenes
+portable static package     -> localhost, LAN, future Pages
+```
+
+Authority:
+
+```text
+docs/decisions/ADR-0003-native-jv-core-wasm.md
+docs/decisions/ADR-0004-pages-ready-demonstrator.md
+```
+
+Reference backend:
 
 ```text
 id: legacy_ts_m6
@@ -103,8 +119,6 @@ nativeParity: NOT_PROVEN
 acceptsNewProductPhysics: false
 ```
 
-Fixture jest drivable i deterministyczny, ale nie jest wiernym portem native JV.
-
 Krytyczna rozbieżność:
 
 ```text
@@ -112,43 +126,52 @@ native maxDriveSpeed = 40 rad/s wheel rev limit
 legacy TS             = 40 m/s linear target interpreted through radius
 ```
 
-Native throttle skaluje moment i używa wheel spin do taperu. Legacy TS skaluje także target speed i używa chassis speed.
+Nie dodawać do legacy TS nowych mechanizmów drivetrainu, steeringu, zawieszenia, aero, contact ani przyszłej opony.
 
-Nie dodawać do legacy TS nowych mechanizmów drivetrainu, anti-roll, aero, zawieszenia ani przyszłej opony.
+## 5. Trzy oddzielne bramki
 
-## 6. Dwa zsynchronizowane tory
+### SOURCE-PUBLIC-READY
 
-### Tor A — demonstrator
+Odpowiada wyłącznie, czy repo, source, historia i powierzchnia GitHuba mogą stać się publiczne.
 
-Dozwolone na zamrożonym fixture:
+Wymaga:
 
-- portable package;
-- Demo/Lab separation;
-- loading/failure UX;
-- responsive mobile shell;
-- multi-touch ownership;
-- kamera i reset;
-- scene manifest;
-- synthetic campus;
-- quality profiles;
-- LAN i phone smoke;
-- Pages packaging.
+- intended clean default branch;
+- jawnego root project `LICENSE` albo owner-approved rights strategy;
+- exact `THIRD_PARTY_NOTICES.md`;
+- current/dirty/history/ref/path scan;
+- reachable-license inventory;
+- sklasyfikowanych wszystkich review findings;
+- GitHub PR/issues/reviews/logs/artifacts/releases/packages/settings audit;
+- public README, SECURITY, CONTRIBUTING, state/history/asset policy/runbook;
+- asset/source rights classification;
+- owner approval exact candidate.
 
-### Tor B — physics authority
+### DEMONSTRATOR-PACKAGE-READY
 
-- Box3D + JV Core w jednym WASM;
-- C ABI z jednostkami;
-- stable `partId`;
-- immutable snapshots;
-- native/WASM scenario comparison;
-- backend swap;
-- późniejszy Wheel Scope backend seam.
+Wymaga:
 
-Oba tory spotykają się przez stabilny backend/snapshot contract.
+- foundation gate PASS;
+- portable static/privacy/network/compliance PASS;
+- loopback root/subpath HTTP PASS;
+- desktop browser package smoke;
+- exact artifact receipt.
 
-## 7. Portable package — obecny kontrakt
+### PAGES-PUBLISH-READY
 
-Artefakt:
+Wymaga:
+
+- public source repo;
+- package ready;
+- real mobile pointer/lifecycle/performance PASS;
+- owner mobile acceptance;
+- release-only publishing branch;
+- rollback/unpublish plan;
+- owner approval exact package.
+
+Telefon nie blokuje uczciwego upublicznienia niedokończonego źródła, ale blokuje publikację gry jako gotowego mobilnego demonstratora.
+
+## 6. Portable artifact
 
 ```text
 index.html
@@ -159,231 +182,316 @@ build-manifest.json
 .nojekyll
 ```
 
-Generator wymaga czystego source tree i zapisuje:
+Generator wymaga clean source i zapisuje:
 
-- exact commit;
-- clean-source status;
+- exact 40-character commit;
+- fingerprinted source ref, bez branch name;
 - backend identity;
-- runtime assets;
-- compliance files;
-- rozmiar i SHA-256 każdego pliku;
-- `publicReady=false`;
-- `pagesPublicationApproved=false`;
-- `publishedByBuild=false`.
+- runtime/compliance files;
+- bytes i SHA-256 każdego payload file;
+- publication state pozostający false/dormant.
 
-Validator odrzuca:
+Bramki odrzucają:
 
-- root-absolute runtime paths;
-- brakujące HTML/CSS/runtime assets;
-- nested CSS errors;
-- source maps;
-- symlinki/nietypowe wpisy;
-- payload drift;
-- unsafe/escaping paths;
-- brak notice’a;
-- fałszywe parity/product authority;
-- samodzielne nadanie public/Pages approval.
+- root-absolute/escaping/missing paths;
+- nested CSS failures;
+- hidden remote HTML/CSS resources;
+- source maps, symlinki i unexpected output;
+- payload/hash drift;
+- raw branch/private metadata;
+- unknown manifest fields;
+- brak receipt/notice;
+- self-granted native parity/product authority/public/Pages approval.
 
-Dodatkowy loopback HTTP smoke:
+Loopback HTTP smoke pobiera exact entrypoint i każdy payload spod:
 
 ```text
 /
 /JV-Box3D-Web-experiment/
 ```
 
-pobiera każdy plik z manifestu i porównuje jego bytes/SHA-256. Nie publikuje i nie zastępuje browser/phone smoke.
+Foundation runner przypina branch i exact commit od początku do końca, sprawdza clean tree po buildzie i potwierdza source commit w manifeście. Build nie publikuje.
 
-## 8. Testy dodane po pierwszym gate
+## 7. Public-history audit
 
-Źródłowo obecne, lokalnie jeszcze niewykonane na bieżącym headzie:
+Warstwy:
 
-- relative receipt URL;
-- manifest truth/authority/publication challenges;
-- runtime/compliance asset contract;
-- real temporary Git history audit;
-- secret removed from current tree but retained in history;
-- dirty working tree;
-- indexed symlink without following it;
-- token-like branch name detection and report redaction;
-- annotated tag metadata scanning;
-- reachable-license inventory;
-- root/nested-path HTTP byte smoke.
+- current index i dirty/untracked state;
+- all-reachable Git blobs;
+- commit i annotated-tag metadata;
+- heads/remotes/tags;
+- current/historical path identifiers;
+- sensitive filenames i token/key patterns;
+- symlinki bez podążania poza repo;
+- gitlink blocker;
+- duże/unscanned blobs;
+- finalna rekurencyjna sanitizacja całego raportu.
 
-Aktualna liczba testów jest nieznana do następnego Node 24 gate’u.
+Raport nie powinien przechowywać wartości sekretu, prywatnego e-maila ani lokalnej ścieżki. Refy i sensitive identifiers są fingerprintowane.
 
-## 9. Public-readiness audit
-
-Repo nadal:
+Exact bezpieczny `.npmrc` może zostać zaakceptowany wyłącznie jako current blob z treścią:
 
 ```text
-visibility: PRIVATE
-Pages: DISABLED
+engine-strict=true
+save-exact=true
 ```
 
-Zaimplementowany audit skanuje:
+Jakikolwiek content drift lub historyczny `.npmrc` pozostaje blockerem.
 
-- current index blobs;
-- dirty/untracked state jako blocker;
-- wszystkie lokalnie osiągalne Git blobs;
-- commit/tag metadata;
-- heads/remotes/tags;
-- sensitive filenames;
-- token/key patterns;
-- privacy-review patterns;
-- duże historyczne bloby;
-- symlinki i gitlinks;
-- brak wymaganych public contracts.
+## 8. Wymagana publiczna powierzchnia
 
-Raport nie zapisuje wartości sekretów. Nazwy refów są skanowane w pamięci, lecz w JSON trafia wyłącznie namespace i fingerprint.
-
-Audit jest narzędziem redukcji ryzyka, nie matematycznym dowodem braku każdego sekretu.
-
-## 10. GitHub cloud-surface audit
-
-Sprawdzono dotąd:
-
-- wszystkie widoczne bodies/comments głównych stacked PR-ów;
-- open i closed milestone issues;
-- formal reviews i inline review threads na PR #1, #15, #17 i #18.
-
-Nie znaleziono formalnych reviews ani inline threads na tych PR-ach. Nie zauważono oczywistego sekretu w dostępnych bodies/comments.
-
-Wykryte problemy prezentacyjne:
-
-- PR #15 miał błędne `40 m/s`; dodano prominentne erratum;
-- issue #12 otrzymało status historycznego RATE eksperymentu;
-- stare issues linkują do dokumentów, które obecnie są archiwalne;
-- PR #1 pozostaje kwarantannowym prototypem.
-
-Nadal wymagają audytu:
-
-- wszystkie stare workflow logs i artifacts;
-- releases;
-- packages;
-- wszystkie pozostałe issue comments;
-- ostateczna klasyfikacja branchy/tagów po lokalnym audit report.
-
-## 11. Licencje
-
-`THIRD_PARTY_NOTICES.md` istnieje i zawiera exact provenance/licencje:
+Audit wymaga dziewięciu śledzonych kontraktów:
 
 ```text
-box3d.js@0.0.2 / binding 2617a0f... / MIT
+README.md
+LICENSE
+THIRD_PARTY_NOTICES.md
+SECURITY.md
+CONTRIBUTING.md
+docs/PROJECT_STATE.md
+docs/PUBLIC_COLLABORATION_HISTORY.md
+docs/PUBLIC_ASSET_RIGHTS_POLICY.md
+docs/operations/SOURCE_PUBLIC_RELEASE_RUNBOOK_PL.md
+```
+
+Obecnych jest osiem. Brakuje wyłącznie root `LICENSE`, świadomie oczekującego na decyzję Jozza.
+
+## 9. Review-classification ledger
+
+`audit:public:report` może mieć zero blockerów i nadal posiadać review findings. Dlatego powstaje ignorowany lokalny ledger:
+
+```text
+.local-audit/public-review-classifications.json
+```
+
+Każdy exact finding otrzymuje:
+
+```text
+PENDING
+ACCEPTED + rationale + reviewedBy + UTC timestamp
+REMEDIATE
+```
+
+Finalna klasyfikacja odrzuca:
+
+- missing/stale/duplicate finding IDs;
+- PENDING;
+- REMEDIATE;
+- krótkie rationale;
+- rationale zawierające token, prywatny e-mail lub lokalną ścieżkę;
+- ledger przypięty do innego source commit.
+
+Przeniesiona klasyfikacja identycznego finding ID daje warning i wymaga ponownego potwierdzenia semantyki.
+
+## 10. Licencje
+
+`THIRD_PARTY_NOTICES.md` obejmuje exact:
+
+```text
+box3d.js@0.0.2 / MIT
 embedded Box3D 8441b4a... / MIT
 Vite 8.1.5 / MIT
 TypeScript 7.0.2 / Apache-2.0
 ```
 
-Lokalny check porównuje notice z rzeczywiście zainstalowanymi pakietami i exact hash pliku `box3d.js/LICENSE`.
+Verifier sprawdza installed versions/licenses, exact hash runtime license oraz pełne teksty MIT wrappera i osadzonego Box3D. Notice trafia do `dist/` i file-table SHA-256.
 
-Projektowy `LICENSE` na aktualnym HEAD nadal nie istnieje i wymaga decyzji Jozza.
-
-Krytyczny historyczny fakt:
+Reachable inventory rozdziela:
 
 ```text
-agent/bootstrap-web-poc / PR #1
-LICENSE = MIT
+root LICENSE/COPYING       -> PROJECT_LICENSE
+THIRD_PARTY_NOTICES        -> THIRD_PARTY_NOTICE
+vendor/.../LICENSE         -> THIRD_PARTY_LICENSE
+```
+
+Nested vendor license nigdy nie spełnia project-license requirement.
+
+Historyczny fakt:
+
+```text
+PR #1 / agent/bootstrap-web-poc
+MIT License
 Copyright (c) 2026 Jozz Vehicle contributors
 ```
 
-Powstał reachable-license inventory, który raportuje wszystkie osiągalne `LICENSE/LICENCE/COPYING/NOTICE`, ich blob/hash, wykryty typ i obecność na HEAD. Publiczna decyzja musi być spójna z historycznym MIT albo wymagać osobnej strategii ref/history cleanup.
-
-## 12. Default branch blocker
-
-GitHub default branch nadal jest `main`.
-
-Aktualny `main` posiada jedynie krótki prywatny PoC README i nie zawiera refoundation/demonstratora. Repo nie może zostać upublicznione w tym stanie.
-
-Przed PUBLIC-READY potrzebna jest jawna decyzja integracyjna:
+Decyzja przygotowana w:
 
 ```text
-current public candidate
-→ reviewed integration into intended default branch
-→ exact owner approval
-→ dopiero visibility change
+docs/decisions/ADR-0005-project-license.md
 ```
 
-Nie zmieniać default branch ani nie scalać bez Jozza.
+Preliminary recommendation to MIT, ale żadna licencja nie została wybrana ani dodana. Jozz musi zatwierdzić strategię, exact holder text i rok.
 
-## 13. Public README
+## 11. GitHub collaboration surface
 
-README na aktywnej gałęzi został przepisany jako uczciwa powierzchnia przyszłego publicznego repo. Opisuje:
+Kanoniczna mapa:
 
-- demonstrator desktop/phone/scan;
-- non-authoritative backend;
-- portable artifact;
-- brak aktywnego Pages;
-- dwa tory rozwoju;
-- mobile/scene direction;
-- pending project license.
+```text
+docs/PUBLIC_COLLABORATION_HISTORY.md
+```
 
-Nie jest jeszcze publiczny i nie znajduje się na `main`.
+Zaobserwowano:
 
-## 14. Mobile i scene seam
+```text
+13 PR records
+12 open drafts
+1 closed quarantine (#8)
+0 merged
+issues #3, #5, #7, #10, #12
+```
 
-Mobile jest host/input problemem, nie osobną fizyką.
+Bodies i dostępne top-level comments wszystkich 13 PR-ów oraz komentarze pięciu issues zostały przejrzane. Nie zaobserwowano credentiali, Jozz-local path ani private owner e-mail.
 
-Inwarianty:
+- PR #1 i #8 pozostają quarantined;
+- PR #15 ma prominentne drive-unit erratum;
+- #17 jest architecture authority;
+- #18 jest aktywnym demonstrator/source-public candidate;
+- polityka pozostawienia/zamykania superseded drafts wymaga decyzji Jozza, ale nie jest security blockerem.
 
-- landscape-first;
-- relative RATE pad jako pierwszy eksperyment;
-- touch-up = `RELEASE`, nie `POSITION(0)`;
-- exclusive pointer ownership;
-- throttle/brake/reverse/camera nie kradną pointerów;
-- `touchcancel`, blur, visibility i dispose zwalniają input;
-- quality profile zmienia render, nigdy fixed-step ani fizykę.
+## 12. GitHub Actions/cloud surface
 
-Skan wymaga oddzielnych reprezentacji:
+Receipts:
+
+```text
+docs/receipts/inventory/GITHUB_CLOUD_SURFACE_2026_08_04.md
+docs/receipts/inventory/GITHUB_ACTIONS_LOG_REVIEW_2026_08_04.md
+```
+
+Artifact `8856776966` został pobrany i byte-reviewed:
+
+```text
+ZIP SHA-256: 1e6d198dcdb9b9bde45cd6a5142b28d47c7ff96473c99e74880aee5c5918f884
+size: 7,872,623 B
+entries: 499
+unsafe paths: 0
+symlinks: 0
+duplicates: 0
+secret findings: 0
+JV/Jozz/local-path findings: 0
+```
+
+Raw logs reviewed:
+
+```text
+job 91694046725 / source audit
+job 91826090330 / F3
+job 91834173347 / F4
+```
+
+Token/auth values były maskowane `***`; standardowe hosted-runner paths only; nie zaobserwowano owner-private data. F3/F4 używały npm cache około 24 MB, który nadal wymaga manualnego Actions cache UI review.
+
+F2 write-capable workflow source i generated receipt commit są znane, ale exact manual-dispatch run/job nie został odzyskany przez connector. Jego raw log wymaga manualnego UI lookup.
+
+Nadal manualnie sprawdzić:
+
+- exhaustive all workflow runs;
+- F2 raw log;
+- Actions caches;
+- releases/assets;
+- packages;
+- secrets/variables/environments;
+- deploy keys/webhooks/apps/collaborators;
+- rulesets/protection;
+- vulnerability reporting/Dependabot/security settings;
+- Pages pozostaje disabled.
+
+## 13. `main` i strategia integracji
+
+Zmierzony checkpoint:
+
+```text
+main@5c64903d753f893adc42be90e0c3d8053a95a922
+candidate ahead: 346 commits
+candidate behind: 0
+merge base: exact main
+```
+
+`main` był ścisłym przodkiem kandydata. Po finalnym remeasure, pełnym gate/audit i zgodzie Jozza preferowana integracja to exact fast-forward, bez merge commita, squasha receipts ani force update.
+
+Nie wykonano żadnej zmiany `main` ani default branch.
+
+## 14. Publiczne polityki
+
+Obecne:
+
+```text
+README.md
+SECURITY.md
+CONTRIBUTING.md
+docs/PUBLIC_COLLABORATION_HISTORY.md
+docs/PUBLIC_ASSET_RIGHTS_POLICY.md
+docs/operations/SOURCE_PUBLIC_RELEASE_RUNBOOK_PL.md
+```
+
+Prywatne asset/scan workspaces są zarezerwowane i ignorowane:
+
+```text
+.local-assets/
+.local-scans/
+.private-work/
+```
+
+Asset policy jest default-deny. Kodowa licencja nie licencjonuje automatycznie modeli, skanów, fotografii, tekstur, fontów, audio, logo ani native JV assets.
+
+## 15. Mobile i scena
+
+Mobile contract:
+
+```text
+docs/contracts/MOBILE_HOST_CONTRACT_PL.md
+```
+
+- Pointer Events;
+- one pointer -> one owner;
+- relative RATE pad first;
+- up/cancel/lostcapture/background -> semantic RELEASE;
+- camera nie kradnie control pointerów;
+- render quality nie zmienia physics;
+- real-device owner gate.
+
+Scene contract:
+
+```text
+docs/contracts/SCENE_PACKAGE_CONTRACT_PL.md
+```
 
 ```text
 source scan
 render mesh / LOD
 simplified collision mesh
-scene manifest + spawn/bounds metadata
+scene manifest + spawn/bounds/rights metadata
 ```
 
-Surowy photogrammetry mesh nie jest domyślnym colliderem.
+Parser/loader i mobile implementation świadomie czekają na zielony foundation checkpoint.
 
-## 15. Reference steering measurement
+## 16. Bezpieczeństwo procesu
 
-```text
-stationary held RATE excess: 0.000 mm
-driving held RATE excess:    <= 0.284 mm
-post-RELEASE peak:            2.541–2.817 mm
-contacts:                     4
-```
-
-Command clamp PASS. Post-RELEASE mechanism nie został odizolowany. Force clamp odrzucony bez native comparison.
-
-## 16. Workflow bezpieczeństwa
-
-- brak merge/ready bez Jozza;
-- brak visibility/Pages change bez Jozza;
-- brak custom GitHub Actions;
-- Pages może później użyć wyłącznie nieuniknionego systemowego deploymentu;
-- brak self-modifying CI;
-- brak cross-repo commit loop;
+- brak merge/Ready/default/visibility/Pages bez Jozza;
+- brak custom Actions;
+- brak self-modifying CI i cross-repo loops;
 - Git Diff Patcher Bridge zakazany;
-- lokalne audity zapisują tylko do ignorowanego `.local-audit/`;
-- build nie ma funkcji publikowania.
+- brak destrukcyjnego reset/clean/stash bez decyzji;
+- lokalne raporty pozostają w ignorowanym `.local-audit/`;
+- package scripts nie zawierają publish/deploy/pages ani ukrytych popularnych deploy commands;
+- foundation i audit runners przypinają exact source identity;
+- build nigdy nie publikuje.
 
-## 17. Następne bramki
+## 17. Następna sekwencja
 
 ```text
-1. statyczny review bieżącego PR #18
-2. pełny lokalny demonstrator gate na nowym headzie
-3. audit:public + klasyfikacja JSON
-4. audit:licenses + decyzja Jozza o projekcie LICENSE
-5. dokończenie GitHub logs/artifacts/releases/packages audit
-6. default-branch integration plan
-7. backend identity przez trace/UI/receipt
-8. Demo/Lab split
-9. mobile input ownership prototype
-10. równolegle native JV WASM parity spike
-11. scene manifest + synthetic campus
-12. scan audit/conversion po otrzymaniu plików
-13. phone owner gate
-14. PUBLIC-READY owner approval
-15. manual visibility change
-16. PAGES-PUBLISH gate i manualne Pages enable
+1. fresh Node 24 foundation gate on current head
+2. report-only public/history + license audits
+3. generate review-classification ledger
+4. classify every blocker and review finding
+5. Jozz chooses exact project-license strategy/text
+6. add exact root LICENSE and rerun all dependent gates
+7. finish manual GitHub UI audit: F2 logs/caches/releases/packages/settings
+8. remeasure main -> candidate fast-forward proof
+9. prepare exact owner-approval receipt
+10. owner-approved fast-forward main
+11. owner-approved private -> public
+12. immediate anonymous/public clone verification
+13. keep Pages disabled
+14. later Demo/Lab, mobile, native WASM and scene tracks
+15. PAGES-PUBLISH-READY only after phone/package owner gates
 ```
