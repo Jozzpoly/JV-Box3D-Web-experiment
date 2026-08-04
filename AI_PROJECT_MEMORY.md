@@ -84,8 +84,10 @@ async installation tied to AbortSignal
 a late pass is disposed after renderer shutdown
 one pass failure is isolated from the debug observer
 reverse-order, idempotent pass disposal
-debug vehicle visibility can be switched without replacing camera/grid
-shared WebGL baseline is restored between passes
+per-pass reusable viewProjection storage refreshed every frame
+no pass can mutate the renderer or another pass camera matrix
+debug WebGL state is restored after external passes
+debug shader/program/mesh startup is transactional
 ```
 
 The first unlit draw capability is explicitly narrower than the transport decoder:
@@ -316,6 +318,8 @@ unchanged desktop/mobile debug runtime
 SOURCE PRESENT / FRESH GATE PENDING:
 shared WebGL render-pass host
 pass lifecycle/error isolation
+per-pass camera-matrix isolation
+transactional debug GPU startup
 unlit capability gate
 pre-GPU runtime validation hook
 
