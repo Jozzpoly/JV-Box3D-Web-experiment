@@ -22,19 +22,49 @@ current exact candidate: resolve with git rev-parse HEAD or the PR head SHA
 
 Do not merge, mark Ready, change repository visibility or enable Pages without Jozz.
 
-Jozz explicitly authorized removal of obsolete branches and files. Fourteen obsolete remote branches were removed after a green local gate. Keep only material with continuing engineering value; do not rebuild an archive museum.
+Jozz authorized removal of obsolete branches and files. Fourteen obsolete remote branches were removed after a green local gate. Keep only material with continuing engineering value; do not rebuild an archive museum.
 
-The active branch remains a long experimental descendant of `main`. Do not fast-forward that complete history into a presentation-ready public default branch. At publication time prefer a clean demonstrator repository/snapshot; an owner-reviewed squash is the secondary option.
+The active branch is a long experimental descendant of `main`. Do not fast-forward that complete history into a presentation-ready public default branch. At publication time prefer a clean demonstrator repository/snapshot; an owner-reviewed squash is the secondary option.
+
+## Latest owner-validated mobile checkpoint
+
+```text
+commit: 7204993a0640e6cff0baa719d849a0b4368c15aa
+Node: 24.16.0
+npm: 11.17.0
+receipt: byte-exact
+npm ci: PASS
+npm audit: 0 vulnerabilities observed
+TypeScript: PASS
+tests: 120/120 PASS
+docs links: PASS
+third-party verification: PASS
+Vite bundle: PASS
+portable static/privacy/network/root+subpath HTTP: PASS
+LAN HTTP without SubtleCrypto: PASS
+localhost browser: PASS
+LAN desktop browser: PASS
+real phone browser: PASS
+Box3D / WebGL / keyboard / multi-touch: observed working
+publication: NOT PERFORMED
+```
+
+The software SHA-1/SHA-256 fallback preserves receipt integrity on ordinary LAN HTTP where `crypto.subtle` is unavailable. Do not remove it or replace it with disabled validation.
 
 ## Physics authority
 
 ```text
-legacy_ts_m6 = browser reference fixture
-productPhysicsAuthority = false
-nativeParity = NOT_PROVEN
+backend: legacy_ts_m6
+role: browser reference fixture
+productPhysicsAuthority: false
+nativeParity: NOT_PROVEN
+commandContractVersion: 1
+traceContractVersion: 1
 ```
 
-Product physics belongs in native JV Core compiled together with Box3D into one WASM module. Do not add new product drivetrain, suspension, tire, aero or steering mechanics to the TypeScript fixture.
+The backend identity is now represented by a runtime descriptor and exposed by `F4VehicleHost`.
+
+Product physics belongs in native JV Core compiled together with Box3D into one WASM module. Do not add final drivetrain, suspension, tire, aero or steering mechanics to the TypeScript fixture.
 
 Confirmed semantic mismatch:
 
@@ -43,7 +73,7 @@ native maxDriveSpeed = 40 rad/s wheel motor limit
 legacy TypeScript     = historically treated as linear target
 ```
 
-## Steering rules
+## Steering and input rules
 
 ```text
 SteeringCommand = RELEASE | POSITION | RATE
@@ -51,49 +81,6 @@ RELEASE = hands off in the first fixed step
 ```
 
 No hidden return-to-centre, centre hold, upright stabilization or speed-sensitive steering in the default path. Optional assists must be explicit and disabled by default.
-
-## Last green foundation checkpoint
-
-```text
-commit: db7768ebc5d191d96c7ff0022572093c00549453
-Node: 24.16.0
-npm: 11.17.0
-receipt: byte-exact
-npm ci: PASS
-npm audit: 0 vulnerabilities observed
-TypeScript: PASS
-tests: 96/96 PASS
-docs links: PASS
-third-party verification: PASS
-Vite bundle: PASS
-portable static/privacy/network/root+subpath HTTP: PASS
-publication: NOT PERFORMED
-```
-
-## Current mobile-control candidate
-
-```text
-exact head: resolve from Git/PR; never hard-code a moving candidate SHA in tracked memory
-state: SOURCE PRESENT / STATIC SCOPE REVIEWED
-local Node 24 gate: PENDING
-browser observation: PENDING
-real phone observation: PENDING
-```
-
-The mobile slice adds:
-
-- source-aware steering and longitudinal timelines;
-- owned Pointer Events controls;
-- simultaneous steering + drive/brake multi-touch;
-- source-scoped lifecycle release;
-- browser-host ownership and F4 pass-through;
-- a five-button responsive safe-area UI;
-- focused overlap/capture/cancel/rollback/disposal tests;
-- a source-level 320 px geometry contract.
-
-No vehicle, physics or renderer mechanics were changed from the green checkpoint.
-
-## Multi-source input requirement
 
 Each physical input stream has a stable `sourceId`. Semantic state is a set of active sources per side/control, not one global boolean.
 
@@ -112,21 +99,97 @@ Pointer controls must:
 - never manipulate physics or Box3D directly;
 - never let camera handling steal an owned control pointer.
 
-## Corrected near-term direction
+## Current hardening candidate
+
+The current branch contains source that has not yet received its fresh local gate after the validated `7204993…` checkpoint.
+
+Added boundaries:
 
 ```text
-1 run fresh Node 24 gate on the exact mobile-control head
-2 perform exact desktop browser smoke
-3 validate mobile controls on a real phone over LAN
-4 polish control geometry and layout from observed evidence
-5 implement a minimal scene package on a synthetic scene
-6 import and optimize the real scan
-7 choose license and clean public-history strategy
-8 publish only an owner-accepted exact package
-9 begin native JV WASM parity after host/input/scene seams stabilize
+VehicleRuntimeBackend descriptor/seam
+browser transport and capability report
+ScenePackageV1 strict validator and loader
+canonical synthetic scene manifest
+scene-driven vehicle spawn
+portable required-runtime-asset contract
+focused backend/runtime/scene tests
 ```
 
-Native WASM is the long-term authority, not the immediate next milestone. The current reference fixture is sufficient to develop mobile input, UI, camera, scene packaging and distribution without growing its vehicle mechanics.
+No hardening change modifies vehicle physics, steering mechanics, drive mechanics, Box3D topology, input feel or renderer mechanics.
+
+## ScenePackageV1 rules
+
+Canonical scene:
+
+```text
+public/scenes/synthetic-flat-lab.scene.json
+```
+
+Coordinate contract:
+
+```text
+units: meter
+forward: +X
+up: +Y
+right: +Z
+```
+
+V1 describes:
+
+- scene identity;
+- spawn position and yaw;
+- render source: `NONE | GLB`;
+- collision source: `BUILTIN_GROUND_PLANE | TRIANGLE_MESH`;
+- clean site-relative asset URLs;
+- lowercase SHA-256 fields for external scene assets.
+
+The current `legacy_ts_m6` backend accepts only:
+
+```text
+render = NONE
+collision = BUILTIN_GROUND_PLANE at y=0
+spawn yawRadians = 0
+```
+
+GLB rendering and triangle-mesh collision are schema-ready but intentionally fail backend support until their loaders exist.
+
+The portable runtime assets must include:
+
+```text
+receipts/jv_m6_factory_receipt.json
+scenes/synthetic-flat-lab.scene.json
+```
+
+## Browser runtime report
+
+The demonstrator reports:
+
+- secure, loopback HTTP, LAN HTTP or other transport;
+- Web Crypto digest availability;
+- software SHA fallback availability;
+- WebGL API and Pointer Events presence;
+- touch/coarse-pointer state;
+- viewport and device-pixel ratio.
+
+This report is diagnostic. Actual renderer construction still determines whether WebGL starts.
+
+## Corrected near-term sequence
+
+```text
+1 run fresh Node 24 gate on the exact hardening head
+2 perform short desktop + phone smoke through the synthetic scene
+3 correct only the initial camera yaw; preserve accepted drag directions
+4 extract DOM/view bindings from main.ts without behavior changes
+5 create a scene runtime that owns render and collision resources
+6 validate a tiny GLB render fixture
+7 validate a tiny collision fixture
+8 convert and optimize the real scan
+9 choose license and clean public-history strategy
+10 publish only an owner-accepted exact package
+11 begin native JV WASM parity after host/input/scene seams stabilize
+```
+
+Native WASM is the long-term physics authority, not the immediate next milestone.
 
 ## Working rules
 
@@ -146,17 +209,27 @@ Native WASM is the long-term authority, not the immediate next milestone. The cu
 
 1. `docs/PROJECT_STATE.md`
 2. `docs/ARCHITECTURE.md`
-3. `docs/DEVELOPMENT.md`
+3. `docs/contracts/SCENE_PACKAGE_V1.md`
 4. `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`
-5. `docs/decisions/ADR-0003-native-jv-core-wasm.md`
+5. `docs/DEVELOPMENT.md`
+6. `docs/decisions/ADR-0003-native-jv-core-wasm.md`
 
-## Immediate sequence
+## Immediate boundary
 
 ```text
-A local gate on exact current head
-B repair only demonstrated failures
-C desktop browser smoke
-D real phone multi-touch/lifecycle/layout gate
-E focused mobile polish
-F synthetic scene foundation
+SOURCE PRESENT:
+backend/runtime/scene contracts
+synthetic scene startup
+portable scene asset gate
+focused tests
+
+PENDING:
+fresh local gate
+desktop smoke
+phone smoke
+
+AFTER GREEN:
+initial camera yaw
+main.ts view/bootstrap extraction
+scene runtime ownership
 ```
