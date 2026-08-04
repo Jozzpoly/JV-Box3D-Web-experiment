@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFile, writeFile } from "node:fs/promises";
+import { copyFile, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import {
@@ -26,6 +26,11 @@ if (dirtySource.length > 0) {
   throw new Error(
     "Portable build manifest refused a dirty source tree. Commit or remove source changes before packaging.",
   );
+}
+
+const complianceFiles = ["THIRD_PARTY_NOTICES.md"];
+for (const path of complianceFiles) {
+  await copyFile(resolve(root, path), resolve(dist, path));
 }
 
 const sourceCommit = git("rev-parse", "HEAD");
@@ -56,6 +61,7 @@ const manifest = {
     nativeParity: "NOT_PROVEN",
   },
   runtimeAssets: ["receipts/jv_m6_factory_receipt.json"],
+  complianceFiles,
   publication: {
     mode: "DORMANT",
     pathPortableCandidate: true,
