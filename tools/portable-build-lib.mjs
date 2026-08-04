@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { access, lstat, readFile, readdir } from "node:fs/promises";
 import { constants } from "node:fs";
-import { extname, relative, resolve, sep } from "node:path";
+import { dirname, extname, relative, resolve, sep } from "node:path";
 
 export const PORTABLE_MANIFEST_NAME = "build-manifest.json";
 
@@ -26,8 +26,6 @@ export async function collectPortableFiles(root) {
       const absolutePath = resolve(directory, entry.name);
       if (entry.isDirectory()) {
         await visit(absolutePath);
-      } else if (entry.isFile()) {
-        files.push(absolutePath);
       } else {
         files.push(absolutePath);
       }
@@ -94,6 +92,7 @@ function stripQueryAndFragment(reference) {
 
 async function validateLocalReference({
   root,
+  sourceAbsolutePath,
   sourcePath,
   rawReference,
   errors,
@@ -122,7 +121,7 @@ async function validateLocalReference({
     return;
   }
 
-  const absoluteTarget = resolve(root, decodedPath);
+  const absoluteTarget = resolve(dirname(sourceAbsolutePath), decodedPath);
   const rootPrefix = root.endsWith(sep) ? root : `${root}${sep}`;
   if (absoluteTarget !== root && !absoluteTarget.startsWith(rootPrefix)) {
     errors.push(`${sourcePath} reference escapes the portable root: ${pathPart}`);
@@ -146,6 +145,7 @@ async function validateHtml(root, errors) {
   while ((match = referencePattern.exec(html)) !== null) {
     await validateLocalReference({
       root,
+      sourceAbsolutePath: indexPath,
       sourcePath: "index.html",
       rawReference: match[1],
       errors,
@@ -165,6 +165,7 @@ async function validateCss(root, files, errors) {
     while ((match = urlPattern.exec(css)) !== null) {
       await validateLocalReference({
         root,
+        sourceAbsolutePath: absolutePath,
         sourcePath,
         rawReference: match[1],
         errors,
@@ -175,9 +176,10 @@ async function validateCss(root, files, errors) {
 
 async function validateKnownRuntimePaths(root, files, errors) {
   const rootPathPattern = /["'`](\/(?:assets|runtime|scenes|receipts)\/[^"'`?#]*)/g;
+  const textExtensions = new Set([".html", ".js", ".css", ".json"]);
   for (const absolutePath of files) {
     const extension = extname(absolutePath).toLowerCase();
-    if (!new Set([".html", ".js", ".css", ".json"]).has(extension)) {
+    if (!textExtensions.has(extension)) {
       continue;
     }
     const sourcePath = toPosix(relative(root, absolutePath));
@@ -214,6 +216,21 @@ async function validateManifest(root, errors) {
   if (manifest.distribution !== "portable_site") {
     errors.push(
       `${PORTABLE_MANIFEST_NAME} must declare distribution portable_site.`,
+    );
+  }
+  if (manifest.publication?.publishedByBuild !== false) {
+    errors.push(
+      `${PORTABLE_MANIFEST_NAME} must prove that the local build did not publish anything.`,
+    );
+  }
+  if (manifest.publication?.publicReady !== false) {
+    errors.push(
+      `${PORTABLE_MANIFEST_NAME} must remain publicReady=false until an owner-approved release receipt exists.`,
+    );
+  }
+  if (manifest.publication?.pagesPublicationApproved !== false) {
+    errors.push(
+      `${PORTABLE_MANIFEST_NAME} must remain pagesPublicationApproved=false before the publication gate.`,
     );
   }
   if (!Array.isArray(manifest.files)) {
