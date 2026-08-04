@@ -31,7 +31,12 @@ export function completeVisualBindings() {
     ...M6_VISUAL_SEGMENT_IDS.map((segmentId) => ({
       bindingId: `bind.${segmentId}`,
       nodeName: visualNodeName(segmentId),
-      source: { kind: "SEGMENT_STRETCH", segmentId, axis: "+Y" },
+      source: {
+        kind: "SEGMENT_STRETCH",
+        segmentId,
+        axis: "+Y",
+        referenceLengthMeters: 1,
+      },
       localFromSource: IDENTITY_VISUAL_TRANSFORM,
     })),
   ];
