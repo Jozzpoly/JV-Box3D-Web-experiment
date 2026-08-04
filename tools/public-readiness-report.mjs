@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { auditRequiredPublicContracts } from "./public-contracts-lib.mjs";
+import { classifyKnownSafePublicFiles } from "./public-known-safe-files.mjs";
 import { auditGitIdentifiers } from "./public-readiness-identifiers.mjs";
 import { auditPublicReadiness as auditRawPublicReadiness } from "./public-readiness-lib.mjs";
 
@@ -70,11 +71,16 @@ export async function auditPublicReadiness(options) {
   const rawReport = await auditRawPublicReadiness(options);
   const identifierReport = auditGitIdentifiers({ root: options.root });
   const contractReport = auditRequiredPublicContracts({ root: options.root });
-  const blockers = deduplicate([
+  const candidateBlockers = deduplicate([
     ...rawReport.blockers,
     ...identifierReport.blockers,
     ...contractReport.blockers,
   ]);
+  const policyClassification = classifyKnownSafePublicFiles({
+    root: options.root,
+    blockers: candidateBlockers,
+  });
+  const blockers = deduplicate(policyClassification.blockers);
   const reviewFindings = deduplicate([
     ...rawReport.reviewFindings,
     ...identifierReport.reviewFindings,
@@ -87,11 +93,13 @@ export async function auditPublicReadiness(options) {
       ...rawReport.metrics,
       requiredPublicContracts: contractReport.requiredCount,
       presentPublicContracts: contractReport.presentCount,
+      acceptedPolicyFiles: policyClassification.accepted.length,
     },
     publicContracts: {
       present: contractReport.present,
       missing: contractReport.missing,
     },
+    acceptedPolicyFiles: policyClassification.accepted,
     status:
       blockers.length === 0
         ? "PUBLIC_READY_AUDIT_PASS"
