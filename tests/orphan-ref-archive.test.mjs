@@ -80,8 +80,8 @@ test("orphan refs produce a verified exact private bundle without moving refs", 
     assert.equal(receipt.bundleHeads.length, 2);
     assert.equal(git(root, "rev-parse", ORPHAN_A), beforeA);
     assert.equal(git(root, "rev-parse", ORPHAN_B), beforeB);
-    assert.match(git(root, "bundle", "verify", bundlePath), /is okay/);
-    assert.ok((await readFile(bundlePath)).byteLength === receipt.bytes);
+    assert.doesNotThrow(() => git(root, "bundle", "verify", bundlePath));
+    assert.equal((await readFile(bundlePath)).byteLength, receipt.bytes);
   });
 });
 
