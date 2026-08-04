@@ -11,7 +11,7 @@ import {
   validTriangleGeometryJson,
 } from "./helpers/vehicle-visual-fixture.mjs";
 
-test("complete M6 GLB passes byte, geometry and node ownership gates", async () => {
+test("complete M6 GLB passes byte, geometry, runtime policy and node ownership gates", async () => {
   const bytes = buildGlb();
   const visual = validateVehicleVisualPackageV1(packageForGlb(bytes));
   const receipt = await validateVehicleVisualAssetV1(visual, bytes, null);
@@ -28,6 +28,12 @@ test("complete M6 GLB passes byte, geometry and node ownership gates", async () 
   assert.equal(receipt.glb.nodeNames.length, 26);
   assert.deepEqual(receipt.glb.duplicateNodeNames, []);
   assert.deepEqual(receipt.glb.externalUris, []);
+  assert.deepEqual(receipt.runtimePolicy, {
+    bufferCount: 1,
+    alignedBufferViewCount: 2,
+    alignedAccessorCount: 2,
+    boundRootNodeCount: 26,
+  });
 });
 
 test("GLB container rejects invalid magic, version and declared length", () => {
@@ -161,6 +167,114 @@ test("V1 rejects non-triangle and sparse mesh data explicitly", async () => {
   await assert.rejects(
     () => validateVehicleVisualAssetV1(sparsePackage, sparseBytes, null),
     /sparse accessors/,
+  );
+});
+
+test("mobile runtime policy rejects ambiguous buffers and misaligned data", async () => {
+  const cases = [
+    [
+      buildGlb({ buffers: [{ byteLength: 42 }, { byteLength: 42 }] }),
+      /exactly one embedded buffer/,
+    ],
+    [
+      buildGlb({
+        bufferViews: [
+          { buffer: 0, byteOffset: 2, byteLength: 36 },
+          { buffer: 0, byteOffset: 36, byteLength: 6 },
+        ],
+      }),
+      /byteOffset must be 4-byte aligned/,
+    ],
+    [
+      buildGlb({
+        bufferViews: [
+          { buffer: 0, byteOffset: 0, byteLength: 42, byteStride: 14 },
+          { buffer: 0, byteOffset: 36, byteLength: 6 },
+        ],
+      }),
+      /byteStride must be a multiple of 4/,
+    ],
+  ];
+
+  const misalignedGeometry = validTriangleGeometryJson(44);
+  misalignedGeometry.bufferViews = [
+    { buffer: 0, byteOffset: 0, byteLength: 38 },
+    { buffer: 0, byteOffset: 40, byteLength: 4 },
+  ];
+  misalignedGeometry.accessors = [
+    {
+      bufferView: 0,
+      byteOffset: 2,
+      componentType: 5126,
+      count: 3,
+      type: "VEC3",
+    },
+    {
+      bufferView: 1,
+      componentType: 5121,
+      count: 3,
+      type: "SCALAR",
+    },
+  ];
+  cases.push([
+    buildGlb(misalignedGeometry, new Uint8Array(44)),
+    /not aligned to its component size/,
+  ]);
+
+  for (const [bytes, expected] of cases) {
+    const visual = validateVehicleVisualPackageV1(packageForGlb(bytes));
+    await assert.rejects(
+      () => validateVehicleVisualAssetV1(visual, bytes, null),
+      expected,
+    );
+  }
+});
+
+test("mobile runtime policy rejects 32-bit indices and ambiguous bound transforms", async () => {
+  const uint32Geometry = validTriangleGeometryJson(48);
+  uint32Geometry.bufferViews[1] = {
+    buffer: 0,
+    byteOffset: 36,
+    byteLength: 12,
+  };
+  uint32Geometry.accessors[1] = {
+    bufferView: 1,
+    componentType: 5125,
+    count: 3,
+    type: "SCALAR",
+  };
+  const uint32Bytes = buildGlb(uint32Geometry, new Uint8Array(48));
+  const uint32Package = validateVehicleVisualPackageV1(packageForGlb(uint32Bytes));
+  await assert.rejects(
+    () => validateVehicleVisualAssetV1(uint32Package, uint32Bytes, null),
+    /8-bit or 16-bit/,
+  );
+
+  const bindings = completeVisualBindings();
+  const childBytes = buildGlb({
+    nodes: bindings.map((binding, index) => ({
+      name: binding.nodeName,
+      ...(index === 0 ? { mesh: 0, children: [1] } : {}),
+    })),
+  });
+  const childPackage = validateVehicleVisualPackageV1(packageForGlb(childBytes));
+  await assert.rejects(
+    () => validateVehicleVisualAssetV1(childPackage, childBytes, null),
+    /bound node must be a root node/,
+  );
+
+  const translatedBytes = buildGlb({
+    nodes: bindings.map((binding, index) => ({
+      name: binding.nodeName,
+      ...(index === 0 ? { mesh: 0, translation: [1, 0, 0] } : {}),
+    })),
+  });
+  const translatedPackage = validateVehicleVisualPackageV1(
+    packageForGlb(translatedBytes),
+  );
+  await assert.rejects(
+    () => validateVehicleVisualAssetV1(translatedPackage, translatedBytes, null),
+    /translation must be applied before export/,
   );
 });
 
