@@ -68,7 +68,10 @@ const manifest = {
     productPhysicsAuthority: false,
     nativeParity: "NOT_PROVEN",
   },
-  runtimeAssets: ["receipts/jv_m6_factory_receipt.json"],
+  runtimeAssets: [
+    "receipts/jv_m6_factory_receipt.json",
+    "scenes/synthetic-flat-lab.scene.json",
+  ],
   complianceFiles,
   publication: {
     mode: "DORMANT",
