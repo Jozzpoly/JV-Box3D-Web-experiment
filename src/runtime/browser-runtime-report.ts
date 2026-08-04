@@ -29,9 +29,7 @@ export interface BrowserRuntimeProbeEnvironment {
   readonly viewportWidth: number;
   readonly viewportHeight: number;
   readonly devicePixelRatio: number;
-  readonly createCanvas: () => {
-    getContext(kind: "webgl"): unknown;
-  };
+  readonly webgl: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -69,16 +67,6 @@ function classifyTransport(
   return "OTHER";
 }
 
-function probeWebgl(
-  createCanvas: BrowserRuntimeProbeEnvironment["createCanvas"],
-): boolean {
-  try {
-    return createCanvas().getContext("webgl") !== null;
-  } catch {
-    return false;
-  }
-}
-
 function finiteNonNegative(value: number): number {
   return Number.isFinite(value) && value >= 0 ? value : 0;
 }
@@ -95,7 +83,7 @@ export function inspectBrowserRuntime(
     secureContext: environment.secureContext,
     webCryptoDigest: hasWebCryptoDigest(environment.cryptoLike),
     softwareDigestFallback: true,
-    webgl: probeWebgl(environment.createCanvas),
+    webgl: environment.webgl,
     pointerEvents:
       typeof environment.pointerEventLike === "function",
     maxTouchPoints: Math.trunc(
@@ -111,7 +99,9 @@ export function inspectBrowserRuntime(
   });
 }
 
-export function inspectCurrentBrowserRuntime(): BrowserRuntimeReport {
+export function inspectCurrentBrowserRuntime(
+  webgl: boolean,
+): BrowserRuntimeReport {
   return inspectBrowserRuntime({
     protocol: window.location.protocol,
     hostname: window.location.hostname,
@@ -123,7 +113,7 @@ export function inspectCurrentBrowserRuntime(): BrowserRuntimeReport {
     viewportWidth: window.innerWidth,
     viewportHeight: window.innerHeight,
     devicePixelRatio: window.devicePixelRatio,
-    createCanvas: () => document.createElement("canvas"),
+    webgl,
   });
 }
 
