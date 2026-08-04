@@ -109,21 +109,51 @@ timestamped event timeline
 
 Sub-frame tap jest zachowany proporcjonalnie. Nie jest sztucznie wydłużany do jednego pełnego kroku i nie może zostać zgubiony tylko dlatego, że keydown/keyup wystąpiły pomiędzy render frames.
 
+Każdy adapter dostarcza stabilny `sourceId`. Aktywny stan strony nie jest jednym globalnym booleanem, lecz zbiorem aktywnych źródeł:
+
+```text
+LEFT  = Set<sourceId>
+RIGHT = Set<sourceId>
+```
+
+Konsekwencje:
+
+- puszczenie touch nie może anulować nadal trzymanej klawiatury;
+- puszczenie jednego klawisza nie może anulować drugiego klawisza mapowanego na tę samą stronę;
+- `RELEASE_ALL(sourceId)` usuwa wyłącznie stan należący do danego źródła;
+- globalne zdarzenie lifecycle zwalnia wszystko dlatego, że każdy aktywny adapter zwalnia własne źródła, a nie dlatego, że jeden adapter kasuje cudzy stan.
+
 Wymagania:
 
 - deterministyczne same-timestamp ordering;
 - poprawna zmiana kierunku;
 - konsumowanie inputu także podczas dropped intervals;
-- `blur`, `visibilitychange`, `pointercancel`, utrata capture i disposal kończą aktywne komendy;
+- `blur`, `visibilitychange`, `pagehide`, `pointercancel`, utrata capture i disposal kończą własne aktywne komendy adaptera;
+- timestamp eventu jest ograniczony co najmniej do już skonsumowanego kursora timeline;
 - identyczny timestamped event log daje identyczny command trace przy 15/30/60/120 FPS i nieregularnym render cadence.
 
-## 7. Granica wiedzy adaptera
+## 7. Pointer ownership
+
+Dla sterowania dotykowego:
+
+```text
+one pointerId -> one semantic control owner
+```
+
+Różne pointery mogą równolegle posiadać skręt oraz gaz/hamulec. Jeden pointer nie może przejąć dwóch kontrolek.
+
+Control target przejmuje pointer capture przed wysłaniem pierwszego `pressed=true`. Jeżeli capture się nie powiedzie, adapter nie emituje komendy. Dzięki temu failure nie może pozostawić zaciętego gazu lub skrętu.
+
+`pointerup`, `pointercancel` i `lostpointercapture` zwalniają tylko źródło danego pointera. Kontrolki są oddzielnymi elementami ponad canvasem, więc kamera nie przejmuje pointera należącego do sterowania pojazdem.
+
+## 8. Granica wiedzy adaptera
 
 Device adapter może znać:
 
 - typ zdarzenia;
 - kierunek/axis urządzenia;
 - timestamp;
+- `sourceId`;
 - pointer/key ownership;
 - focus/visibility lifecycle.
 
@@ -138,7 +168,7 @@ Nie może znać:
 
 Lokalny actuator może znać rack translation/speed, travel i własny target error. Każde użycie jest widoczne w trace.
 
-## 8. Profile badawcze
+## 9. Profile badawcze
 
 ```text
 0.06 m/s -> 1.0 mm na idealny krok 1/60 s
@@ -161,7 +191,7 @@ Aktualny lead candidate:
 maxTargetLeadMeters = 0.008
 ```
 
-## 9. Dowód istniejący
+## 10. Dowód istniejący
 
 Automatyczna macierz obejmuje:
 
@@ -176,7 +206,11 @@ Automatyczna macierz obejmuje:
 - left/right symmetry;
 - 15/30/60/120 FPS;
 - irregular cadence i dropped gaps;
-- profile switch i lifecycle rebuild.
+- profile switch i lifecycle rebuild;
+- nakładanie wielu `sourceId` na tę samą stronę;
+- source-scoped release;
+- multi-touch steering + drive;
+- pointer capture, cancel, lost capture, visibility i disposal.
 
 Dynamiczny pomiar na reference backendzie:
 
@@ -189,7 +223,7 @@ contacts:                4
 
 Post-RELEASE peak jest obserwacją, nie zatwierdzonym defektem do force-clampowania.
 
-## 10. Owner gate
+## 11. Owner gate
 
 Automatyzacja nie wybiera finalnego feelu. Jozz ocenia:
 
@@ -200,9 +234,10 @@ Automatyzacja nie wybiera finalnego feelu. Jozz ocenia:
 - postój i toczenie;
 - szybszą jazdę;
 - fizyczny ruch po RELEASE;
-- klawiaturę i touch przy identycznym timeline.
+- klawiaturę i touch przy identycznym timeline;
+- wygodę jednoczesnego skrętu, gazu, hamulca i kamery na realnym telefonie.
 
-## 11. Native/WASM direction
+## 12. Native/WASM direction
 
 Dawna koncepcja osobnego transferu behavior card do kolejnej implementacji została zastąpiona przez ADR-0003.
 
