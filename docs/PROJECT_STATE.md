@@ -6,54 +6,64 @@ Owner: Jozz
 
 ## 1. Cel produktu
 
-JV Web ma być przeglądarkowym hostem tego samego mechanicznego systemu Jozz Vehicle, a nie niezależną grą imitującą natywne zachowanie.
+JV Web ma stać się poważnym demonstratorem Jozz Vehicle:
 
-Docelowy podział:
+- uruchamianym na desktopie i telefonie;
+- posiadającym przemyślane sterowanie mobilne;
+- docelowo pozwalającym jeździć po zoptymalizowanym skanie;
+- łatwym do pokazania przez zwykły link GitHub Pages;
+- bez własnego serwera i bez automatycznej publikacji;
+- uczciwie odróżniającym reference backend od rzeczywistego native parity.
+
+Repo ma docelowo stać się publiczne. Zmiana widoczności oraz włączenie Pages są dwiema osobnymi, ręcznymi decyzjami po odpowiednich gate’ach.
+
+## 2. Architektura produktu
 
 ```text
 native JV Core + Box3D WASM -> fizyka, blueprint compiler, telemetryka
-TypeScript host             -> input, lifecycle, render, UI, eksperymenty
+TypeScript host             -> input, lifecycle, render, UI, mobile, sceny
+portable static package     -> lokalny HTTP, LAN phone test, przyszłe Pages
 ```
 
-Architecture authority:
+Authority:
 
 ```text
 decisions/ADR-0003-native-jv-core-wasm.md
+decisions/ADR-0004-pages-ready-demonstrator.md
 ```
 
-## 2. Bieżąca gałąź
+## 3. Aktywna linia
+
+Zwalidowana baza:
 
 ```text
-agent/jv-web-refoundation
+branch: agent/jv-web-refoundation
+commit: f06853467408d6c633ca806d985062c634b3a666
 ```
 
-Punkt startowy:
+Aktywna gałąź demonstratora:
 
 ```text
-agent/f5-dynamic-steering-validation
-0d938e402f618ae34e0d959a9862d97c2f88a926
+agent/jv-web-demonstrator-foundation
 ```
 
-Refoundation jest odseparowane od historycznych stacked PR-ów. Nic nie jest scalane ani oznaczane jako ready bez Jozza.
+Jest bezpośrednio odgałęziona od zielonego refoundation headu. Nic nie jest scalane, oznaczane jako ready, upubliczniane ani publikowane bez Jozza.
 
-## 3. Zwalidowany reference baseline
+## 4. Zwalidowany reference baseline
 
-Na headzie bezpośrednio poprzedzającym refoundation potwierdzono lokalnie:
+Na dokładnym refoundation headzie Jozz potwierdził lokalnie:
 
 ```text
 Node 24.16.0
 npm 11.17.0
+native receipt byte-exact
+Markdown links PASS
 TypeScript PASS
-75/75 tests PASS
+77/77 tests PASS
 Vite production build PASS
-browser startup and physical drive PASS
 ```
 
-Receipt:
-
-```text
-receipts/runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md
-```
+Wcześniejszy browser owner smoke potwierdził fizyczną jazdę.
 
 Działający fixture posiada:
 
@@ -65,14 +75,13 @@ Działający fixture posiada:
 - 18 vehicle bodies / 29 joints / 9 shapes;
 - fizyczny rack i tie-rody;
 - `RELEASE | POSITION | RATE`;
-- RATE `0.06 / 0.12 / 0.21 / 0.36 m/s`;
 - read-only WebGL observer;
 - wheel-motor drive/reverse/coast/brake;
 - dynamic rack-excursion matrix.
 
-To są wyniki liveness, determinizmu i internal consistency reference backendu. Nie są pełnym native parity ani owner approval całego prowadzenia.
+To są dowody liveness, determinizmu i internal consistency reference backendu. Nie są pełnym native parity ani zatwierdzeniem finalnego prowadzenia.
 
-## 4. Krytyczna rozbieżność napędu
+## 5. Krytyczna rozbieżność napędu
 
 Native JV:
 
@@ -92,115 +101,188 @@ target wheel speed = linear target / wheel radius
 chassis speed determines torque taper
 ```
 
-Dla przypiętych wartości:
-
-```text
-maxDriveSpeed = 40
-wheelRadius = 0.514062464 m
-native full-throttle target ≈ 40 rad/s
-legacy TypeScript target ≈ 77.8 rad/s
-```
+Dla przypiętych wartości legacy TS target przy pełnym gazie wynosi około `77.8 rad/s`, podczas gdy native target wynosi `40 rad/s`.
 
 Wniosek:
 
 ```text
-legacy_ts_m6 is deterministic and drivable
+legacy_ts_m6 = deterministic and drivable reference fixture
 native drive semantic parity = FAIL / NOT PRODUCT AUTHORITY
 ```
 
-Nie dodawać kolejnych produktowych mechanizmów M7 do TypeScriptu.
+Nie dodawać nowych produktowych mechanizmów fizycznych M7, drivetrainu ani przyszłej opony do TypeScriptu.
 
-## 5. Backend status
+## 6. Backend status
 
 ### `legacy_ts_m6`
 
-Rola:
-
 ```text
-REFERENCE_BROWSER_FIXTURE
-productPhysicsAuthority = false
-nativeParity = NOT_PROVEN
-acceptsNewProductPhysics = false
+role: REFERENCE_BROWSER_FIXTURE
+productPhysicsAuthority: false
+nativeParity: NOT_PROVEN
+acceptsNewProductPhysics: false
 ```
 
-Jawny contract istnieje w kodzie i ma focused test. World expose’uje backend identity. Trace/UI jeszcze go nie pokazują — to następny mały code step po lokalnym gate/review.
+Kontrakt istnieje w kodzie i ma focused test. World expose’uje backend identity. Trace/UI nadal wymagają jawnego pokazania tej prawdy.
 
 ### `native_jv_wasm`
 
-Status:
-
 ```text
-architecture accepted
-ABI v0 designed
-minimal source set audited
-implementation not started
+architecture: accepted
+ABI v0: designed
+minimal source set: audited
+implementation: not started
 ```
 
-Kontrakty:
+Pierwszy spike użyje niezmienionych źródeł M5/M6 oraz cienkiego adaptera. Refactor natywnego core nastąpi dopiero pod ochroną parity trace.
+
+## 7. Dwa zsynchronizowane tory
+
+### Tor A — demonstrator
+
+Może rozwijać na zamrożonym `legacy_ts_m6`:
+
+- portable package;
+- Demo/Lab separation;
+- loading i failure UX;
+- responsive/mobile shell;
+- multi-touch ownership;
+- kamera i reset;
+- scene manifest;
+- synthetic campus;
+- quality profiles;
+- lokalne testy LAN;
+- Pages packaging.
+
+Nie może dodawać ani stroić produktowej fizyki.
+
+### Tor B — physics authority
+
+- Box3D + JV Core w jednym WASM;
+- C ABI z jednostkami;
+- stable `partId`;
+- immutable snapshot;
+- native/WASM scenario comparison;
+- backend swap;
+- późniejszy Wheel Scope seam.
+
+Oba tory spotykają się przez stabilny backend/snapshot contract.
+
+## 8. Portable demonstrator foundation
+
+Na aktywnej gałęzi są obecnie źródłowo przygotowane:
+
+- Vite `base: "./"`;
+- `.nojekyll`;
+- deterministyczny `build-manifest.json` z SHA-256 plików;
+- jawne `publicReady=false`, `pagesPublicationApproved=false` i `publishedByBuild=false`;
+- validator root/nested paths, brakujących assetów, source maps i driftu bajtów;
+- cztery syntetyczne testy przeciwne;
+- lokalny demonstrator gate bez publikacji;
+- current-tree i reachable-history public audit;
+- osobna pętla walidacyjna i polishująca.
+
+Stan tej gałęzi:
 
 ```text
-contracts/NATIVE_WASM_ABI_V0_PL.md
-research/NATIVE_CORE_SOURCE_SET_AUDIT_2026_08_04_PL.md
+source present
+static review in progress
+full Node 24 gate: NOT YET EXECUTED
+portable artifact receipt: NOT YET RECORDED
+LAN/phone smoke: NOT YET EXECUTED
 ```
 
-## 6. Minimalny native source set
+Nie nazywać foundation zielonym przed lokalnym gate’em.
 
-Publiczny audyt refu `JV_VAW-Experimental_Integration` wykazał:
+## 9. Public repository readiness
+
+Decyzja produktowa:
 
 ```text
-JOZZ_VEHICLE_CORE_FILES = headless, but not runtime-minimal
+repository will become public after PUBLIC-READY PASS
 ```
 
-Pierwszy behavior-preserving spike linkuje jawnie:
+Aktualnie:
 
 ```text
-Box3D
-jozz_vehicle_m5_vehicle.{h,cpp}
-jozz_vehicle_m6_geometry.{h,cpp}
-jozz_vehicle_m6_suspension_rig.{h,cpp}
-new thin ABI/runtime adapter
+repository visibility: PRIVATE
+Pages: DISABLED
+LICENSE: MISSING / OWNER DECISION PENDING
+THIRD_PARTY_NOTICES.md: MISSING
+current/history local audit: IMPLEMENTED, NOT YET RUN
+GitHub metadata audit: STARTED
+public README: NOT READY
+owner public approval: NOT YET GIVEN FOR A SPECIFIC HEAD
 ```
 
-M5 jest obecnie potrzebne linkowo, ponieważ M6 używa zwalidowanego helpera Ackermanna dla strut branch.
+Public audit obejmuje:
 
-Nie włączać do runtime v0:
+- current tree;
+- wszystkie osiągalne bloby i refy;
+- PR bodies/comments/reviews;
+- issues;
+- Actions logs/artifacts;
+- releases/packages;
+- branch/tag names;
+- prywatne/source scan assets;
+- licencje kodu, zależności, modeli i skanu.
 
-- filesystem config IO;
-- JSON/asset paths/metadata;
-- contract import;
-- Sokol/ImGui/renderer;
-- map/campus/scan.
+Wstępny audit dostępnych PR-ów nie ujawnił sekretu, ale wykazał historyczne twierdzenia wymagające prominentnego erratum. PR #15 w starym opisie interpretuje `maxDriveSpeed` jako `40 m/s`; przed publicznym repo musi zostać jawnie oznaczony jako superseded semantic error.
 
-Najpierw niezmienione source files i native/WASM baseline; dopiero potem structural extraction pod ochroną parity.
+## 10. Model dystrybucji
 
-## 7. ABI v0
-
-ABI contract wymaga:
-
-- C ABI i opaque generational runtime handle;
-- version + struct size;
-- jawnych suffixów jednostek;
-- coordinate frames;
-- stable `partId`, bez eksportu `b3BodyId`;
-- immutable snapshot z tabelami offset/count;
-- jawnego memory lifetime;
-- structured error codes;
-- runtime/source/build identity;
-- control frame niezależnego od urządzenia;
-- native/WASM scenario trace.
-
-Błąd typu `maxDriveSpeed` bez jednostki jest odrzucany przez samą definicję przyszłego schema.
-
-## 8. Sterowanie i rack
-
-Default:
+Produktowy artefakt:
 
 ```text
-rackCenteringHertz = 0
-uprightAssist = false
+portable multi-file static site
 ```
 
-Dynamiczny reference measurement:
+Docelowa publikacja:
+
+```text
+public source repo
++ osobna generated publishing branch
++ GitHub Pages: Deploy from a branch
+```
+
+Brak własnego deployment workflowa. Build lokalny nigdy nie publikuje.
+
+Pojedynczy HTML pozostaje opcjonalnym małym eksperymentem, nie formatem skanu.
+
+## 11. Mobile
+
+Mobile jest osobnym host/input problemem, nie osobną fizyką.
+
+Default badawczy:
+
+- landscape-first;
+- relative RATE steering pad;
+- key-up/touch-up = `RELEASE`, nie `POSITION(0)`;
+- oddzielny throttle i brake/reverse;
+- camera gesture z własnym pointer ownership;
+- blur, visibility, touchcancel i dispose zwalniają wszystkie aktywne komendy;
+- AUTO quality zmienia render, nigdy fixed-step ani fizykę.
+
+Owner feel na realnym telefonie jest obowiązkowy.
+
+## 12. Skan
+
+Skan źródłowy, render mesh i collision mesh są oddzielne.
+
+Przed integracją lokalnych plików potrzebny będzie audit:
+
+- formatów, jednostek i osi;
+- liczby trójkątów;
+- tekstur i UV;
+- rozmiaru transferu i decoded memory;
+- dziur/szumu;
+- playable bounds;
+- collision proxy;
+- praw do publikacji source/render/collision assets.
+
+Surowy noisy photogrammetry mesh nie jest domyślnym colliderem.
+
+## 13. Sterowanie i rack — reference measurement
 
 ```text
 stationary held RATE excess: 0.000 mm
@@ -209,104 +291,45 @@ post-RELEASE peak:            2.541–2.817 mm
 contacts:                     4
 ```
 
-Interpretacja:
+Command clamp jest poprawny. Post-RELEASE mechanism nie został odizolowany. Force clamp pozostaje odrzucony bez native comparison.
 
-```text
-command clamp: PASS
-active held compliance: measured, small
-post-RELEASE mechanism: not isolated
-force-clamp fix: rejected without native comparison
-```
-
-Pierwszy native/WASM parity corpus użyje POSITION-like native input. RATE wchodzi dopiero po podstawowym baseline, aby nie łączyć portu M6 i nowego native actuatora w jeden eksperyment.
-
-## 9. Koło
-
-Reference backend:
+## 14. Koło
 
 ```text
 legacy_m6_split_sphere_sidewall
 ```
 
-Rola:
+pozostaje regression baseline/failure reference, nie przyszłą oponą. Future Wheel Scope wchodzi wyłącznie przez native backend seam po nowym exact source receipt.
 
-```text
-regression baseline / fallback / failure reference
-```
-
-Nie jest przyszłą oponą.
-
-Future Wheel Scope wchodzi przez native backend seam opisany w:
-
-```text
-contracts/WHEEL_BACKEND_CONTRACT_PL.md
-```
-
-Nowszy lokalny Wheel Scope może wykraczać poza publiczny snapshot 2026-08-03 i wymaga nowego exact source receipt.
-
-## 10. Dokumentacja i operacje
-
-Wykonano:
-
-- skrócony read-first chain do pięciu pozycji;
-- nowe README/state/memory/index;
-- usunięcie broad audits, handoffów i starej roadmapy z aktywnego drzewa;
-- kompresję steering/wheel/mobile do aktywnych kontraktów;
-- indexed recovery z exact blob SHA;
-- fizyczną organizację receiptów na source/runtime/inventory;
-- usunięcie sześciu one-shot workflows;
-- jeden lokalny gate i Markdown link checker;
-- kompresję konstytucji braku sztucznych mechanik.
-
-Indeksy:
-
-```text
-DOCUMENT_INDEX.md
-receipts/INDEX.md
-archive/*.md
-```
-
-## 11. Walidacja bieżącego brancha
-
-```text
-new docs/code source: PRESENT
-link checker syntax + synthetic pass/fail: PASS
-full npm run check:docs: NOT YET EXECUTED
-full npm run check: NOT YET EXECUTED
-production build: NOT YET EXECUTED
-browser smoke: NOT REQUIRED YET / NOT EXECUTED
-```
-
-Nie twierdzić, że refoundation branch jest zielony, dopóki nie przejdzie:
-
-```text
-tools/run-refoundation-gate.ps1
-```
-
-## 12. Workflow bezpieczeństwa
+## 15. Workflow bezpieczeństwa
 
 - brak merge bez Jozza;
 - brak ready-for-review bez Jozza;
-- brak Actions;
+- brak automatycznej zmiany visibility;
+- brak automatycznego Pages deploy;
+- brak custom GitHub Actions;
 - brak samomodyfikujących workflowów;
 - brak cross-repo commit loop;
 - brak Git Diff Patcher Bridge;
-- historyczne PR-y nietknięte;
-- usunięte docs odzyskiwalne z przypiętej historii Gita.
+- lokalne audity zapisują wyniki w ignorowanym `.local-audit/`;
+- publikowanie jest osobnym owner gate’em.
 
-## 13. Następna sekwencja
+## 16. Następna sekwencja
 
 ```text
-1. pełny lokalny refoundation gate
-2. naprawa linków wykrytych przez check:docs
-3. runtime backend ID przez trace/UI/receipt
-4. exact native local/public source receipt
-5. native unchanged-source POSITION adapter
-6. ten sam adapter w Emscripten/WASM
-7. settle/drive/brake/POSITION parity receipt
-8. structural extraction M5 dependency/types/diagnostics
-9. shared native RATE actuator
-10. Wheel Scope backend dopiero po nowym source receipt
+1. lokalny demonstrator foundation gate
+2. uruchomienie public audit i klasyfikacja wyników
+3. decyzja LICENSE + exact THIRD_PARTY_NOTICES
+4. prominent errata/superseded status historycznych PR-ów
+5. public README i default-branch consolidation plan
+6. runtime backend identity przez trace/UI/receipt
+7. Demo/Lab separation
+8. mobile shell + touch ownership experiment
+9. równolegle pierwszy native JV WASM parity spike
+10. scene manifest + synthetic campus
+11. audit i konwersja przesłanego skanu
+12. phone owner gate
+13. PUBLIC-READY owner approval
+14. ręczna zmiana visibility
+15. PAGES-PUBLISH gate i ręczne włączenie Pages
 ```
-
-Nie rozpoczynać nowej fizyki koła, drivetrainu, kampusu ani mobile UI przed podstawowym native/WASM parity baseline.
