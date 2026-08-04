@@ -62,6 +62,7 @@ PUBLIC-READY =
   + THIRD_PARTY_NOTICES
   + current-tree secrets/privacy audit
   + reachable-history secrets/privacy audit
+  + GitHub cloud-surface audit
   + public README and project status
   + no private scan/source assets
   + portable package validation
@@ -70,7 +71,18 @@ PUBLIC-READY =
   + explicit owner approval
 ```
 
+The GitHub cloud-surface audit includes:
+
+- pull-request bodies, comments and reviews;
+- issues and issue comments;
+- historical Actions logs and downloadable artifacts;
+- releases and attached files;
+- packages;
+- branch/tag names and still-reachable experimental refs.
+
 Deleting a sensitive file in a later commit does not pass the history audit. If a secret is ever found, it must be revoked/rotated before any history cleanup is considered sufficient.
+
+Historical PRs may remain as evidence, but each obsolete or corrected claim must have a prominent status/erratum so it cannot be mistaken for current architecture. Closing a PR does not hide its public content.
 
 ## GitHub Pages activation gate
 
@@ -95,7 +107,7 @@ Each iteration must answer:
 5. **Protocol test** — HTTP/HTTPS; `file://` is separate and never assumed.
 6. **Mobile test** — touch ownership, orientation, background/resume, memory pressure.
 7. **Resource audit** — compressed bytes, decoded memory estimate, request count, largest file.
-8. **Privacy audit** — current tree, reachable history, branches, receipts and assets.
+8. **Privacy audit** — current tree, reachable history, branches, receipts, assets and GitHub metadata surfaces.
 9. **License audit** — project code, dependencies and later scan/source ownership.
 10. **Owner gate** — Jozz decides whether the result is useful and shareable.
 11. **Receipt** — exact commit, artifact hash, browser/device and known limitations.
@@ -130,8 +142,9 @@ Presentation polish never outranks truthful backend identity, input correctness,
 3. Generate a build manifest with source identity.
 4. Validate that the package is path-portable and contains no accidental source artifacts.
 5. Add a local Pages-ready gate that cannot publish.
-6. Build a pre-public audit tool and classify unresolved findings.
-7. Only then continue with Demo/Lab and mobile controls.
+6. Build a pre-public Git/history audit tool and separately inspect GitHub metadata surfaces.
+7. Classify license and historical-PR blockers.
+8. Only then continue with Demo/Lab and mobile controls.
 
 ## Rejected alternatives
 
@@ -145,7 +158,7 @@ Rejected as the default until a measured small-scene probe proves value on real 
 
 ### Make the repository public before the audit
 
-Rejected because visibility exposes code and reachable repository history, not merely the current playable build.
+Rejected because visibility exposes code, reachable repository history and GitHub collaboration metadata, not merely the current playable build.
 
 ### Add automatic Pages deployment now
 
