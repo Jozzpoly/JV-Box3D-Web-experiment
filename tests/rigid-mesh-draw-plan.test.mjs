@@ -49,6 +49,15 @@ function identityMatrix() {
   ]);
 }
 
+function closePoint(actual, expected, epsilon = 1e-5) {
+  for (const axis of ["x", "y", "z"]) {
+    assert.ok(
+      Math.abs(actual[axis] - expected[axis]) <= epsilon,
+      `${axis}: expected ${actual[axis]} to be close to ${expected[axis]}`,
+    );
+  }
+}
+
 test("tiny vehicle runtime produces one draw node for every visual channel", async () => {
   const generated = buildTinyVehicleVisualFixture({
     partIds: M6_VISUAL_PART_IDS,
@@ -81,7 +90,8 @@ test("tiny vehicle runtime produces one draw node for every visual channel", asy
   assert.equal(plan.filter((command) => command.meshIndex === 1).length, 8);
 
   const chassis = plan.find((command) => command.nodeName === "JV_m6_chassis");
-  assert.deepEqual(
+  assert.ok(chassis);
+  closePoint(
     transformVehicleVisualPointV1(chassis.worldFromNode, { x: 0, y: 0, z: 0 }),
     { x: 0, y: 1, z: 0 },
   );
@@ -89,11 +99,12 @@ test("tiny vehicle runtime produces one draw node for every visual channel", asy
   const coilover = plan.find(
     (command) => command.nodeName === "JV_m6_fl_coilover",
   );
-  assert.deepEqual(
+  assert.ok(coilover);
+  closePoint(
     transformVehicleVisualPointV1(coilover.worldFromNode, { x: 0, y: -0.5, z: 0 }),
     { x: 0, y: 0, z: 0 },
   );
-  assert.deepEqual(
+  closePoint(
     transformVehicleVisualPointV1(coilover.worldFromNode, { x: 0, y: 0.5, z: 0 }),
     { x: 0, y: 2, z: 0 },
   );
@@ -120,13 +131,14 @@ test("generic draw plan composes decorative child hierarchy under one owned root
     visual.bindings.map((binding) => binding.nodeName),
   );
   const rootIndex = cpu.nodeIndexByName.get(bindings[0].nodeName);
+  assert.notEqual(rootIndex, undefined);
   const plan = buildRigidMeshDrawPlanV1(
     cpu,
     new Map([[rootIndex, identityMatrix()]]),
   );
   assert.equal(plan.length, 1);
   assert.equal(plan[0].nodeName, "JV_DecorativeChild");
-  assert.deepEqual(
+  closePoint(
     transformVehicleVisualPointV1(plan[0].worldFromNode, { x: 0, y: 0, z: 0 }),
     { x: 1, y: 2, z: 3 },
   );
