@@ -2,6 +2,9 @@ node_modules/
 dist/
 .test-dist/
 .local-audit/
+.local-assets/
+.local-scans/
+.private-work/
 *.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*
