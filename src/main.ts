@@ -1,5 +1,9 @@
 import "./style.css";
 import { F4VehicleHost } from "./app/f4-vehicle-host.js";
+import type {
+  PointerVehicleControlId,
+  PointerVehicleControlTargets,
+} from "./input/pointer-vehicle-control-adapter.js";
 import type { SteeringCommand } from "./input/steering-command.js";
 import { M6DebugRenderer } from "./render/m6-debug-renderer.js";
 import {
@@ -44,8 +48,66 @@ app.innerHTML = `
         <span class="legend-steering">Rack / observer links</span>
       </div>
       <p class="scene-help">
-        A/D steer · W/S drive forward/reverse · Space brakes · drag to orbit · wheel to zoom. Orange lines are observer guides, not exact tie rods.
+        A/D steer · W/S drive · Space brakes · drag to orbit · wheel to zoom. Touch devices use the dedicated multi-touch controls.
       </p>
+
+      <div class="mobile-controls" aria-label="Touch vehicle controls">
+        <div class="mobile-control-cluster mobile-steering-controls" aria-label="Steering controls">
+          <button
+            type="button"
+            class="mobile-control mobile-control-steer"
+            data-pointer-control="STEER_LEFT"
+            aria-label="Steer left"
+            aria-pressed="false"
+          >
+            <span aria-hidden="true">◀</span>
+            <small>LEFT</small>
+          </button>
+          <button
+            type="button"
+            class="mobile-control mobile-control-steer"
+            data-pointer-control="STEER_RIGHT"
+            aria-label="Steer right"
+            aria-pressed="false"
+          >
+            <span aria-hidden="true">▶</span>
+            <small>RIGHT</small>
+          </button>
+        </div>
+
+        <div class="mobile-control-cluster mobile-drive-controls" aria-label="Drive controls">
+          <button
+            type="button"
+            class="mobile-control mobile-control-drive"
+            data-pointer-control="FORWARD"
+            aria-label="Drive forward"
+            aria-pressed="false"
+          >
+            <span aria-hidden="true">▲</span>
+            <small>DRIVE</small>
+          </button>
+          <button
+            type="button"
+            class="mobile-control mobile-control-brake"
+            data-pointer-control="BRAKE"
+            aria-label="Brake"
+            aria-pressed="false"
+          >
+            <span aria-hidden="true">●</span>
+            <small>BRAKE</small>
+          </button>
+          <button
+            type="button"
+            class="mobile-control mobile-control-drive"
+            data-pointer-control="REVERSE"
+            aria-label="Drive in reverse"
+            aria-pressed="false"
+          >
+            <span aria-hidden="true">▼</span>
+            <small>REVERSE</small>
+          </button>
+        </div>
+      </div>
     </section>
 
     <aside class="panel">
@@ -113,7 +175,7 @@ app.innerHTML = `
       </details>
 
       <p class="hint">
-        Steering RELEASE removes the rack target immediately. Drive uses the native receipt values for speed, torque, taper, coast and braking; the renderer remains read-only.
+        Steering RELEASE removes the rack target immediately. Keyboard and touch share the same source-aware fixed-step timelines; the renderer remains read-only.
       </p>
     </aside>
   </main>
@@ -166,6 +228,52 @@ const cornersElement = requireElement<HTMLElement>("[data-corners]");
 const droppedElement = requireElement<HTMLElement>("[data-dropped]");
 const validationElement = requireElement<HTMLElement>("[data-validation]");
 const restartButton = requireElement<HTMLButtonElement>("[data-restart]");
+
+const pointerControlButtons: Record<
+  PointerVehicleControlId,
+  HTMLButtonElement
+> = {
+  STEER_LEFT: requireElement<HTMLButtonElement>(
+    '[data-pointer-control="STEER_LEFT"]',
+  ),
+  STEER_RIGHT: requireElement<HTMLButtonElement>(
+    '[data-pointer-control="STEER_RIGHT"]',
+  ),
+  FORWARD: requireElement<HTMLButtonElement>(
+    '[data-pointer-control="FORWARD"]',
+  ),
+  REVERSE: requireElement<HTMLButtonElement>(
+    '[data-pointer-control="REVERSE"]',
+  ),
+  BRAKE: requireElement<HTMLButtonElement>(
+    '[data-pointer-control="BRAKE"]',
+  ),
+};
+
+const pointerControls: PointerVehicleControlTargets = {
+  steerLeft: pointerControlButtons.STEER_LEFT,
+  steerRight: pointerControlButtons.STEER_RIGHT,
+  forward: pointerControlButtons.FORWARD,
+  reverse: pointerControlButtons.REVERSE,
+  brake: pointerControlButtons.BRAKE,
+};
+
+function setPointerControlState(
+  control: PointerVehicleControlId,
+  active: boolean,
+): void {
+  const button = pointerControlButtons[control];
+  button.setAttribute("aria-pressed", String(active));
+  button.toggleAttribute("data-active", active);
+}
+
+function resetPointerControlStates(): void {
+  for (const control of Object.keys(
+    pointerControlButtons,
+  ) as PointerVehicleControlId[]) {
+    setPointerControlState(control, false);
+  }
+}
 
 const animationFrames = {
   request: (callback: FrameRequestCallback) =>
@@ -336,6 +444,7 @@ function renderTrace(trace: M6TraceFrame): void {
 }
 
 function resetDisplay(): void {
+  resetPointerControlStates();
   nativeSourceElement.textContent = "PENDING";
   box3dElement.textContent = "PENDING";
   topologyElement.textContent = "PENDING";
@@ -377,6 +486,8 @@ async function startHost(): Promise<void> {
       windowTarget: window,
       documentTarget: document,
       isDocumentHidden: () => document.visibilityState === "hidden",
+      pointerControls,
+      onPointerControlStateChange: setPointerControlState,
       generation,
       spawn: { x: 0, y: 1.2, z: 0 },
       rateProfileId,
@@ -429,7 +540,7 @@ async function startHost(): Promise<void> {
     generationElement.textContent = String(generation);
     statusElement.textContent =
       `Running — ${box3dReceipt.identity.packageName}@${box3dReceipt.identity.packageVersion}; ` +
-      `RATE ${profile.rackRateMetersPerSecond.toFixed(2)} m/s + native wheel drive; generation ${generation}`;
+      `RATE ${profile.rackRateMetersPerSecond.toFixed(2)} m/s + native wheel drive; keyboard + pointer controls; generation ${generation}`;
   } catch (error: unknown) {
     if (generation !== startupGeneration) {
       return;
