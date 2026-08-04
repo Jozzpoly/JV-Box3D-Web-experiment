@@ -38,15 +38,9 @@ ADR-0003 ma pierwszeństwo tam, gdzie wcześniejsze dokumenty zakładały dalsze
 
 | Dokument | Rola |
 |---|---|
-| `contracts/STEERING_COMMAND_CONTRACT_PL.md` | aktualna semantyka `RELEASE | POSITION | RATE`, timestamped timeline, K2b i owner gate |
-| `WHEEL_ADOPTION_SEAM_2026_08_03_PL.md` | tymczasowy seam Wheel Scope/JV Core; oczekuje kompresji do bezdatowego kontraktu |
-| `LEGACY_M6_WHEEL_FIXTURE_AUDIT_2026_08_03_PL.md` | tymczasowe źródło klasyfikacji legacy backendu; oczekuje kompresji |
-
-Historyczne sterowanie K0–K4 i pełna macierz tapów są indeksowane w:
-
-```text
-archive/STEERING_RESEARCH_2026_08_03_INDEX.md
-```
+| `contracts/STEERING_COMMAND_CONTRACT_PL.md` | semantyka `RELEASE | POSITION | RATE`, timestamped timeline, K2b i owner gate |
+| `contracts/WHEEL_BACKEND_CONTRACT_PL.md` | WheelSpec, native contact backend seam, observer, legacy baseline i Wheel Scope transfer gates |
+| `contracts/MOBILE_HOST_CONTRACT_PL.md` | jeden physics profile, multi-touch ownership, render profiles i mobile gates |
 
 ## 5. Receipts
 
@@ -78,6 +72,8 @@ Indeksy:
 ```text
 archive/REMOVED_FROM_ACTIVE_TREE_2026_08_04.md
 archive/STEERING_RESEARCH_2026_08_03_INDEX.md
+archive/WHEEL_RESEARCH_2026_08_03_INDEX.md
+archive/MOBILE_HOST_AUDIT_2026_08_03_INDEX.md
 ```
 
 Pełna klasyfikacja i kolejność migracji:
