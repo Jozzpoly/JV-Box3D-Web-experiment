@@ -11,6 +11,9 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { auditPublicReadiness } from "../tools/public-readiness-report.mjs";
 
+const CANDIDATE_REF =
+  "refs/remotes/origin/agent/jv-web-demonstrator-foundation";
+
 const PUBLIC_CONTRACT_FIXTURES = Object.freeze({
   "LICENSE": "fixture license\n",
   "THIRD_PARTY_NOTICES.md": "fixture notices\n",
@@ -29,6 +32,10 @@ function git(root, ...args) {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
+}
+
+function syncCandidateRef(root) {
+  git(root, "update-ref", CANDIDATE_REF, "HEAD");
 }
 
 async function writePublicContracts(root) {
@@ -51,6 +58,9 @@ async function createRepository({ publicContracts = true } = {}) {
   }
   git(root, "add", "--all");
   git(root, "commit", "-m", "initial fixture");
+  git(root, "update-ref", "refs/remotes/origin/main", "HEAD");
+  git(root, "switch", "-c", "agent/jv-web-demonstrator-foundation");
+  syncCandidateRef(root);
   return root;
 }
 
@@ -74,7 +84,10 @@ test("public readiness audit passes a clean minimal public repository", async ()
     assert.equal(report.metrics.currentTrackedFiles, 9);
     assert.equal(report.metrics.requiredPublicContracts, 9);
     assert.equal(report.metrics.presentPublicContracts, 9);
+    assert.equal(report.metrics.reviewedRemoteBranches, 2);
+    assert.equal(report.metrics.blockedOrphanBranches, 0);
     assert.deepEqual(report.publicContracts.missing, []);
+    assert.equal(report.publicRefPolicy.status, "PUBLIC_REF_POLICY_PASS");
     assert.ok(report.metrics.reachableBlobs >= 9);
   });
 });
@@ -105,6 +118,7 @@ test("public readiness audit blocks the complete missing public surface", async 
     }
     assert.deepEqual(report.publicContracts.present, ["README.md"]);
     assert.equal(report.publicContracts.missing.length, 8);
+    assert.equal(report.publicRefPolicy.status, "PUBLIC_REF_POLICY_PASS");
   });
 });
 
@@ -113,6 +127,7 @@ test("public readiness audit blocks one removed public contract", async () => {
     await rm(resolve(root, "SECURITY.md"));
     git(root, "add", "--all");
     git(root, "commit", "-m", "remove security fixture");
+    syncCandidateRef(root);
 
     const report = await auditPublicReadiness({
       root,
@@ -125,6 +140,7 @@ test("public readiness audit blocks one removed public contract", async () => {
     );
     assert.deepEqual(report.publicContracts.missing, ["SECURITY.md"]);
     assert.equal(report.metrics.presentPublicContracts, 8);
+    assert.equal(report.publicRefPolicy.status, "PUBLIC_REF_POLICY_PASS");
   });
 });
 
@@ -141,6 +157,7 @@ test("public readiness audit finds a token removed from the current tree", async
     await rm(resolve(root, "historical-note.txt"));
     git(root, "add", "--all");
     git(root, "commit", "-m", "remove historical fixture token");
+    syncCandidateRef(root);
 
     const report = await auditPublicReadiness({
       root,
@@ -156,6 +173,7 @@ test("public readiness audit finds a token removed from the current tree", async
     assert.equal(typeof finding.fingerprint, "string");
     assert.equal(finding.fingerprint.length, 12);
     assert.equal(JSON.stringify(report).includes(fakeToken), false);
+    assert.equal(report.publicRefPolicy.status, "PUBLIC_REF_POLICY_PASS");
   });
 });
 
@@ -171,6 +189,7 @@ test("public readiness audit blocks a dirty working tree", async () => {
         (finding) => finding.signature === "working-tree-not-clean",
       ),
     );
+    assert.equal(report.publicRefPolicy.status, "PUBLIC_REF_POLICY_PASS");
   });
 });
 
@@ -194,6 +213,7 @@ test("public readiness audit records a tracked symlink without following it", as
     );
     git(root, "commit", "-m", "add symlink fixture");
     git(root, "checkout", "--", "external-link");
+    syncCandidateRef(root);
 
     const report = await auditPublicReadiness({
       root,
@@ -206,6 +226,7 @@ test("public readiness audit records a tracked symlink without following it", as
           finding.path === "external-link",
       ),
     );
+    assert.equal(report.publicRefPolicy.status, "PUBLIC_REF_POLICY_PASS");
   });
 });
 
@@ -216,6 +237,7 @@ test("public readiness report redacts a token-like filename everywhere", async (
     await writeFile(resolve(root, filename), "safe fixture body\n", "utf8");
     git(root, "add", filename);
     git(root, "commit", "-m", "add token-like filename fixture");
+    syncCandidateRef(root);
 
     const report = await auditPublicReadiness({
       root,
@@ -229,5 +251,6 @@ test("public readiness report redacts a token-like filename everywhere", async (
       ),
     );
     assert.equal(JSON.stringify(report).includes(fakeToken), false);
+    assert.equal(report.publicRefPolicy.status, "PUBLIC_REF_POLICY_PASS");
   });
 });
