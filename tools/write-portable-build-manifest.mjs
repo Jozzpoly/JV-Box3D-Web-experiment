@@ -22,7 +22,7 @@ function git(...args) {
 }
 
 const sourceCommit = git("rev-parse", "HEAD");
-const sourceBranch = git("branch", "--show-current");
+const sourceBranch = git("branch", "--show-current") || "DETACHED";
 const sourceCommitDate = git("show", "-s", "--format=%cI", "HEAD");
 const files = await buildPortableFileRecords(dist, {
   exclude: [PORTABLE_MANIFEST_NAME],
@@ -48,7 +48,10 @@ const manifest = {
     nativeParity: "NOT_PROVEN",
   },
   publication: {
-    pagesReady: true,
+    mode: "DORMANT",
+    pathPortableCandidate: true,
+    publicReady: false,
+    pagesPublicationApproved: false,
     publishedByBuild: false,
   },
   files,
