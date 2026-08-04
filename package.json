@@ -11,9 +11,12 @@
     "typecheck": "tsc --noEmit",
     "test": "node tools/run-tests.mjs",
     "check:docs": "node tools/check-doc-links.mjs",
+    "check:portable": "node tools/validate-portable-build.mjs",
+    "audit:public": "node tools/audit-public-readiness.mjs",
     "check": "npm run typecheck && npm run test",
     "build:bundle": "vite build",
-    "build": "npm run check && npm run build:bundle",
+    "build:portable": "npm run build:bundle && node tools/write-portable-build-manifest.mjs && npm run check:portable",
+    "build": "npm run check && npm run build:portable",
     "preview": "vite preview"
   },
   "dependencies": {
