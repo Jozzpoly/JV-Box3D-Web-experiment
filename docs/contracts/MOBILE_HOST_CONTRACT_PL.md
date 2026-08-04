@@ -11,128 +11,154 @@ Telefon jest:
 - kolejnym hostem urządzeń wejściowych;
 - profilem renderu;
 - powierzchnią manualnego owner testu;
-- konsumentem tego samego native JV Core + Box3D WASM.
+- konsumentem tego samego runtime backendu co desktop.
 
 Telefon nie jest:
 
 - osobną wersją fizyki;
-- powodem do zmiany koła, substeps lub contact tuning;
+- powodem do zmiany substeps/contact tuning;
 - miejscem ukrytych assistów;
-- pretekstem do połączenia inputu, UI, renderera i controllerów w jeden workaround.
+- pretekstem do połączenia inputu, UI, renderera i controllerów w workaround.
+
+Podczas budowy Toru A może używać zamrożonego `legacy_ts_m6`, ale produktowym authority pozostaje przyszły native JV Core + Box3D WASM.
 
 ## 2. Jeden physics profile
 
 Desktop i mobile używają tego samego jawnego physics receipt:
 
 ```text
-native core and engine identity
+runtime/core/engine identity
 fixedDt
 substeps
 contact tuning
-CCD/continuous policy
+CCD policy
 vehicle config hash
 wheel backend id
 mass/inertia
 assist flags
 ```
 
-Automatycznie dozwolone różnice urządzeniowe należą wyłącznie do `RenderProfile` i hosta inputu.
+Automatyczne różnice urządzeniowe należą wyłącznie do render profile i hosta inputu.
 
-Zmiana physics profile wymaga:
-
-- osobnej nazwy;
-- jawnej delty;
-- nowych native/WASM receipts;
-- owner testu;
-- zakazu przedstawiania jej jako ten sam fixture.
-
-Szczególnie niedozwolone:
+Niedozwolone:
 
 ```text
-detected mobile device
+detected mobile
 → lower substeps
 → same physics identity
 ```
 
-Substeps wpływają na zbieżność, efektywny contact response i wyniki Wheel Scope, nie tylko CPU.
+Zmiana physics profile wymaga osobnej nazwy, jawnej delty, nowych receipts i owner testu.
 
-## 3. Stan fundamentu
+## 3. Device-independent commands
 
-Clean browser line już posiada:
-
-- timestamped fixed-step input;
-- render-FPS-independent command timeline;
-- transactional startup/disposal;
-- restart świata bez page reload;
-- brak pełnej probe suite przy ordinary startup;
-- real WASM world;
-- read-only renderer boundary;
-- keyboard lifecycle release;
-- mały płaski fixture zamiast pełnego campus/scan.
-
-Te problemy starego PR #1 są historyczne, nie aktywnymi blockerami architektury.
-
-Nadal brak:
-
-- touch control surface;
-- multi-pointer ownership;
-- mobile render profiles;
-- safe-area layout;
-- real-device performance receipt;
-- context-loss recovery test;
-- deployment measurement dla przyszłego custom WASM;
-- owner mobile drive verdict.
-
-## 4. Device-independent input
-
-Touch buttons emitują ten sam semantyczny typ co klawiatura:
+Mobile emituje te same komendy semantyczne co desktop:
 
 ```text
 SteeringCommand RELEASE | POSITION | RATE
 LongitudinalCommand throttle / brake
 ```
 
-Pierwszy mobile steering używa RATE dla lewo/prawo. Analog touch POSITION może zostać dodany później jako osobny adapter.
-
-Kontrakt sterowania:
+Pierwszy eksperyment sterowania mobilnego:
 
 ```text
-docs/contracts/STEERING_COMMAND_CONTRACT_PL.md
+relative RATE steering pad
+pointer end/cancel -> RELEASE
 ```
 
-Adapter nie zna yaw, slip, wheel forces ani prędkości pojazdu jako ukrytej czułości.
+Analogowe POSITION i gyroscope mogą powstać później jako nazwane, porównywane adaptery. Nie zastępują RATE po cichu.
+
+Adapter nie czyta yaw, slip, wheel forces ani prędkości pojazdu jako ukrytej czułości.
+
+Reverse/brake UX pozostaje decyzją eksperymentalną. Rozważane warianty muszą być nazwane, np.:
+
+```text
+separate reverse control
+brake-then-reverse
+vertical throttle/brake axis
+```
+
+Nie wolno ukryć automatycznej zmiany kierunku bez czytelnego stanu UI i owner testu.
+
+## 4. Jeden model zdarzeń i jeden zegar
+
+Implementacja używa Pointer Events, nie równoległych ścieżek Touch Events i Mouse Events.
+
+Obowiązkowe:
+
+- `pointerdown/move/up/cancel`;
+- `gotpointercapture/lostpointercapture`;
+- `pointerId` jako klucz ownership;
+- `pointerType` wyłącznie jako informacja/profile UX, nie physics switch;
+- `touch-action` jawnie ustawione per surface;
+- brak globalnego blokowania scroll/zoom poza aktywną powierzchnią gry.
+
+Timestamp komendy pochodzi z tego samego monotonicznego `now()` hosta co adapter klawiatury. Surowe `event.timeStamp` nie jest authority, dopóki osobny test nie udowodni zgodności time origin między wspieranymi przeglądarkami.
+
+`getCoalescedEvents()` może zostać dodane po baseline. Nie wolno użyć go tylko na jednym urządzeniu bez trace equivalence.
 
 ## 5. Pointer ownership
 
-Każdy `pointerId` ma jednego właściciela od `pointerdown` do `up/cancel/lostcapture`.
+Każdy `pointerId` ma dokładnie jednego właściciela od `pointerdown` do `up/cancel/lostcapture/dispose`.
 
 ```text
 PointerRouter
   pointerId -> owner
 
 owners
-  STEER_LEFT
-  STEER_RIGHT
+  STEERING_PAD
   THROTTLE
-  REVERSE
-  BRAKE
-  CAMERA
-  UI
+  BRAKE_REVERSE
+  CAMERA_GESTURE
+  UI_ACTION
 ```
 
-Kamera nie może przejąć pointera rozpoczętego na control surface.
+Reguły:
+
+1. Ownership przydziela wyłącznie `pointerdown`.
+2. Pointer nie może przejść z control surface do kamery w połowie gestu.
+3. Wyjście poza element nie zmienia właściciela.
+4. Pointer capture jest best-effort transportem; router pozostaje authority także po błędzie capture.
+5. Drugi pointer na single-pointer control jest jawnie odrzucany albo staje się no-op; nie sumuje komendy przypadkowo.
+6. Kamera może posiadać grupę jednego lub dwóch pointerów, ale każdy pointer nadal ma osobny wpis ownership.
+7. Gest kamery nie może przejąć pointera rozpoczętego na steering/throttle/brake.
+8. Element usunięty z DOM lub rebuild hosta wymusza release wszystkich jego ownerships.
 
 Obowiązkowy scenariusz:
 
 ```text
-hold throttle with finger A
-perform steering taps with finger B
-camera owns neither pointer
+finger A holds throttle
+finger B steers
+finger C moves camera
+all three retain independent ownership
 ```
 
-## 6. Lifecycle bezpieczeństwa wejścia
+## 6. Semantyka relative RATE pad
 
-Wszystkie aktywne komendy kończą:
+Pierwszy pad nie jest joystickiem automatycznie wracającym do `POSITION(0)`.
+
+Minimalny kontrakt:
+
+```text
+pointerdown -> hands-on steering session
+horizontal relative displacement/velocity -> signed RATE input
+clamp -> [-1, +1]
+pointerup/cancel/lostcapture -> RELEASE in same timestamped timeline
+```
+
+Do eksperymentu należą jawne parametry:
+
+- deadzone w pikselach albo znormalizowanej szerokości;
+- mapping displacement/velocity -> signed RATE fraction;
+- recenter reference point tylko dla geometrii gestu, nie dla rack targetu;
+- visual hands-on indicator;
+- opcjonalny haptic tick po owner approval.
+
+Pad nie zna rack position jako ukrytego powodu do centrowania. Fizyczny rack może pozostać skręcony po RELEASE.
+
+## 7. Lifecycle bezpieczeństwa wejścia
+
+Wszystkie aktywne ownerships i komendy kończą:
 
 - `pointerup`;
 - `pointercancel`;
@@ -140,118 +166,138 @@ Wszystkie aktywne komendy kończą:
 - `blur`;
 - `visibilitychange` do hidden;
 - `pagehide`;
+- orientation/layout rebuild;
 - disposal control surface;
-- runtime rebuild.
+- runtime rebuild;
+- fatal renderer/runtime error.
 
-Nie może pozostać gaz lub skręt po przełączeniu aplikacji, overlayu systemowym, zmianie orientacji ani utracie capture.
+Release timestamp jest clampowany co najmniej do zużytego kursora timeline, tak jak naprawione adaptery desktopowe.
 
-Control surface ma jawne `touch-action`, aby przeglądarka nie interpretowała prowadzenia jako scroll/zoom.
+Nie może pozostać gaz lub hands-on po przełączeniu aplikacji, overlayu systemowym, rozmowie telefonicznej, zmianie orientacji ani utracie capture.
 
-## 7. Render profile
+## 8. Browser gesture policy
 
-Physics i render pozostają osobnymi kontraktami.
+- steering/throttle/brake surfaces: `touch-action: none`;
+- camera viewport: jawna polityka, np. `touch-action: none` podczas gry;
+- menu/scrollable overlays: zachowują normalny scroll;
+- `preventDefault()` tylko tam, gdzie listener i kontrakt naprawdę tego wymagają;
+- brak podwójnego tap-to-zoom na aktywnych controls;
+- pinch camera nie może powodować page zoom;
+- viewport meta i CSS nie są używane do wyłączania dostępności poza trybem gry.
 
-Przykładowe profile:
+## 9. Render profile
+
+Physics i rendering pozostają osobnymi kontraktami.
+
+Profile kandydackie:
 
 ```text
 DESKTOP_DIAGNOSTIC
-MOBILE_LOW_VISUAL
+MOBILE_LOW
+MOBILE_MEDIUM
+MOBILE_HIGH
+AUTO
 ```
 
-`MOBILE_LOW_VISUAL` może zmieniać:
+Render profile może zmieniać:
 
 - DPR cap;
 - antialias;
-- shadows i shadow-map size;
-- fog;
+- shadows;
 - debug geometry;
-- scan visual;
+- scan visual LOD;
 - texture quality;
 - HUD cadence;
-- liczbę wizualnych detali.
+- postprocessing.
 
 Nie zmienia:
 
 - fixedDt/substeps;
 - contact tuning;
 - wheel backend;
-- mass data;
-- vehicle geometry/tuning;
-- steering semantics.
+- mass/geometry;
+- input command semantics;
+- physics clock.
 
-Pierwszy kandydat mobilny:
+AUTO zmienia tylko rendering na podstawie pomiaru. Nie może zmienić physics profile ani backendu.
+
+Pierwszy baseline mobilny:
 
 ```text
-DPR 1.0–1.25 po pomiarze
+small synthetic scene
+primitive vehicle observer
 shadows OFF
-fog optional OFF
-debug rig OFF
 scan OFF
-small flat fixture
-compact HUD
+compact Demo HUD
+Lab telemetry collapsed
 ```
 
-## 8. UI i safe areas
+DPR cap i pozostałe liczby zostaną przypięte dopiero po real-device baseline.
 
-Pierwszy layout:
+## 10. Layout, safe areas i tryby
 
-- mały status chip;
-- diagnostyka rozwijana, nie stale zasłaniająca ekran;
-- control surfaces w dolnych bezpiecznych strefach;
+Pierwsza wspierana orientacja: landscape-first.
+
+Wymagane:
+
 - `env(safe-area-inset-*)`;
-- landscape i portrait bez wymuszonego locka;
-- fizycznie używalne rozmiary przycisków;
-- brak tekstu debug nad control surface.
+- controls niezakryte przez notch/system bars;
+- minimalny rozmiar touch targets zapisany po teście urządzeń;
+- Demo Mode bez debug clutter;
+- Lab Mode rozwijany i niekolidujący z controls;
+- reset dostępny, ale odporny na przypadkowy tap;
+- orientation change daje kontrolowany layout rebuild i release inputu;
+- portrait pokazuje czytelny fallback/instrukcję, dopóki nie otrzyma własnego owner-approved layoutu.
 
-PWA, offline cache i pełne menu nie są blockerem pierwszego testu.
+PWA, offline cache i fullscreen nie są warunkiem pierwszego mobile gate. Fullscreen jest opcjonalny i musi mieć wyjście.
 
-## 9. Bundle i WASM deployment
+## 11. Bundle/WASM deployment
 
-Published `box3d.js/inline` jest reference backendem. Docelowy native JV Core + Box3D WASM wymaga ponownego pomiaru:
+Current `box3d.js/inline` jest reference backendem. Docelowy native JV Core + Box3D WASM wymaga pomiaru:
 
 ```text
-JS bytes and parse time
-WASM bytes
-fetch/decode/compile/instantiate time
+JS bytes/parse
+WASM fetch/decode/compile/instantiate
 cache behavior
 first useful frame
-hosting MIME/path requirements
+MIME/path requirements
+memory growth
+context loss/rebuild
 source-map publication policy
 ```
 
-Inline vs external WASM nie jest wybierane z góry. Decyzję opiera się na realnym telefonie i desktopie.
+Inline vs external WASM wybieramy na podstawie realnego telefonu i desktopu, nie z góry.
 
-## 10. Świat i assety
+## 12. Świat i assety
 
-Pierwszy mobile gate używa małego, nazwanego fixture:
+Pierwszy mobile gate używa nazwanej synthetic scene:
 
-- płaski teren lub minimalny test course;
-- bez pełnego campus;
-- bez scan;
+- mały teren testowy;
+- bez pełnego campus/scan;
 - bez nieużywanych asset preflightów;
-- primitive vehicle observer jako pierwszy poziom;
-- art assets ładowane dopiero po basic boot.
+- primitive observer;
+- art assets dopiero po basic boot.
 
-Mniejszy świat i render nie oznaczają uproszczonej fizyki auta.
+Mniejszy świat/render nie oznacza uproszczonej fizyki auta.
 
-Scan wymaga osobnego memory/preflight receipt obejmującego:
+Skan używa osobnego scene package contract i memory/preflight receipt obejmującego:
 
-- peak copies i heap;
+- peak copies/heap;
 - vertex/index limits;
-- finite/index/degenerate validation;
-- collider/visual transactional ownership;
+- finite/index/degenerate checks;
+- render/collision transactional ownership;
 - disposal;
-- binding options;
-- context-loss behavior.
+- context-loss behavior;
+- public asset rights.
 
-## 11. Performance telemetry
+## 13. Performance telemetry
 
 Minimalny receipt sesji:
 
 ```text
 runtime/core/engine build id
 device/browser string (informational)
-viewport and effective DPR
+viewport/safe areas/effective DPR
 render profile id
 physics profile hash
 WASM init ms
@@ -261,65 +307,90 @@ first useful frame ms
 physics p50/p95/max
 render p50/p95/max
 catch-up/drop count
-input-event -> fixed-step latency
+input event -> fixed-step latency
 body/joint/contact counters
 WebGL context-loss events
-heap when available
+heap/WASM memory when available
+orientation/background transitions
 ```
 
 Samo FPS nie jest wynikiem. 60 FPS z dropped physics time nie jest równoważne 30 FPS z poprawnym fixed-step.
 
-## 12. Gates
+## 14. Gates
 
 ### M0 — compatibility
 
 - page loads;
-- WebGL context or explicit fallback;
+- WebGL albo czytelny fallback;
 - WASM instantiates;
-- ABI/runtime identity accepted;
-- rejected config creates no physics resources.
+- runtime identity accepted;
+- rejected config tworzy zero physics resources.
 
-### M1 — minimal boot
+### M1 — minimal boot/layout
 
-- one small fixture;
+- synthetic scene;
 - first useful frame;
-- resize/orientation;
-- full failure cleanup;
+- landscape/portrait fallback;
+- safe areas;
+- failure cleanup;
 - no heavy diagnostics at startup.
 
-### M2 — touch drive
+### M2 — pointer ownership
 
-- throttle/reverse/brake;
-- simultaneous throttle + RATE steering;
-- pointer ownership;
-- cancel/visibility release;
-- camera isolation.
+- steering pad;
+- throttle;
+- brake/reverse candidate;
+- simultaneous three-pointer scenario;
+- cancel/lostcapture/visibility release;
+- camera isolation;
+- deterministic timestamped command trace.
 
-### M3 — parity subset
+### M3 — owner drive
 
-- identical timestamped semantic input;
-- identical physics profile;
-- native desktop and WASM trace comparison;
-- no device-dependent forces.
+- Jozz prowadzi na realnym telefonie;
+- ocenia precyzję, zmęczenie, czytelność i przypadkowe aktywacje;
+- wynik przypięty do dokładnego commita/layoutu/urządzenia.
 
-### M4 — visuals
+### M4 — performance
 
-- lazy body/wheel assets;
-- stable part-role binding;
-- render budget;
-- explicit visual fallback.
+- cold/warm load;
+- 1/5/15 minute session;
+- background/resume;
+- thermal degradation;
+- named render profile receipt;
+- brak physics identity drift.
 
-### M5 — campus/scan
+### M5 — native parity subset
 
-Dopiero po osobnym memory, mesh i contact audit.
+- ten sam semantic input trace;
+- ten sam physics profile;
+- native desktop/WASM comparison;
+- brak device-dependent forces.
 
-## 13. Stop conditions
+### M6 — scene/scan
 
-Mobile nie jest „gotowe”, dopóki:
+Dopiero po scene contract, memory audit i collision proxy validation.
 
-- Jozz nie może realnie prowadzić wielodotykiem;
-- focus/cancel nie pozostawia komend;
-- physics identity jest taka sama jak desktop;
-- real-device receipt istnieje;
-- render profile mieści budżet bez zmiany mechaniki;
-- owner test odróżnia sterowanie, render i fizykę.
+## 15. Testy przeciwne
+
+- dwa pointery na throttle nie mogą podwoić gazu;
+- pointer rozpoczęty na padzie nie może sterować kamerą po wyjściu poza pad;
+- `pointercancel` i `lostpointercapture` nie pozostawiają komendy;
+- orientation change w trakcie trzech dotknięć kończy wszystkie ownerships;
+- background/resume nie wznawia starego gazu;
+- usunięcie DOM control surface daje release;
+- camera pinch nie zmienia steering timeline;
+- AUTO render quality nie zmienia żadnego physics receipt field;
+- surowe `event.timeStamp` nie może wejść do timeline bez testu time-origin.
+
+## 16. Stop conditions
+
+Mobile nie jest gotowe, dopóki:
+
+- router nie ma testów wielopointerowych i lifecycle;
+- stuck input pozostaje możliwy;
+- physics identity różni się od desktopu bez nowej nazwy;
+- real-device receipt nie istnieje;
+- render profile nie mieści budżetu;
+- owner odrzuca feel/ergonomię;
+- błąd jest maskowany assistem, reloadem albo wyłączeniem testu.
