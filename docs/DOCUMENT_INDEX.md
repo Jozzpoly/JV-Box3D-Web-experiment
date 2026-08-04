@@ -34,11 +34,19 @@ Nie czytaj całego `docs/` przed pracą. Archiwum służy do odpowiedzi na konkr
 
 ADR-0003 ma pierwszeństwo tam, gdzie wcześniejsze dokumenty zakładały dalsze ręczne portowanie mechaniki M6/M7 do TypeScriptu.
 
-## 4. Aktywne kontrakty badawcze
+## 4. Aktywne kontrakty subsystemów
 
-- `STEERING_INPUT_RESEARCH_2026_08_03_PL.md` — tymczasowo; zostanie skompresowany do bezdatowego kontraktu sterowania.
-- `WHEEL_ADOPTION_SEAM_2026_08_03_PL.md` — tymczasowo; trwały seam Wheel Scope/JV Core.
-- `LEGACY_M6_WHEEL_FIXTURE_AUDIT_2026_08_03_PL.md` — źródło klasyfikacji legacy backendu; aktywny kontrakt zostanie wydzielony.
+| Dokument | Rola |
+|---|---|
+| `contracts/STEERING_COMMAND_CONTRACT_PL.md` | aktualna semantyka `RELEASE | POSITION | RATE`, timestamped timeline, K2b i owner gate |
+| `WHEEL_ADOPTION_SEAM_2026_08_03_PL.md` | tymczasowy seam Wheel Scope/JV Core; oczekuje kompresji do bezdatowego kontraktu |
+| `LEGACY_M6_WHEEL_FIXTURE_AUDIT_2026_08_03_PL.md` | tymczasowe źródło klasyfikacji legacy backendu; oczekuje kompresji |
+
+Historyczne sterowanie K0–K4 i pełna macierz tapów są indeksowane w:
+
+```text
+archive/STEERING_RESEARCH_2026_08_03_INDEX.md
+```
 
 ## 5. Receipts
 
@@ -65,13 +73,11 @@ docs/receipts/inventory/
 
 Broad audits, dawne roadmapy, handoffy, kwarantanny i inventory nie są bieżącą instrukcją.
 
-Docelowe katalogi:
+Indeksy:
 
 ```text
-docs/archive/2026-08-foundation-audit/
-docs/archive/handoffs/
-docs/archive/quarantine/
-docs/archive/runbooks/
+archive/REMOVED_FROM_ACTIVE_TREE_2026_08_04.md
+archive/STEERING_RESEARCH_2026_08_03_INDEX.md
 ```
 
 Pełna klasyfikacja i kolejność migracji:
