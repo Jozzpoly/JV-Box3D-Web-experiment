@@ -120,3 +120,33 @@ test("visibility loss releases reverse and brake at the captured timestamp", () 
   });
   adapter.dispose();
 });
+
+test("dispose clamps drive release to the consumed timeline cursor", () => {
+  const windowTarget = new FakeEventTarget();
+  const documentTarget = new FakeEventTarget();
+  const timeline = new LongitudinalInputTimeline(0);
+  const adapter = new KeyboardLongitudinalAdapter({
+    windowTarget,
+    documentTarget,
+    timeline,
+    now: () => 0,
+    isDocumentHidden: () => false,
+  });
+
+  windowTarget.dispatch("keydown", { code: "KeyW" });
+  windowTarget.dispatch("keydown", { code: "Space" });
+  assert.deepEqual(timeline.consumeInterval(0, 10).command, {
+    throttle: 1,
+    brake: 1,
+  });
+
+  assert.doesNotThrow(() => adapter.dispose());
+  assert.deepEqual(timeline.consumeInterval(10, 20).command, {
+    throttle: 0,
+    brake: 0,
+  });
+  assert.equal(
+    windowTarget.listenerCount() + documentTarget.listenerCount(),
+    0,
+  );
+});
