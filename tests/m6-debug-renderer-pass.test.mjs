@@ -2,8 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { M6DebugRenderer } from "../.test-dist/render/m6-debug-renderer.js";
 
-function fakeCanvasAndGl() {
+function fakeCanvasAndGl({
+  failBufferAt = -1,
+  shaderCompileResults = [],
+} = {}) {
   let nextId = 1;
+  let bufferAllocation = 0;
+  let shaderCheck = 0;
   const events = new Map();
   const deleted = [];
   const draws = [];
@@ -32,10 +37,12 @@ function fakeCanvasAndGl() {
     shaderSource() {},
     compileShader() {},
     getShaderParameter() {
-      return true;
+      const result = shaderCompileResults[shaderCheck];
+      shaderCheck += 1;
+      return result ?? true;
     },
     getShaderInfoLog() {
-      return null;
+      return "fixture shader failure";
     },
     deleteShader(shader) {
       deleted.push(`shader:${shader.id}`);
@@ -61,6 +68,10 @@ function fakeCanvasAndGl() {
       return { name };
     },
     createBuffer() {
+      bufferAllocation += 1;
+      if (bufferAllocation === failBufferAt) {
+        return null;
+      }
       return { kind: "buffer", id: nextId++ };
     },
     bindBuffer() {},
@@ -221,4 +232,46 @@ test("a failing installed pass is isolated from the debug observer", async () =>
   } finally {
     globalThis.window = originalWindow;
   }
+});
+
+test("partial mesh allocation leaves no debug GPU resource behind", () => {
+  const fixture = fakeCanvasAndGl({ failBufferAt: 4 });
+
+  assert.throws(
+    () => new M6DebugRenderer(fixture.canvas),
+    /WebGL buffer allocation failed/,
+  );
+
+  assert.equal(
+    fixture.deleted.filter((entry) => entry.startsWith("buffer:")).length,
+    3,
+  );
+  assert.equal(
+    fixture.deleted.filter((entry) => entry.startsWith("program:")).length,
+    1,
+  );
+});
+
+test("fragment shader failure releases the already-compiled vertex shader", () => {
+  const fixture = fakeCanvasAndGl({
+    shaderCompileResults: [true, false],
+  });
+
+  assert.throws(
+    () => new M6DebugRenderer(fixture.canvas),
+    /WebGL shader compilation failed: fixture shader failure/,
+  );
+
+  assert.deepEqual(
+    fixture.deleted.filter((entry) => entry.startsWith("shader:")).sort(),
+    ["shader:1", "shader:2"],
+  );
+  assert.equal(
+    fixture.deleted.filter((entry) => entry.startsWith("program:")).length,
+    0,
+  );
+  assert.equal(
+    fixture.deleted.filter((entry) => entry.startsWith("buffer:")).length,
+    0,
+  );
 });
