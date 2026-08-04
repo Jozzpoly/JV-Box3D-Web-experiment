@@ -1,211 +1,237 @@
 # JV Box3D Web — kanoniczny stan projektu
 
 Updated: 2026-08-04
-Status: `CANONICAL ACTIVE STATE`
+Status: `CANONICAL CURRENT STATE`
+Owner: Jozz
 
-Pełny handoff:
+## 1. Produkt i cel
 
-```text
-docs/HANDOFF_2026_08_04_PL.md
-```
+JV Web ma być przeglądarkowym hostem tego samego mechanicznego systemu Jozz Vehicle, a nie niezależną grą imitującą natywne zachowanie.
 
-Nowszy checkpoint F5 znajduje się w `AI_PROJECT_MEMORY.md`, issue #12 i draft PR #13.
-
-## 1. Linie projektu
-
-| Linia | Rola | Status |
-|---|---|---|
-| `main` | minimalny root | bez implementacji |
-| `agent/bootstrap-web-poc` / PR #1 | historyczny runnable prototype | kwarantanna, nie scalać |
-| `agent/fundamental-audit-rebuild` / PR #2 | audyt i kontrakty | fundament dokumentacyjny |
-| `agent/clean-browser-core` / PR #4 | F1 host/input | zakończone maszynowo, draft |
-| `agent/typed-box3d-boundary` / PR #6 | F2 WASM/contact | zakończone maszynowo, draft |
-| `agent/native-factory-receipt` / PR #9 | F3 config receipt | zakończone maszynowo, draft |
-| `agent/current-m6-topology` / PR #11 | F4 current M6 graph | zakończone maszynowo, draft |
-| `agent/physical-rate-steering` / PR #13 | F5 K2b RATE | source + matrix obecne, niewykonane |
-
-Wszystkie warstwy są stacked i nie są zmergowane. Jozz zachowuje decyzję merge/review.
-
-## 2. Zakończone checkpointy
+Docelowy podział odpowiedzialności:
 
 ```text
-F1 484c865253603cdb3860cd517718f610e08d7e98
-F2 2c20880932b125920b3c31dee278453d7dcba163
-F4 1653e9821d884f2884db2dc53a2cfd9c7f9a9122
+native JV Core + Box3D WASM -> fizyka, blueprint compiler, telemetryka
+TypeScript host             -> input, lifecycle, render, UI, eksperymenty
 ```
 
-F3 jest reprezentowane przez PR #9; jego walidowany receipt wskazuje:
+Decyzja architektoniczna: `docs/decisions/ADR-0003-native-jv-core-wasm.md`.
+
+## 2. Bieżąca gałąź
 
 ```text
-native source: a740dec74f4243679c71a17eb59723ee0b42f8bb
-native artifact: 78b0be923c52408495c4c7625f9b10ff7ae58db7
-receipt blob: 6a5cb337a7d4707946835e83e036365130c52459
+agent/jv-web-refoundation
 ```
 
-## 3. Poziom dowodu
+Punkt startowy:
 
-### F1
+```text
+agent/f5-dynamic-steering-validation
+0d938e402f618ae34e0d959a9862d97c2f88a926
+```
+
+Refoundation jest odseparowane od wszystkich historycznych stacked PR-ów. Nic nie jest scalane ani oznaczane jako ready bez Jozza.
+
+## 3. Co realnie działa
+
+Na zwalidowanym headzie bezpośrednio poprzedzającym refoundation potwierdzono lokalnie:
 
 ```text
 Node 24.16.0
 npm 11.17.0
-19/19 tests
-npm ci / typecheck / build / browser dev host PASS
+TypeScript PASS
+75/75 tests PASS
+Vite production build PASS
+browser startup and physical drive PASS
 ```
 
-### F2
+Działający reference runtime posiada:
+
+- deterministyczny fixed-step;
+- timestamped steering input;
+- timestamped forward/reverse/brake input;
+- transactional lifecycle i restart świata;
+- prawdziwy `box3d.js` WASM;
+- receipt-derived M6 double-wishbone graph;
+- 18 vehicle bodies / 29 joints / 9 shapes;
+- fizyczny rack i tie-rody;
+- `RELEASE | POSITION | RATE`;
+- profile RATE `0.06 / 0.12 / 0.21 / 0.36 m/s`;
+- cztery kontakty koła–teren w zwalidowanych scenariuszach;
+- read-only WebGL observer;
+- fizyczne wheel-motor drive, reverse, coast i brake;
+- dynamiczną macierz rack excursion.
+
+To są wyniki mechanicznego liveness, determinism i internal consistency. Nie są pełnym native parity ani owner approval całego prowadzenia.
+
+## 4. Krytyczna rozbieżność napędu
+
+Receipt zawiera:
 
 ```text
-26/26 tests
-real Box3D contact/manifold
-B0-B5 PASS
-browser world generation 1 -> destroy/rebuild -> 2 PASS
+maxDriveSpeed = 40
+maxDriveTorque = 320
+wheelRadius = 0.514062464
 ```
 
-### F3
+Natywne JV definiuje `maxDriveSpeed` jako wheel motor rev limit w `rad/s`.
+
+Obecny TypeScript backend interpretuje tę samą wartość jako liniowy target w `m/s`, następnie oblicza:
 
 ```text
-read-only run 30855702375
-37/37 tests
-strict receipt parser and negative tests PASS
-build and Chrome PASS
-rejected receipt starts zero physics resources
+targetWheelAngularSpeed = targetLinearSpeed / wheelRadius
 ```
 
-### F4
+oraz wyznacza torque taper z prędkości chassis, podczas gdy native korzysta z rzeczywistego spin speed danego koła.
+
+Konsekwencja:
 
 ```text
-read-only run 30858244976
-46/46 tests
-build and Chrome PASS
-18 vehicle bodies / 29 joints / 9 shapes
-four wheel contacts in generation 1 and 2
-RELEASE actuator OFF
+native full-throttle target ≈ 40 rad/s
+legacy TS full-throttle target ≈ 77.8 rad/s
 ```
 
-To nie są jeszcze owner feel ani pełna parity.
+Przy częściowym gazie semantyka również się różni: native utrzymuje rev target i skaluje moment, legacy TS skaluje także prędkość docelową.
 
-### F5
+Wniosek:
 
 ```text
-source present
-completion matrix present
-current draft PR #13
-machine execution: NOT YET PERFORMED
-owner feel: NOT YET PERFORMED
+legacy_ts_m6 is deterministic and drivable
+legacy_ts_m6 native drive parity = FAIL / NOT PRODUCT AUTHORITY
 ```
 
-Nie wolno przenosić wcześniejszych PASS F4 na obecny head F5.
+Nie rozwijać dalej produktu fizycznego przez ręczne dopisywanie kolejnych mechanizmów M7 w TypeScripcie.
 
-## 4. Current M6 graph
+## 5. Dynamiczny rack excursion — aktualna interpretacja
 
-F4 odtwarza minimalny aktualny M6 double-wishbone:
-
-- chassis hull;
-- 4 wheels;
-- 4 shapeless knuckles;
-- 8 shapeless control arms;
-- shapeless rack;
-- 4 spin joints;
-- 8 arm hinges;
-- 8 ball joints;
-- 4 coilovers;
-- 2 front tie rods;
-- 2 rear fixed toe links;
-- rack prismatic joint;
-- unique negative collision group per instance;
-- temporary `legacy_m6_split_sphere_sidewall` backend;
-- one controller and full per-step trace.
-
-Default mechanics remain:
+Macierz na realnym WASM zmierzyła:
 
 ```text
-rackCenteringHertz = 0
-uprightAssist = false
+stationary held RATE peak excess: 0.000 mm
+driving held RATE peak excess:    <= 0.284 mm
+post-RELEASE peak excess:         2.541–2.817 mm
+minimum terrain contacts:         4
 ```
 
-RELEASE disables spring/servo and leaves physical load-dependent rack friction.
+To obala hipotezę, że commanded RATE target wychodzi poza natywny rack travel podczas aktywnego sterowania.
 
-## 5. Aktywne F5
+Obecny status:
 
 ```text
-issue #12
-PR #13 draft / DO NOT MERGE
-branch agent/physical-rate-steering
+command clamp: PASS
+held physical compliance: measured, small
+post-RELEASE transient/residual: measured, mechanism not yet isolated
+force-clamp fix: REJECTED WITHOUT NATIVE COMPARISON
 ```
 
-Branch zawiera K2b:
+Nie stroić ani nie clampować racka tylko po to, aby wyzerować tę liczbę. Najpierw potrzebne są mechanizm-specific trace i porównanie native/WASM.
 
-- profile 0.06 / 0.12 / 0.21 / 0.36 m/s;
-- target lead candidate 0.008 m;
-- engage/reversal rebase do live rack;
-- delta racka z command value × profile rate × fixedDt;
-- clamp do travel i lead cap;
-- spring/motor tylko hands-on;
-- immediate RELEASE;
-- trace mechanizmu;
-- browser profile selector i telemetrykę;
-- transactional rebuild po zmianie profilu.
+## 6. Backend status
 
-Każdy profil ma `productDefaultApproved: false`. `0.21 m/s` nie jest zatwierdzonym defaultem.
+### `legacy_ts_m6`
 
-Po odzyskaniu przerwanej rozmowy:
+Obecny kod w `src/vehicle/m6/`.
 
-- potwierdzono, że czyste F3 i F4 były już ukończone;
-- usunięto niedokończone wymagane pole trace bez producenta;
-- dodano `tests/f5-rate-steering.test.mjs`;
-- utworzono draft PR #13;
-- nie uruchomiono żadnego workflowa i niczego nie zmergowano.
+Rola:
 
-## 6. Macierz F5 jest zapisana, ale niezwalidowana
+- reference implementation;
+- browser integration fixture;
+- input/lifecycle/render development;
+- A/B baseline;
+- known-failure reproduction.
 
-Nowy test source obejmuje:
+Nie jest:
 
-- tapy 0.5/1/2/3/6 kroków;
-- wszystkie cztery rate profiles;
-- monotoniczność;
-- left/right symmetry;
-- exact sub-frame signed-time input;
-- release/reversal rebase;
-- frozen/blocked-rack lead cap;
-- rack travel clamp;
-- 15/30/60/120 FPS equivalence;
-- irregular cadence i dropped gap;
-- profile switch i destroy/rebuild lifecycle.
+- źródłem prawdy mechaniki produktu;
+- pełnym M7;
+- miejscem przyszłej opony;
+- dowodem native parity.
 
-To jest `SOURCE_FACT`, nie `MEASURED_FACT`. Brakuje rzeczywistego wykonania zależności, typechecku, WASM tests, buildu i browser smoke.
+### `native_jv_wasm`
 
-## 7. Kwarantanna F3
-
-Nieudany eksperyment zachowany jest na:
+Status:
 
 ```text
-agent/f3-regression-snapshot-2026-08-03@d583d3f
-PR #8 CLOSED / QUARANTINED
+architecture accepted
+implementation not started
 ```
 
-Nie wznawiać samomodyfikującego workflowa ani automatycznej pętli cross-repo.
+Najmniejszy milestone:
 
-## 8. Nadrzędne reguły
+```text
+same JV Core + same Box3D source
+→ native executable
+→ one WASM module
+→ create/input/step/snapshot
+→ one settle+drive scenario
+→ quantized native/WASM comparison
+```
 
-- brak return-to-zero i centre hold;
-- wheels may remain turned at standstill;
-- brak speed/yaw/slip stabilizatora;
-- brak ukrytych assistów;
-- brak hardcoded vehicle defaults zamiast receipt;
-- brak nowego tire backendu bez Wheel Scope evidence;
-- brak owner/parity claim z samego CI;
+## 7. Koło
+
+Aktywny reference backend:
+
+```text
+legacy_m6_split_sphere_sidewall
+```
+
+Rola:
+
+```text
+regression baseline / fallback / negative-result reference
+```
+
+Nie jest przyszłą architekturą opony.
+
+Nowy backend ma wejść przez natywny, wymienny seam Wheel Scope/JV Core. Deformacja, ciśnienie, tread, shoulders, sidewalls, bead i rim muszą należeć do jednego współdzielonego systemu stanu, nawet jeśli są modelowane warstwowo.
+
+## 8. Dokumentacja
+
+Problem zastany:
+
+- około 11,5 tys. linii dokumentacji;
+- wiele broad audits z 2026-08-03;
+- kilka równoległych opisów aktualnego stanu;
+- README nadal opisywał F1 jako aktywny etap;
+- PROJECT_STATE twierdził, że F5 nie wykonano;
+- handoff i memory dublowały branche, wyniki i zakazy.
+
+Aktywny program:
+
+- `docs/REFOUNDATION_LOOP_PL.md`;
+- `docs/DOCUMENT_CLEANUP_MANIFEST_2026_08_04_PL.md`.
+
+Docelowy read-first chain ma najwyżej pięć pozycji. Broad audits, handoffy i kwarantanny trafiają do indeksowanego archiwum.
+
+## 9. Workflow i bezpieczeństwo
+
 - brak merge bez Jozza;
-- `Git Diff Patcher Bridge` zabroniony.
+- brak ready-for-review bez Jozza;
+- brak Actions w refoundation;
+- brak samomodyfikujących workflowów;
+- brak cross-repo commit loop;
+- brak Git Diff Patcher Bridge;
+- historyczne PR-y i branche pozostają nietknięte;
+- każda destrukcyjna redukcja dokumentacji musi być odwracalna z historii Gita i poprzedzona ekstrakcją wiedzy.
 
-## 9. Najbliższy ruch
+## 10. Najbliższa sekwencja
 
 ```text
-final source/test review
-→ exactly one read-only npm ci/check/build/browser-smoke gate
-→ fix only behavior actually falsified by that gate
-→ Jozz owner test of all four profiles
-→ behavior card and owner verdict
+C1  skompresować aktywny front dokumentacji
+C2  zarchiwizować broad audits i handoffy
+C3  usunąć sprzeczne aktywne linki i stare workflowy jednorazowe
+C4  nazwać backend legacy_ts_m6 w kodzie i telemetryce
+C5  dodać unit/semantic contract dla drive fields
+C6  zaprojektować versioned native ABI z jednostkami
+C7  zbudować minimalny native JV Core + Box3D WASM spike
+C8  uruchomić native/WASM parity scenarios
+C9  podmienić backend dopiero po dowodzie
 ```
 
-Nie zmieniać workflowów dla debugowania. Nie uruchamiać wielu runów. Nie zaczynać F6/mobile przed F5 machine gate i owner verdict.
+## 11. Obecne otwarte pytania
+
+1. Jaki najmniejszy zestaw plików natywnego JV można wydzielić z `samples/` bez hosta Sokol/ImGui?
+2. Czy bit-identical trajectory hash jest osiągalny native/WASM, czy potrzebna będzie tolerowana kwantyzowana equivalence?
+3. Jak versionować ABI i snapshot bez uzależniania przeglądarki od `b3BodyId`?
+4. Jak połączyć RATE mapper z natywnym rackiem bez tworzenia trzeciej implementacji dla mobile?
+5. Które elementy najnowszego Wheel Scope istnieją tylko lokalnie i wymagają osobnego, przypiętego source receipt?
