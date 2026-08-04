@@ -46,33 +46,55 @@ function createShader(gl: WebGLRenderingContext, type: number, source: string): 
 
 function createProgram(gl: WebGLRenderingContext): WebGLProgram {
   const vertex = createShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER_SOURCE);
-  const fragment = createShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER_SOURCE);
-  const program = gl.createProgram();
-  if (program === null) throw new Error("WebGL program allocation failed.");
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  gl.linkProgram(program);
-  gl.deleteShader(vertex);
-  gl.deleteShader(fragment);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    const message = gl.getProgramInfoLog(program) ?? "unknown link error";
-    gl.deleteProgram(program);
-    throw new Error(`WebGL program link failed: ${message}`);
+  let fragment: WebGLShader | null = null;
+  let program: WebGLProgram | null = null;
+  try {
+    fragment = createShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER_SOURCE);
+    program = gl.createProgram();
+    if (program === null) throw new Error("WebGL program allocation failed.");
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      const message = gl.getProgramInfoLog(program) ?? "unknown link error";
+      throw new Error(`WebGL program link failed: ${message}`);
+    }
+    return program;
+  } catch (error: unknown) {
+    if (program !== null) gl.deleteProgram(program);
+    throw error;
+  } finally {
+    gl.deleteShader(vertex);
+    if (fragment !== null) gl.deleteShader(fragment);
   }
-  return program;
 }
 
 function createMesh(gl: WebGLRenderingContext, vertices: readonly number[], indices: readonly number[]): Mesh {
   const vertexBuffer = gl.createBuffer();
-  const indexBuffer = gl.createBuffer();
-  if (vertexBuffer === null || indexBuffer === null) {
+  if (vertexBuffer === null) {
     throw new Error("WebGL buffer allocation failed.");
   }
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-  return { vertexBuffer, indexBuffer, indexCount: indices.length };
+  let indexBuffer: WebGLBuffer | null = null;
+  try {
+    indexBuffer = gl.createBuffer();
+    if (indexBuffer === null) {
+      throw new Error("WebGL buffer allocation failed.");
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    return { vertexBuffer, indexBuffer, indexCount: indices.length };
+  } catch (error: unknown) {
+    if (indexBuffer !== null) gl.deleteBuffer(indexBuffer);
+    gl.deleteBuffer(vertexBuffer);
+    throw error;
+  }
+}
+
+function deleteMesh(gl: WebGLRenderingContext, mesh: Mesh): void {
+  gl.deleteBuffer(mesh.vertexBuffer);
+  gl.deleteBuffer(mesh.indexBuffer);
 }
 
 function boxMesh(gl: WebGLRenderingContext): Mesh {
@@ -247,32 +269,50 @@ export class M6DebugRenderer {
       gl,
       options.onRenderPassError ?? ((error) => console.error(error)),
     );
-    this.#program = createProgram(gl);
-    const positionLocation = gl.getAttribLocation(this.#program, "aPosition");
-    const mvpLocation = gl.getUniformLocation(this.#program, "uMvp");
-    const colorLocation = gl.getUniformLocation(this.#program, "uColor");
-    if (positionLocation < 0 || mvpLocation === null || colorLocation === null) {
+
+    const program = createProgram(gl);
+    let box: Mesh | null = null;
+    let cylinder: Mesh | null = null;
+    let line: Mesh | null = null;
+    try {
+      const positionLocation = gl.getAttribLocation(program, "aPosition");
+      const mvpLocation = gl.getUniformLocation(program, "uMvp");
+      const colorLocation = gl.getUniformLocation(program, "uColor");
+      if (positionLocation < 0 || mvpLocation === null || colorLocation === null) {
+        throw new Error("WebGL renderer uniforms or attributes are unavailable.");
+      }
+
+      box = boxMesh(gl);
+      cylinder = cylinderMesh(gl);
+      line = lineMesh(gl);
+
+      this.#program = program;
+      this.#positionLocation = positionLocation;
+      this.#mvpLocation = mvpLocation;
+      this.#colorLocation = colorLocation;
+      this.#box = box;
+      this.#cylinder = cylinder;
+      this.#line = line;
+      gl.enable(gl.DEPTH_TEST);
+      this.#installCameraControls();
+      this.#canvas.addEventListener(
+        "webglcontextlost",
+        (event) => {
+          event.preventDefault();
+          this.#contextLost = true;
+          this.#renderPasses.dispose();
+        },
+        { signal: this.#events.signal },
+      );
+    } catch (error: unknown) {
+      this.#events.abort();
+      if (line !== null) deleteMesh(gl, line);
+      if (cylinder !== null) deleteMesh(gl, cylinder);
+      if (box !== null) deleteMesh(gl, box);
+      gl.deleteProgram(program);
       this.#renderPasses.dispose();
-      gl.deleteProgram(this.#program);
-      throw new Error("WebGL renderer uniforms or attributes are unavailable.");
+      throw error;
     }
-    this.#positionLocation = positionLocation;
-    this.#mvpLocation = mvpLocation;
-    this.#colorLocation = colorLocation;
-    this.#box = boxMesh(gl);
-    this.#cylinder = cylinderMesh(gl);
-    this.#line = lineMesh(gl);
-    gl.enable(gl.DEPTH_TEST);
-    this.#installCameraControls();
-    this.#canvas.addEventListener(
-      "webglcontextlost",
-      (event) => {
-        event.preventDefault();
-        this.#contextLost = true;
-        this.#renderPasses.dispose();
-      },
-      { signal: this.#events.signal },
-    );
   }
 
   installRenderPass(
@@ -386,9 +426,9 @@ export class M6DebugRenderer {
     }
     this.#pointer = null;
     const gl = this.#gl;
-    gl.deleteBuffer(this.#box.vertexBuffer); gl.deleteBuffer(this.#box.indexBuffer);
-    gl.deleteBuffer(this.#cylinder.vertexBuffer); gl.deleteBuffer(this.#cylinder.indexBuffer);
-    gl.deleteBuffer(this.#line.vertexBuffer); gl.deleteBuffer(this.#line.indexBuffer);
+    deleteMesh(gl, this.#box);
+    deleteMesh(gl, this.#cylinder);
+    deleteMesh(gl, this.#line);
     gl.deleteProgram(this.#program);
   }
 
