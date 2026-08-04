@@ -4,6 +4,8 @@ export const PINNED_NATIVE_FACTORY_ARTIFACT_COMMIT =
   "78b0be923c52408495c4c7625f9b10ff7ae58db7" as const;
 export const PINNED_NATIVE_FACTORY_ARTIFACT_BLOB =
   "6a5cb337a7d4707946835e83e036365130c52459" as const;
+export const PINNED_NATIVE_FACTORY_RECEIPT_URL =
+  "./receipts/jv_m6_factory_receipt.json" as const;
 
 export type NativeFieldType = "float" | "int" | "bool" | "vec3" | "string";
 export type EffectiveFieldOwner =
@@ -480,7 +482,7 @@ export async function validatePinnedNativeFactoryReceiptText(text: string): Prom
 
 export async function loadPinnedNativeFactoryReceipt(
   fetcher: ReceiptFetcher = (url) => fetch(url),
-  url = "/receipts/jv_m6_factory_receipt.json",
+  url = PINNED_NATIVE_FACTORY_RECEIPT_URL,
 ): Promise<NativeFactorySnapshot> {
   const response = await fetcher(url);
   if (!response.ok) throw new Error(`Native factory receipt request failed with HTTP ${response.status}.`);
