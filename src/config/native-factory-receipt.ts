@@ -119,13 +119,7 @@ const EXPECTED_DERIVED_FIELDS = [
   "terrainCategoryBitsHex",
   "minimumTorusSegments",
 ] as const;
-const FIELD_TYPES = new Set<NativeFieldType>([
-  "float",
-  "int",
-  "bool",
-  "vec3",
-  "string",
-]);
+const FIELD_TYPES = new Set<NativeFieldType>(["float", "int", "bool", "vec3", "string"]);
 const FORBIDDEN_SCHEMA_FIELDS = new Set([
   "rackTravel",
   "filterGroupIndex",
@@ -170,63 +164,35 @@ function integer(value: unknown, label: string): number {
   return result;
 }
 
-function literal<T extends string | number | boolean>(
-  value: unknown,
-  expected: T,
-  label: string,
-): T {
+function literal<T extends string | number | boolean>(value: unknown, expected: T, label: string): T {
   if (value !== expected) reject(`${label} must equal ${String(expected)}`);
   return expected;
 }
 
-function exactKeys(
-  value: JsonRecord,
-  expected: readonly string[],
-  label: string,
-): void {
+function exactKeys(value: JsonRecord, expected: readonly string[], label: string): void {
   const actual = Object.keys(value).sort();
   const wanted = [...expected].sort();
-  if (
-    actual.length !== wanted.length ||
-    actual.some((key, index) => key !== wanted[index])
-  ) {
+  if (actual.length !== wanted.length || actual.some((key, index) => key !== wanted[index])) {
     reject(`${label} keys differ`);
   }
 }
 
-function exactStrings(
-  value: unknown,
-  expected: readonly string[],
-  label: string,
-): void {
-  const actual = list(value, label).map((entry, index) =>
-    string(entry, `${label}[${index}]`),
-  );
-  if (
-    actual.length !== expected.length ||
-    actual.some((entry, index) => entry !== expected[index])
-  ) {
+function exactStrings(value: unknown, expected: readonly string[], label: string): void {
+  const actual = list(value, label).map((entry, index) => string(entry, `${label}[${index}]`));
+  if (actual.length !== expected.length || actual.some((entry, index) => entry !== expected[index])) {
     reject(`${label} differs from the supported contract`);
   }
 }
 
 function stableJson(value: unknown): string {
-  if (
-    value === null ||
-    typeof value === "boolean" ||
-    typeof value === "string"
-  ) {
+  if (value === null || typeof value === "boolean" || typeof value === "string") {
     return JSON.stringify(value);
   }
   if (typeof value === "number") {
-    if (!Number.isFinite(value)) {
-      reject("non-finite number cannot be canonicalized");
-    }
+    if (!Number.isFinite(value)) reject("non-finite number cannot be canonicalized");
     return JSON.stringify(value);
   }
-  if (Array.isArray(value)) {
-    return `[${value.map(stableJson).join(",")}]`;
-  }
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
   if (isRecord(value)) {
     return `{${Object.keys(value)
       .sort()
@@ -236,28 +202,25 @@ function stableJson(value: unknown): string {
   reject(`unsupported canonical JSON value: ${typeof value}`);
 }
 
+async function digestHex(algorithm: "SHA-1" | "SHA-256", bytes: Uint8Array): Promise<string> {
+  return portableDigestHex(algorithm, bytes);
+}
+
 export async function gitBlobSha1(text: string): Promise<string> {
   const content = new TextEncoder().encode(text);
   const header = new TextEncoder().encode(`blob ${content.byteLength}\0`);
   const bytes = new Uint8Array(header.byteLength + content.byteLength);
   bytes.set(header);
   bytes.set(content, header.byteLength);
-  return portableDigestHex("SHA-1", bytes);
+  return digestHex("SHA-1", bytes);
 }
 
 export async function canonicalSha256(value: unknown): Promise<string> {
-  return portableDigestHex(
-    "SHA-256",
-    new TextEncoder().encode(stableJson(value)),
-  );
+  return digestHex("SHA-256", new TextEncoder().encode(stableJson(value)));
 }
 
 function leaves(value: unknown, prefix = ""): string[] {
-  if (!isRecord(value)) {
-    return prefix.length > 0
-      ? [prefix]
-      : reject("factoryConfig must be an object");
-  }
+  if (!isRecord(value)) return prefix.length > 0 ? [prefix] : reject("factoryConfig must be an object");
   return Object.keys(value).flatMap((key) => {
     const path = prefix.length > 0 ? `${prefix}.${key}` : key;
     return isRecord(value[key]) ? leaves(value[key], path) : [path];
@@ -267,58 +230,30 @@ function leaves(value: unknown, prefix = ""): string[] {
 function at(root: JsonRecord, path: string): unknown {
   let current: unknown = root;
   for (const part of path.split(".")) {
-    if (!isRecord(current) || !(part in current)) {
-      reject(`missing serialized field: ${path}`);
-    }
+    if (!isRecord(current) || !(part in current)) reject(`missing serialized field: ${path}`);
     current = current[part];
   }
   return current;
 }
 
 function parseSchema(value: unknown): readonly NativeFieldSchemaRow[] {
-  const rows = list(value, "fieldSchema").map(
-    (entry, index): NativeFieldSchemaRow => {
-      const row = object(entry, `fieldSchema[${index}]`);
-      exactKeys(
-        row,
-        ["path", "source", "type"],
-        `fieldSchema[${index}]`,
-      );
-      const path = string(row["path"], `fieldSchema[${index}].path`);
-      const source = string(
-        row["source"],
-        `fieldSchema[${index}].source`,
-      );
-      const type = string(
-        row["type"],
-        `fieldSchema[${index}].type`,
-      ) as NativeFieldType;
-      if (!FIELD_TYPES.has(type)) {
-        reject(`fieldSchema[${index}].type is unsupported`);
-      }
-      if (!source.startsWith("native-JozzFieldDesc:")) {
-        reject(`fieldSchema[${index}] is not native`);
-      }
-      if (FORBIDDEN_SCHEMA_FIELDS.has(path)) {
-        reject(`derived/runtime field leaked into schema: ${path}`);
-      }
-      return { path, source, type };
-    },
-  );
-  if (rows.length !== 76) {
-    reject(`expected 76 serialized fields, received ${rows.length}`);
-  }
-  if (new Set(rows.map((row) => row.path)).size !== rows.length) {
-    reject("schema paths are not unique");
-  }
+  const rows = list(value, "fieldSchema").map((entry, index): NativeFieldSchemaRow => {
+    const row = object(entry, `fieldSchema[${index}]`);
+    exactKeys(row, ["path", "source", "type"], `fieldSchema[${index}]`);
+    const path = string(row["path"], `fieldSchema[${index}].path`);
+    const source = string(row["source"], `fieldSchema[${index}].source`);
+    const type = string(row["type"], `fieldSchema[${index}].type`) as NativeFieldType;
+    if (!FIELD_TYPES.has(type)) reject(`fieldSchema[${index}].type is unsupported`);
+    if (!source.startsWith("native-JozzFieldDesc:")) reject(`fieldSchema[${index}] is not native`);
+    if (FORBIDDEN_SCHEMA_FIELDS.has(path)) reject(`derived/runtime field leaked into schema: ${path}`);
+    return { path, source, type };
+  });
+  if (rows.length !== 76) reject(`expected 76 serialized fields, received ${rows.length}`);
+  if (new Set(rows.map((row) => row.path)).size !== rows.length) reject("schema paths are not unique");
   return rows;
 }
 
-function validateTypedValue(
-  value: unknown,
-  type: NativeFieldType,
-  path: string,
-): void {
+function validateTypedValue(value: unknown, type: NativeFieldType, path: string): void {
   if (type === "float") return void number(value, path);
   if (type === "int") return void integer(value, path);
   if (type === "bool") {
@@ -327,25 +262,14 @@ function validateTypedValue(
   }
   if (type === "string") return void string(value, path);
   const vector = list(value, path);
-  if (vector.length !== 3) {
-    reject(`${path} must contain exactly three numbers`);
-  }
+  if (vector.length !== 3) reject(`${path} must contain exactly three numbers`);
   vector.forEach((entry, index) => number(entry, `${path}[${index}]`));
 }
 
 function owner(path: string): EffectiveFieldOwner {
   if (path === "frontRigType" || path === "rearRigType") return "topology";
-  if (path.startsWith("wheelEnvelope.") || path.startsWith("wheel")) {
-    return "legacy-wheel-backend";
-  }
-  if (
-    [
-      "rackCenteringHertz",
-      "uprightAssist",
-      "uprightHertz",
-      "uprightDampingRatio",
-    ].includes(path)
-  ) {
+  if (path.startsWith("wheelEnvelope.") || path.startsWith("wheel")) return "legacy-wheel-backend";
+  if (["rackCenteringHertz", "uprightAssist", "uprightHertz", "uprightDampingRatio"].includes(path)) {
     return "optional-assist";
   }
   if (
@@ -355,9 +279,7 @@ function owner(path: string): EffectiveFieldOwner {
     path.startsWith("frontToe") ||
     path.startsWith("rearToe") ||
     path === "ackermannGeometry"
-  ) {
-    return "steering";
-  }
+  ) return "steering";
   if (
     path.startsWith("wishbone.") ||
     path.startsWith("trailingArm.") ||
@@ -366,15 +288,8 @@ function owner(path: string): EffectiveFieldOwner {
     path.startsWith("compression") ||
     path.startsWith("arb") ||
     ["knuckleMass", "armMass", "restDrop"].includes(path)
-  ) {
-    return "suspension";
-  }
-  if (
-    path.startsWith("bodyVisual") ||
-    path.startsWith("frontSuspensionVisual")
-  ) {
-    return "visual";
-  }
+  ) return "suspension";
+  if (path.startsWith("bodyVisual") || path.startsWith("frontSuspensionVisual")) return "visual";
   if (
     path.startsWith("maxDrive") ||
     path.startsWith("drive") ||
@@ -382,123 +297,53 @@ function owner(path: string): EffectiveFieldOwner {
     path.startsWith("coast") ||
     path === "allWheelDrive" ||
     path === "aeroDragArea"
-  ) {
-    return "drive";
-  }
+  ) return "drive";
   return "chassis";
 }
 
-function close(
-  actual: number,
-  expected: number,
-  label: string,
-  tolerance = 1e-9,
-): void {
+function close(actual: number, expected: number, label: string, tolerance = 1e-9): void {
   if (Math.abs(actual - expected) > tolerance) reject(`${label} differs`);
 }
 
-export async function validateNativeFactoryReceipt(
-  value: unknown,
-): Promise<NativeFactorySnapshot> {
+export async function validateNativeFactoryReceipt(value: unknown): Promise<NativeFactorySnapshot> {
   const receipt = object(value, "receipt");
   exactKeys(receipt, TOP_LEVEL_KEYS, "receipt");
-  literal(
-    receipt["format"],
-    "jv-web-factory-receipt",
-    "receipt.format",
-  );
+  literal(receipt["format"], "jv-web-factory-receipt", "receipt.format");
   literal(receipt["schemaVersion"], 1, "receipt.schemaVersion");
-  literal(
-    receipt["serializedFieldCount"],
-    76,
-    "receipt.serializedFieldCount",
-  );
-  exactStrings(
-    receipt["derivedFields"],
-    EXPECTED_DERIVED_FIELDS,
-    "derivedFields",
-  );
-  exactStrings(
-    receipt["runtimeOnlyFields"],
-    ["filterGroupIndex"],
-    "runtimeOnlyFields",
-  );
+  literal(receipt["serializedFieldCount"], 76, "receipt.serializedFieldCount");
+  exactStrings(receipt["derivedFields"], EXPECTED_DERIVED_FIELDS, "derivedFields");
+  exactStrings(receipt["runtimeOnlyFields"], ["filterGroupIndex"], "runtimeOnlyFields");
 
   const source = object(receipt["source"], "source");
-  literal(
-    source["repository"],
-    "Jozzpoly/Box3d_FunProject",
-    "source.repository",
-  );
-  literal(
-    source["branch"],
-    "agent/web-factory-receipt",
-    "source.branch",
-  );
-  literal(
-    source["commit"],
-    PINNED_NATIVE_FACTORY_SOURCE_COMMIT,
-    "source.commit",
-  );
+  literal(source["repository"], "Jozzpoly/Box3d_FunProject", "source.repository");
+  literal(source["branch"], "agent/web-factory-receipt", "source.branch");
+  literal(source["commit"], PINNED_NATIVE_FACTORY_SOURCE_COMMIT, "source.commit");
   literal(source["dirty"], false, "source.dirty");
   const sourceFiles = list(source["files"], "source.files");
-  if (sourceFiles.length !== 10) {
-    reject("source.files must contain 10 entries");
-  }
+  if (sourceFiles.length !== 10) reject("source.files must contain 10 entries");
   sourceFiles.forEach((entry, index) => {
     const file = object(entry, `source.files[${index}]`);
-    exactKeys(
-      file,
-      ["bytes", "gitBlob", "path", "sha256"],
-      `source.files[${index}]`,
-    );
-    if (integer(file["bytes"], `source.files[${index}].bytes`) <= 0) {
-      reject("source byte count");
-    }
-    if (
-      !/^[0-9a-f]{40}$/.test(
-        string(file["gitBlob"], "source gitBlob"),
-      )
-    ) {
-      reject("source gitBlob");
-    }
-    if (
-      !/^[0-9a-f]{64}$/.test(
-        string(file["sha256"], "source sha256"),
-      )
-    ) {
-      reject("source sha256");
-    }
+    exactKeys(file, ["bytes", "gitBlob", "path", "sha256"], `source.files[${index}]`);
+    if (integer(file["bytes"], `source.files[${index}].bytes`) <= 0) reject("source byte count");
+    if (!/^[0-9a-f]{40}$/.test(string(file["gitBlob"], "source gitBlob"))) reject("source gitBlob");
+    if (!/^[0-9a-f]{64}$/.test(string(file["sha256"], "source sha256"))) reject("source sha256");
     string(file["path"], "source path");
   });
 
   const schema = parseSchema(receipt["fieldSchema"]);
   const payload = object(receipt["payload"], "payload");
   exactKeys(payload, PAYLOAD_KEYS, "payload");
-  literal(
-    payload["format"],
-    "jv-web-factory-payload",
-    "payload.format",
-  );
+  literal(payload["format"], "jv-web-factory-payload", "payload.format");
   literal(payload["schemaVersion"], 1, "payload.schemaVersion");
-  literal(
-    payload["fieldSource"],
-    "SaveJozzVehicleM6Config/JozzFieldDesc",
-    "payload.fieldSource",
-  );
+  literal(payload["fieldSource"], "SaveJozzVehicleM6Config/JozzFieldDesc", "payload.fieldSource");
   literal(payload["sanitizerChanged"], false, "payload.sanitizerChanged");
 
   const config = object(payload["factoryConfig"], "factoryConfig");
   const sanitized = object(payload["sanitizedConfig"], "sanitizedConfig");
-  if (stableJson(config) !== stableJson(sanitized)) {
-    reject("factoryConfig differs from sanitizedConfig");
-  }
+  if (stableJson(config) !== stableJson(sanitized)) reject("factoryConfig differs from sanitizedConfig");
   const schemaPaths = schema.map((row) => row.path).sort();
   const leafPaths = leaves(config).sort();
-  if (
-    schemaPaths.length !== leafPaths.length ||
-    schemaPaths.some((path, index) => path !== leafPaths[index])
-  ) {
+  if (schemaPaths.length !== leafPaths.length || schemaPaths.some((path, index) => path !== leafPaths[index])) {
     reject("factoryConfig leaves do not exactly match fieldSchema");
   }
 
@@ -510,185 +355,69 @@ export async function validateNativeFactoryReceipt(
       ...row,
       owner: fieldOwner,
       value: valueAtPath,
-      status:
-        fieldOwner === "optional-assist"
-          ? "SUPPORTED_INACTIVE"
-          : "SUPPORTED_ACTIVE",
+      status: fieldOwner === "optional-assist" ? "SUPPORTED_INACTIVE" : "SUPPORTED_ACTIVE",
     };
   });
 
   const features = object(payload["features"], "features");
-  literal(
-    features["activeFrontRigType"],
-    1,
-    "features.activeFrontRigType",
-  );
-  literal(
-    features["activeRearRigType"],
-    1,
-    "features.activeRearRigType",
-  );
-  literal(
-    features["activeWheelEnvelopeMode"],
-    3,
-    "features.activeWheelEnvelopeMode",
-  );
-  literal(
-    features["rackCenteringAssistEnabled"],
-    false,
-    "features.rackCenteringAssistEnabled",
-  );
-  literal(
-    features["uprightAssistEnabled"],
-    false,
-    "features.uprightAssistEnabled",
-  );
+  literal(features["activeFrontRigType"], 1, "features.activeFrontRigType");
+  literal(features["activeRearRigType"], 1, "features.activeRearRigType");
+  literal(features["activeWheelEnvelopeMode"], 3, "features.activeWheelEnvelopeMode");
+  literal(features["rackCenteringAssistEnabled"], false, "features.rackCenteringAssistEnabled");
+  literal(features["uprightAssistEnabled"], false, "features.uprightAssistEnabled");
   literal(at(config, "frontRigType"), 1, "factoryConfig.frontRigType");
   literal(at(config, "rearRigType"), 1, "factoryConfig.rearRigType");
-  literal(
-    at(config, "wheelEnvelope.mode"),
-    3,
-    "factoryConfig.wheelEnvelope.mode",
-  );
-  literal(
-    at(config, "rackCenteringHertz"),
-    0,
-    "factoryConfig.rackCenteringHertz",
-  );
-  literal(
-    at(config, "uprightAssist"),
-    false,
-    "factoryConfig.uprightAssist",
-  );
+  literal(at(config, "wheelEnvelope.mode"), 3, "factoryConfig.wheelEnvelope.mode");
+  literal(at(config, "rackCenteringHertz"), 0, "factoryConfig.rackCenteringHertz");
+  literal(at(config, "uprightAssist"), false, "factoryConfig.uprightAssist");
 
   const derived = object(payload["derived"], "derived");
   const rackTravel = number(derived["rackTravel"], "derived.rackTravel");
-  const steeringDeadPointDegrees = number(
-    derived["steeringDeadPointDegrees"],
-    "derived.steeringDeadPointDegrees",
-  );
-  const wheelRadius = number(
-    derived["wheelRadius"],
-    "derived.wheelRadius",
-  );
+  const steeringDeadPointDegrees = number(derived["steeringDeadPointDegrees"], "derived.steeringDeadPointDegrees");
+  const wheelRadius = number(derived["wheelRadius"], "derived.wheelRadius");
   const wheelWidth = number(derived["wheelWidth"], "derived.wheelWidth");
-  const minimumTorusSegments = integer(
-    derived["minimumTorusSegments"],
-    "derived.minimumTorusSegments",
-  );
-  literal(
-    derived["terrainCategoryBitsHex"],
-    "0x2",
-    "derived.terrainCategoryBitsHex",
-  );
-  if (
-    [
-      rackTravel,
-      steeringDeadPointDegrees,
-      wheelRadius,
-      wheelWidth,
-    ].some((entry) => entry <= 0)
-  ) {
+  const minimumTorusSegments = integer(derived["minimumTorusSegments"], "derived.minimumTorusSegments");
+  literal(derived["terrainCategoryBitsHex"], "0x2", "derived.terrainCategoryBitsHex");
+  if ([rackTravel, steeringDeadPointDegrees, wheelRadius, wheelWidth].some((entry) => entry <= 0)) {
     reject("derived dimensions must be positive");
   }
-  if (
-    number(
-      at(config, "maxSteeringAngleDegrees"),
-      "maxSteeringAngleDegrees",
-    ) >= steeringDeadPointDegrees
-  ) {
+  if (number(at(config, "maxSteeringAngleDegrees"), "maxSteeringAngleDegrees") >= steeringDeadPointDegrees) {
     reject("max steering angle reaches native dead point");
   }
 
   const runtimeOnly = object(payload["runtimeOnly"], "runtimeOnly");
-  if (
-    integer(
-      runtimeOnly["filterGroupIndex"],
-      "runtimeOnly.filterGroupIndex",
-    ) >= 0
-  ) {
+  if (integer(runtimeOnly["filterGroupIndex"], "runtimeOnly.filterGroupIndex") >= 0) {
     reject("runtime filterGroupIndex must be negative");
   }
 
   const solver = object(payload["solverProfile"], "solverProfile");
   const gravity = list(solver["gravity"], "solver.gravity");
-  if (
-    gravity.length !== 3 ||
-    gravity[0] !== 0 ||
-    gravity[1] !== -10 ||
-    gravity[2] !== 0
-  ) {
+  if (gravity.length !== 3 || gravity[0] !== 0 || gravity[1] !== -10 || gravity[2] !== 0) {
     reject("solver.gravity must equal [0, -10, 0]");
   }
   const fixedDt = number(solver["fixedDt"], "solver.fixedDt");
   close(fixedDt, 1 / 60, "solver.fixedDt", 1e-15);
   literal(solver["substeps"], 4, "solver.substeps");
   literal(solver["contactHertz"], 30, "solver.contactHertz");
-  literal(
-    solver["contactDampingRatio"],
-    10,
-    "solver.contactDampingRatio",
-  );
+  literal(solver["contactDampingRatio"], 10, "solver.contactDampingRatio");
   literal(solver["contactSpeed"], 3, "solver.contactSpeed");
-  literal(
-    solver["enableContinuous"],
-    false,
-    "solver.enableContinuous",
-  );
+  literal(solver["enableContinuous"], false, "solver.enableContinuous");
   literal(solver["workerCount"], 0, "solver.workerCount");
 
   const assets = object(payload["assetResolution"], "assetResolution");
-  literal(
-    assets["metadataLoadedFromRuntimeReport"],
-    true,
-    "assets.metadataLoadedFromRuntimeReport",
-  );
-  literal(
-    assets["wheelDimensionsFallbackUsed"],
-    false,
-    "assets.wheelDimensionsFallbackUsed",
-  );
-  literal(
-    assets["travelHintFallbackUsed"],
-    false,
-    "assets.travelHintFallbackUsed",
-  );
-  literal(
-    assets["trailingArmContractLoaded"],
-    true,
-    "assets.trailingArmContractLoaded",
-  );
-  literal(
-    assets["trailingArmFallbackUsed"],
-    false,
-    "assets.trailingArmFallbackUsed",
-  );
-  close(
-    number(assets["wheelRadius"], "assets.wheelRadius"),
-    wheelRadius,
-    "wheel radius provenance",
-  );
-  close(
-    number(assets["wheelWidth"], "assets.wheelWidth"),
-    wheelWidth,
-    "wheel width provenance",
-  );
+  literal(assets["metadataLoadedFromRuntimeReport"], true, "assets.metadataLoadedFromRuntimeReport");
+  literal(assets["wheelDimensionsFallbackUsed"], false, "assets.wheelDimensionsFallbackUsed");
+  literal(assets["travelHintFallbackUsed"], false, "assets.travelHintFallbackUsed");
+  literal(assets["trailingArmContractLoaded"], true, "assets.trailingArmContractLoaded");
+  literal(assets["trailingArmFallbackUsed"], false, "assets.trailingArmFallbackUsed");
+  close(number(assets["wheelRadius"], "assets.wheelRadius"), wheelRadius, "wheel radius provenance");
+  close(number(assets["wheelWidth"], "assets.wheelWidth"), wheelWidth, "wheel width provenance");
 
-  const payloadReceipt = object(
-    receipt["payloadReceipt"],
-    "payloadReceipt",
-  );
-  const expectedHash = string(
-    payloadReceipt["canonicalSha256"],
-    "payloadReceipt.canonicalSha256",
-  );
-  if (!/^[0-9a-f]{64}$/.test(expectedHash)) {
-    reject("canonical payload hash format");
-  }
+  const payloadReceipt = object(receipt["payloadReceipt"], "payloadReceipt");
+  const expectedHash = string(payloadReceipt["canonicalSha256"], "payloadReceipt.canonicalSha256");
+  if (!/^[0-9a-f]{64}$/.test(expectedHash)) reject("canonical payload hash format");
   const actualHash = await canonicalSha256(payload);
-  if (actualHash !== expectedHash) {
-    reject(`canonical payload SHA-256 mismatch: ${actualHash}`);
-  }
+  if (actualHash !== expectedHash) reject(`canonical payload SHA-256 mismatch: ${actualHash}`);
 
   return {
     source: {
@@ -724,18 +453,9 @@ export async function validateNativeFactoryReceipt(
       uprightAssistEnabled: false,
     },
     assetResolution: {
-      metadataSourcePath: string(
-        assets["metadataSourcePath"],
-        "assets.metadataSourcePath",
-      ),
-      metadataStatus: string(
-        assets["metadataStatus"],
-        "assets.metadataStatus",
-      ),
-      trailingArmStatus: string(
-        assets["trailingArmStatus"],
-        "assets.trailingArmStatus",
-      ),
+      metadataSourcePath: string(assets["metadataSourcePath"], "assets.metadataSourcePath"),
+      metadataStatus: string(assets["metadataStatus"], "assets.metadataStatus"),
+      trailingArmStatus: string(assets["trailingArmStatus"], "assets.trailingArmStatus"),
       fallbackUsed: false,
     },
     effectiveFields,
@@ -744,20 +464,14 @@ export async function validateNativeFactoryReceipt(
   };
 }
 
-export async function validatePinnedNativeFactoryReceiptText(
-  text: string,
-): Promise<NativeFactorySnapshot> {
+export async function validatePinnedNativeFactoryReceiptText(text: string): Promise<NativeFactorySnapshot> {
   const blobSha = await gitBlobSha1(text);
-  if (blobSha !== PINNED_NATIVE_FACTORY_ARTIFACT_BLOB) {
-    reject(`receipt Git blob mismatch: ${blobSha}`);
-  }
+  if (blobSha !== PINNED_NATIVE_FACTORY_ARTIFACT_BLOB) reject(`receipt Git blob mismatch: ${blobSha}`);
   let parsed: unknown;
   try {
     parsed = JSON.parse(text) as unknown;
   } catch (error: unknown) {
-    throw new Error("Native factory receipt rejected: invalid JSON", {
-      cause: error,
-    });
+    throw new Error("Native factory receipt rejected: invalid JSON", { cause: error });
   }
   return validateNativeFactoryReceipt(parsed);
 }
@@ -767,10 +481,6 @@ export async function loadPinnedNativeFactoryReceipt(
   url = PINNED_NATIVE_FACTORY_RECEIPT_URL,
 ): Promise<NativeFactorySnapshot> {
   const response = await fetcher(url);
-  if (!response.ok) {
-    throw new Error(
-      `Native factory receipt request failed with HTTP ${response.status}.`,
-    );
-  }
+  if (!response.ok) throw new Error(`Native factory receipt request failed with HTTP ${response.status}.`);
   return validatePinnedNativeFactoryReceiptText(await response.text());
 }
