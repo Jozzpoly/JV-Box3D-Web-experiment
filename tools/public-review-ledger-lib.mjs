@@ -16,21 +16,25 @@ const SENSITIVE_RATIONALE_PATTERNS = [
 
 function stableFindingShape(finding) {
   return {
-    kind: finding.kind ?? null,
-    signature: finding.signature ?? null,
-    scope: finding.scope ?? null,
-    path: finding.path ?? null,
-    line: finding.line ?? null,
-    objectSha: finding.objectSha ?? null,
-    bytes: finding.bytes ?? null,
-    fingerprint: finding.fingerprint ?? null,
-    reason: finding.reason ?? null,
+    kind: finding?.kind ?? null,
+    signature: finding?.signature ?? null,
+    scope: finding?.scope ?? null,
+    path: finding?.path ?? null,
+    line: finding?.line ?? null,
+    objectSha: finding?.objectSha ?? null,
+    bytes: finding?.bytes ?? null,
+    fingerprint: finding?.fingerprint ?? null,
+    reason: finding?.reason ?? null,
   };
+}
+
+function stableFindingJson(finding) {
+  return JSON.stringify(stableFindingShape(finding));
 }
 
 export function publicReviewFindingId(finding) {
   return createHash("sha256")
-    .update(JSON.stringify(stableFindingShape(finding)))
+    .update(stableFindingJson(finding))
     .digest("hex")
     .slice(0, 20);
 }
@@ -160,8 +164,14 @@ export function validatePublicReviewLedger(report, ledger) {
   let remediate = 0;
 
   for (const [findingId, entry] of actual) {
-    if (!expected.has(findingId)) {
+    const expectedFinding = expected.get(findingId);
+    if (expectedFinding === undefined) {
       continue;
+    }
+    if (stableFindingJson(entry.finding) !== stableFindingJson(expectedFinding)) {
+      errors.push(
+        `Review classification ${findingId} contains finding details that differ from the sanitized report.`,
+      );
     }
     if (!ALLOWED_DISPOSITIONS.has(entry.disposition)) {
       errors.push(
