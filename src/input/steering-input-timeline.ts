@@ -34,10 +34,10 @@ function assertFiniteTimestamp(timestampMs: number): void {
 
 export class SteeringInputTimeline {
   readonly #events: RawDeviceEvent[] = [];
+  readonly #leftSources = new Set<string>();
+  readonly #rightSources = new Set<string>();
   #nextSequence = 0;
   #cursorTimeMs: number;
-  #leftPressed = false;
-  #rightPressed = false;
 
   constructor(startTimeMs: number) {
     assertFiniteTimestamp(startTimeMs);
@@ -126,8 +126,8 @@ export class SteeringInputTimeline {
       endTimeMs,
       command,
       integratedDirectionMs,
-      leftPressedAtEnd: this.#leftPressed,
-      rightPressedAtEnd: this.#rightPressed,
+      leftPressedAtEnd: this.#leftSources.size > 0,
+      rightPressedAtEnd: this.#rightSources.size > 0,
       consumedEvents,
     };
   }
@@ -155,21 +155,23 @@ export class SteeringInputTimeline {
 
   #applyEvent(event: RawDeviceEvent): void {
     if (event.kind === "RELEASE_ALL") {
-      this.#leftPressed = false;
-      this.#rightPressed = false;
+      this.#leftSources.delete(event.sourceId);
+      this.#rightSources.delete(event.sourceId);
       return;
     }
 
-    if (event.side === "LEFT") {
-      this.#leftPressed = event.pressed;
+    const sources =
+      event.side === "LEFT" ? this.#leftSources : this.#rightSources;
+    if (event.pressed) {
+      sources.add(event.sourceId);
     } else {
-      this.#rightPressed = event.pressed;
+      sources.delete(event.sourceId);
     }
   }
 
   #currentDirection(): number {
-    const left = this.#leftPressed ? 1 : 0;
-    const right = this.#rightPressed ? 1 : 0;
+    const left = this.#leftSources.size > 0 ? 1 : 0;
+    const right = this.#rightSources.size > 0 ? 1 : 0;
     return left - right;
   }
 }
