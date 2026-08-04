@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { auditGitIdentifiers } from "./public-readiness-identifiers.mjs";
 import { auditPublicReadiness as auditRawPublicReadiness } from "./public-readiness-lib.mjs";
 
 const REDACT_PATTERNS = [
@@ -41,10 +42,52 @@ function sanitizeValue(value) {
   return value;
 }
 
+function deduplicate(findings) {
+  const seen = new Set();
+  return findings.filter((finding) => {
+    const key = JSON.stringify([
+      finding.kind,
+      finding.signature,
+      finding.scope,
+      finding.path,
+      finding.line,
+      finding.objectSha,
+      finding.fingerprint,
+      finding.reason,
+    ]);
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
 export async function auditPublicReadiness(options) {
   const rawReport = await auditRawPublicReadiness(options);
-  const safeReport = sanitizeValue(rawReport);
+  const identifierReport = auditGitIdentifiers({ root: options.root });
+  const blockers = deduplicate([
+    ...rawReport.blockers,
+    ...identifierReport.blockers,
+  ]);
+  const reviewFindings = deduplicate([
+    ...rawReport.reviewFindings,
+    ...identifierReport.reviewFindings,
+  ]);
 
+  const combinedReport = {
+    ...rawReport,
+    sourceRef: identifierReport.sourceRef,
+    status:
+      blockers.length === 0
+        ? "PUBLIC_READY_AUDIT_PASS"
+        : "PUBLIC_READY_AUDIT_FAIL",
+    blockers,
+    reviewFindings,
+  };
+  delete combinedReport.sourceBranch;
+
+  const safeReport = sanitizeValue(combinedReport);
   const serialized = JSON.stringify(safeReport);
   for (const pattern of REDACT_PATTERNS) {
     if (pattern.test(serialized)) {
