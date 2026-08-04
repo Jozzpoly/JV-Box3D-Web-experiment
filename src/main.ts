@@ -34,7 +34,7 @@ app.innerHTML = `
         <div><span>Drive</span><strong data-scene-drive>COAST</strong></div>
         <div><span>Speed</span><strong data-scene-speed>0.0 km/h</strong></div>
         <div><span>Rack</span><strong data-scene-rack>0.0000 m</strong></div>
-        <div><span>Chassis drift</span><strong data-scene-displacement>0.000 m</strong></div>
+        <div><span>Travel</span><strong data-scene-displacement>0.000 m</strong></div>
         <div><span>Step</span><strong data-scene-step>0</strong></div>
       </div>
       <div class="scene-legend" aria-hidden="true">
@@ -80,7 +80,7 @@ app.innerHTML = `
         <div><dt>Drive input</dt><dd data-drive>COAST</dd></div>
         <div><dt>Forward speed</dt><dd data-speed>0.000 m/s · 0.0 km/h</dd></div>
         <div><dt>Live rack</dt><dd data-rack>0.000000 m · 0.000000 m/s</dd></div>
-        <div><dt>Drift from initial sample</dt><dd data-displacement>0.000 m</dd></div>
+        <div><dt>Travel from initial sample</dt><dd data-displacement>0.000 m</dd></div>
         <div><dt>Contacts</dt><dd data-contacts>0</dd></div>
         <div><dt>Steering actuator</dt><dd data-actuator>OFF</dd></div>
         <div><dt>Mechanics gate</dt><dd data-validation>NOT STARTED</dd></div>
