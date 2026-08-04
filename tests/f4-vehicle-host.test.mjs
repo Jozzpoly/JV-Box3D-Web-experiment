@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { F4VehicleHost } from "../.test-dist/app/f4-vehicle-host.js";
+import {
+  M6_VISUAL_PART_IDS,
+  M6_VISUAL_SEGMENT_IDS,
+} from "../.test-dist/vehicle/m6/m6-visual-contract.js";
 
 function nativeReceiptStub() {
   return {
@@ -74,6 +78,27 @@ function box3dReceiptStub() {
   };
 }
 
+function visualFrameStub(generation, stepIndex, identity) {
+  return {
+    contractVersion: 1,
+    generation,
+    stepIndex,
+    parts: M6_VISUAL_PART_IDS.map((partId, index) => ({
+      partId,
+      transform: {
+        position: { x: index, y: 1, z: 0 },
+        rotation: identity,
+      },
+    })),
+    segments: M6_VISUAL_SEGMENT_IDS.map((segmentId, index) => ({
+      segmentId,
+      start: { x: index, y: 0, z: 0 },
+      end: { x: index, y: 1, z: 0 },
+      lengthMeters: 1,
+    })),
+  };
+}
+
 function traceStub(command = { mode: "RELEASE" }) {
   const identity = { x: 0, y: 0, z: 0, w: 1 };
   return {
@@ -118,6 +143,7 @@ function traceStub(command = { mode: "RELEASE" }) {
       wheelWidth: 0.4375,
       rackHalfWidth: 0.45,
     },
+    visualFrame: visualFrameStub(4, 1, identity),
     chassisPosition: { x: 0, y: 1.1, z: 0 },
     chassisRotation: identity,
     chassisVelocity: { x: 0, y: 0, z: 0 },
@@ -267,6 +293,8 @@ test("F4 startup validates receipt before creating Box3D world and dual-input br
   });
   assert.deepEqual(driveCommand, { throttle: 0.5, brake: 0 });
   assert.equal(vehicleTrace, trace);
+  assert.equal(vehicleTrace.visualFrame.parts.length, 18);
+  assert.equal(vehicleTrace.visualFrame.segments.length, 8);
   assert.deepEqual(order.slice(-4), [
     "steering:POSITION",
     "drive:0.5:0",
