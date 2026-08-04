@@ -75,16 +75,55 @@ function box3dReceiptStub() {
 }
 
 function traceStub(command = { mode: "RELEASE" }) {
+  const identity = { x: 0, y: 0, z: 0, w: 1 };
   return {
     generation: 4,
     stepIndex: 1,
     command,
-    steeringActuator: command.mode === "POSITION" ? "POSITION" : "OFF",
+    steeringActuator:
+      command.mode === "POSITION" ? "POSITION" : "OFF",
+    steering: {
+      profileId: "reference_0_21",
+      rackRateMetersPerSecond: 0.21,
+      maxTargetLeadMeters: 0.008,
+      handsOn: command.mode !== "RELEASE",
+      handsOnEdge: "NONE",
+      commandedRack: null,
+      liveRackTranslation: 0,
+      targetError: 0,
+      springEnabled: command.mode !== "RELEASE",
+      targetTranslation: null,
+      requestedMotorSpeed: 0,
+      motorForceCap: 0,
+      rackFrictionBase: 40,
+      rackFrictionLoadTerm: 0,
+    },
+    drive: {
+      command: { throttle: 0.5, brake: 0 },
+      mode: "THROTTLE",
+      allWheelDrive: true,
+      drivenCornerCount: 4,
+      forwardSpeedMetersPerSecond: 0,
+      targetLinearSpeedMetersPerSecond: 20,
+      targetWheelAngularSpeed: -40,
+      driveTaper: 1,
+      motorTorqueCapPerWheel: 160,
+      currentMotorTorqueTotal: 0,
+    },
     collisionGroupIndex: -1000,
     wheelBackendId: "legacy_m6_split_sphere_sidewall",
+    visualGeometry: {
+      chassisHalfExtents: { x: 1.55, y: 0.35, z: 0.55 },
+      wheelRadius: 0.514,
+      wheelWidth: 0.4375,
+      rackHalfWidth: 0.45,
+    },
     chassisPosition: { x: 0, y: 1.1, z: 0 },
+    chassisRotation: identity,
     chassisVelocity: { x: 0, y: 0, z: 0 },
     chassisAngularVelocity: { x: 0, y: 0, z: 0 },
+    rackPosition: { x: 0, y: 0.7, z: 0 },
+    rackRotation: identity,
     rackTranslation: 0,
     rackSpeed: 0,
     worldContacts: 4,
@@ -109,18 +148,27 @@ function hostOptions(onVehicleStep = () => {}) {
   };
 }
 
-test("F4 startup validates receipt before creating Box3D world and browser loop", async () => {
+const RATE_PROFILE = Object.freeze({
+  id: "reference_0_21",
+  rackRateMetersPerSecond: 0.21,
+  maxTargetLeadMeters: 0.008,
+});
+
+test("F4 startup validates receipt before creating Box3D world and dual-input browser loop", async () => {
   const order = [];
   let browserOptions = null;
   let browserDisposals = 0;
   let worldDisposals = 0;
-  let command = null;
+  let steeringCommand = null;
+  let driveCommand = null;
   let vehicleTrace = null;
   const trace = traceStub({ mode: "POSITION", value: 0.25 });
 
   const host = await F4VehicleHost.start(
-    hostOptions((step, input, receivedTrace) => {
-      order.push(`callback:${step.index}:${input.command.mode}`);
+    hostOptions((step, steering, longitudinal, receivedTrace) => {
+      order.push(
+        `callback:${step.index}:${steering.command.mode}:${longitudinal.command.throttle}`,
+      );
       vehicleTrace = receivedTrace;
     }),
     {
@@ -135,6 +183,7 @@ test("F4 startup validates receipt before creating Box3D world and browser loop"
           createM6TopologyWorld(receipt) {
             order.push(`world:${receipt.serializedFieldCount}`);
             return {
+              rateProfile: RATE_PROFILE,
               counters: {
                 bodyCount: 19,
                 shapeCount: 10,
@@ -148,8 +197,14 @@ test("F4 startup validates receipt before creating Box3D world and browser loop"
                 return {
                   lastTrace: trace,
                   setSteering(nextCommand) {
-                    command = nextCommand;
+                    steeringCommand = nextCommand;
                     order.push(`steering:${nextCommand.mode}`);
+                  },
+                  setDrive(nextCommand) {
+                    driveCommand = nextCommand;
+                    order.push(
+                      `drive:${nextCommand.throttle}:${nextCommand.brake}`,
+                    );
                   },
                 };
               },
@@ -192,20 +247,31 @@ test("F4 startup validates receipt before creating Box3D world and browser loop"
   assert.equal(host.counters.bodyCount, 19);
   assert.equal(host.nativeReceipt.serializedFieldCount, 76);
   assert.equal(host.box3dReceipt.identity.packageVersion, "0.0.2");
+  assert.equal(host.rateProfile.id, "reference_0_21");
 
   browserOptions.onStep(
     { index: 1, startTimeMs: 0, endTimeMs: 1000 / 60 },
     {
       command: { mode: "POSITION", value: 0.25 },
-      signedActiveTimeMs: 1000 / 60,
+      integratedDirectionMs: 1000 / 60,
+    },
+    {
+      command: { throttle: 0.5, brake: 0 },
+      integratedThrottleMs: (1000 / 60) * 0.5,
+      integratedBrakeMs: 0,
     },
   );
-  assert.deepEqual(command, { mode: "POSITION", value: 0.25 });
+  assert.deepEqual(steeringCommand, {
+    mode: "POSITION",
+    value: 0.25,
+  });
+  assert.deepEqual(driveCommand, { throttle: 0.5, brake: 0 });
   assert.equal(vehicleTrace, trace);
-  assert.deepEqual(order.slice(-3), [
+  assert.deepEqual(order.slice(-4), [
     "steering:POSITION",
+    "drive:0.5:0",
     "world-step:1",
-    "callback:1:POSITION",
+    "callback:1:POSITION:0.5",
   ]);
 
   host.dispose();
@@ -261,6 +327,7 @@ test("runtime fault stops browser ownership and destroys M6 world", async () => 
         receipt: box3dReceiptStub(),
         createM6TopologyWorld() {
           return {
+            rateProfile: RATE_PROFILE,
             counters: {
               bodyCount: 19,
               shapeCount: 10,
@@ -271,6 +338,7 @@ test("runtime fault stops browser ownership and destroys M6 world", async () => 
               return {
                 lastTrace: null,
                 setSteering() {},
+                setDrive() {},
               };
             },
             step() {
