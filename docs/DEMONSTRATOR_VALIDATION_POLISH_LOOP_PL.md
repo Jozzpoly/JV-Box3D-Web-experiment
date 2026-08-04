@@ -10,8 +10,8 @@ Dostarczyć poważny demonstrator JV, który:
 
 - uruchamia się jako statyczna strona;
 - działa na desktopie i telefonie;
-- posiada przemyślane sterowanie mobilne;
-- docelowo pozwala jeździć po zoptymalizowanym skanie;
+- ma przemyślane sterowanie mobilne;
+- docelowo pozwala jeździć po przygotowanym skanie;
 - może zostać udostępniony przez GitHub Pages bez własnego serwera;
 - nie udaje native parity, dopóki jej nie zmierzono;
 - nie publikuje się automatycznie.
@@ -21,60 +21,133 @@ Dostarczyć poważny demonstrator JV, który:
 1. Repo pozostaje prywatne do `PUBLIC-READY PASS` i jawnej decyzji Jozza.
 2. Pages pozostaje wyłączone do osobnego `PAGES-PUBLISH PASS`.
 3. `legacy_ts_m6` nie otrzymuje nowych produktowych mechanik fizycznych.
-4. Mobilny host może być rozwijany na backendzie referencyjnym, ale publiczny HUD pokazuje prawdziwą tożsamość builda.
+4. Mobilny host może powstawać na fixture, ale UI i manifest pokazują jego prawdziwą rolę.
 5. Skan źródłowy, pliki robocze i prywatne metadane nie trafiają automatycznie do publicznego repo.
-6. Render mesh, collision mesh i source scan są trzema odrębnymi artefaktami.
-7. Jeden zielony test nie zastępuje testu na realnym telefonie.
-8. Każda bramka ma próbę przeciwną, która ma wykazać, że potrafi odrzucić znany zły przypadek.
+6. Source scan, render mesh i collision mesh są odrębnymi artefaktami.
+7. Zielony build nie zastępuje testu desktop browser ani realnego telefonu.
+8. Każda bramka ma próbę przeciwną, która odrzuca znany zły przypadek.
+9. Polish prezentacji nigdy nie zmienia fixed-step, fizyki, sterowania semantycznego ani authority labels.
+10. Każde „nie wiem” daje `PENDING`, nie `PASS`.
 
-## 3. Mikroiteracja
+## 3. Drabina dowodów
 
-Każdy krok ma dokładnie tę postać:
+Statusów nie wolno przeskakiwać ani spłaszczać:
 
 ```text
-Obserwacja
-→ hipoteza
-→ konkurencyjne wyjaśnienie
-→ test przeciwny
-→ najmniejsza zmiana
-→ właściwy gate
-→ krytyka rezultatu
-→ receipt albo jawne PENDING
+SOURCE_PRESENT
+→ STATIC_REVIEWED
+→ NEGATIVE_TEST_PRESENT
+→ LOCAL_NODE24_PASS
+→ PORTABLE_STATIC_PASS
+→ LOOPBACK_HTTP_PASS
+→ DESKTOP_BROWSER_PASS
+→ LAN_PHONE_PASS
+→ OWNER_ACCEPTED
+→ PUBLIC_READY_PASS
+→ PAGES_HTTPS_PASS
 ```
 
-Po trzech mikroiteracjach pętla sama jest oceniana. Bramka, która nie wykrywa realnego błędu ani nie chroni ważnego inwariantu, zostaje uproszczona lub usunięta.
+Znaczenie:
 
-## 4. Macierz walidacji
+- `SOURCE_PRESENT` — plik/implementacja istnieje;
+- `STATIC_REVIEWED` — diff i kontrakty zostały przeczytane;
+- `NEGATIVE_TEST_PRESENT` — gate potrafi odrzucić kontrolowany zły przypadek;
+- `LOCAL_NODE24_PASS` — exact target toolchain wykonał testy;
+- `PORTABLE_STATIC_PASS` — manifest, ścieżki, compliance i hashe są poprawne;
+- `LOOPBACK_HTTP_PASS` — te same bajty działają pod root i project subpath;
+- `DESKTOP_BROWSER_PASS` — rzeczywisty runtime/renderer/input bez console errors;
+- `LAN_PHONE_PASS` — realny telefon, rzeczywisty touch/orientation/background;
+- `OWNER_ACCEPTED` — Jozz akceptuje feel/UX dokładnego commita;
+- `PUBLIC_READY_PASS` — źródło i historia mogą stać się publiczne;
+- `PAGES_HTTPS_PASS` — dokładna paczka działa z rzeczywistego adresu Pages.
 
-### V0 — public safety i provenance
+## 4. Mikroiteracja
+
+Każdy krok:
+
+```text
+obserwacja
+→ najmniejsza sprzeczność
+→ hipoteza
+→ konkurencyjne wyjaśnienie
+→ inwariant
+→ test przeciwny
+→ najmniejsza odwracalna zmiana
+→ proporcjonalny gate
+→ krytyka wyniku
+→ receipt albo jawne PENDING
+→ kompresja stanu
+```
+
+Po maksymalnie trzech mikroiteracjach pętla ocenia samą siebie:
+
+- czy test wykrywa realną klasę błędu;
+- czy gate nie kopiuje sekretu do własnego raportu;
+- czy nie dubluje istniejącego gate’u;
+- czy koszt jest proporcjonalny;
+- czy status mówi tylko to, co dowód naprawdę mierzy.
+
+Bramka bez wartości ochronnej jest upraszczana lub usuwana.
+
+## 5. Globalne stop conditions
+
+Praca nie przechodzi do kolejnego poziomu, gdy występuje choć jedno:
+
+```text
+root-absolute runtime URL
+manifest/payload hash drift
+backend authority/parity elevation bez receipt
+stuck steering/throttle/brake po cancel/blur/background
+current lub history secret blocker
+nieznane prawa do kodu/modelu/skanu
+brak current project LICENSE przed public visibility
+nieprzygotowany default branch
+prywatny asset w release package
+surowy scan użyty bez jawnej decyzji jako collider
+browser runtime exception
+phone crash / reload loop / unrecoverable blank screen
+physics changed by quality profile
+owner rejection dokładnego feel/UX
+```
+
+Stop condition prowadzi do najmniejszej naprawy albo świadomego ograniczenia zakresu. Nie prowadzi do obejścia gate’u.
+
+## 6. Macierz walidacji
+
+### V0 — public safety, historia i licencje
 
 Claim:
 
 ```text
 Repo może stać się publiczne bez przypadkowego ujawnienia sekretów,
-prywatnych assetów albo niejasnych praw do kodu.
+prywatnych assetów albo sprzecznych warunków licencyjnych.
 ```
 
 Wymagane:
 
-- `LICENSE`;
-- `THIRD_PARTY_NOTICES.md`;
-- current-tree secret/privacy scan;
-- reachable-history scan wszystkich branchy/refów;
-- klasyfikacja każdego review finding;
-- audit dużych i binarnych blobów;
-- publiczny README;
-- osobna decyzja o prawach do skanu i modeli.
+- current project `LICENSE` wybrany przez Jozza;
+- exact `THIRD_PARTY_NOTICES.md`;
+- current-tree i dirty-state audit;
+- reachable blobs, commit/tag metadata i ref-name audit;
+- reachable-license inventory;
+- klasyfikacja każdego blocker/review finding;
+- GitHub PR/issues/reviews/logs/artifacts/releases/packages audit;
+- public README;
+- intended default branch;
+- osobna decyzja o prawach do modeli/skanu.
 
-Test przeciwny:
+Testy przeciwne:
 
-- sztuczny token i plik `.env` muszą dać FAIL;
-- usunięty w późniejszym commicie sekret nadal musi zostać znaleziony w historii.
+- token i `.env` dają FAIL;
+- sekret usunięty w późniejszym commicie nadal jest znaleziony;
+- token-like branch/tag jest znaleziony, ale nie skopiowany do JSON;
+- historyczny MIT usunięty z HEAD nadal pojawia się w license inventory;
+- dirty tree nie może otrzymać public-ready reportu.
 
 Owner gate:
 
 ```text
-Jozz akceptuje dokładnie to, co stanie się publiczne.
+Jozz akceptuje dokładny public candidate, historię i licencję.
 ```
 
 ### V1 — portable static artifact
@@ -82,48 +155,64 @@ Jozz akceptuje dokładnie to, co stanie się publiczne.
 Claim:
 
 ```text
-Jedna paczka działa z root path i nested repository path.
+Jedna niepublikująca paczka jest integralna i path-portable.
 ```
 
 Wymagane:
 
-- względna baza Vite;
+- Vite base `./`;
 - `.nojekyll`;
-- `index.html` w korzeniu;
-- manifest plików z SHA-256;
-- brak source map;
+- manifest exact commit + clean source;
+- runtime assets i compliance files;
+- SHA-256 każdego payload file;
+- brak source maps;
 - brak root-absolute runtime URL;
-- wszystkie lokalne odwołania istnieją;
-- build nie publikuje niczego.
+- backend pozostaje non-authoritative;
+- public/Pages approval pozostaje false;
+- third-party notice jest częścią artefaktu.
 
-Test przeciwny:
+Testy przeciwne:
 
-- `/assets/app.js` musi dać FAIL;
-- brakujący CSS asset musi dać FAIL;
-- zmiana pliku po stworzeniu manifestu musi dać FAIL.
+- `/assets/...` i `/receipts/...` dają FAIL;
+- missing nested CSS asset daje FAIL;
+- payload drift daje FAIL;
+- escaping runtime/compliance path daje FAIL;
+- manifest nie może sam ogłosić parity/public readiness.
 
-### V2 — desktop runtime
+### V2 — loopback HTTP i desktop runtime
 
-Claim:
+Claim A:
 
 ```text
-Gotowa paczka uruchamia fizykę i renderer z lokalnego HTTP.
+Każdy plik artefaktu jest dostępny jako identyczne bajty pod root i repo subpath.
 ```
 
-Wymagane:
+Loopback smoke pobiera całą manifest table spod:
 
-- Chrome/Edge smoke;
-- root path;
-- sztuczny nested path;
+```text
+/
+/JV-Box3D-Web-experiment/
+```
+
+i porównuje bytes/SHA-256.
+
+Claim B:
+
+```text
+Gotowa paczka uruchamia fizykę, renderer i input w prawdziwej przeglądarce.
+```
+
+Wymagane browser smoke:
+
 - startup/restart;
+- receipt/runtime asset fetch;
 - focus loss;
-- tab hide/resume;
-- brak uncaught errors;
-- build identity widoczna w Lab Mode.
+- hide/resume;
+- czytelny error state po brakującym zasobie;
+- zero uncaught errors;
+- backend/build identity w Lab Mode.
 
-Test przeciwny:
-
-- brak WASM lub receipt musi prowadzić do czytelnego failure UX, nie pustego ekranu.
+Loopback HTTP PASS nie jest browser PASS.
 
 ### V3 — mobile shell
 
@@ -135,40 +224,38 @@ Interfejs mieści się i pozostaje obsługiwalny na realnym telefonie.
 
 Wymagane:
 
-- landscape-first layout;
+- landscape-first;
 - safe-area insets;
-- brak browser zoom przy sterowaniu;
+- duże touch targets;
+- brak browser zoom/scroll podczas aktywnego control gesture;
 - orientation change;
 - background/resume;
-- fullscreen jako opcja, nie warunek;
-- loading i error state.
+- fullscreen opcjonalny;
+- loading/error/retry;
+- reset zawsze dostępny, ale odporny na przypadkowy tap.
 
-Test przeciwny:
-
-- mały viewport i notch nie mogą zasłaniać resetu ani podstawowego sterowania.
-
-### V4 — touch input ownership
+### V4 — touch ownership
 
 Claim:
 
 ```text
-Każdy palec ma jednego właściciela, a puszczenie sterowania daje RELEASE.
+Każdy pointer ma jednego właściciela, a jego koniec daje semantyczny release.
 ```
 
 Wymagane:
 
-- steering RATE pad;
+- relative RATE steering pad;
 - throttle;
 - brake/reverse;
-- camera gesture w osobnej strefie;
-- pointer/touch capture;
-- cancel, blur, visibility i dispose;
-- równoczesny steering + throttle + camera;
-- brak `POSITION(0)` przy puszczeniu RATE.
+- camera gestures w odrębnej strefie;
+- pointer capture;
+- `pointerup`, `pointercancel`, blur, visibility, pagehide i dispose;
+- jednoczesny steering + throttle + camera;
+- brak `POSITION(0)` po puszczeniu RATE.
 
 Test przeciwny:
 
-- skrzyżowane palce, touchcancel i wyjście palca poza element nie mogą pozostawić aktywnego gazu lub hands-on.
+- skrzyżowane palce, utrata capture i background nie pozostawiają aktywnego sterowania.
 
 Owner gate:
 
@@ -181,22 +268,23 @@ Jozz ocenia precyzję, czytelność i zmęczenie dłoni na własnym telefonie.
 Claim:
 
 ```text
-Demonstrator pozostaje grywalny i stabilny termicznie.
+Demonstrator pozostaje grywalny, odzyskiwalny i termicznie stabilny.
 ```
 
 Mierzymy osobno:
 
-- fixed-step debt;
-- render FPS/frame time;
+- physics fixed-step debt i dropped intervals;
+- render frame time/FPS;
 - JS heap, gdy dostępny;
 - WASM memory;
-- GPU-heavy scene cost;
+- GPU scene cost;
 - request count i transfer bytes;
-- cold load i warm load;
+- cold/warm load;
 - 1, 5 i 15 minut jazdy;
-- powrót z tła.
+- background/resume;
+- crash/reload/blank-screen incidence.
 
-Quality profiles:
+Profile:
 
 ```text
 LOW
@@ -205,25 +293,25 @@ HIGH
 AUTO
 ```
 
-AUTO nie może zmieniać fizyki. Może zmieniać wyłącznie render/scene quality.
+AUTO zmienia tylko rendering/scene quality. Liczbowe budżety zostaną przypięte dopiero do nazwanych urządzeń po pierwszym baseline; wcześniej są hipotezą, nie gate’em.
 
 ### V6 — native JV WASM parity
 
 Claim:
 
 ```text
-Web wykonuje tę samą mechanikę co przypięty native JV Core.
+Web wykonuje tę samą przypiętą mechanikę co native JV Core.
 ```
 
 Wymagane:
 
 - jeden Box3D + JV Core WASM;
 - jawne jednostki ABI;
-- stable partId;
-- native i WASM scenario trace;
+- stable `partId`;
+- native i WASM scenario traces;
 - settle, POSITION, throttle, reverse, brake, RELEASE;
-- różnice kwantowane i raportowane;
-- brak zmiany mechaniki podczas portu.
+- kwantowane różnice;
+- brak refaktoru mechaniki przed baseline.
 
 Kierunek jazdy i determinizm nie wystarczają jako parity proof.
 
@@ -232,148 +320,153 @@ Kierunek jazdy i determinizm nie wystarczają jako parity proof.
 Claim:
 
 ```text
-Skan można podmienić bez przebudowy pojazdu i hosta.
+Świat można podmienić bez przebudowy pojazdu i hosta.
 ```
 
 Wymagane:
 
 - scene manifest;
 - source provenance;
-- jednostki i osie;
+- jednostki/osie;
 - spawn/reset/bounds;
-- oddzielny render mesh;
-- oddzielny collision proxy;
+- render mesh;
+- collision proxy;
 - LOD/chunks według pomiaru;
-- budżety telefonu;
-- brak prywatnych source assets w publicznym release.
+- phone budgets;
+- brak prywatnych source assets w release.
 
 Test przeciwny:
 
-- surowy noisy mesh jako collider ma zostać odrzucony przez pipeline albo jawnie oznaczony jako eksperyment.
+- noisy source mesh jako collider jest odrzucany albo jawnie oznaczony jako eksperyment.
 
 ### V8 — Pages publication
 
 Claim:
 
 ```text
-Dokładnie zwalidowany artefakt jest dostępny pod stabilnym linkiem.
+Dokładnie zwalidowany artefakt działa pod stabilnym HTTPS linkiem.
 ```
 
 Wymagane:
 
-- publiczne repo po `PUBLIC-READY PASS`;
-- osobna generated publishing branch;
-- branch zawiera wyłącznie release package;
-- Pages `Deploy from a branch`;
-- immutable build receipt;
-- telefon i desktop przez rzeczywisty adres HTTPS;
-- procedura unpublish;
-- jawna zgoda Jozza.
+- PUBLIC-READY owner approval;
+- public intended default branch;
+- generated publishing branch zawiera wyłącznie release package;
+- immutable receipt;
+- systemowy Pages deployment dopiero po zgodzie;
+- desktop i phone test rzeczywistego URL;
+- procedura unpublish/rollback.
 
-## 5. Pętla podważająca
+## 7. Pętla podważająca
 
-Przed zamknięciem każdej fazy pytamy:
+Przed zamknięciem fazy pytamy:
 
 - Czy PASS może wystąpić dla deterministycznie błędnej fizyki?
-- Czy build działa tylko w `/`, ale nie w repo subpath?
-- Czy telefon działa tylko po Wi-Fi cache?
-- Czy dotyk może pozostać aktywny po `touchcancel`?
-- Czy AUTO quality zmieniło fizykę zamiast renderingu?
-- Czy scan collider mierzy szum fotogrametrii zamiast terenu?
-- Czy publiczny branch zawiera coś więcej niż release?
-- Czy usunięty plik nadal istnieje w osiągalnej historii?
-- Czy informacja o licencji pochodzi z dokładnej wersji zależności?
-- Czy owner approval dotyczył dokładnie tego commita i paczki?
+- Czy raport bezpieczeństwa sam przechowuje wykrytą wartość?
+- Czy historyczny branch ma inną licencję niż HEAD?
+- Czy build działa tylko pod `/`?
+- Czy HTTP smoke sprawdził tylko obecność, a nie bajty?
+- Czy browser działa wyłącznie dzięki cache?
+- Czy dotyk pozostaje aktywny po cancel/background?
+- Czy AUTO zmieniło fizykę?
+- Czy collider mierzy szum skanu?
+- Czy publishing branch zawiera źródła lub prywatne pliki?
+- Czy owner approval dotyczył dokładnego commita i paczki?
 
-Każde „nie wiem” zamienia status na `PENDING`, nie na PASS.
+## 8. Pętla polishująca
 
-## 6. Pętla polishująca
+Polish zawsze idzie w tej kolejności:
 
-Polish nie zaczyna się od shaderów. Kolejność:
-
-### P0 — truth polish
+### P0 — truth
 
 - nazwa produktu;
 - backend identity;
-- parity status;
-- build/version;
+- parity/authority status;
+- exact build/version;
 - known limitations;
-- brak inżynierskich twierdzeń bez receipt.
+- credits/licencje;
+- brak twierdzeń bez receipt.
 
-### P1 — startup polish
+### P1 — startup/failure
 
 - czytelny loading;
 - progress per resource class;
-- fallback/error screen;
+- error reason;
 - retry;
 - unsupported-browser message;
 - brak pustego canvasu.
 
-### P2 — interaction polish
+### P2 — interaction
 
-- duże touch targets;
-- haptic feedback tylko opcjonalnie;
+- touch targety i safe areas;
 - wyraźny hands-on state;
-- reset dostępny, ale odporny na przypadkowe tapnięcie;
-- kamera nie walczy ze steeringiem;
-- pauza po tle.
+- reset confirmation/hold policy;
+- camera/steering ownership;
+- pause/release po tle;
+- opcjonalne haptics dopiero po zgodzie.
 
-### P3 — driving polish
+### P3 — driving presentation
 
-- kamera follow;
-- speed readability;
-- orientacja świata;
-- spawn i reset;
-- brak debug clutter w Demo Mode;
-- Lab Mode zachowuje pełną obserwowalność.
+- follow camera;
+- speed/world orientation;
+- spawn/reset;
+- Demo Mode bez debug clutter;
+- Lab Mode z pełną obserwowalnością.
 
-### P4 — performance polish
+### P4 — measured performance
 
 - usunięcie pracy bez wartości;
 - render LOD;
-- tekstury i kompresja;
-- request batching tylko po pomiarze;
-- brak optymalizacji zmieniającej fizykę.
+- tekstury/kompresja;
+- request strategy po pomiarze;
+- żadna optymalizacja nie zmienia fizyki.
 
-### P5 — presentation polish
+### P5 — public presentation
 
 - branding;
 - krótka instrukcja;
-- about/credits/licencje;
+- About/Credits/Licenses;
 - screenshot/thumbnail;
-- link i QR dopiero po publikacji.
+- link/QR dopiero po publikacji.
 
-## 7. Warunki finalizacji v0.1
+Po każdym poziomie polish wracamy do odpowiedniej walidacji V0–V8. Polish bez rewalidacji nie jest finalizacją.
 
-Demonstrator v0.1 jest finalizowany, gdy:
+## 9. Finalizacja v0.1
 
 ```text
 PUBLIC-READY PASS
-portable artifact PASS
-desktop root+nested PASS
-mobile shell PASS
-touch ownership PASS
-minimum performance budget PASS
+portable static + loopback HTTP PASS
+desktop browser PASS
+mobile shell/touch ownership PASS
+named-device performance baseline PASS
 native parity scope jawnie PASS albo jawnie ograniczone
 one scene PASS
-owner mobile drive PASS
+owner mobile drive ACCEPTED
 Pages HTTPS PASS
-immutable receipt zapisany
+immutable receipt
 ```
 
-Brak pełnego Wheel Scope nie blokuje v0.1, o ile legacy wheel jest jawnie opisany jako baseline. Brak native parity blokuje nazywanie produktu wiernym JV, ale może dopuścić prywatny/reference preview oznaczony zgodnie z prawdą.
+Brak pełnego Wheel Scope nie blokuje v0.1, jeżeli legacy wheel jest jawnie baseline’em. Brak native parity blokuje określenie „wierna webowa wersja JV”, ale nie blokuje prywatnego/reference preview oznaczonego zgodnie z prawdą.
 
-## 8. Aktualny checkpoint
+## 10. Aktualny checkpoint
 
 ```text
-refoundation local gate: 77/77 PASS
-portable package foundation: IMPLEMENTING
-public repository decision: APPROVED IN PRINCIPLE
-repository visibility: PRIVATE
-Pages: DISABLED
-LICENSE: MISSING / DECISION PENDING
-THIRD_PARTY_NOTICES: MISSING
+refoundation base: 77/77 PASS
+first demonstrator gate: 81/81 PASS + portable path FAIL
+root-absolute receipt bug: FIXED IN SOURCE + REGRESSION PRESENT
+portable manifest/authority/compliance hardening: SOURCE PRESENT
+loopback root/nested HTTP smoke: SOURCE PRESENT
+public Git-history tests: SOURCE PRESENT
+reachable-license inventory: SOURCE PRESENT
+THIRD_PARTY_NOTICES: PRESENT + INSTALLED-PACKAGE VERIFIER
+current project LICENSE: MISSING / OWNER DECISION PENDING
+historical PR #1 MIT: MEASURED FACT
+public README candidate: PRESENT ON ACTIVE BRANCH
+main/default branch: NOT PUBLIC-READY
+current newer head Node 24 gate: PENDING
 mobile controls: NOT STARTED
 native_jv_wasm: NOT STARTED
 scan integration: WAITING FOR LOCAL FILES
+repository visibility: PRIVATE
+Pages: DISABLED
 ```
