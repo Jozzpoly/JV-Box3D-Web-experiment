@@ -17,7 +17,11 @@ stable partId / segmentId
         ↓
 VehicleVisualPackageV1 bindings
         ↓
-GLB nodes
+sealed CPU mesh asset
+        ↓
+transactional GPU asset
+        ↓
+rigid draw plan
 ```
 
 The visual model never drives physics. The renderer only reads the latest immutable frame.
@@ -32,17 +36,13 @@ right:   +Z
 left:    -Z
 ```
 
-Blender/Blockbench export must arrive in this runtime convention. Apply object location, rotation and scale before export. Package bindings allow explicit positive correction transforms, but they are not a substitute for an inconsistent source scene.
-
-Negative scale and hidden mirror transforms are rejected. Create left/right geometry explicitly or apply the mirror before export.
+Blender/Blockbench export must arrive in this runtime convention. Apply object location, rotation and scale before export. Negative scale and hidden mirror transforms are rejected. Create left/right geometry explicitly or apply the mirror before export.
 
 ## Rig type
 
-The first vehicle rig is a **rigid-part node rig**, not a character skeleton.
+V1 is a **rigid-part node rig**, not a character skeleton.
 
-Use separate GLB nodes for physically independent parts. Do not bake wheel spin, steering or suspension animation. Do not make physics depend on armatures, skin weights or animation clips.
-
-Skinned meshes, morph targets and deformable tires are outside V1. A future tire backend may add a separate deformation contract without changing rigid suspension identities.
+Use separate GLB nodes for physically independent parts. Do not bake wheel spin, steering or suspension animation. Skinned meshes, morph targets and deformable tires are outside V1. A future tire backend may add deformation without changing rigid suspension identities.
 
 ## Runtime channels
 
@@ -102,42 +102,124 @@ Each segment contains exact world-space start/end anchors and measured length fr
 
 ### `PART`
 
-Copies a rigid world transform. Multiple nodes may follow one source.
-
-Examples:
+Copies a rigid world transform. Multiple visual roots may follow one physical source.
 
 ```text
 body shell + interior + chassis details → m6.chassis
 tire + rim + rotating brake disc       → m6.fl.wheel
-knuckle + non-rotating brake caliper    → m6.fl.knuckle
+knuckle + fixed brake caliper          → m6.fl.knuckle
 ```
 
 ### `SEGMENT_STRETCH`
 
-Aims the declared local axis from segment start to end and scales that axis to the measured length.
+Aims the declared authored axis from segment start to end, places the node at the midpoint and scales only that axis.
 
-Use for:
+Every stretch binding must declare:
 
-- steering rods;
-- spring/whole coilover debug mesh;
-- simple driveshafts after a future segment channel exists.
+```json
+{
+  "kind": "SEGMENT_STRETCH",
+  "segmentId": "m6.fl.coilover",
+  "axis": "+Y",
+  "referenceLengthMeters": 0.42
+}
+```
+
+`referenceLengthMeters` is the actual authored end-to-end length of the mesh before runtime stretch. It removes any hidden assumption that all rods or springs are one metre long.
+
+V1 uses deterministic shortest-arc rotation. Rotation around the segment axis is intentionally not supplied by physics, so stretch geometry must be rotationally symmetric around its declared axis. Use this mode for rods, tie links and springs—not for a visibly asymmetric part whose roll matters.
 
 ### `SEGMENT_ENDPOINT_AIM`
 
 Places a rigid node at one endpoint and aims its declared local axis at the opposite endpoint.
-
-Use two nodes for a telescoping coilover:
 
 ```text
 upper damper body → START, aim +Y
 lower shaft       → END,   aim -Y
 ```
 
-The geometry length of endpoint components remains authored in the GLB. Only position and aim are driven.
+The component keeps its authored length. Only endpoint position and aim are driven.
+
+## Transform composition
+
+The executable order is:
+
+```text
+worldFromNode = worldFromRuntimeSource × localFromSource
+```
+
+For a segment, `worldFromRuntimeSource` already contains midpoint/endpoint placement, shortest-arc aim and optional stretch. `localFromSource` is then applied in that source frame.
+
+Do not compensate for unapplied GLB root transforms with `localFromSource`. Bound roots must be identity roots. Corrections are for explicit art-to-physics alignment only.
+
+## Bound-node ownership
+
+Every node named directly by a binding must be an independent GLB root:
+
+```text
+parent:      none
+matrix:      absent
+translation: absent or [0, 0, 0]
+rotation:    absent or [0, 0, 0, 1]
+scale:       absent or [1, 1, 1]
+```
+
+A bound root may own unbound descendants with static sub-geometry. Each bound root must contain at least one renderable mesh node. Every mesh node in the vehicle GLB must belong to exactly one bound root.
+
+Rejected ownership states:
+
+- empty wheel/arm/link channel;
+- mesh outside every binding root;
+- two binding roots sharing a descendant;
+- one GLB node bound twice.
+
+## Required pivots and axes
+
+### Chassis
+
+```text
+source: m6.chassis
+pivot:  physics chassis body frame
+```
+
+### Wheel
+
+```text
+source: m6.<corner>.wheel
+pivot:  axle centre
+spin axis: local +Y
+```
+
+The wheel transform already includes suspension motion, steering and spin.
+
+### Knuckle
+
+```text
+source: m6.<corner>.knuckle
+pivot:  wheel/knuckle body origin
+```
+
+Calipers and other non-rotating upright details follow this source.
+
+### Upper/lower control arms
+
+```text
+source: m6.<corner>.upper-arm / lower-arm
+pivot:  physical arm body frame at the inboard hinge midpoint
+```
+
+### Rack
+
+```text
+source: m6.rack
+length axis: local +Z
+```
+
+### Segment geometry
+
+For stretch nodes, place the pivot at the segment midpoint and author the declared axis along the part length. For endpoint-aim nodes, place the pivot at the selected endpoint.
 
 ## Recommended node names
-
-Node names are mapped explicitly by the package, but this canonical convention makes review and replacement predictable:
 
 ```text
 JV_Chassis
@@ -159,97 +241,44 @@ JV_CoiloverBody_FL
 JV_CoiloverShaft_FL
 ```
 
-Repeat `_FR`, `_RL`, `_RR` for the other corners.
+Repeat `_FR`, `_RL`, `_RR` for other corners. Node names are mapped explicitly by the package, but predictable naming makes review and replacement safer.
 
-Every bound node name must be unique in the GLB. One node cannot be controlled by two bindings. Several nodes may intentionally follow the same runtime source.
-
-## Bound-node ownership
-
-Every node named directly by a binding must be an independent GLB root node with applied transforms:
+## Executable GLB V1 subset
 
 ```text
-parent:      none
-matrix:      absent
-translation: absent or [0, 0, 0]
-rotation:    absent or [0, 0, 0, 1]
-scale:       absent or [1, 1, 1]
-```
-
-`localFromSource` is the only explicit correction between the runtime source frame and a bound visual root. This prevents parent transforms, authoring transforms and runtime transforms from being applied twice.
-
-A bound root may own unbound descendant nodes containing static sub-geometry. A descendant cannot also be bound to another runtime source in V1.
-
-## Required pivots and axes
-
-### Chassis
-
-```text
-source: m6.chassis
-pivot:  physics chassis body frame
-```
-
-The body shell may be offset through `localFromSource`. Do not move the physics body to fit the art model.
-
-### Wheel
-
-```text
-source: m6.<corner>.wheel
-pivot:  axle center
-spin axis: local +Y
-```
-
-The complete wheel transform already includes suspension motion, steering and spin.
-
-### Knuckle
-
-```text
-source: m6.<corner>.knuckle
-pivot:  wheel/knuckle body origin
-```
-
-Calipers and non-rotating hub/upright details should follow this source.
-
-### Upper/lower control arms
-
-```text
-source: m6.<corner>.upper-arm / lower-arm
-pivot:  physical arm body frame at the inboard hinge midpoint
-```
-
-The runtime provides full body transforms. Do not reconstruct arm motion from hinge angles in the renderer.
-
-### Rack
-
-```text
-source: m6.rack
-length axis: local +Z
-```
-
-### Segment geometry
-
-Author the node’s declared aim/stretch axis along its length. Keep the pivot at the endpoint for endpoint-aim nodes, or at the segment midpoint for stretch nodes.
-
-## GLB package requirements
-
-```text
-format: self-contained .glb
-buffers: exactly one embedded BIN buffer
-external textures: forbidden for V1
+format: one self-contained .glb
+buffer: exactly one embedded BIN buffer
 asset URL: clean path relative to the package manifest directory
-integrity: exact SHA-256
-size: exact byteLength
-units: meters
-bound-node transforms: applied / identity
+integrity: exact SHA-256 and byteLength
+units: metres
+bound roots: independent, applied identity transforms
 node names: unique
-bufferView offsets and strides: 4-byte aligned
+bufferView offset/stride: 4-byte aligned
 accessors: aligned to component size
+primitive mode: TRIANGLES
 indices: unsigned 8-bit or 16-bit only
-animations: not used for physics-driven parts
+vertex attributes: POSITION, optional NORMAL, optional TEXCOORD_0
+POSITION: FLOAT VEC3 with finite min/max
+materials: baseColorFactor subset
 ```
 
-The 8/16-bit index rule is deliberate for the first WebGL1 mobile renderer. Large geometry must be split into multiple primitives rather than silently depending on a device extension for 32-bit indices.
+V1 currently rejects:
 
-The asset URL is resolved relative to the manifest, not directly relative to the page. Example:
+- images and textures;
+- external URI;
+- `COLOR_0`, tangents, joints, weights or unknown attributes;
+- skins and animation clips;
+- morph targets and sparse accessors;
+- non-triangle primitives;
+- GLB extensions;
+- 32-bit indices;
+- zero/negative node scale.
+
+Images/textures are rejected—not silently ignored—until image decode, sampler/texture GPU ownership and mobile memory budgets exist.
+
+The 8/16-bit index rule is deliberate for WebGL1 portability. Larger geometry must be split into multiple primitives rather than depending on a device extension.
+
+## Asset path example
 
 ```text
 manifest: vehicles/m6/vehicle.visual.json
@@ -257,33 +286,65 @@ asset:    models/m6.glb
 result:   vehicles/m6/models/m6.glb
 ```
 
-This relation remains identical at the site root and under a repository subpath.
+The relationship remains identical at site root and repository subpath.
 
-The runtime verifies file bytes before parsing the GLB. A changed model requires an updated hash and byte length.
+## Platform budget V1
+
+Before GPU allocation the decoded vehicle must stay within:
+
+```text
+nodes:          512
+primitives:     512
+triangles:      300,000
+materials:      64
+geometry bytes: 64 MiB
+```
+
+These are protective mobile limits, not a quality target. They are changed only after measured phone evidence. Texture memory will receive a separate budget when textures are implemented.
 
 ## Full-rig coverage
 
-`M6_FULL_RIG_V1` requires at least one binding for all 18 rigid parts and all 8 segments. Additional decorative nodes may follow an existing source.
+`M6_FULL_RIG_V1` requires at least one binding for every 18 rigid part and every 8 physical segment. Additional decorative roots may follow an existing source, but every mesh remains owned by exactly one binding root.
 
-Fail-closed examples:
+## Local inspection
 
-- missing rear lower arm;
-- unknown `partId`;
-- duplicate bound node;
-- parented bound node;
-- non-identity transform or matrix on a bound node;
-- negative scale correction;
-- non-normalized correction quaternion;
-- multiple embedded buffers;
-- misaligned bufferView/accessor data;
-- 32-bit index accessor;
-- `.gltf` with external resources;
-- absolute/CDN/local-file URL;
-- asset byte/hash mismatch.
+Run before handing an export to the runtime:
 
-## Model decomposition recommendation
+```powershell
+npm run inspect:vehicle-glb -- <model.glb> <vehicle.visual.json>
+```
 
-Keep visual ownership separate from physics ownership:
+The inspector reports:
+
+- bytes and SHA-256;
+- GLB structure and unsupported features;
+- strict manifest result;
+- bound roots and owned mesh nodes;
+- decoded nodes/primitives/triangles/materials;
+- decoded geometry bytes and budget result.
+
+## Deterministic proof asset
+
+The repository generates, rather than hand-commits:
+
+```text
+public/vehicles/tiny/vehicle.visual.json
+public/vehicles/tiny/models/m6-rig-proof.glb
+```
+
+The tiny asset contains:
+
+```text
+18 small rigid-part boxes
+8 one-metre segment rods
+2 shared meshes
+2 base-colour materials
+26 bound roots
+```
+
+It is generated before dev/build, byte-pinned inside its manifest and required by the portable package. It is the first asset for browser/GPU lifecycle proof; the final Jozz model must not be the first file testing the loader.
+
+## Model decomposition
 
 ```text
 chassis source
@@ -312,18 +373,20 @@ segment source
   damper body/shaft
 ```
 
-Doors, steering wheel, gauges, lights and cosmetic animation may later use a separate presentation-state contract. They must not be overloaded onto suspension part IDs.
+Doors, steering wheel, gauges, lights and cosmetic animation require a later presentation-state contract. They must not be overloaded onto suspension part IDs.
 
-## First asset implementation order
+## Implementation order
 
 ```text
-1 tiny generated GLB fixture proving node lookup and transforms
-2 chassis + four simple wheel meshes
-3 knuckles and wishbones
-4 steering links and two-piece coilovers
-5 full Jozz-authored body/interior/wheels
-6 mobile triangle/material/texture budget
-7 optional LOD/package v2 only from measured need
+1 deterministic tiny GLB + strict package
+2 CPU decode, ownership, budgets and draw-plan tests
+3 transactional GPU buffer ownership
+4 tiny browser rendering beside the debug observer
+5 phone performance and disposal/rebuild proof
+6 owner-authored simple chassis + four wheels
+7 knuckles, arms, steering links and two-piece coilovers
+8 normals and material shading
+9 embedded texture pipeline with separate memory budgets
+10 full body/interior/wheel asset
+11 optional LOD/compression only from measured need
 ```
-
-Do not begin with the final heavy vehicle model. The tiny fixture must first prove asset integrity, node ownership, transform math, rebuild and disposal.
