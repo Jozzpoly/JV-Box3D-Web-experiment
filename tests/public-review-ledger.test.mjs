@@ -119,6 +119,20 @@ test("finding identity changes when evidence changes", () => {
   assert.notEqual(publicReviewFindingId(finding), publicReviewFindingId(changed));
 });
 
+test("ledger cannot change finding details while retaining its identity", () => {
+  const currentReport = report([currentReportFinding()]);
+  const ledger = createPublicReviewLedger(currentReport);
+  accept(ledger.entries[0]);
+  ledger.entries[0].finding.path = "harmless-looking-replacement.txt";
+
+  const validation = validatePublicReviewLedger(currentReport, ledger);
+  assert.ok(
+    validation.errors.some((error) =>
+      error.includes("finding details that differ"),
+    ),
+  );
+});
+
 test("matching classifications can be carried but produce a warning", () => {
   const oldReport = report([currentReportFinding()]);
   const oldLedger = createPublicReviewLedger(oldReport);
