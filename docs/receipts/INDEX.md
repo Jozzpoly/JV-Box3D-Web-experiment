@@ -23,26 +23,52 @@ Receipts are immutable evidence records. A later interpretation does not rewrite
 | `runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md` | 75/75 reference runtime, build/browser liveness, dynamic rack matrix and later semantic drive verdict |
 | `runtime/history/F5_MINIMAL_DRIVE_ATTEMPT_1_2026_08_04.md` | incomplete 70/71 attempt that exposed stale-clock disposal behavior |
 
+The first demonstrator-foundation gate is preserved in PR #18 comments rather than rewritten as a green receipt:
+
+```text
+81/81 tests PASS
+TypeScript and Vite bundle PASS
+portable validation correctly FAILed on root-absolute receipt URL
+```
+
+A newer full demonstrator receipt must be created only after a fresh local gate.
+
 ## Inventory evidence
 
 | Receipt | Scope |
 |---|---|
 | `inventory/REPOSITORY_INVENTORY_2026_08_03.md` | byte-level public repository snapshots and explicit coverage limits |
+| `inventory/GITHUB_CLOUD_SURFACE_2026_08_04.md` | partial PR/issue/workflow/artifact inventory and explicit unverified cloud surfaces |
+
+Local generated reports are intentionally ignored by Git:
+
+```text
+.local-audit/public-readiness.json
+.local-audit/license-inventory.json
+```
+
+They become committed receipts only after findings are classified and sensitive values remain redacted.
 
 ## Evidence interpretation rules
 
 ```text
-SOURCE_FACT           source bytes or source semantics at an exact identity
-MEASURED_FACT         named runtime measurement
+SOURCE_FACT             source bytes or source semantics at an exact identity
+MEASURED_FACT           named runtime measurement
 MECHANISM_FALSIFICATION test that distinguishes competing mechanisms
-INTERNAL_CONSISTENCY  implementation agrees with its own contract
-LIVENESS_SMOKE        runtime starts and progresses
-SCENARIO_EQUIVALENCE  two named scenarios compared under a stated tolerance
-VISUAL_OBSERVATION    observed render/UI behavior
-OWNER_VALIDATED       Jozz issued the manual verdict
+INTERNAL_CONSISTENCY    implementation agrees with its own contract
+LIVENESS_SMOKE          runtime starts and progresses
+PORTABLE_STATIC_PASS    file/path/hash/compliance contract
+LOOPBACK_HTTP_PASS      exact artifact bytes under root and project subpath
+DESKTOP_BROWSER_PASS    real browser execution without uncaught errors
+LAN_PHONE_PASS          real phone interaction/performance evidence
+SCENARIO_EQUIVALENCE    two named scenarios compared under a stated tolerance
+VISUAL_OBSERVATION      observed render/UI behavior
+OWNER_VALIDATED         Jozz issued the manual verdict
+PUBLIC_READY_PASS       source/history/license/cloud surfaces accepted
+PAGES_HTTPS_PASS        exact package works from real Pages URL
 ```
 
-A green internal test is not automatically native parity or owner validation.
+A green internal test is not automatically native parity, mobile readiness, public readiness or owner validation.
 
 ## Freshness
 
