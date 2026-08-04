@@ -14,6 +14,11 @@ import {
   type LongitudinalTimelineSample,
 } from "../input/longitudinal-input-timeline.js";
 import {
+  PointerVehicleControlAdapter,
+  type PointerVehicleControlId,
+  type PointerVehicleControlTargets,
+} from "../input/pointer-vehicle-control-adapter.js";
+import {
   SteeringInputTimeline,
   type SteeringTimelineSample,
 } from "../input/steering-input-timeline.js";
@@ -29,6 +34,11 @@ export interface CleanBrowserHostOptions {
   readonly windowTarget: EventTarget;
   readonly documentTarget: EventTarget;
   readonly isDocumentHidden: () => boolean;
+  readonly pointerControls?: PointerVehicleControlTargets;
+  readonly onPointerControlStateChange?: (
+    control: PointerVehicleControlId,
+    active: boolean,
+  ) => void;
   readonly onStep: (
     step: FixedStepInterval,
     steering: SteeringTimelineSample,
@@ -84,6 +94,28 @@ export class CleanBrowserHost {
         "keyboard longitudinal adapter",
         () => longitudinalKeyboard.dispose(),
       );
+
+      if (options.pointerControls !== undefined) {
+        const pointerControls = new PointerVehicleControlAdapter({
+          windowTarget: options.windowTarget,
+          documentTarget: options.documentTarget,
+          steeringTimeline,
+          longitudinalTimeline,
+          controls: options.pointerControls,
+          now: options.now,
+          isDocumentHidden: options.isDocumentHidden,
+          ...(options.onPointerControlStateChange === undefined
+            ? {}
+            : {
+                onControlStateChange:
+                  options.onPointerControlStateChange,
+              }),
+        });
+        resources.defer(
+          "pointer vehicle control adapter",
+          () => pointerControls.dispose(),
+        );
+      }
 
       const clock = new FixedStepClock(startTimeMs, {
         fixedStepMs: 1000 / 60,
