@@ -10,8 +10,8 @@ Czytaj tylko w tej kolejności:
 1. `../AI_PROJECT_MEMORY.md`
 2. `PROJECT_STATE.md`
 3. `REFOUNDATION_LOOP_PL.md`
-4. `decisions/ADR-0003-native-jv-core-wasm.md`
-5. właściwy kontrakt subsystemu albo receipt
+4. `DEMONSTRATOR_VALIDATION_POLISH_LOOP_PL.md`
+5. właściwy ADR, kontrakt subsystemu albo receipt
 
 Nie czytaj całego `docs/` przed pracą. Archiwum służy do odpowiedzi na konkretne pytanie historyczne.
 
@@ -21,6 +21,7 @@ Nie czytaj całego `docs/` przed pracą. Archiwum służy do odpowiedzi na konkr
 |---|---|
 | `PROJECT_STATE.md` | bieżąca prawda o produkcie, dowodach i otwartych problemach |
 | `REFOUNDATION_LOOP_PL.md` | rekurencyjna pętla małych, falsyfikowalnych iteracji |
+| `DEMONSTRATOR_VALIDATION_POLISH_LOOP_PL.md` | bramki publiczności, mobile, skanu, Pages i kolejność polishu |
 | `DOCUMENT_CLEANUP_MANIFEST_2026_08_04_PL.md` | wykonany zakres cleanupu, ryzyka i następne bramki |
 | `NO_ARTIFICIAL_MECHANICS_CONTRACT_PL.md` | konstytucja jednej fizyki, jawnych eksperymentów i assistów |
 
@@ -30,9 +31,12 @@ Nie czytaj całego `docs/` przed pracą. Archiwum służy do odpowiedzi na konkr
 |---|---|
 | `decisions/ADR-0001-subframe-rate-integration.md` | accepted |
 | `decisions/ADR-0002-pinned-box3d-runtime.md` | accepted for `legacy_ts_m6` reference backend |
-| `decisions/ADR-0003-native-jv-core-wasm.md` | accepted architecture authority |
+| `decisions/ADR-0003-native-jv-core-wasm.md` | accepted physics architecture authority |
+| `decisions/ADR-0004-pages-ready-demonstrator.md` | accepted distribution/publication authority |
 
 ADR-0003 ma pierwszeństwo tam, gdzie wcześniejsze dokumenty zakładały dalsze ręczne portowanie mechaniki M6/M7 do TypeScriptu.
+
+ADR-0004 ma pierwszeństwo tam, gdzie wcześniejsze dokumenty zakładały pojedynczy HTML, automatyczny deployment albo publikację bez public-readiness gate.
 
 ## 4. Kontrakty subsystemów
 
@@ -86,9 +90,21 @@ receipts/runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md
 
 | Dokument/narzędzie | Rola |
 |---|---|
-| `operations/REFOUNDATION_LOCAL_GATE_PL.md` | znaczenie i obsługa lokalnej bramki |
-| `../tools/run-refoundation-gate.ps1` | jeden bezpieczny Windows gate |
+| `operations/REFOUNDATION_LOCAL_GATE_PL.md` | znaczenie i obsługa zwalidowanego refoundation gate |
+| `../tools/run-refoundation-gate.ps1` | Windows gate historycznego checkpointu refoundation |
+| `../tools/run-demonstrator-foundation-gate.ps1` | bieżący build/test/portable gate bez publikacji |
 | `../tools/check-doc-links.mjs` | lokalny audit linków Markdown |
+| `../tools/write-portable-build-manifest.mjs` | manifest pochodzenia i hashy paczki |
+| `../tools/validate-portable-build.mjs` | nested-path i integralność paczki |
+| `../tools/audit-public-readiness.mjs` | current-tree i reachable-history audit przed publicznym repo |
+
+Raport public-readiness jest lokalny i ignorowany przez Git:
+
+```text
+.local-audit/public-readiness.json
+```
+
+Nie zastępuje manualnego auditu PR-ów, issues, Actions, releases i packages.
 
 ## 8. Archiwum
 
