@@ -20,8 +20,6 @@ test("base-colour material subset passes", async () => {
         name: "JV Blue",
         pbrMetallicRoughness: {
           baseColorFactor: [0.1, 0.2, 0.8, 1],
-          metallicFactor: 0.25,
-          roughnessFactor: 0.75,
         },
         doubleSided: false,
       },
@@ -41,21 +39,30 @@ test("emissive and alpha features cannot be silently ignored", async () => {
   await rejected({ alphaMode: "BLEND" }, /unsupported keys: alphaMode/);
 });
 
-test("texture slots and invalid PBR factors fail closed", async () => {
+test("unrendered PBR and texture fields fail closed", async () => {
+  for (const [key, value] of [
+    ["baseColorTexture", { index: 0 }],
+    ["metallicFactor", 0.25],
+    ["roughnessFactor", 0.75],
+  ]) {
+    await rejected(
+      {
+        pbrMetallicRoughness: {
+          [key]: value,
+        },
+      },
+      new RegExp(`unsupported keys: ${key}`),
+    );
+  }
+});
+
+test("baseColorFactor stays inside the rendered unit range", async () => {
   await rejected(
     {
       pbrMetallicRoughness: {
-        baseColorTexture: { index: 0 },
+        baseColorFactor: [1, 0, 2, 1],
       },
     },
-    /unsupported keys: baseColorTexture/,
-  );
-  await rejected(
-    {
-      pbrMetallicRoughness: {
-        roughnessFactor: 2,
-      },
-    },
-    /roughnessFactor.*\[0,1\]/,
+    /baseColorFactor\[2\].*\[0,1\]/,
   );
 });
