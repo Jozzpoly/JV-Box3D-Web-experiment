@@ -217,8 +217,8 @@ h2 {
 }
 
 .mobile-control {
-  width: clamp(68px, 18vw, 92px);
-  height: clamp(68px, 18vw, 92px);
+  width: clamp(56px, 17vw, 92px);
+  height: clamp(56px, 17vw, 92px);
   min-height: 0;
   padding: 8px;
   display: grid;
