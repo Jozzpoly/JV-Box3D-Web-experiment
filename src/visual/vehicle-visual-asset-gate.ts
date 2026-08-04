@@ -3,6 +3,7 @@ import {
   type SubtleDigestProvider,
 } from "../core/portable-digest.js";
 import { inspectGlbV2, type GlbInspectionV1 } from "./glb-container.js";
+import { assertGlbMaterialPolicyV1 } from "./glb-material-policy-v1.js";
 import {
   assertGlbRuntimePolicyV1,
   type GlbRuntimePolicyReceiptV1,
@@ -98,6 +99,7 @@ export async function validateVehicleVisualAssetV1(
   }
 
   const runtimePolicy = assertGlbRuntimePolicyV1(bytes, boundNodeNames);
+  assertGlbMaterialPolicyV1(bytes);
 
   return Object.freeze({
     packageId: visual.id,
