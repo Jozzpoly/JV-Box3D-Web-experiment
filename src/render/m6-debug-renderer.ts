@@ -403,8 +403,8 @@ export class M6DebugRenderer {
       if (this.#pointer === null || event.pointerId !== this.#pointer.id) return;
       const dx = event.clientX - this.#pointer.x;
       const dy = event.clientY - this.#pointer.y;
-      this.#yaw -= dx * 0.006;
-      this.#pitch = Math.max(-0.12, Math.min(1.25, this.#pitch + dy * 0.006));
+      this.#yaw += dx * 0.006;
+      this.#pitch = Math.max(-0.12, Math.min(1.25, this.#pitch - dy * 0.006));
       this.#pointer = { id:event.pointerId, x:event.clientX, y:event.clientY };
     }, { signal: this.#events.signal });
     const release = (event: PointerEvent) => {
