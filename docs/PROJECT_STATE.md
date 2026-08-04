@@ -13,9 +13,9 @@ base: main
 state: draft / not merged
 ```
 
-All older pull requests are closed as historical. The remote branch surface now contains only `main` and the active development branch.
+All older pull requests are closed as historical. The remote branch surface contains only `main` and the active development branch.
 
-The active branch is a long experimental descendant of `main`. Do not fast-forward its entire 410-commit history into a future presentation-ready default branch. At publication time choose either:
+The active branch is a long experimental descendant of `main`. Do not fast-forward its complete history into a future presentation-ready default branch. At publication time choose either:
 
 ```text
 preferred: a clean public demonstrator repository/snapshot
@@ -66,7 +66,7 @@ native JV Core + Box3D source
 
 Native/WASM remains the long-term authority, but it is not the next immediate product milestone. First stabilize the browser host, mobile controls, scene contract and sharing path using the frozen reference fixture.
 
-## Validated foundation checkpoint
+## Last green foundation checkpoint
 
 ```text
 commit: db7768ebc5d191d96c7ff0022572093c00549453
@@ -90,7 +90,57 @@ publication: NOT PERFORMED
 
 The bundle warning about the approximately 1.2 MiB JavaScript chunk is recorded but is not a current functional failure.
 
-This evidence does **not** yet prove exact current-head execution in a real desktop browser or phone.
+## Current mobile-control candidate
+
+```text
+head: e5b5c1e5c889c137e461a1a48a0f22c202a4ec2a
+state: SOURCE PRESENT / STATIC SCOPE REVIEWED
+local Node 24 gate: PENDING
+browser observation: PENDING
+real phone observation: PENDING
+```
+
+Changes since the green checkpoint are limited to:
+
+- source-aware steering and longitudinal timelines;
+- a Pointer Events vehicle-control adapter;
+- browser-host lifecycle ownership;
+- F4 pass-through without physics changes;
+- five-button multi-touch UI;
+- safe-area and responsive mobile layout;
+- focused input/host tests;
+- synchronized project documentation.
+
+No file under `src/vehicle/`, `src/physics/` or the renderer was changed in this mobile slice.
+
+## Mobile input semantics
+
+```text
+one pointerId -> one semantic control owner
+one semantic control -> zero or more active sourceId values
+```
+
+Keyboard, touch and future gamepad sources may overlap without releasing one another. Pointer capture occurs before `pressed=true`; capture failure emits no command.
+
+Lifecycle release is covered for:
+
+- pointerup;
+- pointercancel;
+- lostpointercapture;
+- blur;
+- visibility hidden;
+- pagehide;
+- host disposal and rollback.
+
+The first mobile layout provides:
+
+```text
+left cluster:  steer left / steer right
+right cluster: brake / forward / reverse
+canvas free area: orbit camera
+```
+
+The controls are source-present, not owner-approved. Their geometry, size and feel require a real phone gate.
 
 ## Deliberate limitations
 
@@ -98,8 +148,7 @@ This evidence does **not** yet prove exact current-head execution in a real desk
 - no final drivetrain model;
 - legacy split-sphere wheel only;
 - no native JV WASM backend;
-- no dedicated mobile controls;
-- no phone lifecycle/performance validation;
+- mobile controls not locally built or phone-validated on current head yet;
 - no scene package or scan loader;
 - diagnostic visuals only;
 - no project reuse license selected yet;
@@ -126,35 +175,38 @@ Do not begin another broad cleanup cycle unless a concrete file or dependency ob
 
 ## Corrected near-term development plan
 
-### 1. Browser truth
+### 1. Validate the mobile-control slice
 
-Run the exact current build in a real desktop browser and verify:
+Run the complete Node 24 gate on exact current head. Repair only demonstrated source/test/build failures.
+
+### 2. Desktop browser smoke
+
+Verify:
 
 - Box3D startup;
 - WebGL rendering;
-- steering, forward, reverse and brake;
-- inverted camera behavior already requested by Jozz;
+- keyboard steering, forward, reverse and brake;
+- pointer controls with a mouse or device emulation;
+- requested inverted camera behavior;
 - destroy/rebuild;
 - no uncaught runtime errors.
 
-### 2. Multi-source input foundation
+### 3. Real phone gate
 
-Before adding touch controls, make timeline state source-aware. Keyboard, touch and future gamepad inputs must not release one another when overlapping on the same semantic control.
+Validate over LAN:
 
-### 3. Mobile control host
+- simultaneous steering and forward/reverse/brake;
+- pointer cancel and lifecycle release;
+- portrait and landscape layout;
+- safe-area behavior;
+- camera versus control ownership;
+- access to the telemetry panel;
+- performance and dropped time;
+- Jozz control feel.
 
-Implement Pointer Events controls that:
+### 4. Polish the proven mobile UI
 
-- feed the existing fixed-step timelines;
-- allow steering and throttle/brake simultaneously;
-- assign one pointer to one control owner;
-- release safely on up, cancel, lost capture, blur, hidden page, pagehide and disposal;
-- do not allow camera input to steal control pointers;
-- do not modify physics or render cadence.
-
-### 4. Real phone gate
-
-Validate landscape/portrait layout, browser gestures, lifecycle, multi-touch, performance and driving feel over LAN on a real phone.
+Change control geometry, opacity, labels and layout only from observed phone evidence. Do not add analog steering or assists merely because they appear more advanced.
 
 ### 5. Scene foundation
 
@@ -177,20 +229,18 @@ Begin behavior-preserving native/WASM parity work after the browser host, input,
 
 ```text
 ACTIVE NOW:
-source-aware timelines
-mobile pointer controls
-compact responsive UI
-focused tests
-
-WAITING FOR OWNER/RUNTIME VALIDATION:
+current-head Node/build validation
 desktop browser smoke
-real phone smoke
-control feel
+real-phone mobile gate
+focused mobile polish
+
+WAITING:
+scene package and synthetic scene
+real scan import
 publication history strategy
 license
 
 NOT ACTIVE YET:
-real scan import
 native JV WASM port
 final vehicle mechanics
 Pages publication
