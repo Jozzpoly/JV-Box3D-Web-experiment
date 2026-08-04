@@ -8,6 +8,7 @@ Set-Location $root
 $expectedBranch = "agent/jv-web-demonstrator-foundation"
 $publicReport = ".local-audit/public-readiness.json"
 $licenseReport = ".local-audit/license-inventory.json"
+$reviewLedger = ".local-audit/public-review-classifications.json"
 
 function Invoke-NpmStep {
     param(
@@ -21,6 +22,23 @@ function Invoke-NpmStep {
     & npm @Arguments
     if ($LASTEXITCODE -ne 0) {
         throw "$Label failed with exit code $LASTEXITCODE"
+    }
+}
+
+function Assert-CleanWorkingTree {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Context
+    )
+
+    $changes = @(git status --porcelain --untracked-files=all)
+    if ($LASTEXITCODE -ne 0) {
+        throw "git status failed during $Context."
+    }
+    if ($changes.Count -gt 0) {
+        Write-Host "Working tree changes during ${Context}:"
+        $changes | ForEach-Object { Write-Host "  $_" }
+        throw "Public-readiness audits require a clean source tree. Nothing was deleted or reset."
     }
 }
 
@@ -43,16 +61,12 @@ $currentBranch = (git branch --show-current).Trim()
 if ($LASTEXITCODE -ne 0 -or $currentBranch -ne $expectedBranch) {
     throw "Wrong branch. Expected '$expectedBranch', received '$currentBranch'."
 }
+$sourceCommit = (git rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0 -or $sourceCommit -notmatch '^[0-9a-f]{40}$') {
+    throw "Unable to resolve the exact source commit."
+}
 
-$dirty = @(git status --porcelain --untracked-files=all)
-if ($LASTEXITCODE -ne 0) {
-    throw "git status failed."
-}
-if ($dirty.Count -gt 0) {
-    Write-Host "Working tree changes:"
-    $dirty | ForEach-Object { Write-Host "  $_" }
-    throw "Public-readiness audits require a clean working tree. Nothing was modified."
-}
+Assert-CleanWorkingTree -Context "initial audit check"
 
 $nodeVersion = (node --version).Trim()
 if ($LASTEXITCODE -ne 0 -or $nodeVersion -notmatch '^v24\.') {
@@ -61,7 +75,7 @@ if ($LASTEXITCODE -ne 0 -or $nodeVersion -notmatch '^v24\.') {
 
 Write-Host "Repository: $resolvedRepoRoot"
 Write-Host "Branch:     $currentBranch"
-Write-Host "Commit:     $((git rev-parse HEAD).Trim())"
+Write-Host "Commit:     $sourceCommit"
 Write-Host "Node:       $nodeVersion"
 Write-Host "Mode:       REPORT ONLY / NO PUBLISHING"
 
@@ -73,23 +87,51 @@ Invoke-NpmStep "Generate reachable project/third-party license inventory" @(
     "run",
     "audit:licenses:report"
 )
+Invoke-NpmStep "Prepare the local review-classification ledger" @(
+    "run",
+    "audit:public:review-template"
+)
 
-foreach ($path in @($publicReport, $licenseReport)) {
+foreach ($path in @($publicReport, $licenseReport, $reviewLedger)) {
     if (-not (Test-Path $path -PathType Leaf)) {
-        throw "Expected audit report was not created: $path"
+        throw "Expected audit evidence was not created: $path"
     }
     $report = Get-Content -Raw -Path $path | ConvertFrom-Json
     if ($null -eq $report.schemaVersion -or $null -eq $report.sourceCommit) {
-        throw "Audit report has no schema/source identity: $path"
+        throw "Audit evidence has no schema/source identity: $path"
     }
-    if ($report.sourceCommit -ne (git rev-parse HEAD).Trim()) {
-        throw "Audit report commit mismatch in ${path}: $($report.sourceCommit)"
+    if ($report.sourceCommit -ne $sourceCommit) {
+        throw "Audit evidence commit mismatch in ${path}: $($report.sourceCommit) != $sourceCommit"
     }
+}
+
+$publicData = Get-Content -Raw -Path $publicReport | ConvertFrom-Json
+$licenseData = Get-Content -Raw -Path $licenseReport | ConvertFrom-Json
+$reviewData = Get-Content -Raw -Path $reviewLedger | ConvertFrom-Json
+$pendingReviews = @(
+    $reviewData.entries | Where-Object { $_.disposition -eq "PENDING" }
+).Count
+$remediationReviews = @(
+    $reviewData.entries | Where-Object { $_.disposition -eq "REMEDIATE" }
+).Count
+
+Assert-CleanWorkingTree -Context "completed audit report generation"
+$currentHead = (git rev-parse HEAD).Trim()
+$currentBranchAfter = (git branch --show-current).Trim()
+if ($currentHead -ne $sourceCommit -or $currentBranchAfter -ne $currentBranch) {
+    throw "Source identity changed while audit reports were generated."
 }
 
 Write-Host "`nDEMONSTRATOR AUDIT REPORTS: GENERATED"
 Write-Host "Public/history report: $resolvedRoot\$publicReport"
 Write-Host "License inventory:     $resolvedRoot\$licenseReport"
+Write-Host "Review ledger:         $resolvedRoot\$reviewLedger"
+Write-Host "Public contracts:      $($publicData.metrics.presentPublicContracts)/$($publicData.metrics.requiredPublicContracts)"
+Write-Host "Public blockers:       $(@($publicData.blockers).Count)"
+Write-Host "Review findings:       $(@($publicData.reviewFindings).Count)"
+Write-Host "Review pending:        $pendingReviews"
+Write-Host "Review remediation:    $remediationReviews"
+Write-Host "License status:        $($licenseData.status)"
 Write-Host "Publication:           NOT PERFORMED"
 Write-Host "Interpretation:         findings still require classification and owner decisions"
 Write-Host "SOURCE-PUBLIC-READY:    NOT CLAIMED"
