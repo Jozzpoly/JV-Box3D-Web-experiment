@@ -17,9 +17,7 @@ function environment(overrides = {}) {
     viewportWidth: 412,
     viewportHeight: 915,
     devicePixelRatio: 2.625,
-    createCanvas: () => ({
-      getContext: () => ({ renderer: "fixture" }),
-    }),
+    webgl: true,
     ...overrides,
   };
 }
@@ -70,15 +68,10 @@ test("loopback HTTP is classified separately from LAN HTTP", () => {
   assert.equal(report.transport, "LOOPBACK_HTTP");
 });
 
-test("diagnostic WebGL probing fails closed instead of crashing startup", () => {
-  const report = inspectBrowserRuntime(
-    environment({
-      createCanvas() {
-        throw new Error("canvas unavailable");
-      },
-    }),
-  );
+test("renderer result is reported without creating a diagnostic WebGL context", () => {
+  const report = inspectBrowserRuntime(environment({ webgl: false }));
   assert.equal(report.webgl, false);
+  assert.match(formatBrowserRuntimeReport(report), /WebGL OFF/);
 });
 
 test("invalid numeric capability values are normalized for telemetry", () => {
