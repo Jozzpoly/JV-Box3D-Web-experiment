@@ -23,7 +23,7 @@ Skrypt zatrzymuje się bez modyfikacji projektu, jeżeli:
 - Node nie jest w majorze 24;
 - brakuje przypiętego receiptu.
 
-Dla znanego problemu Windows `core.autocrlf=true` porównuje bajty receiptu z blobem Gita. Tylko gdy różnią się, odtwarza ten jeden tracked artifact z bieżącego `HEAD` i ponownie potwierdza hash.
+Dla znanego problemu Windows `core.autocrlf=true` porównuje bajty receiptu z blobem Gita. Tylko gdy różnią się, wykonuje kontrolowany `git restore` tego jednego tracked artifactu z bieżącego `HEAD` i ponownie potwierdza hash.
 
 Następnie wykonuje:
 
@@ -31,10 +31,20 @@ Następnie wykonuje:
 npm ci
 npm run check:docs
 npm run check
+npm run build:bundle
+```
+
+`npm run check` uruchamia TypeScript i testy dokładnie raz. Ostatni krok buduje wyłącznie produkcyjny bundle; nie powtarza całej walidacji.
+
+Zwykłe publiczne polecenie:
+
+```text
 npm run build
 ```
 
-Nie tworzy commita, nie pushuje, nie uruchamia workflowa i nie zmienia brancha.
+nadal zachowuje samodzielną semantykę `check + bundle` dla użytkownika uruchamiającego tylko build.
+
+Skrypt nie tworzy commita, nie pushuje, nie uruchamia workflowa i nie zmienia brancha.
 
 ## Uruchomienie
 
