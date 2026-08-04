@@ -12,7 +12,9 @@ const REDACT_PATTERNS = [
   /https:\/\/discord(?:app)?\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+/,
   /\/\/registry\.npmjs\.org\/:_authToken\s*=\s*[^\s]+/,
   /\b[A-Za-z]:\\Users\\[^\\\r\n]+/,
+  /\b[A-Za-z]:\\(?:[^\r\n"'`]+\\)+[^\r\n"'`]*/,
   /(?:^|[\s"'`])\/home\/[^/\s"'`]+/,
+  /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i,
   /\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password)\b\s*[:=]\s*["'][^"'\r\n]{12,}["']/i,
 ];
 
