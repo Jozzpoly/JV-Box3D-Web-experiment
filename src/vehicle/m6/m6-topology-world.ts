@@ -24,6 +24,7 @@ import {
 } from "./rate-steering-profile.js";
 
 const FULL_MASK = 0xffff_ffff_ffff_ffffn;
+const GROUND_HALF_EXTENT_METERS = 250;
 
 export {
   CollisionGroupAllocator,
@@ -31,6 +32,8 @@ export {
 } from "./m6-topology-contract.js";
 export type {
   M6CornerTrace,
+  M6DriveMode,
+  M6DriveTrace,
   M6HandsOnEdge,
   M6SteeringActuatorState,
   M6SteeringMechanismTrace,
@@ -86,8 +89,7 @@ export class M6TopologyWorld {
       this.#config.solver.gravity[1],
       this.#config.solver.gravity[2],
     );
-    worldDef.contactHertz =
-      this.#config.solver.contactHertz;
+    worldDef.contactHertz = this.#config.solver.contactHertz;
     worldDef.contactDampingRatio =
       this.#config.solver.contactDampingRatio;
     worldDef.contactSpeed = this.#config.solver.contactSpeed;
@@ -115,9 +117,9 @@ export class M6TopologyWorld {
       b3.b3CreateBoxShape(
         groundId,
         terrainDef,
-        30,
+        GROUND_HALF_EXTENT_METERS,
         0.5,
-        30,
+        GROUND_HALF_EXTENT_METERS,
       );
 
       this.#events = events;
@@ -183,9 +185,7 @@ export class M6TopologyWorld {
       const activeVehicles = this.#vehicles.filter(
         (vehicle) => !vehicle.disposed,
       );
-      activeVehicles.forEach((vehicle) =>
-        vehicle.beforeStep(),
-      );
+      activeVehicles.forEach((vehicle) => vehicle.beforeStep());
       this.#b3.b3World_Step(
         this.#worldId,
         this.#config.solver.fixedDt,
