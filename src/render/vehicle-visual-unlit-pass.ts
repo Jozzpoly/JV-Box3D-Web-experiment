@@ -281,13 +281,10 @@ function renderFrame(
         gl.UNSIGNED_SHORT,
         0,
       );
-      assertNoGlError(
-        gl,
-        `Vehicle visual mesh ${command.meshIndex} primitive ${primitiveIndex} draw`,
-      );
       primitiveDrawCount += 1;
     }
   }
+  assertNoGlError(gl, "Vehicle visual unlit frame");
 
   return Object.freeze({
     drawCommandCount: drawPlan.length,
