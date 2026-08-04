@@ -5,6 +5,7 @@ Set-Location $repositoryRoot
 
 $expectedBranch = "agent/f5-visual-observer"
 $receiptPath = "public/receipts/jv_m6_factory_receipt.json"
+$allowedReceiptDriftPattern = '^ M public/receipts/jv_m6_factory_receipt\.json$'
 
 $currentBranch = (git branch --show-current).Trim()
 if ($LASTEXITCODE -ne 0) {
@@ -19,16 +20,15 @@ if ($LASTEXITCODE -ne 0) {
   throw "Could not inspect the working tree."
 }
 
-$receiptPattern = '^[ MARCUD?!]{2} public/receipts/jv_m6_factory_receipt\.json$'
 $otherChanges = @(
   $statusLines | Where-Object {
-    $_ -and ($_ -notmatch $receiptPattern)
+    $_ -and ($_ -notmatch $allowedReceiptDriftPattern)
   }
 )
 if ($otherChanges.Count -gt 0) {
   Write-Host "[JV F5 Visual] Unrelated local changes were found; nothing was changed:" -ForegroundColor Yellow
   $otherChanges | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
-  throw "The working tree contains changes other than the known Windows receipt drift."
+  throw "The working tree contains changes other than the known unstaged Windows receipt drift."
 }
 
 if ($statusLines.Count -gt 0) {
@@ -49,26 +49,47 @@ $expectedReceipt = (git rev-parse "HEAD:$receiptPath").Trim()
 if ($LASTEXITCODE -ne 0) {
   throw "Could not read the pinned receipt blob from HEAD."
 }
+$indexReceipt = (git rev-parse ":$receiptPath").Trim()
+if ($LASTEXITCODE -ne 0) {
+  throw "Could not read the pinned receipt blob from the Git index."
+}
 $actualReceipt = (git hash-object --no-filters $receiptPath).Trim()
 if ($LASTEXITCODE -ne 0) {
   throw "Could not hash the restored receipt."
 }
-if ($actualReceipt -ne $expectedReceipt) {
-  throw "Receipt bytes differ. Expected $expectedReceipt, received $actualReceipt."
+
+if ($indexReceipt -ne $expectedReceipt) {
+  throw "The receipt in the Git index differs from HEAD. Expected $expectedReceipt, received $indexReceipt. No staged data was changed."
 }
+if ($actualReceipt -ne $expectedReceipt) {
+  throw "Receipt bytes differ after restore. Expected $expectedReceipt, received $actualReceipt."
+}
+
+# Refresh Git's cached stat data. Some Windows/Git combinations continue to
+# report this exact byte-matching file as modified after a branch checkout.
+git update-index --refresh -- $receiptPath 2>$null | Out-Null
 
 $remainingChanges = @(git status --porcelain=v1 --untracked-files=all)
 if ($LASTEXITCODE -ne 0) {
   throw "Could not verify the working tree after restoring the receipt."
 }
-if ($remainingChanges.Count -gt 0) {
-  Write-Host "[JV F5 Visual] The working tree is still not clean after the safe receipt repair:" -ForegroundColor Yellow
-  $remainingChanges | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+$remainingOtherChanges = @(
+  $remainingChanges | Where-Object {
+    $_ -and ($_ -notmatch $allowedReceiptDriftPattern)
+  }
+)
+if ($remainingOtherChanges.Count -gt 0) {
+  Write-Host "[JV F5 Visual] Unrelated changes remain after the safe receipt repair:" -ForegroundColor Yellow
+  $remainingOtherChanges | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
   throw "Validation stopped before npm commands."
 }
 
-Write-Host "[JV F5 Visual] Receipt OK: $actualReceipt"
-Write-Host "[JV F5 Visual] Working tree clean."
+Write-Host "[JV F5 Visual] Receipt bytes and Git index are exact: $actualReceipt"
+if ($remainingChanges.Count -gt 0) {
+  Write-Host "[JV F5 Visual] Git still reports only the known receipt stat/EOL false-positive; continuing because HEAD, index and on-disk hashes are identical." -ForegroundColor Yellow
+} else {
+  Write-Host "[JV F5 Visual] Working tree clean."
+}
 
 Write-Host "[JV F5 Visual] Installing the locked dependencies..."
 npm ci
