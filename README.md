@@ -1,73 +1,55 @@
 # JV Web
 
-JV Web is the browser demonstrator and research host for Jozz Vehicle. It combines deterministic input, real Box3D WebAssembly physics, mobile interaction, portable packaging, scene contracts and an emerging vehicle-model pipeline.
+JV Web is the desktop/mobile browser demonstrator and research host for Jozz Vehicle. It combines deterministic input, real Box3D WebAssembly physics, portable packaging, strict scene/asset contracts and an emerging full vehicle-visual pipeline.
 
-The repository is experimental, but it is expected to remain understandable, runnable and technically honest rather than becoming a collection of disconnected prototypes.
+The repository is experimental, but expected to remain understandable, runnable and technically honest.
 
-## Current demonstrator
-
-The working browser build contains:
+## Working demonstrator
 
 - deterministic fixed-step simulation;
 - source-aware keyboard and Pointer Events input;
-- simultaneous multi-touch steering and throttle/brake;
-- real Box3D/WASM worlds and contacts;
-- an 18-body M6 reference vehicle with suspension and physical rack steering;
+- simultaneous mobile steering and throttle/brake;
+- real Box3D/WASM contacts;
+- 18-body M6 reference vehicle with physical rack steering;
 - `RELEASE | POSITION | RATE` steering;
 - reference drive, reverse, coast and braking;
-- a dependency-free WebGL debug observer;
-- transactional startup, rollback, disposal and rebuild;
-- a relative-path portable build for localhost, LAN and repository subpaths;
-- strict receipt integrity on secure contexts and ordinary LAN HTTP;
-- explicit browser, backend, scene and vehicle-visual contracts.
+- dependency-free WebGL debug observer;
+- transactional startup/disposal/rebuild;
+- relative-path portable build for localhost, LAN and repository subpaths;
+- strict receipt validation on secure contexts and ordinary LAN HTTP.
 
-Latest exact logged and owner-validated mobile checkpoint:
+Exact logged mobile checkpoint:
 
 ```text
 commit: 7204993a0640e6cff0baa719d849a0b4368c15aa
 Node/npm: 24.16.0 / 11.17.0
 120/120 tests PASS
 TypeScript / docs / notices / portable build PASS
-npm audit: 0 vulnerabilities observed
 localhost + LAN desktop + real phone PASS
-Box3D + WebGL + keyboard + multi-touch observed working
 publication NOT PERFORMED
 ```
 
-Jozz also confirmed the newer scene/runtime path as LIVE with four contacts, all drive controls and destroy/rebuild working.
+Jozz subsequently confirmed the newer runtime lines as LIVE with four contacts, all controls and destroy/rebuild working on desktop and phone. The exact current asset-pipeline head still requires its own fresh gate.
 
-The first visual-rig gate at `49e9eec…` produced TypeScript PASS and 161/162 tests. The sole failure was an outdated test expectation after the intended backend-descriptor consolidation; the host exposed the correct shared descriptor. Resolve the exact current PR head before the next gate; it contains that test correction plus additional visual/GLB hardening.
+## Run
 
-## Run locally
-
-Requirements:
-
-```text
-Node 24
-npm 11+
-```
+Requirements: Node 24, npm 11+.
 
 ```powershell
 npm ci
 npm run dev -- --host 0.0.0.0
 ```
 
-Complete validation and portable build:
+Complete validation and portable package:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\tools\run-demonstrator-foundation-gate.ps1"
 ```
 
-Preview the generated package:
+Inspect a vehicle export:
 
 ```powershell
-npm run preview -- --host 0.0.0.0 --port 4173 --strictPort
-```
-
-Inspect a future vehicle GLB locally:
-
-```powershell
-npm run inspect:vehicle-glb -- <model.glb> [vehicle.visual.json]
+npm run inspect:vehicle-glb -- <model.glb> <vehicle.visual.json>
 ```
 
 ## Controls
@@ -77,16 +59,14 @@ A / D or Left / Right   steering
 W / Up                  forward
 S / Down                reverse
 Space                   brake
-mouse or free-area drag orbit camera
+mouse/free-area drag     orbit camera
 mouse wheel              zoom
-mobile buttons           multi-touch drive controls
+mobile buttons           multi-touch vehicle controls
 ```
 
-All device adapters feed the same semantic fixed-step timelines and never manipulate Box3D directly.
+All device adapters feed semantic fixed-step timelines and never manipulate Box3D directly.
 
-## Architecture truth
-
-The current vehicle is a reference fixture:
+## Physics authority
 
 ```text
 backend: legacy_ts_m6
@@ -94,127 +74,142 @@ role: REFERENCE_BROWSER_FIXTURE
 product physics authority: false
 native JV parity: NOT_PROVEN
 accepts new product physics: false
-command contract: v1
-trace contract: v1
-visual frame contract: v1
+command / trace / visual frame: v1
 ```
 
-It is useful for browser, mobile, asset and regression work, but is not a faithful native JV port. Native `maxDriveSpeed = 40` means a wheel-motor rad/s limit; the TypeScript fixture historically treats it as a linear target.
+The fixture supports browser, mobile, asset and regression work but is not a faithful native JV port. Native `maxDriveSpeed = 40` is a wheel-motor rad/s limit; the TypeScript fixture historically uses linear-target semantics.
 
-Target product architecture:
+Target product physics:
 
 ```text
 Box3D source + native JV Core
+              ↓ one WASM module
+VehicleRuntimeBackend: native_jv_wasm
               ↓
-      one WebAssembly module
+VehicleVisualFrameV1-compatible snapshots
               ↓
- VehicleRuntimeBackend: native_jv_wasm
-              ↓
- VehicleVisualFrameV1-compatible snapshots
-              ↓
- TypeScript assets, renderer, UI and scenes
+existing TypeScript asset/render/UI layers
 ```
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/decisions/ADR-0003-native-jv-core-wasm.md`](docs/decisions/ADR-0003-native-jv-core-wasm.md).
-
-## Scene foundation
-
-The runtime starts through:
+## Vehicle visualization pipeline
 
 ```text
-public/scenes/synthetic-flat-lab.scene.json
-```
-
-`ScenePackageV1` defines meters, axes, spawn, render source and collision source. The current backend accepts only the synthetic plane; GLB scene rendering and triangle collision remain fail-closed until implemented.
-
-See [`docs/contracts/SCENE_PACKAGE_V1.md`](docs/contracts/SCENE_PACKAGE_V1.md).
-
-## Vehicle model and rig foundation
-
-The current source candidate prepares the model pipeline without loading a final model yet.
-
-```text
-physics state
-    ↓
 VehicleVisualFrameV1
-    ↓
-18 stable rigid parts + 8 physical segments
-    ↓
+        ↓
+18 stable parts + 8 physical segments
+        ↓
 VehicleVisualPackageV1
-    ↓
-self-contained GLB nodes
+        ↓
+fetch / hash / GLB policy
+        ↓
+sealed CPU asset
+        ↓
+ownership + mobile budget
+        ↓
+draw plan
+        ↓
+transactional GPU buffers
 ```
 
-M6 visual channels cover chassis, rack, four wheels, four knuckles, eight control arms, four coilovers and four steering links. Body transforms come from real Box3D bodies; segment endpoints use the exact physical joint anchors.
+The first rig is a rigid-node vehicle rig, not a character skeleton. The model contains no Box3D IDs and never drives physics.
 
-The first rig is a rigid-node vehicle rig, not a skinned character rig. Tire/rim/rotating disc follow the wheel; upright and fixed caliper follow the knuckle. Deformable tires remain a separate future contract.
+Binding modes:
 
-Before future GPU upload the GLB gate verifies:
+```text
+PART
+SEGMENT_STRETCH(referenceLengthMeters)
+SEGMENT_ENDPOINT_AIM
+```
 
-- exact bytes and SHA-256;
-- GLB v2 structure and one embedded BIN buffer;
-- buffer/accessor bounds and alignment;
-- triangle geometry with WebGL1-portable 8/16-bit indices;
-- unique bound-node ownership;
-- bound roots with applied identity transforms;
-- no external resource, skin, animation, morph, sparse accessor or unsupported extension.
+The V1 GLB subset accepts triangles, 8/16-bit indices, POSITION and optional NORMAL/TEXCOORD_0. It currently rejects textures, external resources, unknown vertex attributes, skins, animations, morphs and extensions rather than silently discarding them.
 
-Vehicle asset paths resolve relative to the visual-package manifest directory, preserving the same relationship at the site root and repository subpath.
+Protective mobile geometry limits:
+
+```text
+512 nodes
+512 primitives
+300,000 triangles
+64 materials
+64 MiB decoded geometry
+```
 
 See [`docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`](docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md).
+
+## Deterministic tiny rig
+
+Before dev/build the repository generates:
+
+```text
+public/vehicles/tiny/vehicle.visual.json
+public/vehicles/tiny/models/m6-rig-proof.glb
+```
+
+It contains 18 part boxes and 8 segment rods using two shared meshes/materials. Both files are reproducible, byte-pinned, required portable runtime assets and validated together through the CPU pipeline.
+
+The tiny asset is not drawn by `main.ts` yet. It exists so the first browser GLB proof does not depend on the final Jozz model.
+
+## Scene and scan foundation
+
+The working runtime starts through `public/scenes/synthetic-flat-lab.scene.json` and currently supports only a built-in ground plane.
+
+A preliminary [`StaticSceneVisualPackageV1`](docs/contracts/STATIC_SCENE_VISUAL_PACKAGE_V1.md) pins static GLB bytes, `worldFromAsset`, local-origin radius and budgets. It will reuse the CPU/GPU mesh path but not vehicle bindings.
+
+```text
+photogrammetry render mesh ≠ collision mesh
+```
+
+Real scan rendering, textures, chunking/culling and triangle collision remain inactive until the tiny vehicle path is proven on phone.
 
 ## Repository map
 
 ```text
 src/app/                     browser and vehicle hosts
-src/assets/                  shared portable asset policy
 src/input/                   device adapters and semantic timelines
-src/runtime/                 capabilities, backend and visual-frame contracts
-src/scene/                   scene package validation
+src/runtime/                 backend and visual-frame contracts
+src/scene/                   scene/static-scan contracts
 src/physics/                 typed Box3D boundary
-src/vehicle/m6/              reference vehicle and stable visual channels
-src/visual/                  GLB/package/runtime-policy validation
-src/render/                  diagnostic WebGL observer
-public/receipts/             pinned runtime configuration
-public/scenes/               portable scene manifests
-tests/                       deterministic, WASM and asset-contract tests
-tools/                       build gates and GLB inspection
+src/vehicle/m6/              reference vehicle and visual channels
+src/visual/                  GLB, CPU, binding and draw-plan pipeline
+src/render/                  debug observer and transactional GPU assets
+public/                      generated/pinned runtime assets
+_tests/ tests/               deterministic and adversarial gates
+tools/                       build, packaging and asset inspection
 docs/PROJECT_STATE.md        canonical current state
 ```
 
-## Correct model implementation order
+## Correct next order
 
 ```text
-1 green gate for the exact current PR head
-2 unchanged debug-renderer browser smoke
-3 tiny generated GLB + package runtime fixture
-4 transactional CPU load/parse
-5 tested transform composition and SEGMENT_STRETCH baseline semantics
-6 minimal rigid-node rendering beside the debug observer
-7 rebuild/disposal and phone performance
-8 simple owner-authored chassis + wheels
-9 suspension, steering links and coilovers
-10 full body/interior/wheel asset
+1 full gate on exact current PR head
+2 unchanged debug-renderer desktop/LAN/phone smoke
+3 load the tiny package in browser
+4 compile live draw plans from VehicleVisualFrameV1
+5 minimal shader/draw layer beside debug observer
+6 prove 18 parts + 8 segments, rebuild/disposal and phone budget
+7 owner-authored simple chassis + wheels
+8 suspension links and coilovers
+9 normals/base-colour lighting
+10 embedded texture ownership and budgets
+11 full body/interior/wheel model
+12 first static scan visual fixture
 ```
 
-The final Jozz model must not be the first file testing the loader, transform math or GPU lifecycle.
+The final owner model must not be the first asset testing load, transform math or GPU lifecycle.
 
 ## Known limitations
 
-- the exact current PR head has not passed its fresh local gate;
-- no browser GLB loader or model renderer yet;
-- no final vehicle asset or package manifest yet;
-- no triangle-mesh scene collision or real scan package;
+- current asset-pipeline head is not locally gated yet;
+- tiny GLB is not drawn in the browser yet;
+- no image/texture pipeline;
+- no final vehicle or real scan package;
 - initial camera pose still starts from the old side;
-- driving feel and RATE profiles are not product-approved;
-- legacy split-sphere wheel is a physics regression fixture, not the future tire;
+- driving feel/RATE profiles are not product-approved;
+- legacy split-sphere wheel is a regression fixture, not the future tire;
 - no native JV WASM backend;
-- active experimental history should not be fast-forwarded wholesale to a public main.
+- active experimental history should not be fast-forwarded wholesale to public `main`.
 
 ## License and ownership
 
-Third-party notices are in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+Third-party notices are in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). JV Web does not yet grant a public reuse license. Models, scans, textures and photographs are governed separately from source code.
 
-JV Web does not yet grant a public reuse license. Models, scans, textures and photographs are governed separately from source code.
-
-Jozz owns product direction, driving feel, visual acceptance, integration and publication decisions. Experimental results are not automatically adopted as product behavior.
+Jozz owns product direction, driving feel, visual acceptance, integration and publication decisions.
