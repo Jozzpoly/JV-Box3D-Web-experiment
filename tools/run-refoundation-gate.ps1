@@ -10,16 +10,16 @@ Set-Location $root
 $expectedBranch = "agent/jv-web-refoundation"
 $receiptPath = "public/receipts/jv_m6_factory_receipt.json"
 
-function Invoke-Checked {
+function Invoke-NpmStep {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Label,
         [Parameter(Mandatory = $true)]
-        [scriptblock]$Command
+        [string[]]$Arguments
     )
 
     Write-Host "`n==> $Label"
-    & $Command
+    & npm @Arguments
     if ($LASTEXITCODE -ne 0) {
         throw "$Label failed with exit code $LASTEXITCODE"
     }
@@ -30,8 +30,12 @@ if ($LASTEXITCODE -ne 0) {
     throw "This directory is not a Git repository."
 }
 
-$resolvedRoot = [System.IO.Path]::GetFullPath($root).TrimEnd('\', '/')
-$resolvedRepoRoot = [System.IO.Path]::GetFullPath($repoRoot).TrimEnd('\', '/')
+$directorySeparators = @(
+    [System.IO.Path]::DirectorySeparatorChar,
+    [System.IO.Path]::AltDirectorySeparatorChar
+)
+$resolvedRoot = [System.IO.Path]::GetFullPath($root).TrimEnd($directorySeparators)
+$resolvedRepoRoot = [System.IO.Path]::GetFullPath($repoRoot).TrimEnd($directorySeparators)
 if ($resolvedRoot -ne $resolvedRepoRoot) {
     throw "Repository root mismatch. Script root: $resolvedRoot; Git root: $resolvedRepoRoot"
 }
@@ -84,7 +88,6 @@ if ($LASTEXITCODE -ne 0) {
 
 if ($expectedReceiptBlob -ne $actualReceiptBlob) {
     Write-Host "Pinned receipt bytes differ from Git; restoring the tracked artifact once."
-    Remove-Item -Force $receiptPath
     git restore --source=HEAD --worktree -- $receiptPath
     if ($LASTEXITCODE -ne 0) {
         throw "Receipt restore failed."
@@ -97,10 +100,10 @@ if ($expectedReceiptBlob -ne $actualReceiptBlob) {
 
 Write-Host "Receipt:    $actualReceiptBlob (byte-exact)"
 
-Invoke-Checked "Install exact dependency graph" { npm ci }
-Invoke-Checked "Audit local Markdown links" { npm run check:docs }
-Invoke-Checked "Run TypeScript and test gate" { npm run check }
-Invoke-Checked "Build production bundle" { npm run build }
+Invoke-NpmStep "Install exact dependency graph" @("ci")
+Invoke-NpmStep "Audit local Markdown links" @("run", "check:docs")
+Invoke-NpmStep "Run TypeScript and test gate" @("run", "check")
+Invoke-NpmStep "Build production bundle" @("run", "build:bundle")
 
 Write-Host "`nREFOUNDATION LOCAL GATE: PASS"
 
