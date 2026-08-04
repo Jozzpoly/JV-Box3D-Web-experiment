@@ -57,11 +57,11 @@ function assertFiniteTimestamp(timestampMs: number): void {
 
 export class LongitudinalInputTimeline {
   readonly #events: RawLongitudinalEvent[] = [];
+  readonly #forwardSources = new Set<string>();
+  readonly #reverseSources = new Set<string>();
+  readonly #brakeSources = new Set<string>();
   #nextSequence = 0;
   #cursorTimeMs: number;
-  #forwardPressed = false;
-  #reversePressed = false;
-  #brakePressed = false;
 
   constructor(startTimeMs: number) {
     assertFiniteTimestamp(startTimeMs);
@@ -158,9 +158,9 @@ export class LongitudinalInputTimeline {
       ),
       integratedThrottleMs,
       integratedBrakeMs,
-      forwardPressedAtEnd: this.#forwardPressed,
-      reversePressedAtEnd: this.#reversePressed,
-      brakePressedAtEnd: this.#brakePressed,
+      forwardPressedAtEnd: this.#forwardSources.size > 0,
+      reversePressedAtEnd: this.#reverseSources.size > 0,
+      brakePressedAtEnd: this.#brakeSources.size > 0,
       consumedEvents,
     };
   }
@@ -188,32 +188,38 @@ export class LongitudinalInputTimeline {
 
   #applyEvent(event: RawLongitudinalEvent): void {
     if (event.kind === "RELEASE_ALL") {
-      this.#forwardPressed = false;
-      this.#reversePressed = false;
-      this.#brakePressed = false;
+      this.#forwardSources.delete(event.sourceId);
+      this.#reverseSources.delete(event.sourceId);
+      this.#brakeSources.delete(event.sourceId);
       return;
     }
 
-    switch (event.control) {
+    const sources = this.#sourcesFor(event.control);
+    if (event.pressed) {
+      sources.add(event.sourceId);
+    } else {
+      sources.delete(event.sourceId);
+    }
+  }
+
+  #sourcesFor(control: LongitudinalControl): Set<string> {
+    switch (control) {
       case "FORWARD":
-        this.#forwardPressed = event.pressed;
-        break;
+        return this.#forwardSources;
       case "REVERSE":
-        this.#reversePressed = event.pressed;
-        break;
+        return this.#reverseSources;
       case "BRAKE":
-        this.#brakePressed = event.pressed;
-        break;
+        return this.#brakeSources;
     }
   }
 
   #currentThrottle(): number {
-    const forward = this.#forwardPressed ? 1 : 0;
-    const reverse = this.#reversePressed ? 1 : 0;
+    const forward = this.#forwardSources.size > 0 ? 1 : 0;
+    const reverse = this.#reverseSources.size > 0 ? 1 : 0;
     return forward - reverse;
   }
 
   #currentBrake(): number {
-    return this.#brakePressed ? 1 : 0;
+    return this.#brakeSources.size > 0 ? 1 : 0;
   }
 }
