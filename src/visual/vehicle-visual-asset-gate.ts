@@ -28,7 +28,10 @@ export async function validateVehicleVisualAssetV1(
       `byteLength ${bytes.byteLength} does not match manifest ${visual.asset.byteLength}`,
     );
   }
-  const digest = await portableDigestHex("SHA-256", bytes, subtle);
+  const digest =
+    subtle === undefined
+      ? await portableDigestHex("SHA-256", bytes)
+      : await portableDigestHex("SHA-256", bytes, subtle);
   if (digest !== visual.asset.sha256) {
     reject(`SHA-256 ${digest} does not match the package manifest`);
   }
