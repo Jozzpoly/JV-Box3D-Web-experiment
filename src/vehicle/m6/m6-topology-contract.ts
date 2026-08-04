@@ -1,3 +1,4 @@
+import type { LongitudinalCommand } from "../../input/longitudinal-command.js";
 import type { SteeringCommand } from "../../input/steering-command.js";
 import type {
   b3BodyId,
@@ -18,6 +19,7 @@ export const M6_TOPOLOGY_COUNTS = Object.freeze({
 
 export type M6SteeringActuatorState = "OFF" | "POSITION" | "RATE";
 export type M6HandsOnEdge = "NONE" | "ENGAGE" | "REVERSE";
+export type M6DriveMode = "COAST" | "THROTTLE" | "BRAKE";
 
 export interface M6Rotation {
   readonly x: number;
@@ -50,11 +52,25 @@ export interface M6SteeringMechanismTrace {
   readonly rackFrictionLoadTerm: number;
 }
 
+export interface M6DriveTrace {
+  readonly command: LongitudinalCommand;
+  readonly mode: M6DriveMode;
+  readonly allWheelDrive: boolean;
+  readonly drivenCornerCount: number;
+  readonly forwardSpeedMetersPerSecond: number;
+  readonly targetLinearSpeedMetersPerSecond: number;
+  readonly targetWheelAngularSpeed: number;
+  readonly driveTaper: number;
+  readonly motorTorqueCapPerWheel: number;
+  readonly currentMotorTorqueTotal: number;
+}
+
 export interface M6CornerTrace {
   readonly wheelPosition: b3Vec3;
   readonly wheelRotation: M6Rotation;
   readonly wheelVelocity: b3Vec3;
   readonly wheelSpinSpeed: number;
+  readonly driveMotorTorque: number;
   readonly coiloverLength: number;
   readonly upperHingeAngle: number;
   readonly lowerHingeAngle: number;
@@ -66,6 +82,7 @@ export interface M6TraceFrame {
   readonly command: SteeringCommand;
   readonly steeringActuator: M6SteeringActuatorState;
   readonly steering: M6SteeringMechanismTrace;
+  readonly drive: M6DriveTrace;
   readonly collisionGroupIndex: number;
   readonly wheelBackendId: typeof LEGACY_SPLIT_WHEEL_BACKEND_ID;
   readonly visualGeometry: M6VisualGeometry;
