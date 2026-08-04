@@ -7,6 +7,7 @@ import {
   assertGlbRuntimePolicyV1,
   type GlbRuntimePolicyReceiptV1,
 } from "./glb-runtime-policy-v1.js";
+import { assertVehicleVisualBindingPolicyV1 } from "./vehicle-visual-binding-policy.js";
 import type { VehicleVisualPackageV1 } from "./vehicle-visual-package.js";
 
 export interface VehicleVisualAssetReceiptV1 {
@@ -28,6 +29,7 @@ export async function validateVehicleVisualAssetV1(
   bytes: Uint8Array,
   subtle?: SubtleDigestProvider | null,
 ): Promise<VehicleVisualAssetReceiptV1> {
+  assertVehicleVisualBindingPolicyV1(visual);
   if (bytes.byteLength !== visual.asset.byteLength) {
     reject(
       `byteLength ${bytes.byteLength} does not match manifest ${visual.asset.byteLength}`,
