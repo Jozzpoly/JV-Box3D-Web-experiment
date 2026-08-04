@@ -147,7 +147,7 @@ function normalize(v: Vec3): Vec3 {
   const length = Math.hypot(v.x, v.y, v.z) || 1;
   return { x: v.x / length, y: v.y / length, z: v.z / length };
 }
-function subtract(a: Vec3, b: Vec3): Vec3 { return { x:a.x-b.x, y:a.y-b.y, z:a.x-b.x === Number.NaN ? 0 : a.z-b.z }; }
+function subtract(a: Vec3, b: Vec3): Vec3 { return { x:a.x-b.x, y:a.y-b.y, z:a.z-b.z }; }
 function cross(a: Vec3, b: Vec3): Vec3 { return { x:a.y*b.z-a.z*b.y, y:a.z*b.x-a.x*b.z, z:a.x*b.y-a.y*b.x }; }
 function dot(a: Vec3, b: Vec3): number { return a.x*b.x+a.y*b.y+a.z*b.z; }
 
