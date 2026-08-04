@@ -10,7 +10,7 @@ async function readPackage() {
   return JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 }
 
-test("package exposes strict, report-only, review and integration audits", async () => {
+test("package exposes strict, report-only, review, integration and private archive tools", async () => {
   const packageJson = await readPackage();
   assert.equal(packageJson.private, true);
   assert.equal(
@@ -45,22 +45,26 @@ test("package exposes strict, report-only, review and integration audits", async
     packageJson.scripts["audit:licenses:report"],
     "node tools/audit-reachable-licenses.mjs --report-only",
   );
+  assert.equal(
+    packageJson.scripts["archive:orphan-refs"],
+    "node tools/archive-orphan-public-refs.mjs",
+  );
 });
 
-test("package has no publish, deploy or Pages script", async () => {
+test("package has no publish, deploy, ref-deletion or Pages script", async () => {
   const packageJson = await readPackage();
   const forbiddenNames = Object.keys(packageJson.scripts).filter((name) =>
-    /(?:^|:)(?:publish|deploy|pages)(?:$|:)/i.test(name),
+    /(?:^|:)(?:publish|deploy|pages|delete|remove|prune)(?:$|:)/i.test(name),
   );
   assert.deepEqual(forbiddenNames, []);
 
   for (const [name, command] of Object.entries(packageJson.scripts)) {
     assert.equal(
-      /\b(?:gh-pages|npm\s+publish|wrangler|vercel|netlify|firebase\s+deploy)\b/i.test(
+      /\b(?:gh-pages|npm\s+publish|wrangler|vercel|netlify|firebase\s+deploy|git\s+push|git\s+update-ref|git\s+branch\s+-D)\b/i.test(
         command,
       ),
       false,
-      `publishing command hidden in ${name}`,
+      `publishing or ref-mutation command hidden in ${name}`,
     );
   }
 });
