@@ -84,10 +84,18 @@ function exactKeys(
 }
 
 function string(value: unknown, label: string): string {
-  if (typeof value !== "string" || value.length === 0) {
+  if (typeof value !== "string" || value.trim().length === 0) {
     reject(`${label} must be a non-empty string`);
   }
   return value;
+}
+
+function sceneId(value: unknown): string {
+  const id = string(value, "scene.id");
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
+    reject("scene.id must be a lowercase kebab-case identifier");
+  }
+  return id;
 }
 
 function finite(value: unknown, label: string): number {
@@ -120,14 +128,28 @@ function siteRelativeUrl(value: unknown, label: string): string {
   const url = string(value, label);
   if (
     url.startsWith("/") ||
-    url.startsWith("\\") ||
+    url.includes("\\") ||
+    url.includes("?") ||
+    url.includes("#") ||
     /^[a-z][a-z0-9+.-]*:/i.test(url)
   ) {
-    reject(`${label} must be site-relative`);
+    reject(`${label} must be a clean site-relative URL`);
   }
-  const segments = url.replaceAll("\\", "/").split("/");
-  if (segments.some((segment) => segment === "..")) {
-    reject(`${label} cannot escape its scene package`);
+
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(url);
+  } catch {
+    reject(`${label} contains invalid percent encoding`);
+  }
+  const segments = decoded.split("/");
+  if (
+    segments.some(
+      (segment) =>
+        segment.length === 0 || segment === "." || segment === "..",
+    )
+  ) {
+    reject(`${label} must remain inside its scene package`);
   }
   return url;
 }
@@ -223,7 +245,7 @@ export function validateScenePackageV1(value: unknown): ScenePackageV1 {
   return Object.freeze({
     format: "jv-web-scene-package",
     schemaVersion: 1,
-    id: string(scene["id"], "scene.id"),
+    id: sceneId(scene["id"]),
     displayName: string(scene["displayName"], "scene.displayName"),
     units: "meter",
     axes: Object.freeze({
@@ -266,6 +288,11 @@ export function assertLegacyM6SceneSupport(
   if (Math.abs(scene.collision.heightMeters) > 1e-9) {
     throw new Error(
       "legacy_ts_m6 currently requires the built-in ground plane at y=0.",
+    );
+  }
+  if (Math.abs(scene.spawn.yawRadians) > 1e-9) {
+    throw new Error(
+      "legacy_ts_m6 currently requires scene spawn yawRadians = 0.",
     );
   }
 }
