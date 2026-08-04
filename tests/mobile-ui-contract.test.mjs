@@ -21,10 +21,17 @@ test("mobile UI exposes each semantic vehicle control exactly once", async () =>
   ];
 
   for (const control of controls) {
-    const matches = source.match(
-      new RegExp(`data-pointer-control=\\"${control}\\"`, "g"),
+    const openingButtons = source.match(
+      new RegExp(
+        `<button\\b[^>]*\\bdata-pointer-control=\\"${control}\\"[^>]*>`,
+        "g",
+      ),
     );
-    assert.equal(matches?.length, 1, `${control} must have one DOM target`);
+    assert.equal(
+      openingButtons?.length,
+      1,
+      `${control} must have one DOM target`,
+    );
   }
 });
 
@@ -54,7 +61,8 @@ test("narrow mobile layout retains two non-overlapping control clusters", async 
   const clusterGap = 9;
   const interClusterGap = 18;
   const horizontalInsets = 32;
-  const requiredWidth = 4 * minimum + 2 * clusterGap + interClusterGap + horizontalInsets;
+  const requiredWidth =
+    4 * minimum + 2 * clusterGap + interClusterGap + horizontalInsets;
   assert.ok(
     requiredWidth <= 320,
     `minimum mobile layout requires ${requiredWidth}px, exceeding 320px`,
