@@ -69,7 +69,14 @@ function fakeGl({ failAllocationAt = -1, errorAtUpload = -1 } = {}) {
       deleted.push(buffer.id);
     },
   };
-  return { gl, deleted, uploads };
+  return {
+    gl,
+    deleted,
+    uploads,
+    get allocations() {
+      return allocation;
+    },
+  };
 }
 
 test("GPU asset owns optional vertex streams and disposes in reverse once", () => {
@@ -90,6 +97,22 @@ test("GPU asset owns optional vertex streams and disposes in reverse once", () =
   assert.deepEqual(fixture.deleted, [4, 3, 2, 1]);
   asset.dispose();
   assert.deepEqual(fixture.deleted, [4, 3, 2, 1]);
+});
+
+test("SharedArrayBuffer data is rejected before any GPU allocation", () => {
+  const fixture = fakeGl();
+  const input = cpuAsset();
+  input.meshes[0].primitives[0].positions = new Float32Array(
+    new SharedArrayBuffer(9 * Float32Array.BYTES_PER_ELEMENT),
+  );
+
+  assert.throws(
+    () => createRigidMeshGpuAssetV1(fixture.gl, input),
+    /POSITION must be backed by ArrayBuffer before WebGL upload/,
+  );
+  assert.equal(fixture.allocations, 0);
+  assert.equal(fixture.uploads.length, 0);
+  assert.deepEqual(fixture.deleted, []);
 });
 
 test("buffer allocation failure rolls back every earlier allocation", () => {
