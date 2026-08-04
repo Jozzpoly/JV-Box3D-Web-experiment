@@ -35,7 +35,7 @@ async function withRepository(callback) {
   }
 }
 
-test("public readiness audit blocks a token-like branch name", async () => {
+test("public readiness audit blocks and redacts a token-like branch name", async () => {
   await withRepository(async (root) => {
     const fakeToken = `ghp_${"B".repeat(36)}`;
     git(root, "branch", `historical/${fakeToken}`);
@@ -50,7 +50,15 @@ test("public readiness audit blocks a token-like branch name", async () => {
         entry.scope === "git-ref-name",
     );
     assert.ok(finding);
-    assert.equal(JSON.stringify(report).includes(fakeToken), true);
+    assert.match(finding.path, /^\[redacted ref [0-9a-f]{12}\]$/);
+    assert.equal(JSON.stringify(report).includes(fakeToken), false);
+    assert.ok(
+      report.refs.every(
+        (entry) =>
+          typeof entry.namespace === "string" &&
+          /^[0-9a-f]{12}$/.test(entry.fingerprint),
+      ),
+    );
   });
 });
 
