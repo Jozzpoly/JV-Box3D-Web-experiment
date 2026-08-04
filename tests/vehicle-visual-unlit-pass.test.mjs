@@ -42,10 +42,15 @@ function fixtureFetcher(generated, requests = []) {
   };
 }
 
-function fakeGl({ shaderCompileResults = [], failDrawAt = -1 } = {}) {
+function fakeGl({
+  shaderCompileResults = [],
+  failDrawAt = -1,
+  drawGlErrorAt = -1,
+} = {}) {
   let nextId = 1;
   let shaderCheck = 0;
   let drawIndex = 0;
+  let pendingError = 0;
   const deletedBuffers = [];
   const deletedShaders = [];
   const deletedPrograms = [];
@@ -76,7 +81,9 @@ function fakeGl({ shaderCompileResults = [], failDrawAt = -1 } = {}) {
     bindBuffer() {},
     bufferData() {},
     getError() {
-      return 0;
+      const result = pendingError;
+      pendingError = 0;
+      return result;
     },
     deleteBuffer(buffer) {
       deletedBuffers.push(buffer.id);
@@ -139,6 +146,9 @@ function fakeGl({ shaderCompileResults = [], failDrawAt = -1 } = {}) {
         throw new Error("fixture draw failure");
       }
       draws.push({ mode, count, type, offset });
+      if (drawIndex === drawGlErrorAt) {
+        pendingError = 0x0502;
+      }
     },
   };
   return {
@@ -271,6 +281,30 @@ test("a failed draw cannot publish the first-frame receipt", async () => {
     /fixture draw failure/,
   );
   assert.equal(fixture.draws.length, 9);
+  assert.deepEqual(firstFrames, []);
+  pass.dispose();
+});
+
+test("a WebGL draw error cannot publish the first-frame receipt", async () => {
+  const generated = generatedFixture();
+  const fixture = fakeGl({ drawGlErrorAt: 10 });
+  const firstFrames = [];
+  const pass = await createVehicleVisualUnlitPassV1(
+    fixture.gl,
+    new AbortController().signal,
+    {
+      pageBaseUrl: "https://example.test/",
+      packageUrl: "vehicles/tiny/vehicle.visual.json",
+      fetcher: fixtureFetcher(generated),
+      onFirstFrame: (receipt) => firstFrames.push(receipt),
+    },
+  );
+
+  assert.throws(
+    () => pass.render(renderFrame(fixture.gl)),
+    /WebGL error 0x502/,
+  );
+  assert.equal(fixture.draws.length, 10);
   assert.deepEqual(firstFrames, []);
   pass.dispose();
 });
