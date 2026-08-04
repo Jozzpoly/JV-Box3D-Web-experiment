@@ -37,6 +37,12 @@ function receiptFixture() {
     wheelFriction: 1.25,
     wheelRollingResistance: 0.02,
     wheelEnvelope: { mode: 3 },
+    maxDriveSpeed: 40,
+    maxDriveTorque: 320,
+    driveTaperStart: 0.6,
+    brakeTorque: 650,
+    coastTorque: 8,
+    allWheelDrive: true,
     suspensionHertz: 6,
     suspensionDampingRatio: 0.7,
     frontSuspensionScale: 1,
@@ -427,7 +433,10 @@ test("identical timestamped input produces identical F5 traces across render cad
   for (const fps of [15, 30, 120]) {
     assert.deepEqual(simulate(buildFrameTimes(1000 / fps, 200)), baseline);
   }
-  assert.deepEqual(simulate([0, 8, 24, 72, 81, 123, 167, 200]), baseline);
+  assert.deepEqual(
+    simulate([0, 8, 24, 72, 81, 123, 167, 200]),
+    baseline,
+  );
 });
 
 test("events inside a dropped gap cannot leave a stored RATE target", () => {
@@ -447,7 +456,10 @@ test("events inside a dropped gap cannot leave a stored RATE target", () => {
     const report = clock.advance(
       100,
       (step) => {
-        const sample = timeline.consumeInterval(step.startTimeMs, step.endTimeMs);
+        const sample = timeline.consumeInterval(
+          step.startTimeMs,
+          step.endTimeMs,
+        );
         traces.push(
           captureWithoutPhysics(vehicle, sample.command, stepIndex++),
         );
