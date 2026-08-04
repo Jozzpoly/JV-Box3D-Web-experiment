@@ -16,7 +16,7 @@ Keep the repository compact, readable and technically honest. Preserve durable c
 branch: agent/jv-web-demonstrator-foundation
 PR: #18, direct to main, draft
 remote branches: main + active branch only
-current exact candidate: git rev-parse HEAD or PR head SHA
+current exact candidate: resolve from PR head; docs may lag by one documentation commit
 ```
 
 Do not merge, mark Ready, change visibility or enable Pages without Jozz. Do not fast-forward the long experimental history into a presentation-ready public main; prefer a clean public snapshot repo or owner-reviewed squash later.
@@ -40,15 +40,26 @@ Box3D / WebGL / keyboard / multi-touch: observed working
 publication: NOT PERFORMED
 ```
 
-The uploaded terminal log is for this commit. The software SHA fallback is required for strict receipt validation on ordinary LAN HTTP.
+The software SHA fallback is required for strict receipt validation on ordinary LAN HTTP.
 
 ### Newer owner runtime observation
 
-After scene/runtime hardening Jozz confirmed LIVE, 4 contacts, vehicle visible, all drive controls and destroy/rebuild working. Treat this as manual runtime evidence; the attached log still identifies `7204993…`.
+After scene/runtime hardening Jozz confirmed LIVE, 4 contacts, vehicle visible, all drive controls and destroy/rebuild working. Treat this as manual runtime evidence.
 
-### Current candidate
+### Visual-rig gate attempt
 
-Vehicle model/rig source is present and statically reviewed but has **not** passed a fresh local gate. Never claim it is compiled or working before the owner gate.
+At `49e9eec729101d11635a0dab05184ae1f97dd660`:
+
+```text
+Node/npm: 24.16.0 / 11.17.0
+receipt: byte-exact
+TypeScript: PASS
+tests: 161/162 PASS
+```
+
+The only failure was a stale `f4-backend-contract` expectation that compared the host backend with the older descriptor shape. Runtime exposed the intended consolidated descriptor. Build correctly stopped after the failed test.
+
+The stale test is fixed by asserting object identity with the one shared frozen backend descriptor. The current candidate additionally hardens runtime immutability, GLB mobile policy and manifest-relative URL resolution. It still requires a fresh complete owner gate; never claim it is green before that log.
 
 ## Physics authority
 
@@ -122,6 +133,8 @@ M6 visual frame provides exactly:
 
 Transforms come from real Box3D bodies. Segment endpoints come from the exact local anchors used to build the joints.
 
+Runtime frame indexes expose no `set`, `delete` or `clear` mutators; do not replace them with a type-only `ReadonlyMap` over a mutable Map.
+
 Wheel ownership:
 
 ```text
@@ -149,11 +162,32 @@ lower shaft      → END endpoint aim
 - complete `M6_FULL_RIG_V1` coverage;
 - binding modes `PART`, `SEGMENT_STRETCH`, `SEGMENT_ENDPOINT_AIM`.
 
+### Executable GLB V1 policy
+
+Before GPU use require:
+
+```text
+exactly one embedded BIN buffer
+4-byte aligned bufferView offsets/strides
+accessors aligned to component size
+TRIANGLES only
+8-bit or 16-bit indices only
+bound nodes are independent roots
+bound node matrix absent
+bound node TRS identity/applied
+asset URL resolved relative to package manifest directory
+```
+
+A bound root may own unbound static descendants. A descendant cannot itself be bound to another runtime source in V1.
+
 Reject in V1:
 
 - external resources;
+- multiple embedded buffers;
 - negative scale;
-- missing/duplicate bound nodes;
+- missing/duplicate/parented bound nodes;
+- non-identity bound transforms;
+- 32-bit indices;
 - skins;
 - animations for physics parts;
 - morph targets;
@@ -173,16 +207,17 @@ npm run inspect:vehicle-glb -- <model.glb> [vehicle.visual.json]
 ## Model implementation sequence
 
 ```text
-1 fresh local gate on current visual-rig source
-2 tiny generated renderable GLB + strict package fixture
-3 transactional fetch/hash/GLB CPU parse
-4 minimal mesh renderer beside unchanged debug observer
-5 drive all 18 rigid parts and 8 segments from visual frame
-6 prove rebuild/disposal and phone budget
-7 owner-authored simple chassis + four wheels
-8 knuckles, arms, tie rods and two-piece coilovers
-9 full body/interior/wheel asset
-10 optional LOD/compression only from measured need
+1 fresh local gate on the exact hardened visual-rig candidate
+2 unchanged debug-renderer browser smoke
+3 tiny generated GLB + strict package as a portable runtime fixture
+4 transactional fetch/hash/CPU parse
+5 minimal mesh renderer beside unchanged debug observer
+6 drive all 18 rigid parts and 8 segments from visual frame
+7 prove rebuild/disposal and phone budget
+8 owner-authored simple chassis + four wheels
+9 knuckles, arms, tie rods and two-piece coilovers
+10 full body/interior/wheel asset
+11 optional LOD/compression only from measured need
 ```
 
 The final Jozz model must never be the first loader/GPU lifecycle test.
@@ -229,16 +264,17 @@ existing TypeScript renderer/assets/UI
 SOURCE PRESENT:
 visual frame v1
 M6 stable part/segment identities
-strict GLB package and byte gate
+strict GLB package, byte gate and mobile runtime policy
 real Box3D visual-frame integration
+manifest-relative vehicle asset URL resolver
 local GLB inspector
 focused positive/negative tests
 
 PENDING:
-TypeScript/test/build gate
+fresh TypeScript/test/build gate on exact current head
 browser regression smoke
 
 AFTER GREEN:
-tiny runtime GLB fixture and CPU parser
+tiny portable runtime GLB fixture and CPU parser
 then minimal rendering
 ```
