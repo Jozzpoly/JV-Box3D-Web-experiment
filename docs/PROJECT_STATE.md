@@ -11,6 +11,7 @@ branch: agent/jv-web-demonstrator-foundation
 PR: #18
 base: main
 state: draft / not merged
+current candidate commit: resolve with git rev-parse HEAD or the PR head SHA
 ```
 
 All older pull requests are closed as historical. The remote branch surface contains only `main` and the active development branch.
@@ -93,7 +94,7 @@ The bundle warning about the approximately 1.2 MiB JavaScript chunk is recorded 
 ## Current mobile-control candidate
 
 ```text
-head: e5b5c1e5c889c137e461a1a48a0f22c202a4ec2a
+exact head: resolve from Git/PR; do not hard-code a moving candidate SHA here
 state: SOURCE PRESENT / STATIC SCOPE REVIEWED
 local Node 24 gate: PENDING
 browser observation: PENDING
@@ -108,7 +109,7 @@ Changes since the green checkpoint are limited to:
 - F4 pass-through without physics changes;
 - five-button multi-touch UI;
 - safe-area and responsive mobile layout;
-- focused input/host tests;
+- focused input, host and 320 px geometry tests;
 - synchronized project documentation.
 
 No file under `src/vehicle/`, `src/physics/` or the renderer was changed in this mobile slice.
