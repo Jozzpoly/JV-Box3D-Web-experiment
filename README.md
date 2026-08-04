@@ -36,7 +36,7 @@ publication NOT PERFORMED
 
 Jozz also confirmed the newer scene/runtime path as LIVE with four contacts, all drive controls and destroy/rebuild working.
 
-The first visual-rig gate at `49e9eec…` produced TypeScript PASS and 161/162 tests. The sole failure was an outdated test expectation after the intended backend-descriptor consolidation; the host exposed the correct shared descriptor. The exact current PR head contains that test correction plus additional visual/GLB hardening and still requires one fresh complete gate.
+The first visual-rig gate at `49e9eec…` produced TypeScript PASS and 161/162 tests. The sole failure was an outdated test expectation after the intended backend-descriptor consolidation; the host exposed the correct shared descriptor. Resolve the exact current PR head before the next gate; it contains that test correction plus additional visual/GLB hardening.
 
 ## Run locally
 
