@@ -1,4 +1,4 @@
-# ADR-0004 — Pages-ready JV Web Demonstrator
+# ADR-0004 — public-source and Pages-ready JV Web Demonstrator
 
 Date: 2026-08-04
 Status: `ACCEPTED FOR DEMONSTRATOR FOUNDATION`
@@ -6,162 +6,214 @@ Decision owner: Jozz
 
 ## Context
 
-The immediate product goal is a serious demonstrational JV build that can run on desktop and phone, eventually driving over a scanned environment. Jozz does not want to administer a server or perform a public launch yet, but has decided that the repository may become public as soon as a dedicated public-readiness gate passes.
+The immediate product goal is a serious JV demonstrator that runs on desktop and phone and eventually allows driving over a prepared scan. Jozz does not want to administer a server. The repository may become public after a dedicated source-public gate, while the playable GitHub Pages site remains a later and separate decision.
 
-Opening an HTML file in GitHub's repository viewer does not execute an arbitrary web application. GitHub Pages is the appropriate GitHub feature for serving a static game from a repository.
+Opening an HTML file in GitHub's code viewer does not execute an arbitrary web application. GitHub Pages is the appropriate eventual feature for serving the static game from the repository.
 
-A single self-contained HTML file remains an optional research target, not the main distribution format. Embedding JavaScript, WebAssembly and a future scan into one file would increase startup memory, complicate failure recovery and make scene quality variants or chunking difficult. `file://` behavior is also not a reliable substitute for HTTP/HTTPS testing.
+A single self-contained HTML file remains an optional measured probe, not the main distribution format. Embedding JavaScript, WebAssembly and a future scan into one file would increase startup memory, complicate failure recovery and make scene variants/chunking difficult. `file://` is not a reliable substitute for HTTP/HTTPS validation.
 
 ## Decision
 
-The product distribution artifact is a **portable static site**:
+The product artifact is a **portable multi-file static site**:
 
 ```text
 index.html
-assets/*.js
-assets/*.css
-runtime/*.wasm
-scenes/<scene-id>/...
+assets/
+runtime/
+scenes/
+receipts/
+THIRD_PARTY_NOTICES.md
 build-manifest.json
 .nojekyll
 ```
 
 It must:
 
-- be built locally from an exact commit;
-- contain only relative internal URLs;
-- work from the domain root and a nested path;
+- be built locally from an exact clean commit;
+- contain only declared relative internal assets;
+- have no hidden remote HTML/CSS dependency;
+- work at domain root and a repository subpath;
 - run from a simple local HTTP server;
 - be testable over LAN on a real phone;
-- be copyable unchanged to a dedicated Pages publishing branch;
+- be copyable unchanged to a generated Pages branch;
 - never publish itself;
 - remain compatible with `native_jv_wasm` and future scan packages.
 
 ## Publication model
 
-Target:
-
 ```text
-public source repository
-+ dedicated generated publishing branch
-+ GitHub Pages: Deploy from a branch
+reviewed public source repository
++ generated release-only publishing branch
++ GitHub Pages: deploy from branch
 ```
 
-No custom build/deployment workflow is added. Publishing remains a manual repository-setting decision by Jozz.
+No custom cloud build/test/deploy workflow is added. Publishing remains a manual repository-setting decision by Jozz.
 
-GitHub Pages always records an internal Actions deployment run, including when the source is a branch. This is a platform deployment step, not permission to restore custom CI or cloud builds. For a public repository, standard GitHub-hosted runner use and GitHub Pages use are free under the current GitHub billing model. The deployment run must still be monitored for accidental repeated triggers and retained artifacts.
+GitHub Pages records an internal platform deployment run even when a branch is the source. This is not permission to restore custom CI or cloud builds. The publishing branch contains generated static output only; development history and generated output are not mixed in the default branch.
 
-The publishing branch contains generated static output only. Development history and generated output are not mixed in the default branch.
+## Gate A — SOURCE-PUBLIC-READY
 
-## Public-readiness gate
+This gate answers only:
 
-The repository must remain private until all of the following are satisfied:
+> Can the repository, current source and reachable collaboration/history surfaces be shown publicly without an unresolved legal, privacy or presentation blocker?
+
+The repository remains private until:
 
 ```text
-PUBLIC-READY =
-  clean intended default branch
-  + explicit project LICENSE
-  + THIRD_PARTY_NOTICES
-  + current-tree secrets/privacy audit
-  + reachable-history secrets/privacy audit
+SOURCE-PUBLIC-READY =
+  intended clean default branch
+  + explicit project LICENSE selected by Jozz
+  + exact THIRD_PARTY_NOTICES
+  + current-tree and dirty-state audit
+  + reachable Git blobs/metadata/ref-name audit
+  + reachable-license inventory
   + GitHub cloud-surface audit
-  + public README and project status
-  + no private scan/source assets
-  + portable package validation
-  + desktop smoke
-  + phone smoke
-  + explicit owner approval
+  + public README/current state
+  + no private/unapproved source assets
+  + historical errata where required
+  + explicit owner approval of the exact candidate
 ```
+
+Phone gameplay, final scan integration and Pages deployment are **not** requirements for making the source repository public. Their absence must remain explicit in README/status.
 
 The GitHub cloud-surface audit includes:
 
-- pull-request bodies, comments and reviews;
+- PR bodies, comments and reviews;
 - issues and issue comments;
 - historical Actions logs and downloadable artifacts;
 - releases and attached files;
 - packages;
-- branch/tag names and still-reachable experimental refs.
+- branch/tag names and still-reachable experimental refs;
+- repository settings requiring manual UI review.
 
-Deleting a sensitive file in a later commit does not pass the history audit. If a secret is ever found, it must be revoked/rotated before any history cleanup is considered sufficient.
+Deleting a sensitive file in a later commit does not pass the history audit. Any discovered secret is revoked/rotated before history cleanup can be considered sufficient.
 
-Historical PRs may remain as evidence, but each obsolete or corrected claim must have a prominent status/erratum so it cannot be mistaken for current architecture. Closing a PR does not hide its public content.
+Historical PRs may remain evidence, but obsolete or corrected claims receive prominent status/errata. Closing a PR does not hide its public content.
 
-## GitHub Pages activation gate
+## Gate B — DEMONSTRATOR-PACKAGE-READY
+
+This gate answers:
+
+> Is one exact nonpublishing artifact structurally and operationally ready for real browser/device testing?
+
+Required:
+
+```text
+portable static validation
++ source-ref privacy policy
++ no-remote-dependency policy
++ payload/compliance SHA-256 table
++ loopback HTTP root/subpath byte smoke
++ desktop browser startup/rebuild/error smoke
++ exact artifact receipt
+```
+
+This gate can be executed while the repository is private.
+
+It does not require native JV parity. If `legacy_ts_m6` remains active, the artifact and UI must identify it as a non-authoritative reference fixture.
+
+## Gate C — PAGES-PUBLISH-READY
+
+This gate answers:
+
+> Can the exact demonstrator package be made available under a stable public HTTPS URL?
 
 Pages remains disabled until:
 
-1. repository visibility is public;
-2. the exact portable package has a receipt;
-3. the publishing branch contains only intended release files;
-4. root-path and repository-subpath tests pass;
-5. Jozz explicitly approves publication.
+1. `SOURCE-PUBLIC-READY PASS` and repository visibility is public;
+2. `DEMONSTRATOR-PACKAGE-READY PASS` exists for the exact commit/package;
+3. mobile shell and pointer ownership pass on a real phone;
+4. LAN phone startup/background/orientation/performance smoke passes;
+5. the generated publishing branch contains only intended release files;
+6. root and repository-subpath tests pass;
+7. rollback/unpublish procedure is known;
+8. Jozz approves publication of the exact package.
 
 A hard-to-guess Pages URL is not privacy or access control.
 
+## Gate D — PUBLIC DEMONSTRATOR ACCEPTANCE
+
+After Pages enablement:
+
+- test the actual HTTPS URL on desktop and phone;
+- verify cold/warm load, touch controls, background/resume and reset;
+- verify About/Credits/Licenses;
+- verify no source/private asset leak;
+- record exact Pages deployment/package receipt;
+- obtain Jozz's driving/UX verdict.
+
+A Pages deployment existing is not the same as an accepted demonstrator.
+
 ## Validation and challenge loop
 
-Each iteration must answer:
+Each iteration answers:
 
-1. **Claim** — what exact sharing or runtime property is claimed?
-2. **Counterexample** — which browser, device, path, protocol or asset can disprove it?
-3. **Smallest artifact** — what minimal package can falsify the claim?
-4. **Path test** — root and nested path.
-5. **Protocol test** — HTTP/HTTPS; `file://` is separate and never assumed.
-6. **Mobile test** — touch ownership, orientation, background/resume, memory pressure.
-7. **Resource audit** — compressed bytes, decoded memory estimate, request count, largest file.
-8. **Privacy audit** — current tree, reachable history, branches, receipts, assets and GitHub metadata surfaces.
-9. **License audit** — project code, dependencies and later scan/source ownership.
-10. **Owner gate** — Jozz decides whether the result is useful and shareable.
-11. **Receipt** — exact commit, artifact hash, browser/device and known limitations.
+1. **Claim** — what exact source/artifact/device/publication property is claimed?
+2. **Counterexample** — which history item, browser, device, path, protocol or asset disproves it?
+3. **Smallest artifact** — what minimal fixture falsifies the claim?
+4. **Evidence level** — source, Node, portable, HTTP, browser, phone, owner or Pages?
+5. **Privacy** — can the gate/report itself copy a found secret?
+6. **License** — code, third party and assets classified separately?
+7. **Path/protocol** — root, subpath, HTTP and later HTTPS?
+8. **Mobile lifecycle** — ownership, cancel, background and orientation?
+9. **Resource audit** — transfer, decoded memory, requests and largest file?
+10. **Receipt** — exact commit/package/device and known limitations?
 
-A green build without path, protocol, mobile, privacy and license evidence is not a shareable demonstrator.
+A green Node build is neither source-public readiness nor a shareable mobile demonstrator.
 
 ## Polish and finalization loop
 
 ```text
 truthful product identity
+→ source/history/license cleanliness
 → portable packaging
-→ public-readiness audit
 → Demo/Lab separation
 → loading and failure UX
 → mobile input ownership
 → camera and reset
-→ scene seam
-→ performance tiers
-→ native JV WASM parity
+→ scene package seam
+→ measured performance tiers
+→ native JV WASM parity track
 → real scan conversion
 → phone owner test
 → immutable Pages package
 → explicit publication
+→ actual HTTPS acceptance
 ```
 
-Presentation polish never outranks truthful backend identity, input correctness, memory safety or reproducibility.
+Presentation polish never outranks backend truth, input correctness, privacy, rights, memory safety or reproducibility.
 
-## Immediate implementation
+## Immediate implementation order
 
-1. Add a Vite relative base.
-2. Copy `.nojekyll` into every build.
-3. Generate a build manifest with source identity.
-4. Validate that the package is path-portable and contains no accidental source artifacts.
-5. Add a local Pages-ready gate that cannot publish.
-6. Build a pre-public Git/history audit tool and separately inspect GitHub metadata surfaces.
-7. Classify license and historical-PR blockers.
-8. Only then continue with Demo/Lab and mobile controls.
+1. Fix and regress path portability.
+2. Harden manifest truth/privacy/compliance.
+3. Add loopback root/subpath HTTP verification.
+4. Build current/history/ref/license audit tools with secret-safe reports.
+5. Inspect GitHub collaboration/Actions surfaces.
+6. Prepare public README and default-branch integration plan.
+7. Obtain explicit project-license decision.
+8. Pass fresh demonstrator-foundation gate.
+9. Then create separate Demo/Lab/mobile implementation branch.
+10. Continue native JV WASM parity in parallel.
 
 ## Rejected alternatives
 
-### Execute the game directly from the GitHub code viewer
+### Execute from the GitHub code viewer
 
 Not supported by the repository viewer.
 
-### Use one giant HTML as the product format
+### One giant HTML as the default product format
 
-Rejected as the default until a measured small-scene probe proves value on real phones. It is not suitable for the final scan by assumption.
+Rejected until a measured small-scene probe proves a concrete benefit. It is not assumed suitable for a scan.
 
-### Make the repository public before the audit
+### Public repository before source/history/license audit
 
-Rejected because visibility exposes code, reachable repository history and GitHub collaboration metadata, not merely the current playable build.
+Rejected because visibility exposes source, reachable history and collaboration metadata, not only a playable build.
 
-### Add automatic Pages deployment now
+### Require finished phone gameplay before source visibility
 
-Rejected. It would create publication capability before the owner and public-readiness gates.
+Rejected as gate conflation. The repository may be honestly public while the demonstrator remains explicitly unfinished and Pages disabled.
+
+### Enable Pages or automatic deployment now
+
+Rejected. It creates a public runtime surface before package, phone and owner gates.
