@@ -17,6 +17,7 @@ branch: agent/jv-web-demonstrator-foundation
 PR: #18, direct to main, draft
 remote branches: main + active branch only
 older PRs: closed as historical
+current exact candidate: resolve with git rev-parse HEAD or the PR head SHA
 ```
 
 Do not merge, mark Ready, change repository visibility or enable Pages without Jozz.
@@ -72,8 +73,7 @@ publication: NOT PERFORMED
 ## Current mobile-control candidate
 
 ```text
-head at last source-state update: e5b5c1e5c889c137e461a1a48a0f22c202a4ec2a
-current branch may have later documentation-only commits
+exact head: resolve from Git/PR; never hard-code a moving candidate SHA in tracked memory
 state: SOURCE PRESENT / STATIC SCOPE REVIEWED
 local Node 24 gate: PENDING
 browser observation: PENDING
@@ -88,7 +88,8 @@ The mobile slice adds:
 - source-scoped lifecycle release;
 - browser-host ownership and F4 pass-through;
 - a five-button responsive safe-area UI;
-- focused overlap/capture/cancel/rollback/disposal tests.
+- focused overlap/capture/cancel/rollback/disposal tests;
+- a source-level 320 px geometry contract.
 
 No vehicle, physics or renderer mechanics were changed from the green checkpoint.
 
@@ -114,7 +115,7 @@ Pointer controls must:
 ## Corrected near-term direction
 
 ```text
-1 run fresh Node 24 gate on the mobile-control head
+1 run fresh Node 24 gate on the exact mobile-control head
 2 perform exact desktop browser smoke
 3 validate mobile controls on a real phone over LAN
 4 polish control geometry and layout from observed evidence
