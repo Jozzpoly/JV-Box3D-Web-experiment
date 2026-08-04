@@ -21,7 +21,7 @@ Nie czytaj całego `docs/` przed pracą. Archiwum służy do odpowiedzi na konkr
 |---|---|
 | `PROJECT_STATE.md` | bieżąca prawda o produkcie, dowodach i blockerach |
 | `DEMONSTRATOR_VALIDATION_POLISH_LOOP_PL.md` | oddzielne source/package/mobile/parity/scene/Pages gates |
-| `PUBLIC_COLLABORATION_HISTORY.md` | klasyfikacja wszystkich 13 PR-ów i pięciu milestone issues |
+| `PUBLIC_COLLABORATION_HISTORY.md` | klasyfikacja 13 PR-ów, pięciu issues i pełnej 16-branch powierzchni |
 | `PUBLIC_ASSET_RIGHTS_POLICY.md` | default-deny prawa do modeli, skanów, fotografii, tekstur, fontów, audio i scen |
 | `../README.md` | przyszła publiczna landing surface |
 | `../SECURITY.md` | bezpieczne zgłaszanie podatności |
@@ -80,6 +80,7 @@ Kluczowe:
 receipts/runtime/REFERENCE_RUNTIME_BASELINE_2026_08_04.md
 receipts/inventory/GITHUB_CLOUD_SURFACE_2026_08_04.md
 receipts/inventory/GITHUB_ACTIONS_LOG_REVIEW_2026_08_04.md
+receipts/inventory/GITHUB_BRANCH_SURFACE_2026_08_04.md
 ```
 
 Latest local demonstrator evidence remains:
@@ -110,18 +111,21 @@ Nowszy head zawiera poprawkę i dalsze gates, ale czeka na świeże wykonanie.
 
 | Narzędzie | Rola |
 |---|---|
-| `../tools/run-demonstrator-audits.ps1` | one-command report-only public/license/review-ledger generation |
+| `../tools/run-demonstrator-audits.ps1` | one-command report-only public/license/review/integration evidence |
 | `../tools/audit-public-readiness.mjs` | strict albo explicit `--report-only` CLI |
 | `../tools/public-readiness-lib.mjs` | current/history Git object scanner |
 | `../tools/public-readiness-identifiers.mjs` | ref/path/current-branch identifier scan |
-| `../tools/public-readiness-report.mjs` | merge findings, public contracts, safe-file policy i final sanitizer |
+| `../tools/public-readiness-report.mjs` | merge findings, contracts, ref policy, safe files i final sanitizer |
 | `../tools/public-contracts-lib.mjs` | exact nine-file public landing contract |
 | `../tools/public-known-safe-files.mjs` | exact credential-free current `.npmrc` exception only |
+| `../tools/public-ref-policy-lib.mjs` | reviewed branch allowlist, orphan/unknown/tag/remote-drift blockers |
 | `../tools/audit-reachable-licenses.mjs` | strict/report-only license inventory CLI |
 | `../tools/license-inventory-lib.mjs` | root project vs notice vs nested vendor licenses |
 | `../tools/write-public-review-ledger.mjs` | generate ignored PENDING classification ledger |
-| `../tools/validate-public-review-ledger.mjs` | reject pending/stale/remediate/private rationale |
+| `../tools/validate-public-review-ledger.mjs` | reject pending/stale/remediate/private/tampered classifications |
 | `../tools/public-review-ledger-lib.mjs` | stable sanitized finding identities and validation |
+| `../tools/audit-source-public-integration.mjs` | strict/report-only nonmutating `origin/main` fast-forward proof |
+| `../tools/source-public-integration-lib.mjs` | exact merge-base/ahead/behind/clean-tree relation |
 
 Lokalne, ignorowane evidence:
 
@@ -129,9 +133,32 @@ Lokalne, ignorowane evidence:
 .local-audit/public-readiness.json
 .local-audit/license-inventory.json
 .local-audit/public-review-classifications.json
+.local-audit/source-public-integration.json
 ```
 
-## 9. Source-public release
+## 9. Operacje — prywatna ochrona orphan refs
+
+| Narzędzie | Rola |
+|---|---|
+| `../tools/archive-orphan-public-refs.mjs` | explicit local archive command; never deletes/moves a ref |
+| `../tools/orphan-ref-archive-lib.mjs` | clean-tree, ignored-output, no-overwrite bundle creation and verification |
+
+Command:
+
+```text
+npm run archive:orphan-refs
+```
+
+Expected private outputs:
+
+```text
+.local-audit/jv-web-orphan-public-refs-2026-08-04.bundle
+.local-audit/orphan-public-refs-archive.json
+```
+
+Narzędzie obejmuje wyłącznie dwa exact remote-tracking refs, wykonuje `git bundle verify`, list-heads, SHA-256 i potwierdza `remoteRefsDeleted=false`.
+
+## 10. Source-public release
 
 Runbook:
 
@@ -141,11 +168,13 @@ operations/SOURCE_PUBLIC_RELEASE_RUNBOOK_PL.md
 
 Obejmuje:
 
-- freeze exact candidate;
+- freeze exact local/remote candidate;
 - foundation gate;
-- local history/license reports;
-- review classification;
+- history/license/ref/review/integration reports;
 - Jozz license decision;
+- verified private orphan-ref recovery;
+- owner disposition/ref cleanup;
+- fetch/prune i ponowny all-refs audit;
 - asset-rights audit;
 - GitHub Actions/releases/packages/settings manual audit;
 - exact `main` fast-forward proof;
@@ -154,7 +183,7 @@ Obejmuje:
 - immediate anonymous/public clone verification;
 - Pages pozostające disabled.
 
-## 10. Archiwum
+## 11. Archiwum
 
 Broad audits, dawne roadmapy, handoffy, kwarantanny i zakończone runbooki nie są bieżącą instrukcją.
 
@@ -168,7 +197,7 @@ archive/MOBILE_HOST_AUDIT_2026_08_03_INDEX.md
 archive/QUARANTINE_AND_F1_OPERATIONS_2026_08_03_INDEX.md
 ```
 
-## 11. Reguła nowych dokumentów
+## 12. Reguła nowych dokumentów
 
 Nowy plik powstaje tylko jako:
 
