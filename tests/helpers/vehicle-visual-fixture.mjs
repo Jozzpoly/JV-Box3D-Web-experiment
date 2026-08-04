@@ -10,6 +10,12 @@ export const IDENTITY_VISUAL_TRANSFORM = Object.freeze({
   scale: [1, 1, 1],
 });
 
+export const VALID_TRIANGLE_PRIMITIVE = Object.freeze({
+  attributes: Object.freeze({ POSITION: 0 }),
+  indices: 1,
+  mode: 4,
+});
+
 export function visualNodeName(id) {
   return `JV_${id.replaceAll(".", "_").replaceAll("-", "_")}`;
 }
@@ -40,16 +46,57 @@ function paddedJsonBytes(value) {
   return padded;
 }
 
-export function buildGlb(jsonOverrides = {}, binary = new Uint8Array([1, 2, 3, 4])) {
+function triangleBinary() {
+  const bytes = new Uint8Array(42);
+  const positions = new Float32Array(bytes.buffer, 0, 9);
+  positions.set([
+    -0.5, 0, 0,
+    0.5, 0, 0,
+    0, 1, 0,
+  ]);
+  const indices = new Uint16Array(bytes.buffer, 36, 3);
+  indices.set([0, 1, 2]);
+  return bytes;
+}
+
+export function validTriangleGeometryJson(bufferByteLength = 42) {
+  return {
+    meshes: [{ primitives: [{ ...VALID_TRIANGLE_PRIMITIVE }] }],
+    buffers: [{ byteLength: bufferByteLength }],
+    bufferViews: [
+      { buffer: 0, byteOffset: 0, byteLength: 36, target: 34962 },
+      { buffer: 0, byteOffset: 36, byteLength: 6, target: 34963 },
+    ],
+    accessors: [
+      {
+        bufferView: 0,
+        componentType: 5126,
+        count: 3,
+        type: "VEC3",
+        min: [-0.5, 0, 0],
+        max: [0.5, 1, 0],
+      },
+      {
+        bufferView: 1,
+        componentType: 5123,
+        count: 3,
+        type: "SCALAR",
+      },
+    ],
+  };
+}
+
+export function buildGlb(jsonOverrides = {}, binary = triangleBinary()) {
+  const bindings = completeVisualBindings();
   const root = {
     asset: { version: "2.0", generator: "JV visual test fixture" },
     scene: 0,
     scenes: [{ nodes: [0] }],
-    nodes: completeVisualBindings().map((binding) => ({
+    nodes: bindings.map((binding, index) => ({
       name: binding.nodeName,
+      ...(index === 0 ? { mesh: 0 } : {}),
     })),
-    meshes: [{ primitives: [] }],
-    buffers: [{ byteLength: binary.byteLength }],
+    ...validTriangleGeometryJson(binary.byteLength),
     ...jsonOverrides,
   };
   const json = paddedJsonBytes(root);
