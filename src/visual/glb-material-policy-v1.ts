@@ -34,10 +34,7 @@ function exactKnownKeys(
   }
 }
 
-function unitNumber(value: unknown, label: string, fallback: number): number {
-  if (value === undefined) {
-    return fallback;
-  }
+function unitNumber(value: unknown, label: string): number {
   if (
     typeof value !== "number" ||
     !Number.isFinite(value) ||
@@ -107,7 +104,7 @@ export function assertGlbMaterialPolicyV1(bytes: Uint8Array): void {
       );
       exactKnownKeys(
         pbr,
-        ["baseColorFactor", "metallicFactor", "roughnessFactor"],
+        ["baseColorFactor"],
         `${label}.pbrMetallicRoughness`,
       );
       if (pbr["baseColorFactor"] !== undefined) {
@@ -122,20 +119,9 @@ export function assertGlbMaterialPolicyV1(bytes: Uint8Array): void {
           unitNumber(
             entry,
             `${label}.pbrMetallicRoughness.baseColorFactor[${component}]`,
-            1,
           ),
         );
       }
-      unitNumber(
-        pbr["metallicFactor"],
-        `${label}.pbrMetallicRoughness.metallicFactor`,
-        1,
-      );
-      unitNumber(
-        pbr["roughnessFactor"],
-        `${label}.pbrMetallicRoughness.roughnessFactor`,
-        1,
-      );
     },
   );
 }
