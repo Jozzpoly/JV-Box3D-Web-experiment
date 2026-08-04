@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { auditRequiredPublicContracts } from "./public-contracts-lib.mjs";
 import { classifyKnownSafePublicFiles } from "./public-known-safe-files.mjs";
 import { auditGitIdentifiers } from "./public-readiness-identifiers.mjs";
+import { auditPublicRefPolicy } from "./public-ref-policy-lib.mjs";
 import { auditPublicReadiness as auditRawPublicReadiness } from "./public-readiness-lib.mjs";
 
 const REDACT_PATTERNS = [
@@ -71,10 +72,12 @@ export async function auditPublicReadiness(options) {
   const rawReport = await auditRawPublicReadiness(options);
   const identifierReport = auditGitIdentifiers({ root: options.root });
   const contractReport = auditRequiredPublicContracts({ root: options.root });
+  const refPolicyReport = auditPublicRefPolicy({ root: options.root });
   const candidateBlockers = deduplicate([
     ...rawReport.blockers,
     ...identifierReport.blockers,
     ...contractReport.blockers,
+    ...refPolicyReport.blockers,
   ]);
   const policyClassification = classifyKnownSafePublicFiles({
     root: options.root,
@@ -94,10 +97,24 @@ export async function auditPublicReadiness(options) {
       requiredPublicContracts: contractReport.requiredCount,
       presentPublicContracts: contractReport.presentCount,
       acceptedPolicyFiles: policyClassification.accepted.length,
+      reviewedRemoteBranches: refPolicyReport.reviewed.length,
+      blockedOrphanBranches: refPolicyReport.blockedOrphans.length,
+      unknownRemoteBranches: refPolicyReport.unknown.length,
+      unclassifiedTags: refPolicyReport.tags.length,
     },
     publicContracts: {
       present: contractReport.present,
       missing: contractReport.missing,
+    },
+    publicRefPolicy: {
+      status: refPolicyReport.status,
+      reviewed: refPolicyReport.reviewed,
+      blockedOrphans: refPolicyReport.blockedOrphans,
+      unknown: refPolicyReport.unknown,
+      tags: refPolicyReport.tags,
+      requiredRemoteCandidate: refPolicyReport.requiredRemoteCandidate,
+      headCommit: refPolicyReport.headCommit,
+      remoteCandidateCommit: refPolicyReport.remoteCandidateCommit,
     },
     acceptedPolicyFiles: policyClassification.accepted,
     status:
