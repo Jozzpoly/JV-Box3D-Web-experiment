@@ -15,40 +15,89 @@ Keep the repository compact, runnable and technically honest. Preserve durable c
 ```text
 branch: agent/jv-web-demonstrator-foundation
 PR: #18, direct to main, draft
-remote branches: main + active branch only
 exact candidate: git rev-parse HEAD or PR head SHA
 ```
 
-Do not merge, mark Ready, change visibility or enable Pages without Jozz. Do not fast-forward the long experimental history into public `main`; prefer a clean snapshot repo or owner-reviewed squash later.
+Do not merge, mark Ready, change visibility or enable Pages without Jozz. Do not fast-forward the long experimental history into public `main`; prefer a clean snapshot repository or owner-reviewed squash later.
 
-Git Diff Patcher Bridge is forbidden. Use GitHub connector and ordinary Git only. No custom Actions without explicit owner request.
+Git Diff Patcher Bridge is forbidden. Use the GitHub connector and ordinary Git only. Do not add custom Actions without explicit owner approval.
 
 ## Evidence boundary
 
-### Exact logged mobile checkpoint
+### Exact green vehicle-asset foundation checkpoint
 
 ```text
-commit: 7204993a0640e6cff0baa719d849a0b4368c15aa
+commit: d6aa218064c2653f918cf7956d2fcd20a940caf3
 Node/npm: 24.16.0 / 11.17.0
 receipt: byte-exact
+npm ci: PASS
+vulnerabilities: 0
 TypeScript: PASS
-tests: 120/120 PASS
-docs/notices/portable root+subpath HTTP: PASS
-LAN HTTP without SubtleCrypto: PASS
-localhost + LAN desktop + real phone: PASS
-Box3D / WebGL / keyboard / multi-touch: observed working
+tests: 218/218 PASS
+docs links: PASS
+third-party notices: PASS
+Vite production build: PASS
+portable static/runtime/vehicle/path/privacy/network/HTTP: PASS
+root + repository-subpath HTTP: PASS
 publication: NOT PERFORMED
 ```
 
-### Newer owner observation
+The generated tiny package at this checkpoint was:
 
-Jozz later confirmed LIVE, four contacts, visible vehicle, every drive control and destroy/rebuild in desktop and mobile browsers. Treat this as manual evidence, not a fresh gate for the current visual-asset head.
+```text
+2628 bytes
+SHA-256 b243bf5ae6ed0b185885b6d341ab0a12fd377743408040e14226c1fecbb31281
+26 nodes
+24 triangles
+336 decoded geometry bytes
+```
 
-### Historical failed gate
+Non-blocking bundle warnings remain:
 
-At `49e9eec…`, TypeScript passed and 161/162 tests passed. The only failure was a stale backend-object expectation after intended descriptor consolidation. It is fixed with an identity assertion against the shared frozen descriptor.
+```text
+box3d.js imports browser-externalized node:module
+main bundle is about 1.22 MiB / 391 KiB gzip
+```
 
-The exact current PR head still requires a complete local gate. Never claim the new CPU/GPU asset pipeline is green before that log.
+### Owner browser evidence for the same checkpoint
+
+Jozz confirmed desktop and phone operation after the full gate:
+
+```text
+browser works
+mobile works
+vehicle visible
+controls work
+destroy/rebuild works
+```
+
+Treat this as manual owner evidence. Tiny GLB was packaged but still not drawn.
+
+### Current post-gate preparation candidate
+
+After `d6aa218…`, the branch adds a source-only renderer preparation:
+
+```text
+one existing WebGL context remains authoritative
+owned BEFORE_DEBUG_VEHICLE / AFTER_DEBUG_VEHICLE render passes
+async installation tied to AbortSignal
+a late pass is disposed after renderer shutdown
+one pass failure is isolated from the debug observer
+reverse-order, idempotent pass disposal
+debug vehicle visibility can be switched without replacing camera/grid
+shared WebGL baseline is restored between passes
+```
+
+The first unlit draw capability is explicitly narrower than the transport decoder:
+
+```text
+accepted by unlit renderer: POSITION + baseColorFactor + doubleSided
+rejected before GPU allocation: NORMAL, TEXCOORD_0
+```
+
+The CPU decoder may still transport optional NORMAL/TEXCOORD_0 for later renderers. No renderer may silently ignore them; each draw implementation must validate its own capability before GPU publication.
+
+The exact current post-gate head requires a fresh local gate and unchanged browser/mobile smoke. Never attribute the `d6aa218…` green result to a newer head.
 
 ## Physics authority
 
@@ -98,12 +147,14 @@ sealed CPU mesh asset
         ↓
 ownership + mobile budget
         ↓
-rigid draw plan
+renderer-specific capability gate
         ↓
 transactional GPU buffers
+        ↓
+rigid draw plan on the renderer-owned WebGL context
 ```
 
-The model never drives physics and never stores `b3BodyId`/`b3JointId`.
+The model never drives physics and never stores `b3BodyId` or `b3JointId`.
 
 ### Runtime channels
 
@@ -154,7 +205,7 @@ upper body       → START endpoint aim
 lower shaft      → END endpoint aim
 ```
 
-### GLB V1 subset
+### GLB transport subset
 
 Require:
 
@@ -174,7 +225,7 @@ Reject:
 - external URI;
 - unknown vertex attributes;
 - skins, animation, morph targets and sparse accessors;
-- non-triangle primitives, GLB extensions and 32-bit indices;
+- non-triangle primitives, extensions and 32-bit indices;
 - empty channels, unowned mesh nodes and byte/hash drift.
 
 ### Mobile geometry budget V1
@@ -210,24 +261,22 @@ Reports bytes, feature policy, ownership, decoded counts and geometry budget.
 
 ## Preliminary scan direction
 
-`StaticSceneVisualPackageV1` is source-present but not active. It pins metre/JV axes, GLB bytes, `worldFromAsset`, local-origin radius and CPU budgets.
+`StaticSceneVisualPackageV1` is source-present but inactive. It pins metre/JV axes, GLB bytes, `worldFromAsset`, local-origin radius and CPU budgets.
 
 Reuse the vehicle CPU/GPU mesh path. Do not reuse vehicle bindings. Keep visual scan and collision separate. Real scan import waits until tiny vehicle rendering is proven on phone.
-
-Read `docs/contracts/STATIC_SCENE_VISUAL_PACKAGE_V1.md`.
 
 ## Immediate sequence
 
 ```text
-1 full local gate on exact current PR head
+1 full local gate on the exact post-gate preparation head
 2 unchanged debug-renderer desktop/LAN/phone smoke
-3 browser-load generated tiny vehicle package
-4 compile draw plan from live VehicleVisualFrameV1
-5 minimal shader/draw layer beside debug observer
-6 prove 18 parts + 8 segments, disposal/rebuild and phone performance
-7 owner-authored simple chassis + four wheels
-8 knuckles, arms, links and two-piece coilovers
-9 normals/base-colour lighting
+3 implement one unlit tiny-vehicle render pass through installRenderPass()
+4 validate unlit capability before GPU allocation
+5 build live draw plans from trace.visualFrame
+6 prove all 18 parts + 8 segments, pass failure fallback and context lifecycle
+7 prove destroy/rebuild and phone performance
+8 owner-authored simple chassis + four wheels
+9 normals + simple base-colour lighting with a new capability profile
 10 embedded texture ownership + texture budgets
 11 full vehicle model
 12 first static scan visual fixture
@@ -249,27 +298,31 @@ The full owner model must not be the first asset testing load, transforms or GPU
 ## Read next
 
 1. `docs/PROJECT_STATE.md`
-2. `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`
-3. `docs/contracts/STATIC_SCENE_VISUAL_PACKAGE_V1.md`
-4. `docs/ARCHITECTURE.md`
+2. `docs/ARCHITECTURE.md`
+3. `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`
+4. `docs/contracts/STATIC_SCENE_VISUAL_PACKAGE_V1.md`
 5. `docs/contracts/SCENE_PACKAGE_V1.md`
 6. `docs/decisions/ADR-0003-native-jv-core-wasm.md`
 
 ## Immediate boundary
 
 ```text
-SOURCE PRESENT / GATE PENDING:
-visual transform math
-transactional package loader
-strict CPU decoder/seal/ownership/budgets
-generic draw plan
-transactional GPU buffer asset
-deterministic portable tiny rig
-preliminary static scan contract
+GREEN AT d6aa218…:
+vehicle visual CPU/GPU foundation
+218 tests
+portable tiny package
+unchanged desktop/mobile debug runtime
+
+SOURCE PRESENT / FRESH GATE PENDING:
+shared WebGL render-pass host
+pass lifecycle/error isolation
+unlit capability gate
+pre-GPU runtime validation hook
 
 NOT YET ACTIVE IN BROWSER:
 tiny GLB load/render
-GLB shader/material layer
+GLB shader/material draw code
+normals/lighting
 textures
 real scan
 ```
