@@ -11,47 +11,52 @@ branch: agent/jv-web-demonstrator-foundation
 PR: #18
 base: main
 state: draft / not merged
-exact candidate: resolve with git rev-parse HEAD or the PR head SHA
+exact candidate: resolve with git rev-parse HEAD or PR head SHA
 ```
 
 Only `main` and the active development branch remain remotely. Do not fast-forward the long experimental history into a presentation-ready public default branch. Prefer a clean demonstrator snapshot/repository or an owner-reviewed squash later.
 
 No merge, Ready, visibility, license or Pages decision has been made.
 
-## Proven runtime evidence
+## Exact green foundation checkpoint
 
-### Exact logged mobile checkpoint
+The vehicle-asset foundation is proven at:
 
 ```text
-commit: 7204993a0640e6cff0baa719d849a0b4368c15aa
+commit: d6aa218064c2653f918cf7956d2fcd20a940caf3
 Node/npm: 24.16.0 / 11.17.0
 receipt: byte-exact
+npm ci: PASS
+vulnerabilities: 0
 TypeScript: PASS
-tests: 120/120 PASS
-docs/notices/portable root+subpath HTTP: PASS
-LAN HTTP without SubtleCrypto: PASS
-localhost + LAN desktop + real phone: PASS
-Box3D / WebGL / keyboard / multi-touch: observed working
+tests: 218/218 PASS
+documentation links: PASS
+third-party notices: PASS
+Vite bundle: PASS
+portable static/runtime/vehicle/path/privacy/network/HTTP: PASS
+root + /JV-Box3D-Web-experiment/ HTTP: PASS
 publication: NOT PERFORMED
 ```
 
-### Newer owner observations
-
-Jozz subsequently confirmed the scene/runtime and visual-frame lines in desktop and mobile browsers:
+Generated proof asset:
 
 ```text
-LIVE
-4 CONTACTS
-vehicle visible
-DRIVE / LEFT / RIGHT / BRAKE / REVERSE working
-destroy and rebuild working
+manifest + GLB: deterministic
+GLB bytes: 2628
+SHA-256: b243bf5ae6ed0b185885b6d341ab0a12fd377743408040e14226c1fecbb31281
+nodes: 26
+triangles: 24
+geometry bytes: 336
 ```
 
-This is owner-observed runtime evidence, not a fresh terminal gate for the current asset-pipeline head.
+Known non-blocking bundle warnings:
 
-### Historical visual-rig gate attempt
+```text
+box3d.js imports browser-externalized node:module
+largest JS chunk: about 1.22 MiB / 391 KiB gzip
+```
 
-At `49e9eec729101d11635a0dab05184ae1f97dd660` TypeScript passed and 161/162 tests passed. The sole failure was a stale expected backend object after intentional descriptor consolidation. The corrected test now asserts identity with the one shared frozen descriptor. A newer full gate is still required.
+After this exact gate Jozz confirmed that the desktop browser and phone demonstrator work correctly, including the visible vehicle, controls and destroy/rebuild. Tiny GLB was packaged but not yet drawn.
 
 ## Existing demonstrator
 
@@ -81,9 +86,7 @@ visual frame contract: v1
 
 The native/legacy drive semantic mismatch remains explicit. Do not add final drivetrain, suspension, tire, aero or steering mechanics to the TypeScript fixture.
 
-## Vehicle visualization foundation candidate
-
-The exact current PR head is a **source candidate pending a fresh gate**. It does not replace the visible debug renderer yet.
+## Vehicle visualization foundation
 
 ### Runtime frame
 
@@ -99,11 +102,11 @@ The exact current PR head is a **source candidate pending a fresh gate**. It doe
   steering-link × 4
 ```
 
-Rigid transforms come from real post-step bodies. Segment endpoints come from the exact joint anchors.
+Rigid transforms come from real post-step bodies. Segment endpoints come from exact joint anchors.
 
-### Executable authoring contract
+### Authoring and transform contract
 
-`VehicleVisualPackageV1` binds GLB roots through:
+`VehicleVisualPackageV1` binds independent GLB roots through:
 
 ```text
 PART
@@ -111,50 +114,43 @@ SEGMENT_STRETCH
 SEGMENT_ENDPOINT_AIM
 ```
 
-`SEGMENT_STRETCH` has an explicit authored baseline between `0.001` and `10` metres. Stretch roots must use identity `localFromSource`; this prevents shear and ambiguous physical endpoints. Runtime composition is fixed as:
+`SEGMENT_STRETCH` has an explicit authored baseline and identity correction. Runtime composition is fixed as:
 
 ```text
 worldFromNode = worldFromRuntimeSource × localFromSource
 ```
 
-Shortest-arc segment aim is deterministic. Stretch meshes must be rotationally symmetric because physical segment roll is not supplied in V1.
+Every bound root owns at least one renderable mesh descendant, and every mesh node belongs to exactly one binding root.
 
-### Strict GLB subset
-
-Before CPU/GPU publication the pipeline requires:
-
-- exact byte length and SHA-256;
-- one self-contained GLB v2 and one embedded BIN buffer;
-- aligned bufferViews/accessors;
-- `TRIANGLES` with 8/16-bit indices;
-- `POSITION`, optional `NORMAL`, optional `TEXCOORD_0` only;
-- finite POSITION min/max;
-- independent identity bound roots;
-- rendered material fields limited to `baseColorFactor` and `doubleSided`;
-- no external URI, image, texture, skin, animation, morph, sparse accessor or extension;
-- no silently ignored vertex or material fields.
-
-Textures are intentionally rejected until image decode, sampler/texture ownership and mobile texture-memory budgets exist. Metallic/roughness and other PBR fields remain rejected until the shader actually preserves and renders them.
-
-### CPU pipeline
+### Transport and ownership pipeline
 
 ```text
 manifest + package-relative URL
 → fetch with AbortSignal
 → byte/hash gate
-→ GLB policy
+→ GLB feature/material policy
 → CPU decode
 → sealed ownership graph + owned typed arrays
-→ complete binding ownership
+→ binding ownership
 → mobile geometry budget
-→ draw plan
+→ renderer capability validation
+→ transactional GPU buffers
+→ live rigid draw plan
 ```
 
-The ownership graph and name index expose no mutation path. Decoded typed arrays are owned by the asset and passed to the transactional GPU upload path; they are not described as deeply immutable bytes.
+Transport accepts POSITION plus optional NORMAL/TEXCOORD_0. A renderer is not allowed to ignore transported streams silently.
 
-Every bound root must own at least one renderable mesh descendant, and every mesh node must belong to exactly one binding root.
+The first unlit capability therefore accepts only:
 
-Platform budget V1:
+```text
+POSITION
+baseColorFactor
+doubleSided
+```
+
+and rejects NORMAL/TEXCOORD_0 before GPU allocation. A later lighting/texture renderer must introduce a new explicit capability profile.
+
+### Mobile geometry budget V1
 
 ```text
 nodes:          512
@@ -164,13 +160,7 @@ materials:      64
 geometry bytes: 64 MiB
 ```
 
-### GPU ownership
-
-The source candidate can transactionally allocate position, optional normal/UV and index buffers. Any allocation/upload failure rolls back all earlier buffers. Disposal is reverse-order and idempotent.
-
-No shader or draw integration has been added to the working debug renderer yet.
-
-### Deterministic tiny runtime asset
+### Deterministic tiny asset
 
 Generated before dev/build:
 
@@ -179,40 +169,51 @@ public/vehicles/tiny/vehicle.visual.json
 public/vehicles/tiny/models/m6-rig-proof.glb
 ```
 
-The proof asset contains 18 part boxes and 8 segment rods, two shared meshes and two base-colour materials. It is ignored as reproducible build output, regenerated deterministically and required by the portable manifest.
+It contains 18 part boxes and 8 segment rods using two shared meshes and two base-colour materials. It remains the first browser draw proof; the final owner model must not test the pipeline first.
 
-The portable vehicle gate validates the packaged manifest against the packaged GLB bytes, CPU decode, ownership and exact proof counts.
+## Post-gate renderer preparation
 
-### Inspection tool
+The current branch after `d6aa218…` adds a controlled seam without activating GLB drawing in `main.ts`:
 
-```powershell
-npm run inspect:vehicle-glb -- <model.glb> <vehicle.visual.json>
+```text
+M6DebugRenderer owns the only WebGL context
+       ↓
+owned render-pass host
+       ↓
+BEFORE_DEBUG_VEHICLE / AFTER_DEBUG_VEHICLE phases
+       ↓
+shared viewProjection + live M6TraceFrame
 ```
 
-It reports GLB structure, strict feature policy, ownership, nodes/primitives/triangles/materials and decoded geometry bytes.
+Lifecycle guarantees:
+
+- async pass installation receives an `AbortSignal`;
+- a pass resolving after renderer shutdown is disposed and never published;
+- one failing pass is removed without killing the debug observer;
+- installed passes dispose in reverse order;
+- context loss and renderer disposal abort pending work;
+- the debug WebGL baseline is restored between pass phases;
+- the debug vehicle can later be hidden while preserving the same camera and grid.
+
+`VehicleVisualRenderResourceV1` now accepts a runtime capability validator before any GPU allocation.
+
+This preparation is **source-present but requires a fresh exact-head gate and unchanged browser/mobile smoke**. The green evidence at `d6aa218…` must not be projected onto a newer commit.
 
 ## Preliminary scan preparation
 
-`StaticSceneVisualPackageV1` is source-present but not active in runtime. It defines:
+`StaticSceneVisualPackageV1` is source-present but inactive. It defines metre/JV axes, exact static GLB bytes, `worldFromAsset`, a scene-local origin/radius and budgets.
 
-- metre/JV axes;
-- exact static GLB bytes;
-- explicit `worldFromAsset`;
-- scene-local origin and maximum radius;
-- nodes/triangles/materials budgets.
-
-The scan will reuse the GLB CPU/GPU pipeline, but not vehicle bindings. Visual scan and collision remain separate assets. Real scan import, texture pipeline, culling/chunking and triangle collision are not active.
-
-See `docs/contracts/STATIC_SCENE_VISUAL_PACKAGE_V1.md`.
+The scan will reuse the GLB CPU/GPU pipeline, but not vehicle bindings. Visual scan and collision remain separate assets. Real scan import, texture pipeline, culling/chunking and triangle collision are inactive.
 
 ## Deliberate limitations
 
-- current CPU/GPU asset-pipeline head has not passed a fresh local gate;
-- tiny GLB is generated and packaged but not yet loaded or drawn by `main.ts`;
-- no shader/material draw layer for GLB yet;
-- no texture/image pipeline;
-- no final Jozz vehicle model or manifest;
-- no deformable tire visual contract;
+- current render-pass preparation head has not passed a fresh local gate;
+- `main.ts` does not install a vehicle GLB pass yet;
+- tiny GLB is not yet drawn in the browser;
+- no GLB shader/program implementation yet;
+- no normals/lighting capability;
+- no texture/image ownership path;
+- no final Jozz vehicle model;
 - no real scan import or scene collision mesh;
 - initial camera pose still starts on the old side;
 - no native JV WASM backend;
@@ -221,23 +222,21 @@ See `docs/contracts/STATIC_SCENE_VISUAL_PACKAGE_V1.md`.
 ## Correct next sequence
 
 ```text
-1 full Node 24 gate on exact current PR head
-2 repair only demonstrated failures
-3 unchanged desktop/LAN/phone debug-renderer smoke
-4 load tiny vehicle package in browser transactionally
-5 compile a draw plan from live VehicleVisualFrameV1
-6 add a minimal shader/draw layer beside the debug observer
+1 full Node 24 gate on the exact current preparation head
+2 unchanged desktop/LAN/phone debug-renderer smoke
+3 implement one unlit tiny-vehicle render pass through installRenderPass()
+4 load the generated package transactionally
+5 validate UNLIT_POSITION_BASE_COLOR_V1 before GPU allocation
+6 compile draw plans from trace.visualFrame
 7 prove all 18 parts + 8 segments visually
-8 destroy/rebuild/context lifecycle and phone performance
-9 add normals and simple base-colour lighting
-10 import owner-authored simple chassis + four wheels
-11 add knuckles, arms, steering links and two-piece coilovers
-12 implement embedded texture ownership and budgets
-13 integrate full body/interior/wheel model
-14 only then activate the first scan visual fixture
+8 prove pass failure fallback, context loss, destroy/rebuild and phone performance
+9 import owner-authored simple chassis + four wheels
+10 introduce normals + simple lighting as a new capability
+11 add suspension/steering parts
+12 implement embedded texture ownership and texture budgets
+13 integrate the full model
+14 activate the first static scan visual fixture
 ```
-
-The final owner model must not be the first asset testing load, transform math, GPU ownership or disposal.
 
 ## Long-term architecture
 
@@ -248,7 +247,9 @@ input → fixed-step commands → VehicleRuntimeBackend
                               ↓
                     VehicleVisualPackageV1
                               ↓
-        sealed ownership graph → draw plan → GPU asset
+       sealed CPU graph → capability gate → GPU resource
+                              ↓
+                   renderer-owned pass host
 
 static scene package → same CPU/GPU mesh path
 native_jv_wasm later → same visual frame contract
