@@ -12,6 +12,10 @@ export interface VehicleVisualRenderResourceV1 {
   dispose(): void;
 }
 
+export type VehicleVisualRuntimeValidatorV1 = (
+  runtime: LoadedVehicleVisualRuntimeV1,
+) => void;
+
 function abortError(): DOMException {
   return new DOMException("Vehicle visual load was aborted.", "AbortError");
 }
@@ -23,6 +27,7 @@ export async function createVehicleVisualRenderResourceV1(
   options: Readonly<{
     signal?: AbortSignal;
     fetcher?: VehicleVisualFetcherV1;
+    validateRuntime?: VehicleVisualRuntimeValidatorV1;
   }> = {},
 ): Promise<VehicleVisualRenderResourceV1> {
   if (options.signal?.aborted) {
@@ -33,6 +38,10 @@ export async function createVehicleVisualRenderResourceV1(
     packageUrl,
     options,
   );
+  if (options.signal?.aborted) {
+    throw abortError();
+  }
+  options.validateRuntime?.(runtime);
   if (options.signal?.aborted) {
     throw abortError();
   }
