@@ -11,13 +11,13 @@ function environment(overrides = {}) {
     hostname: "192.168.1.142",
     secureContext: false,
     cryptoLike: {},
+    webglRenderingContextLike: class WebGLRenderingContext {},
     pointerEventLike: class PointerEvent {},
     maxTouchPoints: 5,
     coarsePointer: true,
     viewportWidth: 412,
     viewportHeight: 915,
     devicePixelRatio: 2.625,
-    webgl: true,
     ...overrides,
   };
 }
@@ -29,7 +29,7 @@ test("LAN HTTP reports software digest fallback without becoming a runtime fault
     secureContext: false,
     webCryptoDigest: false,
     softwareDigestFallback: true,
-    webgl: true,
+    webglApi: true,
     pointerEvents: true,
     maxTouchPoints: 5,
     coarsePointer: true,
@@ -68,10 +68,12 @@ test("loopback HTTP is classified separately from LAN HTTP", () => {
   assert.equal(report.transport, "LOOPBACK_HTTP");
 });
 
-test("renderer result is reported without creating a diagnostic WebGL context", () => {
-  const report = inspectBrowserRuntime(environment({ webgl: false }));
-  assert.equal(report.webgl, false);
-  assert.match(formatBrowserRuntimeReport(report), /WebGL OFF/);
+test("WebGL API presence is reported without allocating a context", () => {
+  const report = inspectBrowserRuntime(
+    environment({ webglRenderingContextLike: undefined }),
+  );
+  assert.equal(report.webglApi, false);
+  assert.match(formatBrowserRuntimeReport(report), /WebGL API OFF/);
 });
 
 test("invalid numeric capability values are normalized for telemetry", () => {
