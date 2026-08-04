@@ -429,12 +429,20 @@ function visibleRefs(git) {
     .filter(Boolean);
 }
 
+function redactedRef(ref) {
+  const parts = ref.split("/");
+  return {
+    namespace: parts.slice(0, 2).join("/"),
+    fingerprint: fingerprint(ref),
+  };
+}
+
 function auditRefNames(refs, blockers, reviews) {
   for (const ref of refs) {
     scanText({
       text: ref,
       scope: "git-ref-name",
-      path: ref,
+      path: `[redacted ref ${fingerprint(ref)}]`,
       objectSha: null,
       blockers,
       reviews,
@@ -488,7 +496,7 @@ export async function auditPublicReadiness({
     note:
       "Pattern scanning reduces risk but cannot prove the absence of every secret, private fact, licensing problem or unwanted historical artifact. Every review finding requires human classification.",
     metrics,
-    refs,
+    refs: refs.map(redactedRef),
     blockers: finalBlockers,
     reviewFindings: finalReviews,
   };
