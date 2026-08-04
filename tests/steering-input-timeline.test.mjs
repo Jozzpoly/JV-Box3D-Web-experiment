@@ -54,3 +54,27 @@ test("same-timestamp events are ordered by insertion sequence", () => {
   assert.equal(sample.leftPressedAtEnd, false);
   assert.equal(sample.rightPressedAtEnd, true);
 });
+
+test("releasing one source does not cancel another source on the same side", () => {
+  const timeline = new SteeringInputTimeline(0);
+  timeline.enqueueButton("LEFT", true, 0, "keyboard");
+  timeline.enqueueButton("LEFT", true, 2, "touch");
+  timeline.enqueueButton("LEFT", false, 4, "touch");
+  timeline.enqueueButton("LEFT", false, 8, "keyboard");
+
+  const sample = timeline.consumeInterval(0, 10);
+  assert.deepEqual(sample.command, { mode: "RATE", value: 0.8 });
+  assert.equal(sample.leftPressedAtEnd, false);
+});
+
+test("release-all only clears controls owned by its source", () => {
+  const timeline = new SteeringInputTimeline(0);
+  timeline.enqueueButton("RIGHT", true, 0, "keyboard");
+  timeline.enqueueButton("RIGHT", true, 2, "touch");
+  timeline.enqueueReleaseAll(4, "DISPOSE", "keyboard");
+  timeline.enqueueButton("RIGHT", false, 8, "touch");
+
+  const sample = timeline.consumeInterval(0, 10);
+  assert.deepEqual(sample.command, { mode: "RATE", value: -0.8 });
+  assert.equal(sample.rightPressedAtEnd, false);
+});
