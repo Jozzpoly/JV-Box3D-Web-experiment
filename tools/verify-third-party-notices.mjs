@@ -25,7 +25,7 @@ function requireEqual(actual, expected, label) {
 
 function requireNotice(notice, value, label) {
   if (!notice.includes(value)) {
-    throw new Error(`THIRD_PARTY_NOTICES.md is missing ${label}: ${value}`);
+    throw new Error(`THIRD_PARTY_NOTICES.md is missing ${label}.`);
   }
 }
 
@@ -53,6 +53,33 @@ requireNotice(
   "the exact box3d.js MIT license text",
 );
 
+const embeddedBox3dLicense = `MIT License
+
+Copyright (c) 2026 Erin Catto
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.`;
+requireNotice(
+  notice,
+  embeddedBox3dLicense,
+  "the exact embedded Box3D MIT license text",
+);
+
 const vitePackage = await readJson(
   resolve(root, "node_modules", "vite", "package.json"),
 );
@@ -75,7 +102,6 @@ for (const requiredValue of [
   "2617a0ff763a60c9f17cee57c6ea72aab75a5077",
   "020ba0ca3ecfea79d8f776bdca982779e6d13f80ce437bc4a0dac18830bd62dd",
   "8441b4a06d6d09dcfb0b0f704df4d847d1437b92",
-  "Copyright (c) 2026 Erin Catto",
   "Vite | 8.1.5",
   "TypeScript | 7.0.2",
   "It does **not** grant a license to JV Web source code",
@@ -84,5 +110,5 @@ for (const requiredValue of [
 }
 
 console.log(
-  "Third-party notice verification passed: box3d.js@0.0.2, Box3D provenance, Vite 8.1.5 and TypeScript 7.0.2.",
+  "Third-party notice verification passed: exact box3d.js and embedded Box3D MIT texts, Vite 8.1.5 and TypeScript 7.0.2.",
 );
