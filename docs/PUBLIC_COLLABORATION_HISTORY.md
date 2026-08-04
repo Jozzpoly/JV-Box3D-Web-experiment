@@ -1,4 +1,4 @@
-# JV Web — public collaboration and pull-request history
+# JV Web — public collaboration, pull-request and branch history
 
 Updated: 2026-08-04
 Status: `CANONICAL PUBLIC HISTORY MAP`
@@ -6,93 +6,138 @@ Owner: Jozz
 
 ## Purpose
 
-JV Web was developed through a deliberately stacked sequence of draft pull requests. GitHub will expose those pull requests when the repository becomes public, but their open state must not be interpreted as thirteen competing merge proposals.
+JV Web was developed through a deliberately stacked sequence of draft pull requests plus two unreviewed orphan research refs. GitHub will expose branches, pull requests and issues when the repository becomes public, but their existence must not be interpreted as parallel merge proposals or current product authority.
 
-This document classifies the complete pull-request set observed on 2026-08-04. It preserves evidence while identifying the current authority.
+No pull request or branch listed here is approved for merge, publication or product adoption solely because it appears in this index.
 
-No pull request listed here is approved for merge or ready-for-review solely because it appears in this index.
+Detailed branch receipt:
+
+```text
+docs/receipts/inventory/GITHUB_BRANCH_SURFACE_2026_08_04.md
+```
 
 ## Current authority
 
 ```text
 architecture authority: PR #17 / agent/jv-web-refoundation
 active source-public and portable-package candidate: PR #18 / agent/jv-web-demonstrator-foundation
-product physics authority: future native JV Core + Box3D WASM, not a current PR
+product physics authority: future native JV Core + Box3D WASM
 owner approval authority: Jozz
 ```
 
-The intended public default branch has not yet been selected or updated. `main` remains stale and private.
+`main` remains stale/private and has not been moved.
 
 ## Pull-request map
 
 | PR | Classification | Durable value | Public interpretation |
 |---|---|---|---|
-| #1 | `QUARANTINED HISTORICAL PROTOTYPE` | runnable browser experiments, asset/render lessons, rejected steering failure evidence | never merge wholesale; contains historical root MIT license and rejected host-driven centering |
-| #2 | `SUPERSEDED FOUNDATION RECOVERY` | audit recovery, early contracts and branch model | historical bridge from quarantine to clean implementation; current state/docs have precedence |
-| #4 | `F1 HISTORICAL VALIDATED CHECKPOINT` | fixed-step host, timestamped steering timeline, lifecycle | retained engineering evidence; later branches inherit it |
-| #6 | `F2 HISTORICAL VALIDATED CHECKPOINT` | typed Box3D/WASM boundary, real contact, rebuild lifecycle | retained dependency/runtime evidence; old custom workflow policy is superseded |
-| #8 | `CLOSED QUARANTINED FAILED EXPERIMENT` | evidence of unsafe self-modifying validation and failed F3 attempt | do not resume or merge |
+| #1 | `QUARANTINED HISTORICAL PROTOTYPE` | runnable browser experiments and rejected steering evidence | never merge wholesale; historical MIT and rejected host centering |
+| #2 | `SUPERSEDED FOUNDATION RECOVERY` | audit recovery and early contracts | historical bridge; current state/docs have precedence |
+| #4 | `F1 HISTORICAL VALIDATED CHECKPOINT` | fixed-step host, timestamped steering, lifecycle | retained engineering evidence |
+| #6 | `F2 HISTORICAL VALIDATED CHECKPOINT` | typed Box3D/WASM boundary and contact/rebuild | retained runtime evidence; old workflow policy superseded |
+| #8 | `CLOSED QUARANTINED FAILED EXPERIMENT` | failed self-modifying F3 validation evidence | do not resume or merge |
 | #9 | `F3 HISTORICAL VALIDATED CHECKPOINT` | strict native factory receipt validation | retained configuration/provenance evidence |
-| #11 | `F4 HISTORICAL VALIDATED CHECKPOINT` | current M6 topology fixture and deterministic vehicle host | retained topology/reference-runtime evidence, not native parity |
-| #13 | `F5 STEERING RESEARCH` | physical rack-space RATE profiles and deterministic matrix | experimental candidates only; no approved product default |
-| #14 | `VISUAL OBSERVER CHECKPOINT` | read-only physical transform observer | retained browser-observation evidence |
-| #15 | `LEGACY DRIVE FIXTURE WITH ERRATUM` | drive/reverse/brake/coast liveness and determinism | central `40 m/s` interpretation is wrong; native value is a `40 rad/s` wheel rev limit; do not use as product drivetrain specification |
-| #16 | `DYNAMIC STEERING MEASUREMENT` | held-lock and post-RELEASE rack-excursion receipts | diagnostic evidence; no force-clamp or steering fix approved |
-| #17 | `REFOUNDATION ARCHITECTURE` | one physics authority, native JV Core WASM direction, documentation cleanup | current architecture authority; locally validated but still draft/unmerged |
-| #18 | `ACTIVE DEMONSTRATOR FOUNDATION` | portable package, source-public gates, compliance/history tooling, mobile/scene contracts | current active candidate; remains draft and unapproved for merge/publication |
+| #11 | `F4 HISTORICAL VALIDATED CHECKPOINT` | M6 topology fixture and deterministic host | reference evidence, not native parity |
+| #13 | `F5 STEERING RESEARCH` | physical RATE profiles and matrix | candidates only; no approved product default |
+| #14 | `VISUAL OBSERVER CHECKPOINT` | read-only transform observer | retained browser-observation evidence |
+| #15 | `LEGACY DRIVE FIXTURE WITH ERRATUM` | drive/reverse/brake/coast liveness | `40 m/s` interpretation wrong; native value is `40 rad/s` wheel rev limit |
+| #16 | `DYNAMIC STEERING MEASUREMENT` | held-lock and post-RELEASE receipts | diagnostic only; no force-clamp approved |
+| #17 | `REFOUNDATION ARCHITECTURE` | one physics authority and cleanup | current architecture authority; draft/unmerged |
+| #18 | `ACTIVE DEMONSTRATOR FOUNDATION` | portable/source-public/compliance/mobile-scene foundation | active candidate; draft and unapproved |
 
 ## Issue map
 
 | Issue | Classification | Interpretation |
 |---|---|---|
-| #3 | `COMPLETED F1 MILESTONE` | historical milestone receipt |
-| #5 | `COMPLETED F2 MILESTONE` | historical Box3D boundary milestone |
-| #7 | `COMPLETED F3 MILESTONE` | historical factory-receipt milestone |
-| #10 | `COMPLETED F4 MILESTONE` | historical topology milestone |
-| #12 | `HISTORICAL F5 RATE RESEARCH` | remains useful research context; not the current release roadmap |
+| #3 | `COMPLETED F1 MILESTONE` | historical receipt |
+| #5 | `COMPLETED F2 MILESTONE` | historical receipt |
+| #7 | `COMPLETED F3 MILESTONE` | historical receipt |
+| #10 | `COMPLETED F4 MILESTONE` | historical receipt |
+| #12 | `HISTORICAL F5 RATE RESEARCH` | useful research, not current roadmap |
 
-## Complete observed public discussion surface
-
-The repository contained thirteen pull-request records at the time of this inventory:
+## Observed pull-request discussion surface
 
 ```text
-#1, #2, #4, #6, #8, #9, #11, #13, #14, #15, #16, #17, #18
+13 PR records total
+12 open drafts
+1 closed quarantine (#8)
+0 merged
 ```
 
-Canonical count:
+Available bodies and top-level comments for all thirteen PRs and comments for issues #3/#5/#7/#10/#12 were reviewed through the GitHub connector. No obvious credential, token, Jozz-local filesystem path or private owner e-mail was observed.
+
+This is not a byte-level proof of every GitHub internal object. Source/history scan and manual GitHub settings/log review remain independent gates.
+
+## Complete branch surface
+
+Sixteen visible branches were enumerated:
 
 ```text
-13 pull requests total
-12 open draft pull requests
-1 closed quarantined pull request (#8)
-0 merged pull requests
+13 PR-backed branches
+main
+agent/f3-regression-snapshot-2026-08-03
+agent/terrain-scan-integration
 ```
 
-Available bodies and top-level comments for all thirteen records were reviewed through the GitHub connector. No obvious credential, token, Jozz-local filesystem path or private owner e-mail was observed.
+The two final refs have no PR and therefore no public discussion context.
 
-This is not a byte-level audit of every GitHub internal object. Formal reviews and inline threads were separately checked for the highest-risk PRs and none were found. The source/history scanner and manual GitHub settings/log review remain independent gates.
+### `agent/f3-regression-snapshot-2026-08-03`
+
+```text
+tip: d583d3f573300335446b1b1f99fdd8ce29d2e7df
+87 commits ahead of main
+7 commits unique relative to the current clean lineage at the measured checkpoint
+```
+
+Contains the rejected self-modifying/write-capable F3 workflow era. The tip workflow edits TypeScript, commits as a validation bot and pushes source changes to another branch.
+
+Classification:
+
+```text
+ORPHAN REGRESSION SNAPSHOT
+PUBLIC REF BLOCKER
+PRIVATE RECOVERY REQUIRED BEFORE ANY OWNER-APPROVED REF DELETION
+```
+
+### `agent/terrain-scan-integration`
+
+```text
+tip: 9c4172fead575a85d4d47466a4b5194cc5612c57
+136 commits ahead of main
+no PR
+```
+
+Contains an old duplicate TypeScript vehicle/terrain implementation, manual workflow, asset synchronizer, local native-root detection, model/session copying into `public/assets/` and unresolved 136-commit rights/privacy history.
+
+Classification:
+
+```text
+ORPHAN TERRAIN/ASSET RESEARCH LINE
+PUBLIC REF BLOCKER
+PRIVATE RECOVERY + FULL HISTORY/ASSET REVIEW REQUIRED
+```
+
+Neither orphan ref is deleted, moved, merged or rewritten automatically.
 
 ## Historical claims with explicit precedence
 
 ### Drive units
 
 ```text
-superseded PR #15 wording: maxDriveSpeed = 40 m/s
-native JV source meaning: maxDriveSpeed = 40 rad/s wheel rev limit
+superseded PR #15: maxDriveSpeed = 40 m/s
+native JV source:  maxDriveSpeed = 40 rad/s wheel rev limit
 ```
 
-The PR #15 erratum and current refoundation documents have precedence.
+PR #15 erratum and current refoundation documents have precedence.
 
 ### Backend authority
 
 ```text
 legacy_ts_m6
-role: REFERENCE_BROWSER_FIXTURE
+REFERENCE_BROWSER_FIXTURE
 productPhysicsAuthority: false
 nativeParity: NOT_PROVEN
 ```
-
-A green historical fixture test does not establish native JV parity.
 
 ### Steering release
 
@@ -100,30 +145,45 @@ A green historical fixture test does not establish native JV parity.
 RELEASE = hands off in the first fixed step
 ```
 
-Any historical host-driven return-to-centre or centre-hold behavior is rejected failure evidence.
+Historical host-driven return-to-centre/centre-hold is rejected failure evidence.
 
-## Public presentation policy
+## Public presentation and ref policy
 
 Before `SOURCE_PUBLIC_READY_PASS`:
 
-1. this history map is linked from the public README;
-2. PR #15 retains its prominent erratum;
-3. PR #1 and #8 remain visibly quarantined;
-4. current README/state identifies PR #17 and #18 as authorities;
-5. Jozz decides whether superseded open drafts remain open or are closed as historical without deletion;
-6. no PR is merged merely to simplify the public list;
-7. no historical discussion is rewritten to manufacture a cleaner past.
+1. this map is linked from README;
+2. PR #15 retains its erratum;
+3. PR #1/#8 remain quarantined;
+4. README/state identify #17/#18 as authorities;
+5. all sixteen branches have a disposition;
+6. orphan refs receive verified private Git bundles or private archive receipts;
+7. any remote-ref deletion requires explicit Jozz approval;
+8. fetch/prune and all-refs audit are repeated after a ref change;
+9. no PR is merged merely to simplify the public list;
+10. history is not rewritten to manufacture a cleaner past.
 
-## Owner decision still required
+## Owner decisions still required
 
-The repository can be public with historical draft PRs if their meaning is explicit. Closing superseded drafts may make the public surface easier to navigate, but it is not a security requirement and is not performed automatically.
-
-Jozz must choose one policy before public visibility:
+### PR-backed historical branches
 
 ```text
-A. preserve all historical drafts open, with this map as authority
-B. close superseded drafts as historical, preserving bodies/comments and branches
-C. selectively close only the clearly completed/quarantined stacks
+A. preserve historical drafts open, using this map as authority
+B. close superseded drafts while preserving discussions/branches
+C. selectively close completed/quarantined stacks
 ```
 
-None of these choices changes source code or establishes merge approval.
+Closing is presentation policy, not a security substitute.
+
+### Orphan refs
+
+Recommended:
+
+```text
+private verified Git bundle/archive
+→ owner recovery verification
+→ explicit owner decision
+→ optional deletion of only the two orphan remote refs
+→ fetch/prune and all-history audit again
+```
+
+Keeping either orphan ref public requires a dedicated exact-history, workflow, license, asset and privacy acceptance. Current evidence does not support that acceptance.
