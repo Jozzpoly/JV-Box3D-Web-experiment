@@ -11,7 +11,8 @@ branch: agent/jv-web-demonstrator-foundation
 PR: #18
 base: main
 state: draft / not merged
-current candidate: 9429008a76ae6e9c62e534f2cee3443c4769d264
+exact gate target: resolve with git rev-parse HEAD or the PR head SHA
+code hardening checkpoint: 9429008a76ae6e9c62e534f2cee3443c4769d264
 ```
 
 Only `main` and the active development branch remain remotely. Older PRs are closed as historical context.
@@ -73,7 +74,7 @@ tests: 161/162 PASS
 
 failed only because `tests/f4-backend-contract.test.mjs` still expected the older, smaller backend object after descriptor consolidation. The actual host exposed the intended shared descriptor containing role, authority, parity, known mismatches and visual-frame contract version. The portable build was correctly not started after the failed test gate.
 
-The stale expectation has been replaced with an identity assertion against the one shared frozen backend descriptor. The current candidate also hardens runtime immutability, mobile GLB policy and package-relative asset resolution. A fresh complete gate is still required.
+The stale expectation has been replaced with an identity assertion against the one shared frozen backend descriptor. The current PR head also hardens runtime immutability, mobile GLB policy and package-relative asset resolution. A fresh complete gate is still required.
 
 ## Current runtime
 
@@ -131,7 +132,7 @@ The legacy backend currently accepts only the built-in plane at `y=0`, no render
 
 ## Vehicle model and rigid-rig foundation candidate
 
-The current **unvalidated** source candidate prepares model, rig, wheel and suspension assets without loading the final model yet.
+The current **unvalidated** PR head prepares model, rig, wheel and suspension assets without loading the final model yet.
 
 ### Runtime visual frame
 
@@ -197,7 +198,7 @@ Authoring rules are in `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`.
 
 ## Deliberate limitations
 
-- current candidate `9429008…` has not passed its fresh Node/build gate;
+- the exact current PR head has not passed its fresh Node/build gate;
 - no GLB model is loaded by the browser yet;
 - no GPU mesh/material/texture loader yet;
 - no final Jozz vehicle asset or visual package manifest yet;
@@ -211,20 +212,21 @@ Authoring rules are in `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`.
 ## Correct next sequence
 
 ```text
-1 validate exact candidate 9429008… with the complete Node 24 gate
+1 resolve and validate the exact current PR head with the complete Node 24 gate
 2 repair only demonstrated compile/test/build failures
 3 perform a short unchanged debug-renderer smoke if the gate is green
 4 create one tiny generated GLB + package as a real portable runtime fixture
 5 implement transactional GLB byte load and CPU parse
-6 render tiny rigid nodes beside the unchanged debug renderer
-7 drive all 18 parts and 8 segments from VehicleVisualFrameV1
-8 validate disposal/rebuild and phone performance
-9 import the first owner-authored chassis + four-wheel asset
-10 add knuckles, arms, steering links and two-piece coilovers
-11 only then integrate the full body/interior/wheel model
+6 define and test transform composition, including SEGMENT_STRETCH baseline semantics
+7 render tiny rigid nodes beside the unchanged debug renderer
+8 drive all 18 parts and 8 segments from VehicleVisualFrameV1
+9 validate disposal/rebuild and phone performance
+10 import the first owner-authored chassis + four-wheel asset
+11 add knuckles, arms, steering links and two-piece coilovers
+12 only then integrate the full body/interior/wheel model
 ```
 
-The final vehicle asset must not be the first file that tests the loader, node binding or GPU lifecycle.
+The final vehicle asset must not be the first file that tests the loader, node binding, transform math or GPU lifecycle.
 
 ## Long-term architecture
 
