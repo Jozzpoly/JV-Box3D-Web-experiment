@@ -13,7 +13,16 @@ base: main
 state: draft / not merged
 ```
 
-All older pull requests are closed as historical. They are not required integration steps.
+All older pull requests are closed as historical. The remote branch surface now contains only `main` and the active development branch.
+
+The active branch is a long experimental descendant of `main`. Do not fast-forward its entire 410-commit history into a future presentation-ready default branch. At publication time choose either:
+
+```text
+preferred: a clean public demonstrator repository/snapshot
+alternative: an owner-reviewed squash integration
+```
+
+No integration, visibility or Pages decision has been made.
 
 ## What works
 
@@ -55,27 +64,33 @@ native JV Core + Box3D source
  TypeScript input, render, UI and scene host
 ```
 
-Initial native/WASM work should preserve the current native behavior before any large refactor. See `docs/NATIVE_PORT_NOTES.md`.
+Native/WASM remains the long-term authority, but it is not the next immediate product milestone. First stabilize the browser host, mobile controls, scene contract and sharing path using the frozen reference fixture.
 
-## Validation truth
-
-Last complete local gate on an earlier head:
+## Validated foundation checkpoint
 
 ```text
-Node 24.16.0
-npm 11.17.0
-109 tests total
-108 PASS
-1 report-sanitizer FAIL
+commit: db7768ebc5d191d96c7ff0022572093c00549453
+Node: 24.16.0
+npm: 11.17.0
+receipt: byte-exact
+npm ci: PASS
+npm audit: 0 vulnerabilities observed
+TypeScript: PASS
+tests: 96/96 PASS
+documentation links: PASS
+third-party notices: PASS
+Vite production bundle: PASS
+portable static validation: PASS
+portable manifest privacy: PASS
+portable network policy: PASS
+loopback HTTP at /: PASS
+loopback HTTP at /JV-Box3D-Web-experiment/: PASS
+publication: NOT PERFORMED
 ```
 
-The failing sanitizer case was corrected afterward. The current simplified candidate has not yet received a fresh full gate, production package verification or new browser observation.
+The bundle warning about the approximately 1.2 MiB JavaScript chunk is recorded but is not a current functional failure.
 
-Do not claim current PASS until Jozz runs:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File ".\tools\run-demonstrator-foundation-gate.ps1"
-```
+This evidence does **not** yet prove exact current-head execution in a real desktop browser or phone.
 
 ## Deliberate limitations
 
@@ -83,8 +98,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ".\tools\run-demonstrator-fo
 - no final drivetrain model;
 - legacy split-sphere wheel only;
 - no native JV WASM backend;
-- no mobile controls;
-- no scan scene loader;
+- no dedicated mobile controls;
+- no phone lifecycle/performance validation;
+- no scene package or scan loader;
 - diagnostic visuals only;
 - no project reuse license selected yet;
 - repository remains private and Pages remains disabled.
@@ -103,17 +119,79 @@ Remove or close:
 - obsolete experimental branches;
 - phase-specific runners;
 - duplicated reports and process ledgers;
-- speculative contracts that are not being implemented;
+- speculative frameworks that are not being implemented;
 - archives kept only because they once existed.
 
-## Next work
+Do not begin another broad cleanup cycle unless a concrete file or dependency obstructs active work.
+
+## Corrected near-term development plan
+
+### 1. Browser truth
+
+Run the exact current build in a real desktop browser and verify:
+
+- Box3D startup;
+- WebGL rendering;
+- steering, forward, reverse and brake;
+- inverted camera behavior already requested by Jozz;
+- destroy/rebuild;
+- no uncaught runtime errors.
+
+### 2. Multi-source input foundation
+
+Before adding touch controls, make timeline state source-aware. Keyboard, touch and future gamepad inputs must not release one another when overlapping on the same semantic control.
+
+### 3. Mobile control host
+
+Implement Pointer Events controls that:
+
+- feed the existing fixed-step timelines;
+- allow steering and throttle/brake simultaneously;
+- assign one pointer to one control owner;
+- release safely on up, cancel, lost capture, blur, hidden page, pagehide and disposal;
+- do not allow camera input to steal control pointers;
+- do not modify physics or render cadence.
+
+### 4. Real phone gate
+
+Validate landscape/portrait layout, browser gestures, lifecycle, multi-touch, performance and driving feel over LAN on a real phone.
+
+### 5. Scene foundation
+
+Only after mobile input is stable, implement a minimal scene package with explicit units, axes, spawn, render mesh and separate collision representation. Validate on a small synthetic scene before importing a real scan.
+
+### 6. Sharing and publication
+
+After mobile and scene validation:
+
+- choose the project license;
+- choose clean snapshot repository versus squash integration;
+- create the presentation-ready source history;
+- enable Pages only for an owner-accepted exact package.
+
+### 7. Native WASM
+
+Begin behavior-preserving native/WASM parity work after the browser host, input, scene and distribution seams are stable enough not to change underneath the port.
+
+## Immediate work boundary
 
 ```text
-1 run fresh Node 24 gate on the simplified head
-2 repair any real code/test/build regressions
-3 perform browser drive/steering/camera smoke
-4 prune obsolete remote branches
-5 decide project license before visibility changes
-6 fast-forward main after exact owner acceptance
-7 continue native WASM, mobile and scene work from the clean foundation
+ACTIVE NOW:
+source-aware timelines
+mobile pointer controls
+compact responsive UI
+focused tests
+
+WAITING FOR OWNER/RUNTIME VALIDATION:
+desktop browser smoke
+real phone smoke
+control feel
+publication history strategy
+license
+
+NOT ACTIVE YET:
+real scan import
+native JV WASM port
+final vehicle mechanics
+Pages publication
 ```
