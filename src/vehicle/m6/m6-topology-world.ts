@@ -5,6 +5,10 @@ import type {
   b3Vec3,
   b3WorldId,
 } from "../../physics/box3d-runtime-contract.js";
+import {
+  LEGACY_TS_M6_BACKEND,
+  type LegacyTsM6BackendContract,
+} from "./legacy-ts-m6-backend.js";
 import { vec3 } from "./m6-geometry.js";
 import {
   m6TopologyConfigFromReceipt,
@@ -26,6 +30,15 @@ import {
 const FULL_MASK = 0xffff_ffff_ffff_ffffn;
 const GROUND_HALF_EXTENT_METERS = 250;
 
+export {
+  LEGACY_TS_M6_BACKEND,
+  LEGACY_TS_M6_BACKEND_ID,
+  LEGACY_TS_M6_PARITY_STATUS,
+} from "./legacy-ts-m6-backend.js";
+export type {
+  LegacyTsM6BackendContract,
+  LegacyTsM6KnownMismatch,
+} from "./legacy-ts-m6-backend.js";
 export {
   CollisionGroupAllocator,
   M6_TOPOLOGY_COUNTS,
@@ -142,6 +155,11 @@ export class M6TopologyWorld {
   get rateProfile(): RateSteeringProfile {
     this.#assertActive();
     return this.#rateProfile;
+  }
+
+  get runtimeBackend(): LegacyTsM6BackendContract {
+    this.#assertActive();
+    return LEGACY_TS_M6_BACKEND;
   }
 
   get counters() {
