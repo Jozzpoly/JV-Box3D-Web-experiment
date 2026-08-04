@@ -16,7 +16,8 @@ Keep the repository compact, readable and technically honest. Preserve durable c
 branch: agent/jv-web-demonstrator-foundation
 PR: #18, direct to main, draft
 remote branches: main + active branch only
-current exact candidate: resolve from PR head; docs may lag by one documentation commit
+exact gate target: resolve from git rev-parse HEAD or PR head SHA
+code hardening checkpoint before documentation sync: 9429008a76ae6e9c62e534f2cee3443c4769d264
 ```
 
 Do not merge, mark Ready, change visibility or enable Pages without Jozz. Do not fast-forward the long experimental history into a presentation-ready public main; prefer a clean public snapshot repo or owner-reviewed squash later.
@@ -59,7 +60,7 @@ tests: 161/162 PASS
 
 The only failure was a stale `f4-backend-contract` expectation that compared the host backend with the older descriptor shape. Runtime exposed the intended consolidated descriptor. Build correctly stopped after the failed test.
 
-The stale test is fixed by asserting object identity with the one shared frozen backend descriptor. The current candidate additionally hardens runtime immutability, GLB mobile policy and manifest-relative URL resolution. It still requires a fresh complete owner gate; never claim it is green before that log.
+The stale test is fixed by asserting object identity with the one shared frozen backend descriptor. The exact current PR head additionally hardens runtime immutability, GLB mobile policy and manifest-relative URL resolution. It still requires a fresh complete owner gate; never claim it is green before that log.
 
 ## Physics authority
 
@@ -207,20 +208,21 @@ npm run inspect:vehicle-glb -- <model.glb> [vehicle.visual.json]
 ## Model implementation sequence
 
 ```text
-1 fresh local gate on the exact hardened visual-rig candidate
+1 fresh local gate on the exact current PR head
 2 unchanged debug-renderer browser smoke
 3 tiny generated GLB + strict package as a portable runtime fixture
 4 transactional fetch/hash/CPU parse
-5 minimal mesh renderer beside unchanged debug observer
-6 drive all 18 rigid parts and 8 segments from visual frame
-7 prove rebuild/disposal and phone budget
-8 owner-authored simple chassis + four wheels
-9 knuckles, arms, tie rods and two-piece coilovers
-10 full body/interior/wheel asset
-11 optional LOD/compression only from measured need
+5 define and test transform composition and SEGMENT_STRETCH baseline semantics
+6 minimal mesh renderer beside unchanged debug observer
+7 drive all 18 rigid parts and 8 segments from visual frame
+8 prove rebuild/disposal and phone budget
+9 owner-authored simple chassis + four wheels
+10 knuckles, arms, tie rods and two-piece coilovers
+11 full body/interior/wheel asset
+12 optional LOD/compression only from measured need
 ```
 
-The final Jozz model must never be the first loader/GPU lifecycle test.
+The final Jozz model must never be the first loader/transform/GPU lifecycle test.
 
 ## Scene and native direction
 
@@ -271,10 +273,10 @@ local GLB inspector
 focused positive/negative tests
 
 PENDING:
-fresh TypeScript/test/build gate on exact current head
+fresh TypeScript/test/build gate on exact current PR head
 browser regression smoke
 
 AFTER GREEN:
 tiny portable runtime GLB fixture and CPU parser
-then minimal rendering
+then transform math and minimal rendering
 ```
