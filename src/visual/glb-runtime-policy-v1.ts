@@ -1,6 +1,11 @@
 const GLB_JSON_CHUNK = 0x4e4f534a;
 const GLTF_UNSIGNED_BYTE = 5121;
 const GLTF_UNSIGNED_SHORT = 5123;
+const ALLOWED_VERTEX_ATTRIBUTES = new Set([
+  "POSITION",
+  "NORMAL",
+  "TEXCOORD_0",
+]);
 
 export interface GlbRuntimePolicyReceiptV1 {
   readonly bufferCount: 1;
@@ -47,6 +52,16 @@ function optionalInteger(
   minimum = 0,
 ): number {
   return value === undefined ? fallback : integer(value, label, minimum);
+}
+
+function finiteTuple(value: unknown, length: number, label: string): void {
+  const entries = array(value, label);
+  if (
+    entries.length !== length ||
+    entries.some((entry) => typeof entry !== "number" || !Number.isFinite(entry))
+  ) {
+    reject(`${label} must contain ${length} finite numbers`);
+  }
 }
 
 function decodeRoot(bytes: Uint8Array): JsonRecord {
@@ -149,7 +164,7 @@ export function assertGlbRuntimePolicyV1(
   });
 
   const accessors = array(root["accessors"], "glTF accessors");
-  const accessorComponentTypes = accessors.map((entry, index) => {
+  const accessorInfo = accessors.map((entry, index) => {
     const label = `glTF accessors[${index}]`;
     const accessor = object(entry, label);
     const viewIndex = integer(
@@ -176,7 +191,7 @@ export function assertGlbRuntimePolicyV1(
     if ((viewOffset + accessorOffset) % componentSize !== 0) {
       reject(`${label} is not aligned to its component size`);
     }
-    return componentType;
+    return Object.freeze({ componentType, accessor });
   });
 
   for (const [meshIndex, meshValue] of array(
@@ -188,24 +203,72 @@ export function assertGlbRuntimePolicyV1(
       mesh["primitives"],
       `glTF meshes[${meshIndex}].primitives`,
     ).entries()) {
-      const primitive = object(
-        primitiveValue,
-        `glTF meshes[${meshIndex}].primitives[${primitiveIndex}]`,
+      const primitiveLabel =
+        `glTF meshes[${meshIndex}].primitives[${primitiveIndex}]`;
+      const primitive = object(primitiveValue, primitiveLabel);
+      const attributes = object(
+        primitive["attributes"],
+        `${primitiveLabel}.attributes`,
       );
+      const attributeNames = Object.keys(attributes);
+      const unsupported = attributeNames.filter(
+        (name) => !ALLOWED_VERTEX_ATTRIBUTES.has(name),
+      );
+      if (unsupported.length > 0) {
+        reject(
+          `${primitiveLabel} uses unsupported vertex attributes: ${unsupported.join(", ")}`,
+        );
+      }
+      const positionAccessorIndex = integer(
+        attributes["POSITION"],
+        `${primitiveLabel}.attributes.POSITION`,
+      );
+      const positionInfo = accessorInfo[positionAccessorIndex];
+      if (positionInfo === undefined) {
+        reject(
+          `${primitiveLabel}.POSITION references missing accessor ${positionAccessorIndex}`,
+        );
+      }
+      finiteTuple(
+        positionInfo.accessor["min"],
+        3,
+        `glTF accessors[${positionAccessorIndex}].min`,
+      );
+      finiteTuple(
+        positionInfo.accessor["max"],
+        3,
+        `glTF accessors[${positionAccessorIndex}].max`,
+      );
+
+      for (const optionalAttribute of ["NORMAL", "TEXCOORD_0"] as const) {
+        if (attributes[optionalAttribute] === undefined) {
+          continue;
+        }
+        const accessorIndex = integer(
+          attributes[optionalAttribute],
+          `${primitiveLabel}.attributes.${optionalAttribute}`,
+        );
+        if (accessorInfo[accessorIndex] === undefined) {
+          reject(
+            `${primitiveLabel}.${optionalAttribute} references missing accessor ${accessorIndex}`,
+          );
+        }
+      }
+
       if (primitive["indices"] === undefined) {
         continue;
       }
       const accessorIndex = integer(
         primitive["indices"],
-        `glTF meshes[${meshIndex}].primitives[${primitiveIndex}].indices`,
+        `${primitiveLabel}.indices`,
       );
-      const componentType = accessorComponentTypes[accessorIndex];
+      const componentType = accessorInfo[accessorIndex]?.componentType;
       if (
         componentType !== GLTF_UNSIGNED_BYTE &&
         componentType !== GLTF_UNSIGNED_SHORT
       ) {
         reject(
-          `glTF meshes[${meshIndex}].primitives[${primitiveIndex}] indices must be 8-bit or 16-bit for WebGL1 portability`,
+          `${primitiveLabel} indices must be 8-bit or 16-bit for WebGL1 portability`,
         );
       }
     }
