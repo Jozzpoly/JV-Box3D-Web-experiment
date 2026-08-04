@@ -21,6 +21,8 @@
     "audit:public:report": "node tools/audit-public-readiness.mjs --report-only",
     "audit:public:review-template": "node tools/write-public-review-ledger.mjs",
     "audit:public:review-check": "node tools/validate-public-review-ledger.mjs",
+    "audit:integration": "node tools/audit-source-public-integration.mjs",
+    "audit:integration:report": "node tools/audit-source-public-integration.mjs --report-only",
     "audit:licenses": "node tools/audit-reachable-licenses.mjs",
     "audit:licenses:report": "node tools/audit-reachable-licenses.mjs --report-only",
     "check": "npm run typecheck && npm run test && npm run check:third-party",
