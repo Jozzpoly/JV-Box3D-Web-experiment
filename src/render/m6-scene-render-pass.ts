@@ -30,6 +30,7 @@ export interface M6SceneRenderPassInstallationV1 {
 
 interface InstalledPassV1 {
   readonly pass: M6SceneRenderPassV1;
+  readonly viewProjection: M6SceneMatrixV1;
   active: boolean;
 }
 
@@ -80,7 +81,11 @@ export class M6SceneRenderPassHostV1 {
       throw new Error(`Unknown scene render-pass phase: ${String(pass.phase)}.`);
     }
 
-    const entry: InstalledPassV1 = { pass, active: true };
+    const entry: InstalledPassV1 = {
+      pass,
+      viewProjection: new Float32Array(16),
+      active: true,
+    };
     this.#entries.push(entry);
     const host = this;
     return Object.freeze({
@@ -102,15 +107,16 @@ export class M6SceneRenderPassHostV1 {
       return;
     }
 
-    const frame = Object.freeze({
-      gl: this.#gl,
-      viewProjection,
-      trace,
-    });
     for (const entry of [...this.#entries]) {
       if (!entry.active || entry.pass.phase !== phase) {
         continue;
       }
+      entry.viewProjection.set(viewProjection);
+      const frame = Object.freeze({
+        gl: this.#gl,
+        viewProjection: entry.viewProjection,
+        trace,
+      });
       try {
         entry.pass.render(frame);
       } catch (error: unknown) {
