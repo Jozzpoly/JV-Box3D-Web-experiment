@@ -1,213 +1,245 @@
-# Kontrakt braku sztucznych mechanik — JV Web
+# JV/JES — konstytucja braku ukrytych mechanik
 
-Status: `OWNER_RULE_CAPTURED / PRECISE_DIGITAL_STEERING_RATIFIED_AS_RESEARCH_NEED / IMPLEMENTATION_PENDING`
-
-Rewizja 2026-08-03: Jozz potwierdził, że finite-rate keyboard steering ze starego PoC dawał wartościową możliwość bardzo małych korekt krótkimi kliknięciami. Odzyskujemy ograniczoną szybkość ruchu komendy, ale nie odzyskujemy automatycznego powrotu do zera ani centre-hold. Szczegóły: `STEERING_INPUT_RESEARCH_2026_08_03_PL.md`.
+Updated: 2026-08-04
+Status: `ACTIVE OWNER CONTRACT`
+Owner: Jozz
 
 ## 1. Reguła nadrzędna
 
-W realistycznym domyślnym JV Web każda siła, moment, constraint, target, tłumienie albo korekta wpływająca na pojazd musi spełnić jeden z warunków:
+Każda siła, moment, constraint, target, tłumienie, korekta albo automatyczna decyzja wpływająca na pojazd musi należeć do jednej jawnej kategorii:
 
-1. jest wiernym portem jawnego mechanizmu aktualnego native JV na przypiętym commicie;
-2. jest koniecznym adapterem API, który zachowuje tę samą semantykę i ma niezależny test;
-3. jest eksperymentem/assistem jawnie zatwierdzonym przez Jozza, wyłączonym domyślnie i widocznym w configu, HUD oraz receipcie;
-4. jest jawnym modelem aktuatora kierowcy, który przekłada ograniczenia urządzenia wejściowego na hands-on force/position/rate bez odczytywania stanu jazdy i bez generowania stabilizacji pojazdu.
+1. **native mechanism** — pochodzi z przypiętego JV Core i ma source/parity receipt;
+2. **semantic adapter** — zachowuje tę samą mechanikę przy zmianie hosta/API i ma falsyfikujący test;
+3. **named experiment** — posiada ID, hipotezę, trace, wynik i brak automatycznego promotion;
+4. **optional assist** — zatwierdzony przez Jozza, domyślnie OFF, widoczny w configu/HUD/receipcie;
+5. **driver actuator** — realizuje jawną komendę kierowcy bez stabilizowania pojazdu na podstawie stanu jazdy.
 
-Brak spełnienia któregokolwiek warunku oznacza zakaz w ścieżce produktu.
+Mechanizm niespełniający żadnej kategorii jest zakazany w produkcie.
 
-## 2. Realistyczny default kierownicy
+## 2. Jedno źródło fizyki
 
-Dla `rackCenteringHertz == 0`:
+Docelowo mechanika należy do:
 
-- aktywna komenda kierowcy może sterować rackiem przez zatwierdzony hands-on actuator;
-- zwolnienie sterowania w trybie `RELEASE` oznacza brak aktywnej komendy kierowcy;
-- rack spring/servo hands-on zostają zwolnione;
-- pozostaje wyłącznie zatwierdzone fizyczne tarcie racka;
-- przy postoju caster nie ma wejściowej siły kontaktowej zdolnej wycentrować koła;
-- koła mogą pozostać skręcone;
-- podczas toczenia kontakt opony, caster trail, geometria zwrotnicy, tie-rody, rack, bezwładność i tarcie mogą fizycznie zmienić skręt.
+```text
+Box3D + native JV Core
+```
 
-Host nie może po `RELEASE`:
+kompilowanych razem do desktop i WASM.
 
-- prowadzić targetu do zera;
-- utrzymywać hands-on lub równoważnej flagi;
-- używać timera centre hold;
-- ustawiać target translation na zero;
-- dodawać prędkości racka w stronę środka;
-- odczytywać yaw/slip/speed i generować korektę;
-- uznawać końcowego wycentrowania na postoju za warunek PASS.
+TypeScript host nie może rozwijać drugiego drivetrainu, tire law, anti-roll, aero, steering actuator albo systemu stabilizacji.
 
-## 3. Jawne assisty native JV
+Obecny `legacy_ts_m6` jest nazwanym fixture’em referencyjnym, nie product authority.
 
-### `rackCenteringHertz > 0`
+## 3. Realistyczny default
 
-Klasyfikacja: `OPTIONAL_ARCADE_ASSIST / DEFAULT_OFF`.
+```text
+rackCenteringHertz = 0
+uprightAssist = false
+```
 
-Native opisuje go jako słabą sprężynę do środka działającą również na postoju. Nie należy do realistycznego defaultu.
+Po `RELEASE`:
 
-Polityka odbudowy webowej:
+- hands-on spring/servo jest wyłączone w pierwszym fixed stepie;
+- nie istnieje target do zera;
+- nie istnieje centre timer/hold;
+- pozostaje fizyczne tarcie, geometria, kontakt i bezwładność;
+- koła mogą pozostać skręcone na postoju;
+- podczas toczenia caster/contact/linkage mogą back-drive’ować rack.
 
-- nie implementować w pierwszym czystym vertical slice;
-- import configu z wartością większą od zera kończy się jawnym `UNSUPPORTED_OPTIONAL_ASSIST`, dopóki Jozz osobno nie zatwierdzi wsparcia;
-- ewentualna przyszła implementacja musi być dokładnym portem native, domyślnie wyłączonym, wyraźnie oznaczonym i osobno testowanym.
+Szczegółowy kontrakt `RELEASE | POSITION | RATE`:
 
-### `uprightAssist == true`
+```text
+contracts/STEERING_COMMAND_CONTRACT_PL.md
+```
 
-Klasyfikacja: `OPTIONAL_RESCUE_ASSIST / DEFAULT_OFF`.
+## 4. Optional assists
 
-Jest world-anchored keep-upright helperem, nie uczciwym mechanizmem zawieszenia.
+### Rack centering
 
-Polityka taka sama: brak wsparcia w pierwszym czystym slice i fail-closed przy imporcie aktywnej wartości.
+```text
+rackCenteringHertz > 0
+classification: OPTIONAL_ARCADE_ASSIST
+product default: OFF
+```
 
-## 4. Mechanizmy uznane za fizyczne kandydaty
+### Upright helper
 
-Poniższe mechanizmy mają jawny odpowiednik w przypiętym native JV, lecz nadal wymagają line-by-line port receipt:
+```text
+uprightAssist = true
+classification: OPTIONAL_RESCUE_ASSIST
+product default: OFF
+```
 
-- caster i kingpin geometry;
-- physical rack body + prismatic joint;
-- rigid tie rods;
-- load-dependent Coulomb rack friction i stiction ratio;
-- steering actuator wyłącznie w jawnym trybie hands-on;
-- wheel contact i friction;
-- coilovers;
-- arm/ball-joint/hinge limits;
-- anti-roll force couple;
+Dopóki dany assist nie jest wspierany przez bieżący runtime:
+
+- aktywna wartość jest odrzucana fail-closed;
+- runtime nie zeruje jej po cichu;
+- nie używa zastępczego mechanizmu;
+- receipt wskazuje `UNSUPPORTED_OPTIONAL_ASSIST`.
+
+Przyszłe wsparcie wymaga dokładnego native mechanism receipt i osobnego owner verdictu.
+
+## 5. Mechanizmy fizyczne nadal wymagają dowodu
+
+Występowanie w native nie jest automatycznym dowodem poprawnej implementacji w innym buildzie.
+
+Dotyczy między innymi:
+
+- caster/kingpin geometry;
+- physical rack + tie-rods;
+- load-dependent rack friction;
+- coilovers i suspension limits;
+- anti-roll couples;
 - torque-based drive;
 - brake/coast torque;
-- quadratic aero drag;
-- legacy split sphere/sidewall fixture, wyłącznie jako stary baseline, nie future wheel architecture.
+- aero drag;
+- wheel/contact backend.
 
-Samo występowanie w native nie zwalnia z dowodu, że web nie zmienił znaków, osi, kolejności, capów lub warunków aktywacji.
+Każdy port/build porównuje:
 
-## 5. Semantyka wejścia
+- znaki i osie;
+- jednostki;
+- warunki aktywacji;
+- kolejność update;
+- caps/limits;
+- solver profile;
+- source/toolchain identity.
 
-Minimalna semantyka nie może już być jednym niejasnym polem `steer` plus opcjonalne `steeringEngaged`.
+Green liveness test nie wystarcza. Błąd `maxDriveSpeed` pokazał, że ta sama liczba może oznaczać inny mechanizm.
+
+## 6. Zakazane hidden feedback
+
+Device adapter, ergonomic mapper i host nie mogą używać do ukrytej korekty:
 
 ```text
-SteeringCommand =
-  RELEASE
-  POSITION(-1..1)
-  RATE(-1..1)
+yaw / yaw rate
+slip / slip angle
+vehicle speed
+travel direction
+body orientation
+wheel contact/forces
+road trajectory
 ```
 
-### `RELEASE`
+Lokalny actuator może znać własny:
 
-- hands off natychmiast;
+```text
+rack translation/speed
+limits
+target error
+force cap
+hands-on edge
+```
+
+wyłącznie do realizacji jawnej `POSITION` albo `RATE`.
+
+## 7. Koło
+
+`legacy_m6_split_sphere_sidewall` jest:
+
+```text
+regression baseline / fallback / failure reference
+```
+
+Nie jest przyszłą fizyczną oponą.
+
+Nowy system koła podlega:
+
+```text
+contracts/WHEEL_BACKEND_CONTRACT_PL.md
+```
+
+Kategorie powierzchni nie mogą przełączać opony między różnymi naturami collidera. Mass/inertia nie mogą zależeć przypadkowo od liczby shapes backendu.
+
+## 8. Trace jako źródło obserwacji
+
+Controller/runtime emituje neutralny trace. Watchdog i testy go konsumują; nie rekonstruują logiki kontrolera drugi raz.
+
+Minimalne pola dla mechanizmu sterowania/napędu:
+
+```text
+runtime backend ID and authority
+command mode/value
+handsOn
+spring/motor state
+target and live actuator state
+force/torque caps
+friction/load terms
+assist flags
+drive mode
+wheel target and measured spin
+units and coordinate frames
+```
+
+Trace nie jest approval. Jest dowodem, jaki mechanizm działał.
+
+## 9. Obowiązkowe negatywne testy
+
+### No artificial centering at rest
+
+Przy assists OFF po RELEASE testuje przyczynę:
+
+- spring/servo OFF;
 - brak targetu do środka;
-- brak aktywnego steering spring/servo;
-- pozostaje fizyczne tarcie i back-drive.
+- motor cap wyłącznie fizycznego tarcia;
+- brak force zależnej od znaku racka;
+- brak host timer/feedback.
 
-### `POSITION`
+Nie wymaga idealnie niezmiennej liczby racka; solver compliance może dać mały ruch.
 
-Jawny target kierowcy, odpowiedni między innymi dla analogowej osi lub dotykowego steru pozycyjnego. To hands-on command, nie self-centering.
+### Release after nudge
 
-### `RATE`
+Pierwszy fixed step po końcu tapu ma hands-on OFF.
 
-Jawna ograniczona szybkość ruchu kierownicy/racka, przeznaczona przede wszystkim dla klawiatury i dotykowych przycisków. Krótki press daje mały nudge. Key-up przechodzi do `RELEASE`, nie do `POSITION(0)`.
+### Optional assists default OFF
 
-Pierwszy kandydat badawczy to rate command bazowany na live rack przy rozpoczęciu hands-on. Może czytać położenie własnego aktuatora, ale nie może czytać stanu jazdy.
+Factory config, runtime config i receipt potwierdzają wartości defaultu.
 
-## 6. Dozwolone i zakazane sprzężenie
+### No hidden driving-state feedback
 
-### Zakazane w adapterze urządzenia i ergonomii
+Static/module boundary test odrzuca stan jazdy w device adapterze i mapperze RATE.
 
-- yaw/yaw rate;
-- slip/slip angle;
-- wheel contact/force;
-- vehicle speed jako ukryty regulator czułości;
-- travel direction;
-- body orientation;
-- trajektoria drogi;
-- target wynikający z tego, gdzie „powinien” jechać pojazd.
+### Semantic units
 
-### Dozwolone w jawnym aktuatorze kierowcy
+Schema/ABI test odrzuca anonimowe pola typu `speed` albo `rate` bez jednostki i znaczenia.
 
-- rack translation;
-- rack speed;
-- rack limits;
-- actuator target error;
-- motor/spring force cap;
-- edge hands-on/hands-off.
+### No silent fallback
 
-Warunek: dane służą wyłącznie realizacji jawnej komendy `POSITION` lub `RATE`. Nie mogą zmieniać kierunku albo wartości komendy na podstawie ruchu pojazdu.
+Rejected backend/config nie tworzy świata zastępczego ani legacy vehicle bez jawnej decyzji.
 
-## 7. Testy obowiązkowe
-
-### `NO_ARTIFICIAL_CENTERING_AT_REST`
-
-Warunki:
-
-- `rackCenteringHertz = 0`;
-- `uprightAssist = false`;
-- pojazd stoi na płaskim podłożu;
-- rack zostaje fizycznie/aktywną komendą ustawiony poza środkiem;
-- wejście przechodzi w `RELEASE`;
-- brak ruchu postępowego.
-
-Test nie wymaga, aby rack zachował idealnie identyczną liczbę — solver, sprężystość i relaksacja mogą dać drobny ruch. Test sprawdza przyczynę:
-
-- hands-on spring disabled;
-- servo target/motor nie generuje ruchu ku centrum;
-- max motor force odpowiada wyłącznie modelowi tarcia;
-- brak hostowego timer/target;
-- brak aktywnej siły zależnej od znaku położenia racka.
-
-### `PHYSICAL_CASTER_RETURN_REQUIRES_ROLLING`
-
-Ten sam stan początkowy, lecz po `RELEASE` pojazd zaczyna toczyć się do przodu. Obserwujemy, czy geometria/contact może back-drive'ować rack. Wynik jest pomiarem mechanizmu, nie wymogiem idealnego zera.
-
-### `DIGITAL_NUDGE_IS_BOUNDED`
-
-Jednokrokowy i krótkotrwały `RATE` musi dać małą, ograniczoną zmianę komendy/racka, nie target pełnego locka.
-
-### `RELEASE_AFTER_NUDGE`
-
-Pierwszy fixed step po zakończeniu tapu musi mieć hands-on OFF. Brak fazy return-to-zero i centre hold.
-
-### `OPTIONAL_ASSISTS_DEFAULT_OFF`
-
-Factory config, pinned preset i czysty web runtime muszą potwierdzić:
+## 10. Słownik dowodu
 
 ```text
-rackCenteringHertz == 0
-uprightAssist == false
+SOURCE_FACT
+MEASURED_FACT
+MECHANISM_FALSIFICATION
+INTERNAL_CONSISTENCY
+LIVENESS_SMOKE
+SCENARIO_EQUIVALENCE
+VISUAL_OBSERVATION
+OWNER_VALIDATED
 ```
 
-### `NO_HIDDEN_DRIVING_STATE_FEEDBACK`
+Nie wolno spłaszczać tych poziomów do jednego `PASS`.
 
-Statyczny scan i testy modułowe odrzucają zależność device adaptera lub rate mappera od yaw, slip, vehicle speed, travel direction, body orientation i wheel forces. Aktuator może czytać wyłącznie własny rack state zgodnie z §6.
+## 11. Reguła języka projektu
 
-## 8. Controller trace zamiast zgadywania
-
-Jeden kontroler pojazdu emituje neutralny trace każdej klatki:
+Określenia:
 
 ```text
-steering_mode
-raw_device_intent
-commanded_position_or_rate
-hands_on
-spring_enabled
-spring_hertz
-target_translation
-motor_speed
-motor_force_cap
-rack_translation
-rack_speed
-friction_base
-friction_load_term
-optional_assists_active
+realistic
+native parity
+physical tire
+owner validated
+product default
 ```
 
-Watchdog i testy konsumują ten trace. Nie odtwarzają logiki kontrolera po raz drugi.
+wymagają wskazania:
 
-## 9. Warunek dokumentacyjny
-
-Żaden dokument, HUD ani PR nie może użyć określeń `realistic`, `parity`, `physical` albo `owner validated` bez wskazania:
-
-- źródła i SHA;
-- aktywnego configu;
-- dokładnego mechanizmu;
-- testu automatycznego lub owner receipt;
+- source/runtime identity;
+- aktywnego configu/backendu;
+- mechanizmu;
+- właściwego poziomu dowodu;
 - znanych różnic.
 
-`Build PASS`, `WASM starts` i `Chrome renders` są dowodami infrastruktury, nie prawdziwości fizyki ani feelu.
+`Build PASS`, `WASM starts`, `four contacts` i `Chrome renders` nie są same w sobie dowodem prawdziwości mechaniki ani feelu.
