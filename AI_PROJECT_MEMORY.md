@@ -1,28 +1,28 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-05  
-Status: `READ FIRST / PLAYABLE BASELINE RESTORED`  
+Status: `READ FIRST / BASELINE ACCEPTED / CANDIDATE R1 VALIDATION PENDING`  
 Owner: Jozz
 
 ## Mission
 
-Build a serious desktop/mobile browser demonstrator for Jozz Vehicle, with owner-authored vehicle and scene assets, while preserving a path to real native JV mechanics.
+Build a serious desktop/mobile browser demonstrator for Jozz Vehicle with owner-authored vehicle and scene assets, while preserving a path to real native JV mechanics.
 
 Keep the project continuously runnable. Improve it through small, attributable and reversible slices with evidence appropriate to every claim.
 
-## Current exact operational baseline
+## Accepted playable baseline
 
 ```text
 repository:
   Jozzpoly/JV-Box3D-Web-experiment
 
-frozen playable branch:
+frozen branch:
   agent/jv-web-playable-runtime
 
-frozen playable commit:
+frozen commit:
   d6aa218064c2653f918cf7956d2fcd20a940caf3
 
-toolchain used by owner:
+toolchain:
   Node 24.16.0
   npm 11.17.0
 
@@ -33,33 +33,92 @@ role:
   native JV parity not proven
 ```
 
-Fresh owner-machine recovery on 2026-08-05 reached a live browser runtime after the full historical gate. Visual evidence shows the F5 drive observer, debug vehicle, telemetry, generation 1 and four contacts. Evidence details and screenshot hash are recorded in [`docs/operations/PLAYABLE_BASELINE_2026-08-05.md`](docs/operations/PLAYABLE_BASELINE_2026-08-05.md).
+Fresh owner-machine recovery passed the full historical gate and reached a live browser runtime. Jozz then confirmed on the exact desktop checkpoint:
 
-Do not patch the frozen playable commit or use its worktree for product development.
+```text
+steering: works
+drive/brake: works
+destroy/rebuild: works
+camera: works
+stability: works
+```
+
+Evidence and screenshot hash are recorded in [`docs/operations/PLAYABLE_BASELINE_2026-08-05.md`](docs/operations/PLAYABLE_BASELINE_2026-08-05.md).
+
+Do not patch the frozen baseline commit or use its worktree for development.
+
+## Current recovery candidate
+
+```text
+PR:
+  #23 — draft / do not merge
+
+base:
+  agent/jv-web-playable-runtime
+  d6aa218064c2653f918cf7956d2fcd20a940caf3
+
+candidate:
+  candidate/jv-web-render-host-r1
+  e263e3e05ea21e74585d74829136e3defbd67813
+
+historical range:
+  first 12 commits after d6aa218…
+
+status:
+  VALIDATION PENDING
+```
+
+Technical question:
+
+> Can the renderer-owned scene-pass boundary and its lifecycle/failure protections be recovered without changing the visible behavior of the accepted baseline?
+
+Included product files:
+
+```text
+src/render/m6-debug-renderer.ts
+src/render/m6-scene-render-pass.ts
+src/render/vehicle-visual-render-resource.ts
+src/render/vehicle-visual-unlit-capability.ts
+```
+
+The candidate also includes focused tests. It does not change `main.ts`, physics, assets, GLB activation, materials, textures, lighting or packaging.
+
+The final candidate commit fixes malformed camera-vector subtraction and is required.
+
+Canonical validation command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\candidate-validation\Launch-JvWebRenderHostR1.ps1
+```
+
+Candidate uses port `5174`; the accepted baseline may remain on `5173` for direct comparison.
+
+Full scope and acceptance criteria:
+
+- [`docs/candidate-validation/RENDER_HOST_R1.md`](docs/candidate-validation/RENDER_HOST_R1.md)
+- [`docs/recovery/SALVAGE_MAP_2026-08-05.md`](docs/recovery/SALVAGE_MAP_2026-08-05.md)
 
 ## Canonical owner workflow
 
-### Normal repeated launch
+### Normal baseline launch
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Run-JvWebPlayable.ps1
 ```
 
-This requires a successful recovery receipt and exact clean checkpoint. It starts Vite without repeating dependency installation, tests or production build.
-
-### First recovery or deliberate revalidation
+### Deliberate baseline revalidation
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Launch-JvWebPlayable.ps1
 ```
 
-This prepares the exact attached worktree, runs the checkpoint's complete historical gate, writes a receipt and starts Vite only after PASS.
+### Current candidate validation
 
-`Start-JvWebPlayable.ps1` is an internal recovery helper, not the normal owner entry point.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\candidate-validation\Launch-JvWebRenderHostR1.ps1
+```
 
-### Control-plane validation
-
-After any operator change:
+### Control-plane validation after operator changes
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebPowerShellSyntax.ps1
@@ -69,7 +128,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Tes
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebControlPlane.ps1
 ```
 
-The complete operating rules are in [`docs/operations/OPERATING_MODEL.md`](docs/operations/OPERATING_MODEL.md).
+Internal helper scripts are not alternative owner workflows.
 
 ## Branch roles
 
@@ -81,45 +140,58 @@ agent/jv-refoundation-control-plane
   operating rules, evidence records and safe local operators
 
 agent/jv-web-playable-runtime @ d6aa218…
-  frozen playable recovery reference
+  frozen accepted recovery reference
 
-future product-candidate branches
-  one bounded development slice each
+candidate/jv-web-render-host-r1 @ e263e3e…
+  current bounded candidate; validation pending
 
 agent/jv-lit-normal-foundation @ 26c5022…
-  quarantined historical implementation source
-  83 commits after d6aa218…
-  not accepted wholesale
+  quarantined historical source; 83 commits after baseline
+  never promote wholesale
 ```
 
-Important preserved checkpoints:
+Important historical checkpoints:
 
 ```text
 4ace291a65c36e512b611cdb71e247b538955179
-  renderer preparation; 21 commits after d6aa218…
+  renderer preparation; 21 commits after baseline
 
 dcec0a7b5938b5d07cf5fdff8f81afd9db89e4ec
-  historical lit-normal green claim; exact rerun evidence still separate
+  historical lit-normal green claim; exact evidence remains separate
 
 891c7561142b601f62ea76b68b0f55f8fababc6c
   historical real-vehicle forensic source
 ```
 
-The later work remains in Git and must be recovered by module with source attribution. Never fast-forward the whole historical stack into `main` or treat PR #21 as the active product branch.
+## Planned recovery order
+
+```text
+R1 renderer host boundary and failure isolation
+R2 transactional GPU startup and camera-matrix isolation
+R3 deterministic tiny unlit draw proof
+R4 owner-authored untextured vehicle
+R5 lit-normal renderer
+R6 generated fixture and portable packaging recovery
+R7 textures and material policy
+R8 scene and scan rendering
+R9 native JV Core WASM parity
+```
+
+No later slice begins until the current candidate passes its required automated and owner layers.
 
 ## Sources of truth
 
 1. **Native physics and authored native asset authority**  
    `Jozzpoly/Box3d_FunProject`, pinned to an exact commit for every experiment.
 
-2. **Current playable browser reference**  
-   `agent/jv-web-playable-runtime@d6aa218…` plus its successful local receipt and owner observation.
+2. **Accepted browser reference**  
+   `agent/jv-web-playable-runtime@d6aa218…` plus its receipt and owner acceptance.
 
-3. **Future product implementation**  
-   A separate candidate accepted through source, package, runtime and owner gates.
+3. **Current product candidate**  
+   `candidate/jv-web-render-host-r1@e263e3e…`, not accepted until exact validation.
 
 4. **Behavioral claims**  
-   Exact source commit, dependency lock, relevant asset/native hashes, raw logs and scoped owner observation.
+   Exact source commit, dependency lock, relevant hashes, raw logs and scoped owner observation.
 
 5. **This file**  
    Navigation and current state only; never proof by itself.
@@ -147,7 +219,7 @@ native JV Core + Box3D in one future WASM module:
 
 `legacy_ts_m6` remains a browser research fixture. Do not add final vehicle mechanics to it.
 
-The product must have one scene/camera/render-context owner. Three.js remains a leading renderer hypothesis, not yet an accepted final decision.
+The product must have one scene/camera/render-context owner. Three.js remains a leading renderer hypothesis, not an accepted final decision.
 
 ## Acceptance model
 
@@ -157,29 +229,31 @@ Every candidate progresses independently through:
 IDENTITY → SOURCE → PACKAGE → RUNTIME → OWNER → PROMOTION
 ```
 
-Passing one layer never implies the next. Use scoped terms such as `SOURCE PASS`, `PACKAGE PASS`, `RUNTIME OBSERVED` and `OWNER ACCEPTED`.
+Passing one layer never implies the next. Use scoped terms such as `SOURCE/PACKAGE GATE PASS`, `RUNTIME OBSERVED` and `OWNER ACCEPTED`.
 
-## Immediate development sequence
+## Current next decision
 
-1. Complete a short fresh owner smoke of steering, drive/brake and destroy/rebuild on the restored baseline.
-2. Preserve the exact local receipt and owner result as the operational baseline.
-3. Build a per-module salvage map for the 83 later commits.
-4. Create one clean product-candidate branch from an explicitly chosen validated base.
-5. Recover renderer ownership, lifecycle and failure-isolation protections first.
-6. Revalidate source, package, browser and owner behavior.
-7. Add the tiny deterministic visual proof.
-8. Add the real owner-authored vehicle model.
-9. Add materials/textures only after geometry and lifecycle remain stable.
-10. Continue toward scene/scan rendering and later native JV Core WASM parity.
+Validate exact Candidate R1. Required before any R2 work:
 
-R1/R2 historical audits remain evidence work and must not block playable product progress.
+```text
+complete local gate PASS
+source identity preserved
+browser starts on port 5174
+no fatal console error
+steering unchanged
+drive/brake unchanged
+destroy/rebuild unchanged
+camera unchanged
+stability unchanged
+explicit owner acceptance
+```
 
 ## Terminal-loop prevention
 
 - Never repeat an unchanged failed command.
-- Every rerun requires a code/configuration change or new evidence.
+- Every rerun requires a code/configuration change or genuinely new evidence.
 - Stop at the first unattributed failure.
-- Preserve the complete relevant log and identify one exact next action.
+- Preserve the one complete relevant log and identify one exact next action.
 - Do not make Jozz manually clean, reset or reconstruct operator-created worktrees.
 - Normal play must not repeat the full recovery gate.
 - Keep owner commands few, stable and documented.
@@ -191,6 +265,6 @@ R1/R2 historical audits remain evidence work and must not block playable product
 - No `PASS`, `GREEN`, `PARITY`, `REPRODUCED` or `PRODUCTION-READY` claim without matching evidence.
 - Owner observation is separate from automated tests.
 - A changed source commit, dependency lock, native commit or relevant asset hash expires the previous exact-head claim.
-- Never delete or rewrite preserved historical branches merely because the baseline is restored.
+- Never delete or rewrite preserved historical branches.
 - Never use `git reset --hard`, `git clean`, force-push or forced worktree removal in recovery workflows.
 - Keep active workstreams small, attributable and reversible.
