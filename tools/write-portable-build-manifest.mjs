@@ -7,6 +7,7 @@ import {
   buildPortableFileRecords,
   PORTABLE_MANIFEST_NAME,
 } from "./portable-build-lib.mjs";
+import { REQUIRED_RUNTIME_ASSETS } from "./runtime-asset-contract.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const dist = resolve(root, "dist");
@@ -68,12 +69,7 @@ const manifest = {
     productPhysicsAuthority: false,
     nativeParity: "NOT_PROVEN",
   },
-  runtimeAssets: [
-    "receipts/jv_m6_factory_receipt.json",
-    "scenes/synthetic-flat-lab.scene.json",
-    "vehicles/tiny/vehicle.visual.json",
-    "vehicles/tiny/models/m6-rig-proof.glb",
-  ],
+  runtimeAssets: [...REQUIRED_RUNTIME_ASSETS],
   complianceFiles,
   publication: {
     mode: "DORMANT",
