@@ -29,8 +29,9 @@ architecture plan:
 
 current source implementation:
   branch agent/jv-lit-normal-foundation
-  based on d75660889cdafc21622fb5a6c2d067745ce40193
-  exact repository gate pending
+  PR #21 draft, based on architecture plan
+  head 554aa046c5089acc391c0220c628c9457ef25194
+  exact repository gate pending on current head
 ```
 
 Do not merge, mark Ready, change repository visibility, enable Pages or publish without Jozz. Do not fast-forward the long experimental history directly into public `main`; prefer an owner-reviewed squash or clean snapshot later.
@@ -114,6 +115,21 @@ Source-present on `agent/jv-lit-normal-foundation`:
 - double-sided back-face normal reversal;
 - source-only vehicle adapter with visibility, first-frame receipt, abort and rollback.
 
+First exact repository gate on `eecf99f74498649bf7a4e560d7d46b38eafb06f7`:
+
+```text
+Node/npm: 24.16.0 / 11.17.0
+receipt: byte-exact
+npm ci: PASS
+vulnerabilities: 0
+TypeScript 7: PASS
+tests: 282/283 PASS
+failure: test referenced nonexistent ownershipReceipt.bindingCount
+docs/notices/Vite/portable/HTTP: NOT RUN after test failure
+```
+
+The production ownership receipt remained correct. Commit `cbff1af95aa1b909ea35bf7b02ca199da04d0472` replaced the invalid assertion with the real `boundRootCount`, `ownedNodeCount` and `ownedMeshNodeCount` contract, derived from M6 part and segment lists. Commit `554aa046c5089acc391c0220c628c9457ef25194` records this evidence boundary in project memory. No runtime, physics, asset or `main.ts` line changed in these two commits.
+
 Validation performed outside the exact repository checkout:
 
 ```text
@@ -124,7 +140,7 @@ shared lit renderer strict compile and execution: PASS
 vehicle lit-normal pass strict compile: PASS
 ```
 
-These checks are not Node 24 / TypeScript 7 repository proof. The exact full local gate, generated portable fixture and browser observation remain pending.
+These isolated checks do not replace a full exact-head gate on `554aa046c5089acc391c0220c628c9457ef25194`. The generated portable fixture and browser observation remain pending.
 
 Not active yet:
 
@@ -345,7 +361,7 @@ A scan render mesh is never collision implicitly. The first owner scan is a smal
 ## Immediate sequence
 
 ```text
-1 full exact-head gate for agent/jv-lit-normal-foundation
+1 run full exact-head gate on 554aa046c5089acc391c0220c628c9457ef25194
 2 keep source-only if the gate fails; make the smallest correction
 3 generate lit-normal public fixture without changing tiny fixture bytes
 4 extend portable asset/path/HTTP validation
