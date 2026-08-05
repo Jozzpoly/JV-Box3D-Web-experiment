@@ -5,6 +5,11 @@ import type {
   b3Vec3,
   b3WorldId,
 } from "../../physics/box3d-runtime-contract.js";
+import type { JvWorldData } from "../../scene/jv-world-contract.js";
+import {
+  installJvWorldPhysics,
+  type JvWorldPhysicsReceipt,
+} from "../../scene/jv-world-physics.js";
 import {
   LEGACY_TS_M6_BACKEND,
   type LegacyTsM6BackendContract,
@@ -71,6 +76,8 @@ export class M6TopologyWorld {
   readonly #allocator: CollisionGroupAllocator;
   readonly #config: M6TopologyConfig;
   readonly #rateProfile: RateSteeringProfile;
+  readonly #worldData: JvWorldData | null;
+  readonly #worldPhysics: JvWorldPhysicsReceipt | null;
   readonly #vehicles: M6VehicleController[] = [];
   #stepIndex = 0;
   #disposed = false;
@@ -83,6 +90,7 @@ export class M6TopologyWorld {
       | CollisionGroupAllocator =
       INITIAL_RATE_STEERING_PROFILE_ID,
     allocator = new CollisionGroupAllocator(),
+    worldData: JvWorldData | null = null,
   ) {
     this.#b3 = b3;
     this.#config = m6TopologyConfigFromReceipt(receipt);
@@ -95,6 +103,7 @@ export class M6TopologyWorld {
       this.#rateProfile = rateSteeringProfile(profileOrAllocator);
       this.#allocator = allocator;
     }
+    this.#worldData = worldData;
 
     const worldDef = b3.b3DefaultWorldDef();
     worldDef.gravity = vec3(
@@ -112,30 +121,41 @@ export class M6TopologyWorld {
     this.#worldId = b3.b3CreateWorld(worldDef);
 
     let events: EventsBuffer | null = null;
+    let worldPhysics: JvWorldPhysicsReceipt | null = null;
     try {
       events = b3.createEventsBuffer();
 
-      const groundDef = b3.b3DefaultBodyDef();
-      groundDef.position = vec3(0, -0.5, 0);
-      const groundId = b3.b3CreateBody(
-        this.#worldId,
-        groundDef,
-      );
-      const terrainDef = b3.b3DefaultShapeDef();
-      terrainDef.baseMaterial.friction = 0.9;
-      terrainDef.filter.categoryBits =
-        this.#config.terrainCategoryBits;
-      terrainDef.filter.maskBits = FULL_MASK;
-      terrainDef.enableContactEvents = true;
-      b3.b3CreateBoxShape(
-        groundId,
-        terrainDef,
-        GROUND_HALF_EXTENT_METERS,
-        0.5,
-        GROUND_HALF_EXTENT_METERS,
-      );
+      if (worldData === null) {
+        const groundDef = b3.b3DefaultBodyDef();
+        groundDef.position = vec3(0, -0.5, 0);
+        const groundId = b3.b3CreateBody(
+          this.#worldId,
+          groundDef,
+        );
+        const terrainDef = b3.b3DefaultShapeDef();
+        terrainDef.baseMaterial.friction = 0.9;
+        terrainDef.filter.categoryBits =
+          this.#config.terrainCategoryBits;
+        terrainDef.filter.maskBits = FULL_MASK;
+        terrainDef.enableContactEvents = true;
+        b3.b3CreateBoxShape(
+          groundId,
+          terrainDef,
+          GROUND_HALF_EXTENT_METERS,
+          0.5,
+          GROUND_HALF_EXTENT_METERS,
+        );
+      } else {
+        worldPhysics = installJvWorldPhysics(
+          b3,
+          this.#worldId,
+          worldData,
+          this.#config.terrainCategoryBits,
+        );
+      }
 
       this.#events = events;
+      this.#worldPhysics = worldPhysics;
     } catch (error: unknown) {
       if (events !== null) {
         b3.destroyEventsBuffer(events);
@@ -160,6 +180,16 @@ export class M6TopologyWorld {
   get runtimeBackend(): LegacyTsM6BackendContract {
     this.#assertActive();
     return LEGACY_TS_M6_BACKEND;
+  }
+
+  get worldData(): JvWorldData | null {
+    this.#assertActive();
+    return this.#worldData;
+  }
+
+  get worldPhysics(): JvWorldPhysicsReceipt | null {
+    this.#assertActive();
+    return this.#worldPhysics;
   }
 
   get counters() {
