@@ -6,22 +6,22 @@ Status: **IMPLEMENTATION CANDIDATE — EXACT LOCAL GATE AND OWNER BROWSER ACCEPT
 
 Jedna scena webowa ma zawierać równocześnie:
 
-1. działający samochód z zaakceptowanego baseline'u webowego;
-2. aktywną mapę E2R z autorytatywnego repozytorium natywnego;
-3. finalny, poprawnie teksturowany skan JSPREV2;
+1. zaakceptowany samochód webowy `legacy_ts_m6`;
+2. aktywną mapę E2R z natywnego JV;
+3. dokładnie wybrany, teksturowany pack JSPREV2;
 4. rzeczywistą kolizję Box3D mapy i skanu;
-5. jedną kamerę oraz jeden kontekst WebGL;
-6. jawny wybór miejsca startu: mapa E2R albo aktualnie załadowany skan.
+5. jedną kamerę i jeden kontekst WebGL;
+6. jawny wybór startu `Mapa E2R` albo `Skan JSPREV2`.
 
-To nie są trzy niezależne demonstratory. Samochód jest głównym obiektem sterowanym w jednym wspólnym świecie.
+To nie są niezależne demonstratory. Samochód pozostaje sterowanym obiektem jednego wspólnego świata.
 
 ## Tożsamość źródeł
 
-- działający samochód webowy: `d6aa218064c2653f918cf7956d2fcd20a940caf3`;
+- samochód webowy: `d6aa218064c2653f918cf7956d2fcd20a940caf3`;
 - natywna mapa E2R i zaakceptowany stan skanu: `Jozzpoly/Box3d_FunProject@959aefb78587ce60cf2b8eb03ff82797a4165142`;
 - gałąź produktu: `product/jv-web-car-map-scan`.
 
-Kod sterowania, napędu, zawieszenia, jointów i lifecycle'u samochodu nie został przepisany. Produkt rozszerza jego świat, punkt startu oraz renderer.
+Kod sterowania, napędu, zawieszenia, jointów i wejścia samochodu nie jest zmieniany przez ten produkt. Rozszerzane są jego świat, renderer i lokalna granica assetu.
 
 ## Mapa E2R
 
@@ -30,44 +30,71 @@ Port zachowuje aktywny natywny zakres:
 - płytę 400 × 400 m z dziewięciu kafli;
 - offroad 400 × 400 m, siatkę 321 × 321, komórkę 1,25 m i seed `1337`;
 - natywne warstwy noise, domain warp, górę, ramiona góry, roughness, seam i edge fade;
-- trzy aktywne wyspy skalne: łącznie 401 skał;
-- trzynaście aktywnych banków bumperów: łącznie 147 kapsuł.
+- trzy aktywne wyspy skalne — 401 skał;
+- trzynaście aktywnych banków bumperów — 147 kapsuł.
 
-Odrzucony zachodni slice i niedokończony tor E3 nie zostały przywrócone.
+Odrzucony zachodni slice i niedokończony tor E3 nie są przywracane.
 
-## Finalny skan
+## JSPREV2 — exact pack i walidacja V2
 
-Akceptowany jest wyłącznie pack spełniający jednocześnie:
+Operator nie wybiera już packa heurystycznie po liczbie trójkątów, rozmiarze ani czasie modyfikacji.
 
-- magic `JSPREV2\0`;
-- wersję binarną 2;
-- dokładnie 25 grup renderowych;
-- dokładnie 25 istniejących tekstur;
-- zgodność liczby grup w każdym binarnym kaflu z `COMPLETE.json`;
-- ścieżki względne pozostające wewnątrz wybranego packa;
-- brak symlinków i brak ujawniania lokalnych ścieżek przeglądarce.
+Kolejność jest fail-closed:
 
-Ten sam pack i ten sam origin zasilają renderer oraz kolizję. Origin centruje skan na osi X, ustawia jego najniższy punkt na Y=0 i południową krawędź na Z=320. Parser zachowuje również dokładne AABB świata używane przez wybór spawnu.
+1. jawny `JOZZ_SCAN_PREVIEW_PACK`, `JOZZ_SCAN_ACTIVE_PREVIEW` albo `--candidate`;
+2. `ACTIVE_PREVIEW.json`, którego ścieżka względna jest rozwiązywana względem samego selektora;
+3. wyjątkowo jeden i tylko jeden dokładny pack wykryty w ograniczonym katalogu.
 
-## Spawn mapy i skanu
+Niepoprawny jawny pack nie może zostać zastąpiony innym znalezionym skanem. Wiele poprawnych packów bez jawnego selektora kończy walidację błędem zamiast zgadywania.
 
-Produkt uruchamia się przez jawny entrypoint `product-main.ts`, który dodaje dwa cele:
+Wspólny inspektor używany przez operator i Vite sprawdza:
 
-- **Mapa E2R** — zachowuje zaakceptowany spawn baseline'u;
-- **Skan JSPREV2** — przeładowuje stronę z `jvSpawn=scan` i zmienia wyłącznie `scene.spawn.position` przed istniejącą walidacją sceny.
+- magic `JSPREV2\0` oraz wersję 2;
+- dokładnie 25 grup i 25 unikalnych tekstur;
+- unikalne tile ID, pliki binarne i ścieżki tekstur;
+- pełną tabelę deskryptorów każdego kafla;
+- dokładny rozmiar payloadu wynikający z deskryptorów;
+- zgodność liczników manifestu, kafla i grup;
+- wszystkie floaty pozycji, normalnych i UV jako skończone;
+- każdy indeks względem właściwego strumienia wierzchołków;
+- regularne pliki bez symlinków i wyjścia poza pack;
+- obsługiwane typy tekstur PNG/JPEG/WebP oraz ich sygnatury;
+- rzeczywiste liczniki i budżety przed startem przeglądarki.
 
-Spawn skanu nie jest ręczną współrzędną przypisaną do jednego packa. Tak jak natywne `BuiltinFragmentSpawn(FragmentScan)`:
+Receipt V2 zapisuje między innymi: kafle, grupy, tekstury, wierzchołki, indeksy, trójkąty, bajty binarne/tekstur/całości oraz estymowany koszt CPU/GPU.
 
-1. bierze środek aktualnego AABB załadowanej wyspy;
-2. przecina pionowo collider JSPREV2 w tym punkcie;
-3. wybiera najwyższą trafioną powierzchnię;
-4. dodaje zaakceptowany prześwit startowy samochodu.
+## Budżety bezpieczeństwa packa
 
-Brak packa albo brak powierzchni w środku AABB zatrzymuje start skanu z jawnym błędem. Mapa pozostaje dostępna.
+```text
+kafle:                         <= 64
+wierzchołki:                   <= 10 000 000
+indeksy:                       <= 24 000 000
+trójkąty:                      <= 8 000 000
+binaria:                       <= 1 GiB
+tekstury:                      <= 1 GiB
+cały pack:                     <= 2 GiB
+pojedyncza tekstura:           <= 128 MiB
+estymowana geometria CPU:      <= 768 MiB
+estymowana geometria GPU:      <= 512 MiB
+```
 
-## Własność mesha Box3D
+Zmiana tych progów wymaga osobnej decyzji opartej na pomiarze rzeczywistego komputera i telefonu.
 
-`b3CreateMeshShape` nie kopiuje `b3MeshData`. Produkt utrzymuje dane mesha przez cały czas życia świata:
+## Render i kolizja skanu
+
+Ogólna preliminarna zasada repozytorium zakłada osobne assety renderu i uproszczonej kolizji. Ten kandydat ma jawny, ograniczony wyjątek wynikający z autorytatywnego natywnego stanu `959aefb…`:
+
+- jeden niezmienny pack JSPREV2 jest źródłem obu warstw;
+- renderer zachowuje `POSITION + NORMAL + UV + texture` per grupa;
+- collider tworzy osobne własne bufory wyłącznie `POSITION + indices`;
+- renderer i collider używają tego samego originu oraz liczników packa;
+- ciężka kolizja nie jest przedstawiana jako rozwiązanie docelowe ani LOD.
+
+W przyszłości uproszczony collider może zastąpić tę warstwę bez zmiany kontraktu sterowania samochodu. Na obecnym etapie ważniejsza jest zgodność z już zaakceptowanym natywnym skanem niż wprowadzenie niezwalidowanej automatycznej redukcji geometrii.
+
+## Własność Box3D
+
+`b3CreateMeshShape` nie kopiuje `b3MeshData`. Dane mesha żyją do zniszczenia świata:
 
 ```text
 utworzenie mesha -> utworzenie shape'a -> praca świata
@@ -76,82 +103,54 @@ utworzenie mesha -> utworzenie shape'a -> praca świata
 
 Ta sama kolejność obowiązuje przy rollbacku częściowo zbudowanego świata.
 
-Natywna implementacja celowo scala wszystkie kafle skanu w jeden collider, aby identyfikacja krawędzi mogła widzieć szwy. Web zachowuje jeden collider; wyłącznie render jest dzielony na mniejsze partie.
+## Renderer mobilny
 
-## Renderer
-
-- jeden `WebGLRenderingContext`;
-- jedna macierz view/projection dla mapy, skanu i samochodu;
+- jeden `WebGLRenderingContext` i jedna macierz view/projection;
 - statyczne elementy E2R są batchowane według materiału;
-- wszystkie meshe renderowe są deterministycznie dzielone na partie do 65 535 wierzchołków;
-- renderer używa wyłącznie indeksów `Uint16` i `gl.UNSIGNED_SHORT`, bez wymagania `OES_element_index_uint`;
-- skan zachowuje 25 osobnych grup teksturowanych, a jedna tekstura jest współdzielona przez partie tej samej grupy;
-- tekstury mają neutralny placeholder do chwili zakończenia dekodowania;
-- obiekty `Image` są odpinane natychmiast po uploadzie albo błędzie;
-- częściowa awaria konstrukcji renderera zwalnia utworzone bufory, programy, tekstury i oczekujące obrazy.
+- duże meshe są deterministycznie dzielone na części z indeksami `Uint16`;
+- błędy `bufferData` i `texImage2D` zgłaszane przez `getError()` kończą konstrukcję/render zamiast pozostawiać częściowy GPU asset;
+- zasoby GPU są zwalniane odwrotnie i idempotentnie;
+- błędy dekodowania rzeczywistych tekstur pozostają częścią obserwacji browserowej właściciela; asset gate sprawdza plik, typ i sygnaturę, ale nie deklaruje pełnego dekodowania obrazu bez przeglądarki.
 
-## Granice aktualnych twierdzeń
+## Spawn
 
-Można stwierdzić na podstawie kodu:
+- `Mapa E2R` zachowuje zaakceptowany spawn samochodu;
+- `Skan JSPREV2` używa środka aktualnego AABB packa;
+- wysokość jest najwyższym przecięciem rzeczywistego mesha w tym punkcie;
+- wszystkie publikowane zera są kanonizowane do `+0`, aby origin i receipt były deterministyczne.
 
-- mechanika zaakceptowanego auta nie została zmieniona;
-- mapa, skan i samochód są spięte przez jeden kontrakt świata;
-- mapa i skan tworzą rzeczywiste statyczne kształty Box3D;
-- finalny asset jest wybierany fail-closed jako 25/25;
-- przygotowano test rzeczywistego kontaktu kuli z meshem w przypiętym WASM Box3D;
-- przygotowano testy parsera, granic skanu, spawnu, podziału mesha na `Uint16`, selektora assetu i prywatnego middleware Vite;
-- przygotowano pełny operator exact-SHA, pełnej bramki i lokalnego uruchomienia.
+## Dowody przygotowane w kodzie
 
-Nie można jeszcze stwierdzić bez wykonania lokalnej bramki i obserwacji właściciela:
+- pełny test E2R tworzy 558 statycznych elementów świata;
+- zaakceptowany M6 osiada i utrzymuje kontakty na płycie E2R;
+- drugi M6 osiada na proceduralnym offroadzie;
+- samochód rusza do przodu na produktowym świecie;
+- test mesha potwierdza rzeczywisty kontakt Box3D i kolejność teardownu;
+- testy packa odrzucają 24/24, niejednoznaczny wybór, niepoprawny jawny wybór, ucięty payload i rozjazd metryk;
+- testy WebGL odrzucają cichy błąd uploadu.
 
-- że TypeScript 7.0.2, wszystkie testy i portable build przechodzą na Windows w exact toolchainie;
-- że finalny prywatny pack został odnaleziony na aktualnym komputerze;
-- że pełny skan gotuje się w akceptowalnym czasie i mieści się w budżecie pamięci;
-- że środek realnego skanu ma prawidłową przejezdną powierzchnię dla spawnu;
-- że samochód przejeżdża po mapie i skanie bez nowych problemów kontaktowych;
-- że wszystkie 25 tekstur wygląda poprawnie w realnej scenie;
-- że renderer działa poprawnie na konkretnym telefonie właściciela.
+## Granice twierdzeń
 
-## Znana różnica względem natywnego JV
+Bez wykonania exact lokalnej bramki nie można jeszcze stwierdzić, że:
 
-Przypięty `box3d.js` ustawia dla `b3CreateMesh` spawanie wierzchołków, ale nie udostępnia jawnego przełącznika natywnego `identifyEdges=true` ani cache'u `.b3mesh`. Rzeczywisty kontakt z meshem jest testowany, lecz pełna równoważność jakości przejazdu po wewnętrznych krawędziach skanu i czasu pierwszego gotowania **nie jest deklarowana**.
+- TypeScript 7, wszystkie testy i portable build przechodzą na Windows;
+- realny prywatny pack mieści się w powyższych budżetach;
+- wszystkie 25 tekstur dekoduje się i wygląda poprawnie w przeglądarce;
+- pierwszy start i pełny mesh mieszczą się w praktycznym budżecie czasu/pamięci;
+- jakość kontaktu na wewnętrznych krawędziach odpowiada natywnemu `identifyEdges=true`;
+- produkt przeszedł ocenę desktopową i telefoniczną właściciela.
 
-Samochód pozostaje zaakceptowanym webowym `legacy_ts_m6` z debugową reprezentacją wizualną. Native-JV parity ani finalny model pojazdu nie są deklarowane.
+Przypięty `box3d.js` spawa wierzchołki podczas `b3CreateMesh`, lecz nie udostępnia jawnego natywnego `identifyEdges=true`. Native parity nie jest deklarowane.
 
-## Bramka i akceptacja
+## Bramka końcowa
 
-Operator kontrolny uruchamia kolejno:
+Operator wykonuje kolejno:
 
 1. exact branch i SHA;
-2. izolowany zewnętrzny worktree;
+2. czysty zewnętrzny worktree;
 3. pełny `run-demonstrator-foundation-gate.ps1`;
-4. wybór exact packa JSPREV2 25/25;
-5. zapis logu i JSON receipt poza repozytorium;
+4. głęboką selekcję exact packa JSPREV2 V2;
+5. log i JSON receipt poza repozytorium;
 6. Vite na porcie 5175.
 
-Końcowa obserwacja właściciela musi potwierdzić osobno oba cele startu:
-
-```text
-Mapa E2R:
-samochód widoczny:
-skręt:
-jazda/hamulec:
-rebuild:
-kamera:
-mapa widoczna:
-kontakt z mapą:
-
-Skan JSPREV2:
-przełączenie celu:
-spawn na powierzchni:
-skan widoczny:
-tekstury 25/25:
-kontakt ze skanem:
-skręt i jazda:
-rebuild pozostaje na skanie:
-kamera:
-stabilność:
-konsola przeglądarki:
-```
-
-Do czasu przejścia tej sekwencji gałąź pozostaje kandydatem. Nie jest gotowa do merge ani oznaczenia Ready.
+Dopiero potem właściciel sprawdza oddzielnie mapę i skan. Do czasu tej sekwencji kandydat pozostaje `DO NOT MERGE / NOT READY`.

@@ -1,21 +1,17 @@
 #!/usr/bin/env node
 import {
-  closeSync,
   existsSync,
   lstatSync,
-  openSync,
   readFileSync,
-  readSync,
   readdirSync,
-  realpathSync,
-  statSync,
 } from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import {
+  inspectJsprev2Pack,
+  JSPREV2_REQUIREMENTS,
+} from "./jsprev2-pack-inspector.mjs";
 
-const MAGIC = Buffer.from("JSPREV2\0", "ascii");
-const REQUIRED_GROUPS = 25;
-const REQUIRED_TEXTURES = 25;
 const MAX_DIRECTORIES = 30_000;
 const MAX_DEPTH = 12;
 const SCOPED_ROOT_NAMES = new Set([
@@ -53,171 +49,44 @@ function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
 }
 
-function inspectBinaryHeader(filePath, expectedGroups) {
-  if (!isPlainFile(filePath) || statSync(filePath).size < 20) {
-    throw new Error("tile binary is missing or truncated");
+function addPackCandidate(target, candidatePath) {
+  if (typeof candidatePath !== "string" || candidatePath.length === 0) {
+    return;
   }
-  const header = Buffer.allocUnsafe(20);
-  const descriptor = openSync(filePath, "r");
-  try {
-    if (readSync(descriptor, header, 0, header.length, 0) !== header.length) {
-      throw new Error("tile header read was incomplete");
-    }
-  } finally {
-    closeSync(descriptor);
-  }
-  if (!header.subarray(0, MAGIC.length).equals(MAGIC)) {
-    throw new Error("tile binary is not JSPREV2");
-  }
-  if (header.readUInt32LE(8) !== 2) {
-    throw new Error("tile binary version is not 2");
-  }
-  const groupCount = header.readUInt32LE(16);
-  if (groupCount !== expectedGroups) {
-    throw new Error(
-      `tile binary groups ${groupCount} != manifest groups ${expectedGroups}`,
-    );
+  const resolved = path.resolve(candidatePath);
+  const basename = path.basename(resolved).toLowerCase();
+  if (basename === "complete.json") {
+    target.add(path.dirname(resolved));
+  } else {
+    target.add(resolved);
   }
 }
 
-function safeAsset(packDirectory, relativePath) {
-  if (
-    typeof relativePath !== "string" ||
-    relativePath.length === 0 ||
-    path.isAbsolute(relativePath)
-  ) {
-    throw new Error("absolute or empty asset path");
-  }
-  const normalized = path.normalize(relativePath);
-  if (
-    normalized === ".." ||
-    normalized.startsWith(`..${path.sep}`) ||
-    normalized.includes(`${path.sep}..${path.sep}`)
-  ) {
-    throw new Error("asset path traversal");
-  }
-  const resolved = realpathSync(path.resolve(packDirectory, normalized));
-  const relative = path.relative(realpathSync(packDirectory), resolved);
-  if (
-    relative === "" ||
-    relative === ".." ||
-    relative.startsWith(`..${path.sep}`) ||
-    path.isAbsolute(relative) ||
-    !isPlainFile(resolved)
-  ) {
-    throw new Error("asset leaves pack or is not a regular file");
-  }
-  return resolved;
-}
-
-function inspectPack(directoryPath) {
-  if (!isPlainDirectory(directoryPath)) {
-    return null;
-  }
-  const packDirectory = realpathSync(directoryPath);
-  const manifestPath = path.join(packDirectory, "COMPLETE.json");
-  if (!isPlainFile(manifestPath)) {
-    return null;
-  }
-
-  try {
-    const manifest = readJson(manifestPath);
-    if (!Array.isArray(manifest.tiles) || manifest.tiles.length === 0) {
-      throw new Error("manifest has no tiles");
-    }
-    let groupCount = 0;
-    let textureCount = 0;
-    let triangleCount = 0;
-    let totalBytes = statSync(manifestPath).size;
-
-    for (const tile of manifest.tiles) {
-      if (
-        tile === null ||
-        typeof tile !== "object" ||
-        typeof tile.path !== "string" ||
-        !Array.isArray(tile.groups)
-      ) {
-        throw new Error("tile record is incomplete");
-      }
-      const binaryPath = safeAsset(packDirectory, tile.path);
-      inspectBinaryHeader(binaryPath, tile.groups.length);
-      totalBytes += statSync(binaryPath).size;
-      for (const group of tile.groups) {
-        if (group === null || typeof group !== "object") {
-          throw new Error("group record is invalid");
-        }
-        const texturePath = safeAsset(
-          packDirectory,
-          group.texturePath,
-        );
-        totalBytes += statSync(texturePath).size;
-        groupCount += 1;
-        textureCount += 1;
-        if (
-          Number.isInteger(group.triangleCount) &&
-          group.triangleCount >= 0
-        ) {
-          triangleCount += group.triangleCount;
-        }
-      }
-    }
-
-    const packId =
-      typeof manifest.packageId === "string"
-        ? manifest.packageId
-        : typeof manifest.previewContentSha256 === "string"
-          ? manifest.previewContentSha256
-          : path.basename(packDirectory);
-
-    return {
-      status: "ACCEPTED",
-      packDirectory,
-      manifestPath,
-      packId,
-      tileCount: manifest.tiles.length,
-      groupCount,
-      textureCount,
-      triangleCount,
-      totalBytes,
-      modifiedTimeMs: statSync(manifestPath).mtimeMs,
-    };
-  } catch (error) {
-    return {
-      status: "REJECTED",
-      packDirectory,
-      reason: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-function addSelector(candidates, selectorPath) {
-  if (
-    typeof selectorPath !== "string" ||
-    selectorPath.length === 0
-  ) {
+function addActiveSelector(target, selectorPath) {
+  if (typeof selectorPath !== "string" || selectorPath.length === 0) {
     return;
   }
   const resolved = path.resolve(selectorPath);
-  const basename = path.basename(resolved).toLowerCase();
-  if (basename === "complete.json") {
-    candidates.add(path.dirname(resolved));
+  if (path.basename(resolved).toLowerCase() !== "active_preview.json") {
+    addPackCandidate(target, resolved);
     return;
   }
-  if (basename === "active_preview.json") {
-    if (!isPlainFile(resolved)) {
-      return;
-    }
-    try {
-      const selector = readJson(resolved);
-      if (typeof selector.previewPath === "string") {
-        candidates.add(path.resolve(selector.previewPath));
-      }
-    } catch {
-      return;
-    }
+  if (!isPlainFile(resolved)) {
     return;
   }
-  candidates.add(resolved);
+  const selector = readJson(resolved);
+  if (
+    typeof selector.previewPath !== "string" ||
+    selector.previewPath.length === 0
+  ) {
+    throw new Error(`${resolved} has no previewPath`);
+  }
+  addPackCandidate(
+    target,
+    path.isAbsolute(selector.previewPath)
+      ? selector.previewPath
+      : path.resolve(path.dirname(resolved), selector.previewPath),
+  );
 }
 
 function isScopedSearchRoot(rootDirectory) {
@@ -236,25 +105,20 @@ function walk(rootDirectory, candidates) {
     return;
   }
   const queue = [{ directory: rootDirectory, depth: 0 }];
+  let cursor = 0;
   let visited = 0;
-  while (queue.length > 0 && visited < MAX_DIRECTORIES) {
-    const current = queue.shift();
-    if (current === undefined) {
-      break;
-    }
+  while (cursor < queue.length && visited < MAX_DIRECTORIES) {
+    const current = queue[cursor++];
     visited += 1;
     let entries;
     try {
-      entries = readdirSync(current.directory, {
-        withFileTypes: true,
-      });
+      entries = readdirSync(current.directory, { withFileTypes: true });
     } catch {
       continue;
     }
     if (
       entries.some(
-        (entry) =>
-          entry.isFile() && entry.name === "COMPLETE.json",
+        (entry) => entry.isFile() && entry.name === "COMPLETE.json",
       )
     ) {
       candidates.add(current.directory);
@@ -277,93 +141,169 @@ function walk(rootDirectory, candidates) {
       }
     }
   }
+  if (cursor < queue.length) {
+    throw new Error(
+      `JSPREV2 discovery exceeded ${MAX_DIRECTORIES} directories; use an explicit pack selector`,
+    );
+  }
 }
 
 function parseArguments(argv) {
   const roots = [];
+  const candidates = [];
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === "--root" || argument === "--candidate") {
-      const value = argv[index + 1];
-      if (value === undefined) {
-        fail(`${argument} requires a path`);
-      }
-      roots.push(path.resolve(value));
-      index += 1;
-    } else {
+    if (argument !== "--root" && argument !== "--candidate") {
       fail(`unknown argument: ${argument}`);
     }
+    const value = argv[index + 1];
+    if (value === undefined) {
+      fail(`${argument} requires a path`);
+    }
+    (argument === "--root" ? roots : candidates).push(path.resolve(value));
+    index += 1;
   }
-  return roots;
+  return { roots, candidates };
 }
 
-const suppliedRoots = parseArguments(process.argv.slice(2));
-const candidates = new Set();
-addSelector(candidates, process.env.JOZZ_SCAN_PREVIEW_PACK);
-addSelector(candidates, process.env.JOZZ_SCAN_ACTIVE_PREVIEW);
-
-for (const root of suppliedRoots) {
-  if (isPlainFile(path.join(root, "COMPLETE.json"))) {
-    addSelector(candidates, root);
+function inspectCandidates(candidatePaths) {
+  const accepted = [];
+  const rejected = [];
+  for (const candidate of candidatePaths) {
+    if (!existsSync(candidate)) {
+      continue;
+    }
+    try {
+      accepted.push(
+        inspectJsprev2Pack(candidate, {
+          deep: false,
+          requireExact: true,
+        }),
+      );
+    } catch (error) {
+      rejected.push({
+        candidate: path.resolve(candidate),
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
-  addSelector(candidates, path.join(root, "ACTIVE_PREVIEW.json"));
-  walk(root, candidates);
+  const unique = new Map();
+  for (const pack of accepted) {
+    unique.set(pack.packDirectory, pack);
+  }
+  return { accepted: [...unique.values()], rejected };
 }
 
-const accepted = [];
-const rejected = [];
-for (const candidate of candidates) {
-  if (!existsSync(candidate)) {
-    continue;
+const argumentsResult = parseArguments(process.argv.slice(2));
+const preferredCandidates = new Set();
+const discoveredCandidates = new Set();
+
+try {
+  addPackCandidate(preferredCandidates, process.env.JOZZ_SCAN_PREVIEW_PACK);
+  addActiveSelector(preferredCandidates, process.env.JOZZ_SCAN_ACTIVE_PREVIEW);
+  for (const candidate of argumentsResult.candidates) {
+    addPackCandidate(preferredCandidates, candidate);
   }
-  const result = inspectPack(candidate);
-  if (result === null) {
-    continue;
+  for (const root of argumentsResult.roots) {
+    if (isPlainFile(path.join(root, "COMPLETE.json"))) {
+      addPackCandidate(discoveredCandidates, root);
+    }
+    addActiveSelector(
+      preferredCandidates,
+      path.join(root, "ACTIVE_PREVIEW.json"),
+    );
+    walk(root, discoveredCandidates);
   }
-  if (result.status === "ACCEPTED") {
-    accepted.push(result);
-  } else {
-    rejected.push(result);
-  }
+} catch (error) {
+  fail(error instanceof Error ? error.message : String(error));
 }
 
-const exact = accepted.filter(
-  (pack) =>
-    pack.groupCount === REQUIRED_GROUPS &&
-    pack.textureCount === REQUIRED_TEXTURES,
-);
-exact.sort((left, right) => {
-  if (right.triangleCount !== left.triangleCount) {
-    return right.triangleCount - left.triangleCount;
-  }
-  if (right.totalBytes !== left.totalBytes) {
-    return right.totalBytes - left.totalBytes;
-  }
-  return right.modifiedTimeMs - left.modifiedTimeMs;
-});
-
-if (exact.length === 0) {
+const preferred = inspectCandidates(preferredCandidates);
+let selectedSummary;
+let selectionMode;
+let candidateStats;
+if (preferred.accepted.length > 1) {
   fail(
-    `no exact ${REQUIRED_GROUPS}/${REQUIRED_TEXTURES} JSPREV2 pack found; ` +
-      `accepted=${accepted.length}, rejected=${rejected.length}`,
+    `multiple explicit/active exact JSPREV2 packs found: ${preferred.accepted
+      .map((pack) => pack.packDirectory)
+      .join(" | ")}`,
+  );
+}
+if (preferredCandidates.size > 0 && preferred.accepted.length === 0) {
+  const reasons = preferred.rejected
+    .slice(0, 3)
+    .map((entry) => `${entry.candidate}: ${entry.reason}`)
+    .join(" | ");
+  fail(
+    `explicit/active JSPREV2 selection is invalid` +
+      (reasons.length === 0 ? "" : `; reasons=${reasons}`),
+  );
+}
+if (preferred.accepted.length === 1) {
+  selectedSummary = preferred.accepted[0];
+  selectionMode = "EXPLICIT_OR_ACTIVE";
+  candidateStats = preferred;
+} else {
+  const discovered = inspectCandidates(discoveredCandidates);
+  if (discovered.accepted.length === 0) {
+    const rejectionReasons = [...preferred.rejected, ...discovered.rejected]
+      .slice(0, 3)
+      .map((entry) => `${entry.candidate}: ${entry.reason}`)
+      .join(" | ");
+    fail(
+      `no exact ${JSPREV2_REQUIREMENTS.groupCount}/${JSPREV2_REQUIREMENTS.textureCount} ` +
+        `JSPREV2 pack found; preferredRejected=${preferred.rejected.length}, ` +
+        `discoveredRejected=${discovered.rejected.length}` +
+        (rejectionReasons.length === 0 ? "" : `; reasons=${rejectionReasons}`),
+    );
+  }
+  if (discovered.accepted.length > 1) {
+    fail(
+      `ambiguous exact JSPREV2 selection (${discovered.accepted.length} packs); ` +
+        `set JOZZ_SCAN_PREVIEW_PACK or ACTIVE_PREVIEW.json explicitly`,
+    );
+  }
+  selectedSummary = discovered.accepted[0];
+  selectionMode = "UNIQUE_DISCOVERY";
+  candidateStats = discovered;
+}
+
+let selected;
+try {
+  selected = inspectJsprev2Pack(selectedSummary.packDirectory, {
+    deep: true,
+    requireExact: true,
+  });
+} catch (error) {
+  fail(
+    `selected pack failed deep validation: ${
+      error instanceof Error ? error.message : String(error)
+    }`,
   );
 }
 
-const selected = exact[0];
 process.stdout.write(
   JSON.stringify({
-    schema: "JV_WEB_JSPREV2_PACK_SELECTION_V1",
+    schema: "JV_WEB_JSPREV2_PACK_SELECTION_V2",
     status: "PASS",
+    selectionMode,
     packDirectory: selected.packDirectory,
     manifestPath: selected.manifestPath,
     packId: selected.packId,
     tileCount: selected.tileCount,
     groupCount: selected.groupCount,
     textureCount: selected.textureCount,
+    vertexCount: selected.vertexCount,
+    indexCount: selected.indexCount,
     triangleCount: selected.triangleCount,
+    manifestBytes: selected.manifestBytes,
+    binaryBytes: selected.binaryBytes,
+    textureBytes: selected.textureBytes,
     totalBytes: selected.totalBytes,
-    exactCandidateCount: exact.length,
-    acceptedCandidateCount: accepted.length,
-    rejectedCandidateCount: rejected.length,
+    estimatedCpuGeometryBytes: selected.estimatedCpuGeometryBytes,
+    estimatedGpuGeometryBytes: selected.estimatedGpuGeometryBytes,
+    deepValidated: selected.deepValidated,
+    acceptedCandidateCount: candidateStats.accepted.length,
+    rejectedCandidateCount: candidateStats.rejected.length,
   }),
 );
