@@ -1,7 +1,9 @@
 import Box3DFactory from "box3d.js/inline";
 import type { Box3DModule } from "box3d.js";
 import type { NativeFactorySnapshot } from "../config/native-factory-receipt.js";
+import type { JvWorldData } from "../scene/jv-world-contract.js";
 import {
+  CollisionGroupAllocator,
   M6TopologyWorld,
   type RateSteeringProfileId,
 } from "../vehicle/m6/m6-topology-world.js";
@@ -50,9 +52,12 @@ const REQUIRED_EXPORTS = [
   "b3DefaultShapeDef",
   "b3CreateBoxShape",
   "b3CreateSphereShape",
+  "b3CreateCapsuleShape",
   "b3CreateHullShape",
   "b3CreateHull",
   "b3CreateCylinder",
+  "b3CreateMesh",
+  "b3CreateMeshShape",
   "b3Shape_GetFilter",
   "b3Shape_GetSurfaceMaterial",
   "b3ComputeSphereMass",
@@ -170,8 +175,9 @@ export class Box3DBoundary {
         `engine=${BOX3D_RUNTIME_IDENTITY.engineCommit}`,
         `runtime=${version.major}.${version.minor}.${version.revision}`,
       ]),
-      createLevel("B1", "PASS", "Required F2/F4/F5 boundary exports are callable.", [
+      createLevel("B1", "PASS", "Required F2/F4/F5 and product-world exports are callable.", [
         `exports=${REQUIRED_EXPORTS.length}`,
+        "world=box+capsule+mesh",
       ]),
       createLevel("B2", defaultsPass ? "PASS" : "FAIL", "Default definitions and solver sentinels.", [
         `internal=${world.internalValue}/${body.internalValue}/${shape.internalValue}`,
@@ -211,9 +217,23 @@ export class Box3DBoundary {
   createM6TopologyWorld(
     receipt: NativeFactorySnapshot,
     rateProfileId?: RateSteeringProfileId,
+    worldData: JvWorldData | null = null,
   ): M6TopologyWorld {
-    return rateProfileId === undefined
-      ? new M6TopologyWorld(this.#b3, receipt)
-      : new M6TopologyWorld(this.#b3, receipt, rateProfileId);
+    const profile = rateProfileId;
+    return profile === undefined
+      ? new M6TopologyWorld(
+          this.#b3,
+          receipt,
+          new CollisionGroupAllocator(),
+          new CollisionGroupAllocator(),
+          worldData,
+        )
+      : new M6TopologyWorld(
+          this.#b3,
+          receipt,
+          profile,
+          new CollisionGroupAllocator(),
+          worldData,
+        );
   }
 }
