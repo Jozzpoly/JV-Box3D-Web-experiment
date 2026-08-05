@@ -9,7 +9,8 @@ $relativeFiles = @(
     'tools/local-validation/Test-JvWebPowerShellSyntax.ps1',
     'tools/local-validation/Test-JvWebControlPlane.ps1',
     'tools/local-validation/Invoke-JvWebBaseline.ps1',
-    'tools/playable-recovery/Start-JvWebPlayable.ps1'
+    'tools/playable-recovery/Start-JvWebPlayable.ps1',
+    'tools/playable-recovery/Launch-JvWebPlayable.ps1'
 )
 
 $failures = New-Object 'System.Collections.Generic.List[string]'
