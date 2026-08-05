@@ -7,8 +7,8 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "generate:vehicle-fixture": "tsc -p tsconfig.test.json && node tools/write-tiny-vehicle-visual-fixture.mjs",
-    "predev": "npm run generate:vehicle-fixture",
+    "generate:vehicle-fixtures": "tsc -p tsconfig.test.json && node tools/write-vehicle-visual-fixtures.mjs",
+    "predev": "npm run generate:vehicle-fixtures",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "test": "node tools/run-tests.mjs",
@@ -24,7 +24,7 @@
     "check:portable": "npm run check:portable:static && npm run check:portable:runtime-assets && npm run check:portable:vehicle-visual && npm run check:portable:vehicle-paths && npm run check:portable:privacy && npm run check:portable:network && npm run check:portable:http",
     "inspect:vehicle-glb": "tsc -p tsconfig.test.json && node tools/inspect-vehicle-glb.mjs",
     "check": "npm run typecheck && npm run test && npm run check:docs && npm run check:third-party",
-    "prebuild:bundle": "npm run generate:vehicle-fixture",
+    "prebuild:bundle": "npm run generate:vehicle-fixtures",
     "build:bundle": "vite build",
     "build:portable": "npm run check:third-party && npm run build:bundle && node tools/write-portable-build-manifest.mjs && npm run check:portable",
     "build": "npm run check && npm run build:portable",
