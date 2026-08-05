@@ -34,7 +34,7 @@
     {
       "id": "PRODUCT_CAR_MAP_SCAN",
       "purpose": "Validate and launch the integrated accepted car, E2R map and exact textured JSPREV2 scan product.",
-      "commit": "04713ab33ba8788d3ee404f2165484366b7a717b",
+      "commit": "84910b9c84edd33db5e1f09baf456f978f8368ca",
       "fetchRef": "product/jv-web-car-map-scan",
       "gateScript": "tools/run-demonstrator-foundation-gate.ps1",
       "requiredNodeVersion": "v24.16.0",
