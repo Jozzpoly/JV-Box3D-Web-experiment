@@ -4,6 +4,7 @@ import {
   type GlbRigidCpuAssetV1,
 } from "./glb-rigid-mesh-decoder.js";
 import { sealGlbRigidCpuAssetV1 } from "./rigid-cpu-asset-seal.js";
+import { assertRigidFloatStreamIntegrityV1 } from "./rigid-float-stream-integrity.js";
 import {
   validateVehicleVisualAssetV1,
   type VehicleVisualAssetReceiptV1,
@@ -114,6 +115,7 @@ export async function loadVehicleVisualRuntimeV1(
       visualPackage.bindings.map((binding) => binding.nodeName),
     ),
   );
+  assertRigidFloatStreamIntegrityV1(cpuAsset);
   const ownershipReceipt = assertVehicleVisualCpuOwnershipV1(
     visualPackage,
     cpuAsset,
