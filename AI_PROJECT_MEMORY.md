@@ -72,14 +72,31 @@ native JV Core + Box3D, one future WASM module:
 
 The product must have one scene/camera/render-context owner. A Three.js hybrid is the leading renderer hypothesis, not yet an accepted final decision.
 
+## Local validation operator path
+
+R1 and R2 must be executed through:
+
+```text
+tools/local-validation/Invoke-JvWebBaseline.ps1
+```
+
+The target registry is:
+
+```text
+tools/local-validation/validation-targets.json
+```
+
+The harness uses a detached external worktree, exact Node/npm versions and evidence bundles defined in `docs/local-validation/`. It must not patch a target during the measurement run.
+
 ## Immediate sequence
 
 1. Preserve this control plane on a clean branch from `main`.
-2. Re-run the exact `dcec0a7…` baseline and capture raw evidence.
-3. Re-run `26c5022…` and record every failure without patching first.
-4. Perform a pinned forensic run of PR #1.
-5. Build the smallest real-car Three.js spike on the deterministic current host.
-6. Choose a clean product snapshot only after the spike and owner observation.
+2. Validate the control-plane files locally.
+3. Re-run exact R1 `dcec0a7…` and capture the complete evidence bundle.
+4. Re-run exact R2 `26c5022…` without repair and capture every failure.
+5. Perform a pinned forensic run of PR #1.
+6. Build the smallest real-car Three.js spike on the deterministic current host.
+7. Choose a clean product snapshot only after the spike and owner observation.
 
 ## Non-negotiable rules
 
@@ -90,3 +107,5 @@ The product must have one scene/camera/render-context owner. A Three.js hybrid i
 - Owner observation is recorded separately from automated tests.
 - A changed source commit, dependency lock, native commit or relevant asset hash expires the previous exact-head claim.
 - Keep active workstreams small, attributable and reversible.
+- R1/R2 measurement worktrees are not repair branches.
+- Never use `git reset --hard`, `git clean`, force-push or forced worktree removal in the local validation workflow.

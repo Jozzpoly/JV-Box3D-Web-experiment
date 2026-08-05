@@ -10,7 +10,15 @@ Pass criteria:
 
 - this refoundation documentation exists on a clean branch from `main`;
 - no implementation branch is declared canonical;
-- every historical claim is classified by evidence level.
+- every historical claim is classified by evidence level;
+- the local control-plane structural check passes.
+
+Local check:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\local-validation\Test-JvWebControlPlane.ps1
+```
 
 ## R1 — historical green baseline
 
@@ -26,6 +34,15 @@ Procedure:
 6. raw logs and artifact hashes;
 7. no source changes during the run.
 
+Canonical local invocation:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 `
+  -Target R1 `
+  -FetchMissingRef
+```
+
 Outcome:
 
 - `BASELINE_REPRODUCED`, or
@@ -38,6 +55,15 @@ Do not repair this branch during the baseline run.
 Target: `26c5022f8dfd33b8c5f80d0900d239a4d80966ea`.
 
 Run the same environment and evidence format as R1. Capture every failure before changing anything.
+
+Canonical local invocation:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 `
+  -Target R2 `
+  -FetchMissingRef
+```
 
 Then classify each post-`dcec0a7…` change:
 
@@ -59,6 +85,8 @@ Required controls:
 - record dependency resolution because no reliable historical lock is present;
 - hash every synchronized asset;
 - distinguish historical owner evidence from the new forensic run.
+
+R3 is intentionally not executed by the R1/R2 baseline harness.
 
 Deliverable: a per-module salvage map, especially for:
 

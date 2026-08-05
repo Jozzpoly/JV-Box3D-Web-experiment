@@ -9,6 +9,7 @@ One question or deliverable:
 ```text
 base commit:
 head commit:
+control-plane / harness commit:
 native JV commit:
 dependency lock hash:
 relevant asset hashes:
@@ -31,16 +32,24 @@ relevant asset hashes:
 - [ ] E4 owner validation
 - [ ] E5 parity/release evidence
 
-Evidence bundle path:
+Evidence bundle path and SHA-256:
 
 ```text
-evidence/
+path:
+sha256:
+RESULT classification:
 ```
 
 ## Checks
 
 ```text
-exact commands and exit results
+exact commands, environment and exit results
+```
+
+```text
+source tree clean before:
+source tree clean after:
+raw log retained:
 ```
 
 ## Known failures and untested areas
@@ -52,6 +61,14 @@ exact commands and exit results
 - failure behavior:
 - disposal behavior:
 - rollback commit:
+
+## Owner observation
+
+<!-- Keep manual owner validation separate from automated evidence. -->
+
+- observed build / commit:
+- device / browser:
+- result:
 
 ## Owner-controlled actions
 

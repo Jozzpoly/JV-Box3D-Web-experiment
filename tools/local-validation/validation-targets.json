@@ -1,0 +1,48 @@
+{
+  "schema": "JV_WEB_LOCAL_VALIDATION_TARGETS_V1",
+  "repository": "Jozzpoly/JV-Box3D-Web-experiment",
+  "generatedFor": "agent/jv-refoundation-control-plane",
+  "targets": [
+    {
+      "id": "R1",
+      "purpose": "Reproduce the historical exact green baseline without source changes.",
+      "commit": "dcec0a7b5938b5d07cf5fdff8f81afd9db89e4ec",
+      "fetchRef": "agent/jv-lit-normal-foundation",
+      "gateScript": "tools/run-demonstrator-foundation-gate.ps1",
+      "requiredNodeVersion": "v24.16.0",
+      "requiredNpmVersion": "11.17.0",
+      "historicalClaim": "GREEN",
+      "expectedOutcome": "UNKNOWN_UNTIL_LOCAL_RERUN",
+      "passClassification": "BASELINE_REPRODUCED",
+      "failClassification": "R1_GATE_DID_NOT_PASS",
+      "sourceChangesAllowed": false
+    },
+    {
+      "id": "R2",
+      "purpose": "Measure the quarantined current implementation head before any repair.",
+      "commit": "26c5022f8dfd33b8c5f80d0900d239a4d80966ea",
+      "fetchRef": "agent/jv-lit-normal-foundation",
+      "gateScript": "tools/run-demonstrator-foundation-gate.ps1",
+      "requiredNodeVersion": "v24.16.0",
+      "requiredNpmVersion": "11.17.0",
+      "historicalClaim": "SOURCE_CONFIRMED_RED",
+      "expectedOutcome": "UNKNOWN_UNTIL_LOCAL_RERUN",
+      "passClassification": "CURRENT_HEAD_GATE_PASSED",
+      "failClassification": "R2_GATE_DID_NOT_PASS",
+      "sourceChangesAllowed": false
+    }
+  ],
+  "forensicTargets": [
+    {
+      "id": "R3",
+      "commit": "891c7561142b601f62ea76b68b0f55f8fababc6c",
+      "status": "MANUAL_FORENSIC_PROTOCOL_REQUIRED",
+      "automatedByBaselineHarness": false,
+      "blockers": [
+        "No trustworthy historical package-lock.json.",
+        "Native source and synchronized assets must be pinned explicitly.",
+        "Local native repository auto-detection and local session import must be disabled before execution."
+      ]
+    }
+  ]
+}

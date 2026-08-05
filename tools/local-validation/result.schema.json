@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "JV_WEB_LOCAL_VALIDATION_RESULT_V1",
+  "title": "JV Web local validation result",
+  "type": "object",
+  "required": [
+    "schema",
+    "targetId",
+    "sourceCommit",
+    "classification",
+    "gateExitCode",
+    "createdAtUtc",
+    "repository",
+    "toolchain",
+    "worktree",
+    "sourceTree"
+  ],
+  "properties": {
+    "schema": {
+      "const": "JV_WEB_LOCAL_VALIDATION_RESULT_V1"
+    },
+    "targetId": {
+      "enum": [
+        "R1",
+        "R2"
+      ]
+    },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "classification": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gateExitCode": {
+      "type": "integer"
+    },
+    "createdAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "root",
+        "origin",
+        "controlHeadAtInvocation"
+      ],
+      "properties": {
+        "root": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string"
+        },
+        "controlHeadAtInvocation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "toolchain": {
+      "type": "object",
+      "required": [
+        "git",
+        "node",
+        "npm",
+        "powerShell"
+      ],
+      "properties": {
+        "git": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        },
+        "npm": {
+          "type": "string"
+        },
+        "powerShell": {
+          "type": "string"
+        }
+      }
+    },
+    "worktree": {
+      "type": "object",
+      "required": [
+        "path",
+        "retained"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "retained": {
+          "type": "boolean"
+        }
+      }
+    },
+    "sourceTree": {
+      "type": "object",
+      "required": [
+        "cleanBefore",
+        "cleanAfter",
+        "headBefore",
+        "headAfter"
+      ],
+      "properties": {
+        "cleanBefore": {
+          "type": "boolean"
+        },
+        "cleanAfter": {
+          "type": "boolean"
+        },
+        "headBefore": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "headAfter": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "failure": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "artifactsCaptured": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,4 @@
+# Local validation worktrees and evidence should normally live beside the repository.
+# Ignore them as a fail-safe if a custom ValidationRoot is placed inside the repo.
+_JV_WEB_LOCAL_VALIDATION/
+.local-validation/

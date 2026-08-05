@@ -13,5 +13,17 @@ Read in this order:
 3. [`docs/refoundation/VALIDATED_STATE.md`](docs/refoundation/VALIDATED_STATE.md)
 4. [`docs/refoundation/RECOVERY_PLAN.md`](docs/refoundation/RECOVERY_PLAN.md)
 5. [`docs/refoundation/EVIDENCE_STANDARD.md`](docs/refoundation/EVIDENCE_STANDARD.md)
+6. [`docs/local-validation/README.md`](docs/local-validation/README.md)
+
+## Local validation
+
+R1 and R2 use an isolated PowerShell harness that creates detached worktrees outside the active repository and captures exact evidence bundles.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\local-validation\Test-JvWebControlPlane.ps1
+```
+
+The harness never switches the active branch and never runs `git reset`, `git clean` or force removal.
 
 No historical branch, PR body, handoff package or AI summary is authoritative by itself. Exact commits and evidence bundles are authoritative only for the scope they actually prove.
