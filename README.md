@@ -4,27 +4,44 @@ Private proof-of-concept repository for running a focused slice of Jozz Vehicle 
 
 ## Current repository mode
 
-This repository is in **refoundation and recovery mode**. The minimal `main` branch is intentionally not the product implementation. Historical implementation branches contain valuable work, but none is currently accepted wholesale as the canonical product line.
+This repository is in **playable recovery plus refoundation mode**. The immediate operational goal is to restore a known-good browser runtime while preserving the control plane and all later experimental work for evidence-based recovery.
+
+The minimal `main` branch is intentionally not the product implementation. No historical implementation branch is accepted wholesale as the canonical product line.
 
 Read in this order:
 
 1. [`AI_PROJECT_MEMORY.md`](AI_PROJECT_MEMORY.md)
-2. [`docs/refoundation/README.md`](docs/refoundation/README.md)
-3. [`docs/refoundation/VALIDATED_STATE.md`](docs/refoundation/VALIDATED_STATE.md)
-4. [`docs/refoundation/RECOVERY_PLAN.md`](docs/refoundation/RECOVERY_PLAN.md)
-5. [`docs/refoundation/EVIDENCE_STANDARD.md`](docs/refoundation/EVIDENCE_STANDARD.md)
-6. [`docs/local-validation/README.md`](docs/local-validation/README.md)
+2. [`docs/playable-recovery/README.md`](docs/playable-recovery/README.md)
+3. [`docs/refoundation/README.md`](docs/refoundation/README.md)
+4. [`docs/refoundation/VALIDATED_STATE.md`](docs/refoundation/VALIDATED_STATE.md)
+5. [`docs/refoundation/RECOVERY_PLAN.md`](docs/refoundation/RECOVERY_PLAN.md)
+6. [`docs/refoundation/EVIDENCE_STANDARD.md`](docs/refoundation/EVIDENCE_STANDARD.md)
+7. [`docs/local-validation/README.md`](docs/local-validation/README.md)
 
-## Local validation
+## Restore the playable runtime
 
-Before executing the structural checker or an R1/R2 run on Windows, parse the harness with the operator's installed PowerShell engine:
+The pinned recovery runtime is `agent/jv-web-playable-runtime` at exact commit `d6aa218064c2653f918cf7956d2fcd20a940caf3`.
+
+From the control-plane checkout, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Start-JvWebPlayable.ps1
+```
+
+This creates a detached worktree beside the repository, runs the historical full gate and starts Vite only after the gate passes. It does not switch or reset the active branch. See [`docs/playable-recovery/README.md`](docs/playable-recovery/README.md).
+
+## Control-plane validation
+
+Before executing recovery or historical validation scripts on Windows, parse them with the installed PowerShell engine:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebPowerShellSyntax.ps1
 ```
 
-Then follow the one-command-at-a-time procedure in [`docs/local-validation/README.md`](docs/local-validation/README.md).
+Then run the tracked structural checker:
 
-The harness never switches the active branch and never runs `git reset`, `git clean` or forced worktree removal.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebControlPlane.ps1
+```
 
-No historical branch, PR body, handoff package or AI summary is authoritative by itself. Exact commits and evidence bundles are authoritative only for the scope they actually prove.
+No historical branch, PR body, handoff package or AI summary is authoritative by itself. Exact commits, raw gate output, evidence receipts and owner observation are authoritative only for the scope they actually prove.
