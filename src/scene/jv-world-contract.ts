@@ -1,6 +1,10 @@
 export type JvVec3 = Readonly<{ x: number; y: number; z: number }>;
 export type JvQuat = Readonly<{ x: number; y: number; z: number; w: number }>;
 export type JvColor = readonly [number, number, number, number];
+export type JvBounds = Readonly<{
+  minimum: JvVec3;
+  maximum: JvVec3;
+}>;
 
 export interface JvStaticBox {
   readonly center: JvVec3;
@@ -34,6 +38,7 @@ export interface JvScanWorld {
   readonly source: "JSPREV2";
   readonly packId: string;
   readonly origin: JvVec3;
+  readonly worldBounds: JvBounds;
   readonly collision: JvIndexedMesh;
   readonly groups: readonly JvIndexedMesh[];
   readonly textureCount: number;
