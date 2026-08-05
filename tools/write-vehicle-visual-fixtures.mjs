@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -13,7 +13,8 @@ import { buildLitNormalVehicleVisualFixture } from "./lit-normal-vehicle-visual-
 import { buildTinyVehicleVisualFixture } from "./tiny-vehicle-visual-fixture-lib.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const publicDirectory = resolve(root, "public");
+const sourcePublicDirectory = resolve(root, "public");
+const generatedPublicDirectory = resolve(root, ".local-assets/public");
 const EXPECTED_TINY_BYTE_LENGTH = 2628;
 const EXPECTED_TINY_SHA256 =
   "b243bf5ae6ed0b185885b6d341ab0a12fd377743408040e14226c1fecbb31281";
@@ -37,7 +38,10 @@ function assertCatalogMatch(record, fixture) {
 }
 
 async function writeFixture(record, fixture) {
-  const packageDirectory = resolve(publicDirectory, record.packageDirectory);
+  const packageDirectory = resolve(
+    generatedPublicDirectory,
+    record.packageDirectory,
+  );
   const modelDirectory = resolve(packageDirectory, "models");
   await mkdir(modelDirectory, { recursive: true });
   await writeFile(resolve(modelDirectory, record.modelFileName), fixture.glb);
@@ -62,13 +66,23 @@ if (
   tiny.visualPackage.asset.sha256 !== EXPECTED_TINY_SHA256
 ) {
   throw new Error(
-    `Tiny fixture identity drifted before write: ${tiny.glb.byteLength} bytes · ${tiny.visualPackage.asset.sha256}.`,
+    `Tiny fixture identity drifted before staging: ${tiny.glb.byteLength} bytes · ${tiny.visualPackage.asset.sha256}.`,
   );
 }
 
+await rm(generatedPublicDirectory, { recursive: true, force: true });
+await mkdir(resolve(root, ".local-assets"), { recursive: true });
+await cp(sourcePublicDirectory, generatedPublicDirectory, { recursive: true });
+await rm(resolve(generatedPublicDirectory, "vehicles"), {
+  recursive: true,
+  force: true,
+});
 await writeFixture(TINY_VEHICLE_VISUAL_FIXTURE, tiny);
 await writeFixture(LIT_NORMAL_VEHICLE_VISUAL_FIXTURE, litNormal);
 
+console.log(
+  `Generated public staging prepared at ${generatedPublicDirectory}.`,
+);
 console.log(
   `Tiny vehicle visual fixture written: ${tiny.glb.byteLength} bytes · ${tiny.visualPackage.asset.sha256}.`,
 );
