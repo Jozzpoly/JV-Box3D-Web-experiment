@@ -11,7 +11,8 @@ $relativeFiles = @(
     'tools/local-validation/Invoke-JvWebBaseline.ps1',
     'tools/playable-recovery/Start-JvWebPlayable.ps1',
     'tools/playable-recovery/Launch-JvWebPlayable.ps1',
-    'tools/playable-recovery/Run-JvWebPlayable.ps1'
+    'tools/playable-recovery/Run-JvWebPlayable.ps1',
+    'tools/candidate-validation/Launch-JvWebRenderHostR1.ps1'
 )
 
 $failures = New-Object 'System.Collections.Generic.List[string]'
@@ -50,5 +51,5 @@ if ($failures.Count -gt 0) {
 }
 
 Write-Host 'JV WEB POWERSHELL SYNTAX CHECK: PASS'
-Write-Host 'All recovery and local-validation scripts parse in the current PowerShell engine.'
+Write-Host 'All recovery, candidate-validation and local-validation scripts parse in the current PowerShell engine.'
 exit 0
