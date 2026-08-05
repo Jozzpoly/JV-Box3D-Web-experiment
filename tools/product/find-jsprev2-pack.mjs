@@ -18,6 +18,13 @@ const REQUIRED_GROUPS = 25;
 const REQUIRED_TEXTURES = 25;
 const MAX_DIRECTORIES = 30_000;
 const MAX_DEPTH = 12;
+const SCOPED_ROOT_NAMES = new Set([
+  "box3d_funproject",
+  "build",
+  "scan_pipeline",
+  "js_photogrametry",
+  "_private_scan_local",
+]);
 
 function fail(message) {
   process.stderr.write(`find-jsprev2-pack: ERROR: ${message}\n`);
@@ -46,20 +53,30 @@ function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
 }
 
-function isJsprev2(filePath) {
+function inspectBinaryHeader(filePath, expectedGroups) {
   if (!isPlainFile(filePath) || statSync(filePath).size < 20) {
-    return false;
+    throw new Error("tile binary is missing or truncated");
   }
-  const header = Buffer.allocUnsafe(MAGIC.length);
+  const header = Buffer.allocUnsafe(20);
   const descriptor = openSync(filePath, "r");
   try {
-    return (
-      readSync(descriptor, header, 0, header.length, 0) ===
-        header.length &&
-      header.equals(MAGIC)
-    );
+    if (readSync(descriptor, header, 0, header.length, 0) !== header.length) {
+      throw new Error("tile header read was incomplete");
+    }
   } finally {
     closeSync(descriptor);
+  }
+  if (!header.subarray(0, MAGIC.length).equals(MAGIC)) {
+    throw new Error("tile binary is not JSPREV2");
+  }
+  if (header.readUInt32LE(8) !== 2) {
+    throw new Error("tile binary version is not 2");
+  }
+  const groupCount = header.readUInt32LE(16);
+  if (groupCount !== expectedGroups) {
+    throw new Error(
+      `tile binary groups ${groupCount} != manifest groups ${expectedGroups}`,
+    );
   }
 }
 
@@ -112,7 +129,6 @@ function inspectPack(directoryPath) {
     let textureCount = 0;
     let triangleCount = 0;
     let totalBytes = statSync(manifestPath).size;
-    const tiles = [];
 
     for (const tile of manifest.tiles) {
       if (
@@ -124,11 +140,8 @@ function inspectPack(directoryPath) {
         throw new Error("tile record is incomplete");
       }
       const binaryPath = safeAsset(packDirectory, tile.path);
-      if (!isJsprev2(binaryPath)) {
-        throw new Error("tile binary is not JSPREV2");
-      }
+      inspectBinaryHeader(binaryPath, tile.groups.length);
       totalBytes += statSync(binaryPath).size;
-      const groups = [];
       for (const group of tile.groups) {
         if (group === null || typeof group !== "object") {
           throw new Error("group record is invalid");
@@ -146,9 +159,7 @@ function inspectPack(directoryPath) {
         ) {
           triangleCount += group.triangleCount;
         }
-        groups.push({ texturePath });
       }
-      tiles.push({ binaryPath, groups });
     }
 
     const packId =
@@ -163,7 +174,7 @@ function inspectPack(directoryPath) {
       packDirectory,
       manifestPath,
       packId,
-      tileCount: tiles.length,
+      tileCount: manifest.tiles.length,
       groupCount,
       textureCount,
       triangleCount,
@@ -209,8 +220,19 @@ function addSelector(candidates, selectorPath) {
   candidates.add(resolved);
 }
 
-function walk(rootDirectory, candidates) {
+function isScopedSearchRoot(rootDirectory) {
   if (!isPlainDirectory(rootDirectory)) {
+    return false;
+  }
+  if (isPlainFile(path.join(rootDirectory, "COMPLETE.json"))) {
+    return true;
+  }
+  const basename = path.basename(path.resolve(rootDirectory)).toLowerCase();
+  return SCOPED_ROOT_NAMES.has(basename);
+}
+
+function walk(rootDirectory, candidates) {
+  if (!isScopedSearchRoot(rootDirectory)) {
     return;
   }
   const queue = [{ directory: rootDirectory, depth: 0 }];
@@ -261,17 +283,10 @@ function parseArguments(argv) {
   const roots = [];
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === "--root") {
+    if (argument === "--root" || argument === "--candidate") {
       const value = argv[index + 1];
       if (value === undefined) {
-        fail("--root requires a path");
-      }
-      roots.push(path.resolve(value));
-      index += 1;
-    } else if (argument === "--candidate") {
-      const value = argv[index + 1];
-      if (value === undefined) {
-        fail("--candidate requires a path");
+        fail(`${argument} requires a path`);
       }
       roots.push(path.resolve(value));
       index += 1;
@@ -288,7 +303,9 @@ addSelector(candidates, process.env.JOZZ_SCAN_PREVIEW_PACK);
 addSelector(candidates, process.env.JOZZ_SCAN_ACTIVE_PREVIEW);
 
 for (const root of suppliedRoots) {
-  addSelector(candidates, root);
+  if (isPlainFile(path.join(root, "COMPLETE.json"))) {
+    addSelector(candidates, root);
+  }
   addSelector(candidates, path.join(root, "ACTIVE_PREVIEW.json"));
   walk(root, candidates);
 }
