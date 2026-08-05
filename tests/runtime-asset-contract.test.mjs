@@ -17,12 +17,14 @@ function manifest(overrides = {}) {
   };
 }
 
-test("portable runtime asset contract requires receipt, scene and tiny vehicle package", () => {
+test("portable runtime asset contract requires receipt, scene and both generated vehicle packages", () => {
   assert.deepEqual(REQUIRED_RUNTIME_ASSETS, [
     "receipts/jv_m6_factory_receipt.json",
     "scenes/synthetic-flat-lab.scene.json",
     "vehicles/tiny/vehicle.visual.json",
     "vehicles/tiny/models/m6-rig-proof.glb",
+    "vehicles/lit-normal/vehicle.visual.json",
+    "vehicles/lit-normal/models/m6-lit-normal-proof.glb",
   ]);
   assert.deepEqual(validateRuntimeAssetContract(manifest()), []);
 });
@@ -42,7 +44,7 @@ test("missing scene declaration fails even when the payload file exists", () => 
   );
 });
 
-test("missing generated vehicle GLB declaration fails closed", () => {
+test("missing generated tiny GLB declaration fails closed", () => {
   const result = validateRuntimeAssetContract(
     manifest({
       runtimeAssets: REQUIRED_RUNTIME_ASSETS.filter(
@@ -51,6 +53,20 @@ test("missing generated vehicle GLB declaration fails closed", () => {
     }),
   );
   assert.ok(result.some((error) => error.includes("m6-rig-proof.glb")));
+});
+
+test("missing generated lit-normal GLB declaration fails closed", () => {
+  const result = validateRuntimeAssetContract(
+    manifest({
+      runtimeAssets: REQUIRED_RUNTIME_ASSETS.filter(
+        (path) =>
+          path !== "vehicles/lit-normal/models/m6-lit-normal-proof.glb",
+      ),
+    }),
+  );
+  assert.ok(
+    result.some((error) => error.includes("m6-lit-normal-proof.glb")),
+  );
 });
 
 test("missing runtime payload record fails even when it is declared", () => {
