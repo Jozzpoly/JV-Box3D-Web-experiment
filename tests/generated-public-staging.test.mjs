@@ -9,7 +9,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { prepareGeneratedPublicStagingV1 } from "../tools/generated-public-staging.mjs";
 
 async function exists(path) {
@@ -22,7 +22,7 @@ async function exists(path) {
 }
 
 async function writeText(path, value) {
-  await mkdir(join(path, ".."), { recursive: true });
+  await mkdir(dirname(path), { recursive: true });
   await writeFile(path, value, "utf8");
 }
 
@@ -116,4 +116,20 @@ test("source and destination trees must be disjoint before any copy or removal",
     /directory trees must be disjoint/,
   );
   assert.equal(await readFile(join(source, "static.txt"), "utf8"), "source");
+
+  const outerDestination = join(root, "outer-generated");
+  const nestedSource = join(outerDestination, "source-public");
+  await writeText(join(nestedSource, "static.txt"), "nested-source");
+  await assert.rejects(
+    prepareGeneratedPublicStagingV1({
+      sourceDirectory: nestedSource,
+      destinationDirectory: outerDestination,
+      ownedDirectories: ["vehicles/tiny"],
+    }),
+    /directory trees must be disjoint/,
+  );
+  assert.equal(
+    await readFile(join(nestedSource, "static.txt"), "utf8"),
+    "nested-source",
+  );
 });
