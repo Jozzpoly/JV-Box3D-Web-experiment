@@ -57,13 +57,13 @@ function asset(overrides = {}) {
 test("shared float-stream gate measures one valid rigid primitive", () => {
   assert.deepEqual(assertRigidFloatStreamIntegrityV1(asset()), {
     nodeMatrixValueCount: 16,
-    positionValueCount: 9,
+    positionVertexCount: 3,
     normalVectorCount: 3,
-    texcoordValueCount: 6,
+    texcoordPairCount: 3,
   });
 });
 
-test("non-finite POSITION and TEXCOORD_0 values fail closed", () => {
+test("non-finite and incomplete POSITION values fail closed", () => {
   const positions = new Float32Array([
     0, 0, 0,
     1, Number.NaN, 0,
@@ -74,6 +74,16 @@ test("non-finite POSITION and TEXCOORD_0 values fail closed", () => {
     /POSITION\[4\] must be finite/,
   );
 
+  assert.throws(
+    () =>
+      assertRigidFloatStreamIntegrityV1(
+        asset({ primitive: { positions: new Float32Array([0, 0, 0, 1]) } }),
+      ),
+    /POSITION must contain complete VEC3 values/,
+  );
+});
+
+test("non-finite and incomplete TEXCOORD_0 values fail closed", () => {
   const texcoord0 = new Float32Array([
     0, 0,
     1, Number.POSITIVE_INFINITY,
@@ -82,6 +92,14 @@ test("non-finite POSITION and TEXCOORD_0 values fail closed", () => {
   assert.throws(
     () => assertRigidFloatStreamIntegrityV1(asset({ primitive: { texcoord0 } })),
     /TEXCOORD_0\[3\] must be finite/,
+  );
+
+  assert.throws(
+    () =>
+      assertRigidFloatStreamIntegrityV1(
+        asset({ primitive: { texcoord0: new Float32Array([0, 0, 1]) } }),
+      ),
+    /TEXCOORD_0 count differs from POSITION/,
   );
 });
 
@@ -122,7 +140,7 @@ test("NORMAL vectors must be complete, finite and normalized", () => {
   );
 });
 
-test("node matrices and UV counts are validated before rendering", () => {
+test("node matrices are validated before rendering", () => {
   const matrix = identityMatrix();
   matrix[10] = Number.NaN;
   assert.throws(
@@ -133,9 +151,9 @@ test("node matrices and UV counts are validated before rendering", () => {
   assert.throws(
     () =>
       assertRigidFloatStreamIntegrityV1(
-        asset({ primitive: { texcoord0: new Float32Array([0, 0]) } }),
+        asset({ nodeMatrix: new Float32Array(15) }),
       ),
-    /TEXCOORD_0 count differs from POSITION/,
+    /must contain exactly 16 values/,
   );
 });
 
@@ -146,9 +164,9 @@ test("missing optional NORMAL and TEXCOORD_0 streams remain valid", () => {
     ),
     {
       nodeMatrixValueCount: 16,
-      positionValueCount: 9,
+      positionVertexCount: 3,
       normalVectorCount: 0,
-      texcoordValueCount: 0,
+      texcoordPairCount: 0,
     },
   );
 });
