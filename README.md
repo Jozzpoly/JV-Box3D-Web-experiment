@@ -4,7 +4,7 @@ Private proof-of-concept repository for running a focused slice of Jozz Vehicle 
 
 ## Current repository mode
 
-The playable browser baseline has been restored. The project is now in **controlled foundation recovery and product-candidate development**.
+The playable browser baseline has been restored and freshly owner-accepted on desktop. The project is now in **controlled foundation recovery and product-candidate validation**.
 
 The minimal `main` branch is intentionally not the product implementation. No historical implementation branch is accepted wholesale as the canonical product line.
 
@@ -13,14 +13,30 @@ Read in this order:
 1. [`AI_PROJECT_MEMORY.md`](AI_PROJECT_MEMORY.md)
 2. [`docs/operations/OPERATING_MODEL.md`](docs/operations/OPERATING_MODEL.md)
 3. [`docs/operations/PLAYABLE_BASELINE_2026-08-05.md`](docs/operations/PLAYABLE_BASELINE_2026-08-05.md)
-4. [`docs/playable-recovery/README.md`](docs/playable-recovery/README.md)
-5. [`docs/refoundation/README.md`](docs/refoundation/README.md)
-6. [`docs/refoundation/VALIDATED_STATE.md`](docs/refoundation/VALIDATED_STATE.md)
-7. [`docs/refoundation/RECOVERY_PLAN.md`](docs/refoundation/RECOVERY_PLAN.md)
-8. [`docs/refoundation/EVIDENCE_STANDARD.md`](docs/refoundation/EVIDENCE_STANDARD.md)
-9. [`docs/local-validation/README.md`](docs/local-validation/README.md)
+4. [`docs/recovery/SALVAGE_MAP_2026-08-05.md`](docs/recovery/SALVAGE_MAP_2026-08-05.md)
+5. [`docs/candidate-validation/RENDER_HOST_R1.md`](docs/candidate-validation/RENDER_HOST_R1.md)
+6. [`docs/playable-recovery/README.md`](docs/playable-recovery/README.md)
+7. [`docs/refoundation/EVIDENCE_STANDARD.md`](docs/refoundation/EVIDENCE_STANDARD.md)
+8. [`docs/local-validation/README.md`](docs/local-validation/README.md)
 
-## Normal playable launch
+## Current candidate — renderer host R1
+
+```text
+PR: #23
+base: agent/jv-web-playable-runtime@d6aa218064c2653f918cf7956d2fcd20a940caf3
+candidate: candidate/jv-web-render-host-r1@e263e3e05ea21e74585d74829136e3defbd67813
+status: DRAFT / VALIDATION PENDING / DO NOT MERGE
+```
+
+Validate the exact candidate through one guarded command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\candidate-validation\Launch-JvWebRenderHostR1.ps1
+```
+
+Candidate R1 uses port `5174`; the accepted baseline may remain on port `5173` for direct comparison. It adds renderer ownership and failure-isolation foundations but intentionally activates no GLB, model, material or texture path.
+
+## Normal playable baseline launch
 
 After one successful recovery receipt, start the already validated baseline without repeating the full gate:
 
@@ -28,7 +44,7 @@ After one successful recovery receipt, start the already validated baseline with
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Run-JvWebPlayable.ps1
 ```
 
-## First recovery or deliberate revalidation
+## First recovery or deliberate baseline revalidation
 
 The pinned recovery runtime is `agent/jv-web-playable-runtime` at exact commit `d6aa218064c2653f918cf7956d2fcd20a940caf3`.
 
