@@ -1,8 +1,9 @@
+import { GENERATED_VEHICLE_VISUAL_RUNTIME_ASSETS } from "./generated-vehicle-visual-fixture-catalog.mjs";
+
 export const REQUIRED_RUNTIME_ASSETS = Object.freeze([
   "receipts/jv_m6_factory_receipt.json",
   "scenes/synthetic-flat-lab.scene.json",
-  "vehicles/tiny/vehicle.visual.json",
-  "vehicles/tiny/models/m6-rig-proof.glb",
+  ...GENERATED_VEHICLE_VISUAL_RUNTIME_ASSETS,
 ]);
 
 export function validateRuntimeAssetContract(manifest) {
