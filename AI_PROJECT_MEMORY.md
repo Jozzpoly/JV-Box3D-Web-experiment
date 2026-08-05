@@ -30,8 +30,8 @@ architecture plan:
 current source implementation:
   branch agent/jv-lit-normal-foundation
   PR #21 draft, based on architecture plan
-  head 554aa046c5089acc391c0220c628c9457ef25194
-  exact repository gate pending on current head
+  last code/test fix cbff1af95aa1b909ea35bf7b02ca199da04d0472
+  exact repository gate pending on current branch HEAD
 ```
 
 Do not merge, mark Ready, change repository visibility, enable Pages or publish without Jozz. Do not fast-forward the long experimental history directly into public `main`; prefer an owner-reviewed squash or clean snapshot later.
@@ -128,7 +128,7 @@ failure: test referenced nonexistent ownershipReceipt.bindingCount
 docs/notices/Vite/portable/HTTP: NOT RUN after test failure
 ```
 
-The production ownership receipt remained correct. Commit `cbff1af95aa1b909ea35bf7b02ca199da04d0472` replaced the invalid assertion with the real `boundRootCount`, `ownedNodeCount` and `ownedMeshNodeCount` contract, derived from M6 part and segment lists. Commit `554aa046c5089acc391c0220c628c9457ef25194` records this evidence boundary in project memory. No runtime, physics, asset or `main.ts` line changed in these two commits.
+The production ownership receipt remained correct. Commit `cbff1af95aa1b909ea35bf7b02ca199da04d0472` replaced the invalid assertion with the real `boundRootCount`, `ownedNodeCount` and `ownedMeshNodeCount` contract, derived from M6 part and segment lists. Subsequent documentation-only commits record this evidence boundary. No runtime, physics, asset or `main.ts` line changed after `eecf99f…`.
 
 Validation performed outside the exact repository checkout:
 
@@ -140,7 +140,7 @@ shared lit renderer strict compile and execution: PASS
 vehicle lit-normal pass strict compile: PASS
 ```
 
-These isolated checks do not replace a full exact-head gate on `554aa046c5089acc391c0220c628c9457ef25194`. The generated portable fixture and browser observation remain pending.
+These isolated checks do not replace a full exact-head gate on the current PR #21 head. The exact SHA must be taken from PR #21 after pulling the branch. The generated portable fixture and browser observation remain pending.
 
 Not active yet:
 
@@ -361,7 +361,7 @@ A scan render mesh is never collision implicitly. The first owner scan is a smal
 ## Immediate sequence
 
 ```text
-1 run full exact-head gate on 554aa046c5089acc391c0220c628c9457ef25194
+1 run full exact-head gate on the current PR #21 head after pulling
 2 keep source-only if the gate fails; make the smallest correction
 3 generate lit-normal public fixture without changing tiny fixture bytes
 4 extend portable asset/path/HTTP validation
