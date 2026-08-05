@@ -34,14 +34,16 @@
     {
       "id": "PRODUCT_CAR_MAP_SCAN",
       "purpose": "Validate and launch the integrated accepted car, E2R map and exact textured JSPREV2 scan product.",
-      "commit": "84910b9c84edd33db5e1f09baf456f978f8368ca",
+      "commit": "106312083875b5aa94cf1f9fc986ac3c26888aa5",
       "fetchRef": "product/jv-web-car-map-scan",
       "gateScript": "tools/run-demonstrator-foundation-gate.ps1",
+      "assetSelector": "tools/product/find-jsprev2-pack.mjs",
+      "assetSelectorSchema": "JV_WEB_JSPREV2_PACK_SELECTION_V2",
       "requiredNodeVersion": "v24.16.0",
       "requiredNpmVersion": "11.17.0",
-      "historicalClaim": "IMPLEMENTATION_CANDIDATE",
+      "historicalClaim": "IMPLEMENTATION_CANDIDATE_WITH_TWO_PRESERVED_RED_GATE_LOGS",
       "expectedOutcome": "UNKNOWN_UNTIL_LOCAL_RERUN",
-      "passClassification": "PRODUCT_SOURCE_PACKAGE_ASSET_GATE_PASSED",
+      "passClassification": "PRODUCT_SOURCE_PACKAGE_DEEP_ASSET_GATE_PASSED",
       "failClassification": "PRODUCT_GATE_DID_NOT_PASS",
       "sourceChangesAllowed": false
     }

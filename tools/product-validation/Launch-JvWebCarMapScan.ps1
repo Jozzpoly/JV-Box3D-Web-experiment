@@ -10,12 +10,13 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$targetCommit = '84910b9c84edd33db5e1f09baf456f978f8368ca'
+$targetCommit = '106312083875b5aa94cf1f9fc986ac3c26888aa5'
 $remoteBranch = 'product/jv-web-car-map-scan'
 $localBranchStem = 'local/jv-web-car-map-scan'
 $expectedNode = 'v24.16.0'
 $expectedNpm = '11.17.0'
-$receiptSchema = 'JV_WEB_CAR_MAP_SCAN_PRODUCT_V1'
+$selectionSchema = 'JV_WEB_JSPREV2_PACK_SELECTION_V2'
+$receiptSchema = 'JV_WEB_CAR_MAP_SCAN_PRODUCT_V2'
 
 function Invoke-NativeText {
     param(
@@ -50,7 +51,6 @@ function Invoke-NativeText {
             (($output | Out-String).Trim())
         )
     }
-
     return (($output | Out-String).Trim())
 }
 
@@ -82,7 +82,6 @@ function Invoke-NativeCode {
         $ErrorActionPreference = $oldPreference
         Set-Location -LiteralPath $oldLocation.Path
     }
-
     return [int]$exitCode
 }
 
@@ -123,7 +122,6 @@ function Invoke-NativeCapturedCode {
         ('EXIT_CODE: {0}' -f $exitCode),
         ('FINISHED: {0}' -f (Get-Date).ToUniversalTime().ToString('o'))
     ) | Out-File -LiteralPath $LogPath -Encoding utf8 -Append
-
     return [int]$exitCode
 }
 
@@ -197,7 +195,7 @@ $evidencePath = Join-Path $WorkspaceRoot 'evidence'
 New-Item -ItemType Directory -Path $WorkspaceRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $evidencePath -Force | Out-Null
 
-Write-Host 'JV WEB PRODUCT — CAR + E2R MAP + JSPREV2 SCAN'
+Write-Host 'JV WEB PRODUCT - CAR + E2R MAP + JSPREV2 SCAN'
 Write-Host ('Active branch:   {0}' -f $activeBranch)
 Write-Host ('Active HEAD:     {0}' -f $activeHead)
 Write-Host ('Active worktree: {0}' -f $activeState)
@@ -215,7 +213,6 @@ $fetchCode = Invoke-NativeCode -File 'git' -Arguments @(
 if ($fetchCode -ne 0) {
     throw 'Unable to fetch the pinned product branch.'
 }
-
 $remoteCommit = Invoke-NativeText -File 'git' -Arguments @(
     '-C', $repositoryRoot, 'rev-parse', ('{0}^{{commit}}' -f $remoteTrackingRef)
 )
@@ -226,7 +223,7 @@ if ($remoteCommit -ne $targetCommit) {
 $selectedWorktree = $null
 $selectedLocalBranch = $null
 $worktreeLogs = New-Object 'System.Collections.Generic.List[string]'
-for ($attempt = 1; $attempt -le 6; $attempt++) {
+for ($attempt = 1; $attempt -le 8; $attempt++) {
     $suffix = if ($attempt -eq 1) { '' } else { '-{0}' -f $attempt }
     $localBranch = '{0}{1}' -f $localBranchStem, $suffix
     $branchRef = 'refs/heads/{0}' -f $localBranch
@@ -235,13 +232,12 @@ for ($attempt = 1; $attempt -le 6; $attempt++) {
     $branchExists = Invoke-NativeCode -File 'git' -Arguments @(
         '-C', $repositoryRoot, 'show-ref', '--verify', '--quiet', $branchRef
     ) -WorkingDirectory $repositoryRoot -Quiet
-
     if ($branchExists -eq 0) {
         $branchCommit = Invoke-NativeText -File 'git' -Arguments @(
             '-C', $repositoryRoot, 'rev-parse', ('{0}^{{commit}}' -f $branchRef)
         )
         if ($branchCommit -ne $targetCommit) {
-            Write-Host ('Skipping local branch with unexpected commit: {0}' -f $localBranch)
+            Write-Host ('Skipping local branch with preserved older commit: {0}' -f $localBranch)
             continue
         }
     }
@@ -262,7 +258,6 @@ for ($attempt = 1; $attempt -le 6; $attempt++) {
             Write-Host ('Skipping existing non-worktree path without deleting it: {0}' -f $worktreePath)
             continue
         }
-
         $candidateHead = Invoke-NativeText -File 'git' -Arguments @('-C', $worktreePath, 'rev-parse', 'HEAD')
         $candidateBranch = Invoke-NativeText -File 'git' -Arguments @('-C', $worktreePath, 'branch', '--show-current')
         $candidateStatus = Invoke-NativeText -File 'git' -Arguments @('-C', $worktreePath, 'status', '--porcelain=v1', '--untracked-files=all')
@@ -274,7 +269,6 @@ for ($attempt = 1; $attempt -le 6; $attempt++) {
             Write-Host ('Skipping changed or unexpected worktree without deleting it: {0}' -f $worktreePath)
             continue
         }
-
         $selectedWorktree = $worktreePath
         $selectedLocalBranch = $localBranch
         break
@@ -296,12 +290,11 @@ for ($attempt = 1; $attempt -le 6; $attempt++) {
         $selectedLocalBranch = $localBranch
         break
     }
-
     Write-Host ('Worktree creation failed; preserved log: {0}' -f $worktreeLog)
 }
 
 if (-not $selectedWorktree -or -not $selectedLocalBranch) {
-    throw ('Unable to prepare an untouched product worktree after six attempts. Logs:{0}{1}' -f
+    throw ('Unable to prepare an untouched product worktree after eight attempts. Logs:{0}{1}' -f
         [Environment]::NewLine,
         (($worktreeLogs | ForEach-Object { ' - {0}' -f $_ }) -join [Environment]::NewLine)
     )
@@ -322,7 +315,6 @@ $gateScript = Join-Path $selectedWorktree 'tools\run-demonstrator-foundation-gat
 if (-not (Test-Path -LiteralPath $gateScript -PathType Leaf)) {
     throw ('Product gate script is missing: {0}' -f $gateScript)
 }
-
 $powerShellExecutable = if ($PSVersionTable.PSEdition -eq 'Core') {
     Join-Path $PSHOME 'pwsh.exe'
 }
@@ -367,7 +359,6 @@ $selectorScript = Join-Path $selectedWorktree 'tools\product\find-jsprev2-pack.m
 if (-not (Test-Path -LiteralPath $selectorScript -PathType Leaf)) {
     throw ('JSPREV2 selector is missing: {0}' -f $selectorScript)
 }
-
 $selectorArguments = New-Object 'System.Collections.Generic.List[string]'
 $selectorArguments.Add($selectorScript)
 if (-not [string]::IsNullOrWhiteSpace($ScanRoot)) {
@@ -379,7 +370,7 @@ if (-not [string]::IsNullOrWhiteSpace($ScanRoot)) {
 }
 
 Write-Host ''
-Write-Host 'Selecting the exact final JSPREV2 pack (25 groups / 25 textures)...'
+Write-Host 'Selecting and deeply validating the exact final JSPREV2 pack...'
 $selectionText = Invoke-NativeText -File 'node' -Arguments $selectorArguments.ToArray() -WorkingDirectory $selectedWorktree
 try {
     $scanSelection = $selectionText | ConvertFrom-Json
@@ -391,12 +382,16 @@ catch {
     )
 }
 if (
-    $scanSelection.schema -ne 'JV_WEB_JSPREV2_PACK_SELECTION_V1' -or
+    $scanSelection.schema -ne $selectionSchema -or
     $scanSelection.status -ne 'PASS' -or
+    [bool]$scanSelection.deepValidated -ne $true -or
     [int]$scanSelection.groupCount -ne 25 -or
-    [int]$scanSelection.textureCount -ne 25
+    [int]$scanSelection.textureCount -ne 25 -or
+    [long]$scanSelection.vertexCount -le 0 -or
+    [long]$scanSelection.indexCount -le 0 -or
+    [long]$scanSelection.triangleCount -le 0
 ) {
-    throw 'JSPREV2 selector receipt failed the exact 25/25 contract.'
+    throw 'JSPREV2 selector receipt failed the exact V2 contract.'
 }
 
 $scanPackPath = [System.IO.Path]::GetFullPath([string]$scanSelection.packDirectory)
@@ -437,12 +432,21 @@ $receipt = [ordered]@{
     scan = [ordered]@{
         status = 'PASS'
         schema = $scanSelection.schema
+        selectionMode = $scanSelection.selectionMode
+        deepValidated = [bool]$scanSelection.deepValidated
         packId = $scanSelection.packId
         tileCount = [int]$scanSelection.tileCount
         groupCount = [int]$scanSelection.groupCount
         textureCount = [int]$scanSelection.textureCount
+        vertexCount = [long]$scanSelection.vertexCount
+        indexCount = [long]$scanSelection.indexCount
         triangleCount = [long]$scanSelection.triangleCount
+        manifestBytes = [long]$scanSelection.manifestBytes
+        binaryBytes = [long]$scanSelection.binaryBytes
+        textureBytes = [long]$scanSelection.textureBytes
         totalBytes = [long]$scanSelection.totalBytes
+        estimatedCpuGeometryBytes = [long]$scanSelection.estimatedCpuGeometryBytes
+        estimatedGpuGeometryBytes = [long]$scanSelection.estimatedGpuGeometryBytes
         localPackPath = $scanPackPath
         selectionReceipt = $selectionFile
         selectionReceiptSha256 = $selectionSha256
@@ -450,7 +454,7 @@ $receipt = [ordered]@{
     runtime = [ordered]@{
         car = 'legacy_ts_m6 owner-accepted baseline; mechanics unchanged'
         map = 'E2R authority 959aefb78587ce60cf2b8eb03ff82797a4165142'
-        scan = 'JSPREV2 exact 25/25; shared render/collision origin'
+        scan = 'JSPREV2 exact V2; shared authority pack, separate render/collision buffers and origin'
         meshEdgeParity = 'binding welds vertices; native identifyEdges parity not claimed'
         nativeParity = 'NOT CLAIMED'
         ownerBrowserObservation = 'PENDING'
@@ -471,9 +475,12 @@ Write-Host ('Commit:         {0}' -f $targetCommit)
 Write-Host ('Gate log:       {0}' -f $gateLog)
 Write-Host ('Gate SHA256:    {0}' -f $gateLogSha256)
 Write-Host ('Scan pack:      {0}' -f $scanPackPath)
-Write-Host ('Scan contract:  {0} groups / {1} textures' -f
+Write-Host ('Selection:      {0}' -f $scanSelection.selectionMode)
+Write-Host ('Scan contract:  {0} tiles / {1} groups / {2} textures / {3} triangles' -f
+    $scanSelection.tileCount,
     $scanSelection.groupCount,
-    $scanSelection.textureCount
+    $scanSelection.textureCount,
+    $scanSelection.triangleCount
 )
 Write-Host ('Receipt:        {0}' -f $receiptFile)
 
