@@ -300,7 +300,29 @@ export class F4VehicleHost {
 
   get counters(): F4WorldRuntime["counters"] {
     this.#assertActive();
-    return this.#world.counters;
+    const raw = this.#world.counters;
+    const staticBodies =
+      this.#worldData.boxes.length +
+      this.#worldData.capsules.length +
+      1 +
+      (this.#worldData.scan === null ? 0 : 1);
+    const staticShapes = staticBodies;
+
+    // The unchanged UI subtracts one historical ground body/shape. Present
+    // product-scene counts in that legacy convention only when raw Box3D
+    // counters prove that the complete static scene was actually installed.
+    // Lightweight test doubles and the frozen baseline retain raw values.
+    if (
+      raw.bodyCount >= staticBodies + 1 &&
+      raw.shapeCount >= staticShapes + 1
+    ) {
+      return {
+        ...raw,
+        bodyCount: raw.bodyCount - staticBodies + 1,
+        shapeCount: raw.shapeCount - staticShapes + 1,
+      };
+    }
+    return raw;
   }
 
   dispose(): void {
