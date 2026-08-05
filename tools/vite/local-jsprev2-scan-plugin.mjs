@@ -1,8 +1,11 @@
 import {
+  closeSync,
   createReadStream,
   existsSync,
   lstatSync,
+  openSync,
   readFileSync,
+  readSync,
   readdirSync,
   realpathSync,
   statSync,
@@ -81,8 +84,17 @@ function isJsprev2Tile(filePath) {
   if (!isPlainFile(filePath) || statSync(filePath).size < 20) {
     return false;
   }
-  const descriptor = readFileSync(filePath);
-  return descriptor.subarray(0, MAGIC.length).equals(MAGIC);
+  const header = Buffer.allocUnsafe(MAGIC.length);
+  const descriptor = openSync(filePath, "r");
+  try {
+    return (
+      readSync(descriptor, header, 0, header.length, 0) ===
+        header.length &&
+      header.equals(MAGIC)
+    );
+  } finally {
+    closeSync(descriptor);
+  }
 }
 
 function manifestTiles(document) {
@@ -188,9 +200,10 @@ function addCandidate(candidates, candidatePath) {
     return;
   }
   const resolved = path.resolve(candidatePath);
-  if (path.basename(resolved).toLowerCase() === "complete.json") {
+  const basename = path.basename(resolved).toLowerCase();
+  if (basename === "complete.json") {
     candidates.add(path.dirname(resolved));
-  } else if (path.basename(resolved).toLowerCase() === "active_preview.json") {
+  } else if (basename === "active_preview.json") {
     try {
       const active = readJson(resolved);
       if (typeof active.previewPath === "string") {
@@ -222,7 +235,11 @@ function walkForComplete(rootDirectory, candidates) {
     } catch {
       continue;
     }
-    if (names.some((item) => item.isFile() && item.name === "COMPLETE.json")) {
+    if (
+      names.some(
+        (item) => item.isFile() && item.name === "COMPLETE.json",
+      )
+    ) {
       candidates.add(entry.directory);
     }
     if (entry.depth >= MAX_DISCOVERY_DEPTH) {
@@ -409,7 +426,10 @@ export function localJsprev2ScanPlugin() {
           }
           response.statusCode = 200;
           response.setHeader("Content-Type", contentType(filePath));
-          response.setHeader("Content-Length", String(statSync(filePath).size));
+          response.setHeader(
+            "Content-Length",
+            String(statSync(filePath).size),
+          );
           response.setHeader("Cache-Control", "no-store");
           createReadStream(filePath).pipe(response);
           return;
