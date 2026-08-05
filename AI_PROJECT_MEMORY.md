@@ -27,11 +27,12 @@ architecture plan:
   PR #20 draft, based on tiny visual
   head d75660889cdafc21622fb5a6c2d067745ce40193
 
-current source implementation:
+current implementation:
   branch agent/jv-lit-normal-foundation
   PR #21 draft, based on architecture plan
-  last code/test fix cbff1af95aa1b909ea35bf7b02ca199da04d0472
-  exact repository gate pending on current branch HEAD
+  exact green source checkpoint dcec0a7b5938b5d07cf5fdff8f81afd9db89e4ec
+  generated-public code/test boundary b630f3c3220a69d508b3504a889fa7227beb490d
+  exact repository gate pending on current PR head
 ```
 
 Do not merge, mark Ready, change repository visibility, enable Pages or publish without Jozz. Do not fast-forward the long experimental history directly into public `main`; prefer an owner-reviewed squash or clean snapshot later.
@@ -97,9 +98,26 @@ publication: NOT PERFORMED
 
 Never attribute the green `30facdd…` result to `f27b92d…` or a descendant without a fresh exact-head gate.
 
-### Lit-normal source candidate
+### Exact green lit-normal source checkpoint
 
-Source-present on `agent/jv-lit-normal-foundation`:
+```text
+commit: dcec0a7b5938b5d07cf5fdff8f81afd9db89e4ec
+Node/npm: 24.16.0 / 11.17.0
+receipt: byte-exact
+npm ci: PASS
+vulnerabilities: 0
+TypeScript 7: PASS
+tests: 283/283 PASS
+docs links: PASS
+third-party notices: PASS
+Vite production build: PASS
+portable static/runtime/vehicle/path/privacy/network/HTTP: PASS
+root + repository-subpath HTTP: PASS
+tiny fixture identity: byte-exact and SHA-exact
+publication: NOT PERFORMED
+```
+
+Source-proven at this checkpoint:
 
 - scale-relative inverse-transpose normal matrix with caller-owned scratch;
 - complete finite matrix validation and full-frame preflight before the first draw;
@@ -107,46 +125,40 @@ Source-present on `agent/jv-lit-normal-foundation`:
 - unit-normal validation with explicit tolerance;
 - float integrity before CPU runtime publication and again before GPU allocation;
 - shared `LIT_NORMAL_BASE_COLOR_V1` capability;
-- deterministic normal-bearing 18 PART + 8 SEGMENT fixture;
-- tapered segment geometry with oblique normals to expose incorrect non-uniform stretch handling;
+- deterministic normal-bearing 18 PART + 8 tapered SEGMENT fixture generator;
+- oblique segment normals that expose incorrect non-uniform stretch handling;
 - shared rigid lit-normal renderer;
 - linear-space directional + ambient lighting;
 - explicit linear-to-sRGB framebuffer encoding;
 - double-sided back-face normal reversal;
 - source-only vehicle adapter with visibility, first-frame receipt, abort and rollback.
 
-First exact repository gate on `eecf99f74498649bf7a4e560d7d46b38eafb06f7`:
+The lit fixture was still test-only at `dcec0a7…`; it was not in the portable public payload or active in `main.ts`.
 
-```text
-Node/npm: 24.16.0 / 11.17.0
-receipt: byte-exact
-npm ci: PASS
-vulnerabilities: 0
-TypeScript 7: PASS
-tests: 282/283 PASS
-failure: test referenced nonexistent ownershipReceipt.bindingCount
-docs/notices/Vite/portable/HTTP: NOT RUN after test failure
-```
+### Generated public and portable candidate
 
-The production ownership receipt remained correct. Commit `cbff1af95aa1b909ea35bf7b02ca199da04d0472` replaced the invalid assertion with the real `boundRootCount`, `ownedNodeCount` and `ownedMeshNodeCount` contract, derived from M6 part and segment lists. Subsequent documentation-only commits record this evidence boundary. No runtime, physics, asset or `main.ts` line changed after `eecf99f…`.
+Source-present after `dcec0a7…`, with the last code/test boundary at `b630f3c3220a69d508b3504a889fa7227beb490d`:
 
-Validation performed outside the exact repository checkout:
+- one build-time catalog owns tiny and lit-normal package/model paths and capability identities;
+- one combined generator builds both fixtures in memory before touching staging;
+- the generator refuses tiny identity drift from 2628 bytes or the pinned SHA-256;
+- tracked `public/` remains the source of static files;
+- ignored `.local-assets/public` is rebuilt for every supported dev/build command;
+- Vite uses `.local-assets/public` as `publicDir`;
+- staging removes only generator-owned `vehicles/tiny` and `vehicles/lit-normal` directories;
+- unrelated future assets such as `vehicles/owner-car` are preserved;
+- source/destination trees and owned paths fail closed before filesystem mutation;
+- portable runtime assets now require receipt, scene, tiny manifest/GLB and lit manifest/GLB;
+- one portable visual validator runs package, bytes/hash, decode, float integrity, ownership, budget and renderer capability for both fixtures;
+- tiny remains pinned to its previous exact identity;
+- lit-normal is expected to contain 26 nodes, 2 meshes, 2 primitives, 24 triangles, 48 POSITION vertices, 48 unit NORMAL vectors and 1296 decoded geometry bytes;
+- catalog and staging behavior have executable tests.
 
-```text
-TypeScript 5.8 strict isolated normal-matrix compile: PASS
-normal-matrix execution tests: PASS
-shared float/capability core compile and execution: PASS
-shared lit renderer strict compile and execution: PASS
-vehicle lit-normal pass strict compile: PASS
-```
-
-These isolated checks do not replace a full exact-head gate on the current PR #21 head. The exact SHA must be taken from PR #21 after pulling the branch. The generated portable fixture and browser observation remain pending.
+Exact Node 24 / TypeScript 7 repository gate for this generated-public candidate is pending. The first successful gate must reveal the deterministic lit-normal GLB byte length and SHA-256; lock those values in a separate commit before browser integration.
 
 Not active yet:
 
 ```text
-public lit-normal fixture generation
-portable manifest entries
 main.ts lit pass installation
 lit visual UI mode
 desktop/phone lit observation
@@ -347,7 +359,8 @@ Vehicle and scan share:
 - sampler/texture/material policy;
 - decoded/GPU memory accounting;
 - transactional WebGL ownership;
-- shared rigid renderers.
+- shared rigid renderers;
+- generated public staging for deterministic build artifacts.
 
 They do not share transform semantics:
 
@@ -361,12 +374,12 @@ A scan render mesh is never collision implicitly. The first owner scan is a smal
 ## Immediate sequence
 
 ```text
-1 run full exact-head gate on the current PR #21 head after pulling
-2 keep source-only if the gate fails; make the smallest correction
-3 generate lit-normal public fixture without changing tiny fixture bytes
-4 extend portable asset/path/HTTP validation
+1 run full exact-head gate for the generated-public candidate
+2 if it fails, keep main.ts unchanged and make the smallest attributable correction
+3 record the generated lit-normal byte length and SHA-256 from the successful gate
+4 pin that exact lit-normal identity in generator, validator, tests and memory
 5 run another exact-head gate
-6 add explicit lit-normal visual mode through existing pass host
+6 add an explicit lit-normal visual mode through the existing pass host
 7 preserve debug fallback and all existing visual modes
 8 run another exact-head gate
 9 desktop browser observation
