@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 $targetCommit = 'e263e3e05ea21e74585d74829136e3defbd67813'
 $remoteBranch = 'candidate/jv-web-render-host-r1'
 $localBranchStem = 'local/jv-web-render-host-r1'
+$pullRequest = 23
 $expectedNode = 'v24.16.0'
 $expectedNpm = '11.17.0'
 $receiptSchema = 'JV_WEB_CANDIDATE_RENDER_HOST_R1_V1'
@@ -155,7 +156,8 @@ foreach ($command in @('git', 'node', 'npm')) {
 $repositoryCandidate = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $repositoryRootText = Invoke-NativeText -File 'git' -Arguments @('-C', $repositoryCandidate, 'rev-parse', '--show-toplevel')
 $repositoryRoot = [System.IO.Path]::GetFullPath($repositoryRootText)
-if (-not [string]::Equals($repositoryCandidate.TrimEnd('\'), $repositoryRoot.TrimEnd('\'), [System.StringComparison]::OrdinalIgnoreCase)) {
+$separator = [System.IO.Path]::DirectorySeparatorChar
+if (-not [string]::Equals($repositoryCandidate.TrimEnd($separator), $repositoryRoot.TrimEnd($separator), [System.StringComparison]::OrdinalIgnoreCase)) {
     throw ('Unexpected repository root: {0}' -f $repositoryRoot)
 }
 
@@ -191,9 +193,9 @@ if (-not $WorkspaceRoot) {
 }
 
 $WorkspaceRoot = [System.IO.Path]::GetFullPath($WorkspaceRoot)
-$repositoryPrefix = $repositoryRoot.TrimEnd('\') + '\'
+$repositoryPrefix = $repositoryRoot.TrimEnd($separator) + $separator
 if (
-    [string]::Equals($WorkspaceRoot.TrimEnd('\'), $repositoryRoot.TrimEnd('\'), [System.StringComparison]::OrdinalIgnoreCase) -or
+    [string]::Equals($WorkspaceRoot.TrimEnd($separator), $repositoryRoot.TrimEnd($separator), [System.StringComparison]::OrdinalIgnoreCase) -or
     $WorkspaceRoot.StartsWith($repositoryPrefix, [System.StringComparison]::OrdinalIgnoreCase)
 ) {
     throw 'Candidate workspace must be outside the active repository.'
@@ -209,6 +211,7 @@ Write-Host ('Active HEAD:     {0}' -f $activeHead)
 Write-Host ('Active worktree: {0}' -f $activeState)
 Write-Host ('Candidate:       {0}' -f $remoteBranch)
 Write-Host ('Target commit:   {0}' -f $targetCommit)
+Write-Host ('PR:              #{0}' -f $pullRequest)
 Write-Host ('Node/npm:        {0} / {1}' -f $nodeVersion, $npmVersion)
 Write-Host ('Workspace root:  {0}' -f $WorkspaceRoot)
 Write-Host ''
@@ -331,6 +334,7 @@ $gateCode = Invoke-NativeCapturedCode -File $powerShellExecutable -Arguments @('
 if ($gateCode -ne 0) {
     throw ('Candidate R1 gate failed with exit code {0}. Full log: {1}' -f $gateCode, $gateLog)
 }
+$gateLogSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $gateLog).Hash.ToLowerInvariant()
 
 $headAfter = Invoke-NativeText -File 'git' -Arguments @('-C', $selectedWorktree, 'rev-parse', 'HEAD')
 $branchAfter = Invoke-NativeText -File 'git' -Arguments @('-C', $selectedWorktree, 'branch', '--show-current')
@@ -349,6 +353,7 @@ if ($headAfter -ne $headBefore -or $branchAfter -ne $branchBefore -or -not [stri
 $receipt = [ordered]@{
     schema = $receiptSchema
     validatedAtUtc = (Get-Date).ToUniversalTime().ToString('o')
+    pullRequest = $pullRequest
     remoteBranch = $remoteBranch
     sourceCommit = $targetCommit
     localBranch = $selectedLocalBranch
@@ -366,6 +371,7 @@ $receipt = [ordered]@{
     }
     gate = 'PASS'
     gateLog = $gateLog
+    gateLogSha256 = $gateLogSha256
     sourceIdentityPreserved = $true
     browserObservation = 'PENDING_OWNER'
 }
@@ -374,11 +380,12 @@ $receipt | ConvertTo-Json -Depth 6 | Out-File -LiteralPath $receiptFile -Encodin
 
 Write-Host ''
 Write-Host 'JV WEB CANDIDATE R1: SOURCE/PACKAGE GATE PASS'
-Write-Host ('Worktree: {0}' -f $selectedWorktree)
-Write-Host ('Branch:   {0}' -f $selectedLocalBranch)
-Write-Host ('Commit:   {0}' -f $targetCommit)
-Write-Host ('Gate log: {0}' -f $gateLog)
-Write-Host ('Receipt:  {0}' -f $receiptFile)
+Write-Host ('Worktree:       {0}' -f $selectedWorktree)
+Write-Host ('Branch:         {0}' -f $selectedLocalBranch)
+Write-Host ('Commit:         {0}' -f $targetCommit)
+Write-Host ('Gate log:       {0}' -f $gateLog)
+Write-Host ('Gate log SHA256:{0}' -f $gateLogSha256)
+Write-Host ('Receipt:        {0}' -f $receiptFile)
 
 if ($ValidateOnly) {
     Write-Host 'Browser server was not started because -ValidateOnly was supplied.'
