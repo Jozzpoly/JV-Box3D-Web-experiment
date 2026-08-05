@@ -1,6 +1,10 @@
 # Local validation operator guide
 
-This directory defines the safe local workflow for R1 and R2. The harness is designed for Windows PowerShell 5.1 or PowerShell 7 and ordinary Git.
+This directory defines the safe local workflow for R1 and R2. The harness targets Windows PowerShell 5.1 and PowerShell 7 on Windows.
+
+## Operator rule
+
+Run one command at a time. Do not concatenate commands and do not split an `if`/`else` block across separate submissions. This guide intentionally uses only linear one-line commands.
 
 ## Safety model
 
@@ -8,52 +12,67 @@ The harness:
 
 - verifies the exact repository identity and origin;
 - requires the exact Node and npm versions registered for the target;
-- verifies that the harness, target registry and result schema are byte-exact with the active Git `HEAD`;
+- verifies that the tracked harness files match the active Git `HEAD` using Git's normal clean filters, so Windows CRLF checkout policy does not create a false mismatch;
 - creates a detached Git worktree and evidence directory outside the active repository;
 - never switches the current branch;
-- never runs `git reset`, `git clean`, force checkout, force ref update or force worktree removal;
+- never runs `git reset`, `git clean`, forced checkout, forced ref update or forced worktree removal;
 - runs the gate already stored in the exact historical commit;
 - captures raw output, source identity, before/after Git status and build artifact hashes;
 - retains the validation worktree by default.
 
-A dirty active repository does not block the harness because it is not modified. Its dirty state is recorded in the environment receipt.
+A dirty active repository does not block the harness because it is not modified. Its dirty state is recorded in the environment receipt. Structural checks inspect tracked files only; untracked `node_modules`, build output and historical residue are not traversed.
 
-## 1. Safely update local refs
+## 1. Update the existing control-plane branch
 
-Run these commands from the existing JV Web repository and inspect each result:
+Run from the JV Web repository:
 
 ```powershell
-git rev-parse --show-toplevel
-git status -sb
-git remote get-url origin
 git fetch --prune origin
 ```
 
-To use the control-plane branch for the first time:
+```powershell
+git switch agent/jv-refoundation-control-plane
+```
+
+```powershell
+git pull --ff-only
+```
+
+```powershell
+git rev-parse HEAD
+```
+
+Do not merge historical implementation branches into this branch.
+
+For a first checkout on another machine, use this one command after `git fetch --prune origin`:
 
 ```powershell
 git switch --track -c agent/jv-refoundation-control-plane origin/agent/jv-refoundation-control-plane
 ```
 
-When the local branch already exists:
+## 2. Parse the PowerShell harness before executing it
 
 ```powershell
-git switch agent/jv-refoundation-control-plane
-git pull --ff-only
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebPowerShellSyntax.ps1
 ```
 
-Do not merge historical implementation branches into this branch.
+Expected result:
 
-## 2. Validate the control plane
+```text
+JV WEB POWERSHELL SYNTAX CHECK: PASS
+```
+
+This bootstrap check uses the parser built into the PowerShell engine on the operator machine. It executes no project code and runs no Git mutation.
+
+## 3. Validate the control plane
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\local-validation\Test-JvWebControlPlane.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebControlPlane.ps1
 ```
 
-This is a local read-only structural check. It does not install dependencies or execute project code.
+This read-only structural check does not install dependencies or execute project code. It checks tracked control-plane files, JSON, tracked PowerShell files, tracked Markdown links and the no-Actions boundary.
 
-## 3. Verify the exact toolchain
+## 4. Verify the exact toolchain
 
 R1 and R2 currently require:
 
@@ -67,20 +86,13 @@ The harness refuses approximate versions. A refusal is a preflight result, not a
 Run a no-build preflight:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 `
-  -Target R1 `
-  -FetchMissingRef `
-  -PreflightOnly
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 -Target R1 -FetchMissingRef -PreflightOnly
 ```
 
-## 4. Execute R1
+## 5. Execute R1
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 `
-  -Target R1 `
-  -FetchMissingRef
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 -Target R1 -FetchMissingRef
 ```
 
 The only accepted R1 success classification is:
@@ -91,15 +103,12 @@ BASELINE_REPRODUCED
 
 Any other result remains neutral evidence and must not be patched inside the same run. `R1_GATE_DID_NOT_PASS` does not distinguish a project regression from an environmental blocker until the raw log is attributed.
 
-## 5. Execute R2
+## 6. Execute R2
 
-After R1 is complete:
+Only after R1 evidence is preserved:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 `
-  -Target R2 `
-  -FetchMissingRef
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 -Target R2 -FetchMissingRef
 ```
 
 R2 measures the quarantined head. `R2_GATE_DID_NOT_PASS` is intentionally neutral until the raw log is attributed; it must not be converted into a repair run.

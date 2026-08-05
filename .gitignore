@@ -1,4 +1,17 @@
-# Local validation worktrees and evidence should normally live beside the repository.
-# Ignore them as a fail-safe if a custom ValidationRoot is placed inside the repo.
+node_modules/
+dist/
+.test-dist/
+.local-audit/
+.local-assets/
+.local-scans/
+.private-work/
 _JV_WEB_LOCAL_VALIDATION/
 .local-validation/
+public/vehicles/tiny/models/m6-rig-proof.glb
+public/vehicles/tiny/vehicle.visual.json
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store

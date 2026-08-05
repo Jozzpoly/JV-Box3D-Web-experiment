@@ -4,85 +4,148 @@ param(
 )
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 
-if (-not $RepositoryPath) {
-    $RepositoryPath = Join-Path $PSScriptRoot "..\.."
+function ConvertTo-NormalizedFullPath {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $slashPath = $fullPath -replace '\\', '/'
+    return ($slashPath -replace '/+$', '')
 }
 
-$repositoryRoot = [System.IO.Path]::GetFullPath($RepositoryPath).TrimEnd('\', '/')
+function Invoke-GitText {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string[]]$Arguments
+    )
+
+    $oldPreference = $ErrorActionPreference
+    $output = @()
+    $exitCode = 0
+    try {
+        $ErrorActionPreference = 'Continue'
+        $output = @(& git -C $RepositoryRoot @Arguments 2>&1)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $oldPreference
+    }
+
+    if ($exitCode -ne 0) {
+        throw ('git {0} failed with exit code {1}.{2}{3}' -f
+            ($Arguments -join ' '),
+            $exitCode,
+            [Environment]::NewLine,
+            (($output | Out-String).Trim())
+        )
+    }
+
+    return (($output | Out-String).Trim())
+}
+
+function Invoke-GitQuietCode {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string[]]$Arguments
+    )
+
+    $oldPreference = $ErrorActionPreference
+    $exitCode = 0
+    try {
+        $ErrorActionPreference = 'Continue'
+        & git -C $RepositoryRoot @Arguments 1>$null 2>$null
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $oldPreference
+    }
+
+    return [int]$exitCode
+}
+
+function Get-TrackedPaths {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$Pattern
+    )
+
+    $text = Invoke-GitText -RepositoryRoot $RepositoryRoot -Arguments @('ls-files', '--', $Pattern)
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        return @()
+    }
+
+    return @($text -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+}
+
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     throw "Required command 'git' is not available."
 }
 
-$reportedRoot = @(& git -C $repositoryRoot rev-parse --show-toplevel 2>&1)
-if ($LASTEXITCODE -ne 0) {
-    throw "RepositoryPath is not a Git repository: $repositoryRoot"
-}
-$reportedRoot = (($reportedRoot | Out-String).Trim()).TrimEnd('\', '/')
-if (-not [string]::Equals($repositoryRoot, $reportedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-    throw "RepositoryPath must be the repository root. Git reported '$reportedRoot'."
+if (-not $RepositoryPath) {
+    $RepositoryPath = Join-Path $PSScriptRoot '..\..'
 }
 
-$originUrl = @(& git -C $repositoryRoot remote get-url origin 2>&1)
-if ($LASTEXITCODE -ne 0) {
-    throw "Unable to read origin URL."
+$repositoryRoot = ConvertTo-NormalizedFullPath -Path $RepositoryPath
+$reportedRootText = Invoke-GitText -RepositoryRoot $repositoryRoot -Arguments @('rev-parse', '--show-toplevel')
+$reportedRoot = ConvertTo-NormalizedFullPath -Path $reportedRootText
+
+if (-not [string]::Equals($repositoryRoot, $reportedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw ("RepositoryPath must be the repository root. Git reported '{0}'." -f $reportedRoot)
 }
-$originUrl = (($originUrl | Out-String).Trim())
+
+$originUrl = Invoke-GitText -RepositoryRoot $repositoryRoot -Arguments @('remote', 'get-url', 'origin')
 if ($originUrl -notmatch '([/:])Jozzpoly/JV-Box3D-Web-experiment(\.git)?$') {
-    throw "Unexpected origin '$originUrl'."
+    throw ("Unexpected origin '{0}'." -f $originUrl)
 }
 
 $requiredFiles = @(
-    ".gitignore",
-    "AI_PROJECT_MEMORY.md",
-    "README.md",
-    "docs/refoundation/BASELINE_MATRIX.json",
-    "docs/refoundation/BRANCH_POLICY.md",
-    "docs/refoundation/DECISION_REGISTER.md",
-    "docs/refoundation/EVIDENCE_STANDARD.md",
-    "docs/refoundation/RECOVERY_PLAN.md",
-    "docs/refoundation/VALIDATED_STATE.md",
-    "docs/local-validation/README.md",
-    "docs/local-validation/EVIDENCE_BUNDLE.md",
-    "tools/local-validation/validation-targets.json",
-    "tools/local-validation/result.schema.json",
-    "tools/local-validation/Invoke-JvWebBaseline.ps1",
-    "tools/local-validation/Test-JvWebControlPlane.ps1"
+    '.gitignore',
+    'AI_PROJECT_MEMORY.md',
+    'README.md',
+    'docs/refoundation/BASELINE_MATRIX.json',
+    'docs/refoundation/BRANCH_POLICY.md',
+    'docs/refoundation/DECISION_REGISTER.md',
+    'docs/refoundation/EVIDENCE_STANDARD.md',
+    'docs/refoundation/RECOVERY_PLAN.md',
+    'docs/refoundation/VALIDATED_STATE.md',
+    'docs/local-validation/README.md',
+    'docs/local-validation/EVIDENCE_BUNDLE.md',
+    'tools/local-validation/validation-targets.json',
+    'tools/local-validation/result.schema.json',
+    'tools/local-validation/Test-JvWebPowerShellSyntax.ps1',
+    'tools/local-validation/Invoke-JvWebBaseline.ps1',
+    'tools/local-validation/Test-JvWebControlPlane.ps1'
 )
 
-$failures = New-Object System.Collections.Generic.List[string]
+$failures = New-Object 'System.Collections.Generic.List[string]'
 
 foreach ($relativePath in $requiredFiles) {
     $fullPath = Join-Path $repositoryRoot $relativePath
     if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
-        $failures.Add("Missing required file: $relativePath")
+        $failures.Add(('Missing required file: {0}' -f $relativePath))
         continue
     }
 
-    & git -C $repositoryRoot ls-files --error-unmatch -- $relativePath 1>$null 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        $failures.Add("Required file is not tracked: $relativePath")
+    $trackedCode = Invoke-GitQuietCode -RepositoryRoot $repositoryRoot -Arguments @('ls-files', '--error-unmatch', '--', $relativePath)
+    if ($trackedCode -ne 0) {
+        $failures.Add(('Required file is not tracked: {0}' -f $relativePath))
         continue
     }
 
-    $expectedBlob = @(& git -C $repositoryRoot rev-parse "HEAD:$relativePath" 2>&1)
-    $expectedExit = $LASTEXITCODE
-    $actualBlob = @(& git -C $repositoryRoot hash-object --no-filters $fullPath 2>&1)
-    $actualExit = $LASTEXITCODE
-    if ($expectedExit -ne 0 -or $actualExit -ne 0) {
-        $failures.Add("Unable to verify tracked bytes for: $relativePath")
-        continue
+    $diffCode = Invoke-GitQuietCode -RepositoryRoot $repositoryRoot -Arguments @('diff', '--quiet', '--no-ext-diff', 'HEAD', '--', $relativePath)
+    if ($diffCode -eq 1) {
+        $failures.Add(('Required file differs from HEAD: {0}' -f $relativePath))
     }
-    if ((($expectedBlob | Out-String).Trim()) -ne (($actualBlob | Out-String).Trim())) {
-        $failures.Add("Required file differs from HEAD: $relativePath")
+    elseif ($diffCode -ne 0) {
+        $failures.Add(('Unable to verify tracked content for: {0}' -f $relativePath))
     }
 }
 
 $jsonFiles = @(
-    "docs/refoundation/BASELINE_MATRIX.json",
-    "tools/local-validation/validation-targets.json",
-    "tools/local-validation/result.schema.json"
+    'docs/refoundation/BASELINE_MATRIX.json',
+    'tools/local-validation/validation-targets.json',
+    'tools/local-validation/result.schema.json'
 )
 
 foreach ($relativePath in $jsonFiles) {
@@ -92,85 +155,106 @@ foreach ($relativePath in $jsonFiles) {
             Get-Content -Raw -LiteralPath $fullPath | ConvertFrom-Json | Out-Null
         }
         catch {
-            $failures.Add("Invalid JSON in $relativePath: $($_.Exception.Message)")
+            $failures.Add(('Invalid JSON in {0}: {1}' -f $relativePath, $_.Exception.Message))
         }
     }
 }
 
-$targetsPath = Join-Path $repositoryRoot "tools/local-validation/validation-targets.json"
+$targetsPath = Join-Path $repositoryRoot 'tools/local-validation/validation-targets.json'
 if (Test-Path -LiteralPath $targetsPath -PathType Leaf) {
-    $targets = Get-Content -Raw -LiteralPath $targetsPath | ConvertFrom-Json
-    $ids = @($targets.targets | ForEach-Object { $_.id })
-    if (($ids | Select-Object -Unique).Count -ne $ids.Count) {
-        $failures.Add("Duplicate executable target IDs in validation-targets.json.")
-    }
+    try {
+        $targets = Get-Content -Raw -LiteralPath $targetsPath | ConvertFrom-Json
+        $ids = @($targets.targets | ForEach-Object { $_.id })
+        if (($ids | Select-Object -Unique).Count -ne $ids.Count) {
+            $failures.Add('Duplicate executable target IDs in validation-targets.json.')
+        }
 
-    foreach ($target in $targets.targets) {
-        if ($target.commit -notmatch '^[0-9a-f]{40}$') {
-            $failures.Add("Target $($target.id) has an invalid commit SHA.")
+        foreach ($target in $targets.targets) {
+            if ($target.commit -notmatch '^[0-9a-f]{40}$') {
+                $failures.Add(('Target {0} has an invalid commit SHA.' -f $target.id))
+            }
+            if ($target.requiredNodeVersion -notmatch '^v\d+\.\d+\.\d+$') {
+                $failures.Add(('Target {0} has an invalid exact Node version.' -f $target.id))
+            }
+            if ($target.requiredNpmVersion -notmatch '^\d+\.\d+\.\d+$') {
+                $failures.Add(('Target {0} has an invalid exact npm version.' -f $target.id))
+            }
+            if ($target.sourceChangesAllowed -ne $false) {
+                $failures.Add(('Target {0} unexpectedly allows source changes.' -f $target.id))
+            }
         }
-        if ($target.requiredNodeVersion -notmatch '^v\d+\.\d+\.\d+$') {
-            $failures.Add("Target $($target.id) has an invalid exact Node version.")
-        }
-        if ($target.requiredNpmVersion -notmatch '^\d+\.\d+\.\d+$') {
-            $failures.Add("Target $($target.id) has an invalid exact npm version.")
-        }
-        if ($target.sourceChangesAllowed -ne $false) {
-            $failures.Add("Target $($target.id) unexpectedly allows source changes.")
-        }
+    }
+    catch {
+        $failures.Add(('Unable to validate target registry semantics: {0}' -f $_.Exception.Message))
     }
 }
 
-$powerShellFiles = Get-ChildItem -LiteralPath (Join-Path $repositoryRoot "tools") -Filter "*.ps1" -File -Recurse
-foreach ($file in $powerShellFiles) {
+$powerShellPaths = @(Get-TrackedPaths -RepositoryRoot $repositoryRoot -Pattern '*.ps1')
+foreach ($relativePath in $powerShellPaths) {
+    $fullPath = Join-Path $repositoryRoot $relativePath
+    if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+        $failures.Add(('Tracked PowerShell file is missing: {0}' -f $relativePath))
+        continue
+    }
+
     $tokens = $null
     $parseErrors = $null
     [System.Management.Automation.Language.Parser]::ParseFile(
-        $file.FullName,
+        $fullPath,
         [ref]$tokens,
         [ref]$parseErrors
     ) | Out-Null
 
     foreach ($parseError in @($parseErrors)) {
-        $relativePath = $file.FullName.Substring($repositoryRoot.Length).TrimStart('\', '/')
-        $failures.Add("PowerShell parse error in ${relativePath}: $($parseError.Message)")
+        $failures.Add(('PowerShell parse error in {0}, line {1}, column {2}: {3}' -f
+            $relativePath,
+            $parseError.Extent.StartLineNumber,
+            $parseError.Extent.StartColumnNumber,
+            $parseError.Message
+        ))
     }
 }
 
-$workflowDirectory = Join-Path $repositoryRoot ".github/workflows"
-if (Test-Path -LiteralPath $workflowDirectory -PathType Container) {
-    $workflowFiles = @(Get-ChildItem -LiteralPath $workflowDirectory -File -Recurse)
-    if ($workflowFiles.Count -gt 0) {
-        $failures.Add("Control plane unexpectedly contains GitHub Actions workflows.")
-    }
+$workflowPaths = @(Get-TrackedPaths -RepositoryRoot $repositoryRoot -Pattern '.github/workflows/*')
+if ($workflowPaths.Count -gt 0) {
+    $failures.Add('Control plane unexpectedly contains tracked GitHub Actions workflows.')
 }
 
-$markdownFiles = Get-ChildItem -LiteralPath $repositoryRoot -Filter "*.md" -File -Recurse
 $linkPattern = '\[[^\]]+\]\((?!https?://|mailto:|#)([^)#]+)(?:#[^)]+)?\)'
-foreach ($markdownFile in $markdownFiles) {
-    $content = Get-Content -Raw -LiteralPath $markdownFile.FullName
+$markdownPaths = @(Get-TrackedPaths -RepositoryRoot $repositoryRoot -Pattern '*.md')
+foreach ($relativePath in $markdownPaths) {
+    $markdownPath = Join-Path $repositoryRoot $relativePath
+    if (-not (Test-Path -LiteralPath $markdownPath -PathType Leaf)) {
+        $failures.Add(('Tracked Markdown file is missing: {0}' -f $relativePath))
+        continue
+    }
+
+    $content = Get-Content -Raw -LiteralPath $markdownPath
     foreach ($match in [regex]::Matches($content, $linkPattern)) {
         $relativeLink = [System.Uri]::UnescapeDataString($match.Groups[1].Value)
         if ($relativeLink -match '[\*\?\|]') {
             continue
         }
 
-        $targetPath = [System.IO.Path]::GetFullPath((Join-Path $markdownFile.DirectoryName $relativeLink))
+        $targetPath = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $markdownPath) $relativeLink))
         if (-not (Test-Path -LiteralPath $targetPath)) {
-            $sourceRelative = $markdownFile.FullName.Substring($repositoryRoot.Length).TrimStart('\', '/')
-            $failures.Add("Broken relative link in ${sourceRelative}: $relativeLink")
+            $failures.Add(('Broken relative link in {0}: {1}' -f $relativePath, $relativeLink))
         }
     }
 }
 
 if ($failures.Count -gt 0) {
-    Write-Host "JV WEB CONTROL PLANE CHECK: FAIL"
+    Write-Host 'JV WEB CONTROL PLANE CHECK: FAIL'
     foreach ($failure in $failures) {
-        Write-Host " - $failure"
+        Write-Host (' - {0}' -f $failure)
     }
     exit 1
 }
 
-Write-Host "JV WEB CONTROL PLANE CHECK: PASS"
-Write-Host "Required files, JSON, PowerShell syntax, relative links and no-Actions boundary are valid."
+$activeStatus = Invoke-GitText -RepositoryRoot $repositoryRoot -Arguments @('status', '--porcelain=v1', '--untracked-files=all')
+$activeState = if ([string]::IsNullOrWhiteSpace($activeStatus)) { 'clean' } else { 'dirty but untouched' }
+
+Write-Host 'JV WEB CONTROL PLANE CHECK: PASS'
+Write-Host 'Tracked files, JSON, PowerShell syntax, tracked Markdown links and no-Actions boundary are valid.'
+Write-Host ('Active worktree: {0}' -f $activeState)
 exit 0

@@ -74,6 +74,18 @@ The product must have one scene/camera/render-context owner. A Three.js hybrid i
 
 ## Local validation operator path
 
+Before executing any validation harness on Windows, run:
+
+```text
+tools/local-validation/Test-JvWebPowerShellSyntax.ps1
+```
+
+Then run the tracked-only structural checker:
+
+```text
+tools/local-validation/Test-JvWebControlPlane.ps1
+```
+
 R1 and R2 must be executed through:
 
 ```text
@@ -88,15 +100,22 @@ tools/local-validation/validation-targets.json
 
 The harness uses a detached external worktree, exact Node/npm versions and evidence bundles defined in `docs/local-validation/`. It must not patch a target during the measurement run.
 
+The active worktree may contain untracked historical build residue. Validation must inspect tracked control-plane files only and must not traverse, delete, reset or silently ignore unknown user material. Operator commands must be linear, one command at a time; do not provide an `if` and `else` as separately executable snippets.
+
+## Known validation correction
+
+Control-plane commit `4b449d7651a5424b894f24c75ac58e3a6ea848b0` contained a Windows PowerShell 5.1 parser error in `Test-JvWebControlPlane.ps1` and additional Windows-path/CRLF/tracked-file weaknesses found during owner validation. It is superseded by the next correction commit and must not be used as evidence that the control-plane checker passed.
+
 ## Immediate sequence
 
 1. Preserve this control plane on a clean branch from `main`.
-2. Validate the control-plane files locally.
-3. Re-run exact R1 `dcec0a7…` and capture the complete evidence bundle.
-4. Re-run exact R2 `26c5022…` without repair and capture every failure.
-5. Perform a pinned forensic run of PR #1.
-6. Build the smallest real-car Three.js spike on the deterministic current host.
-7. Choose a clean product snapshot only after the spike and owner observation.
+2. Parse the local PowerShell harness with the operator's installed PowerShell engine.
+3. Validate the tracked control-plane files locally.
+4. Re-run exact R1 `dcec0a7…` and capture the complete evidence bundle.
+5. Re-run exact R2 `26c5022…` without repair and capture every failure.
+6. Perform a pinned forensic run of PR #1.
+7. Build the smallest real-car Three.js spike on the deterministic current host.
+8. Choose a clean product snapshot only after the spike and owner observation.
 
 ## Non-negotiable rules
 
