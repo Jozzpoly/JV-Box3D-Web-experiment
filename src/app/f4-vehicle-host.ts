@@ -23,6 +23,9 @@ import {
   type Box3DRuntimeReceipt,
 } from "../physics/box3d-boundary.js";
 import type { b3Vec3 } from "../physics/box3d-runtime-contract.js";
+import { createE2rWorld } from "../scene/e2r-world.js";
+import { loadLocalJsprev2Scan } from "../scene/jsprev2-scan.js";
+import type { JvWorldData } from "../scene/jv-world-contract.js";
 import {
   assertVehicleRuntimeBackendDescriptor,
   LEGACY_TS_M6_BACKEND,
@@ -87,6 +90,7 @@ interface F4BoundaryRuntime {
   createM6TopologyWorld(
     receipt: NativeFactorySnapshot,
     rateProfileId?: RateSteeringProfileId,
+    worldData?: JvWorldData,
   ): F4WorldRuntime;
 }
 
@@ -97,6 +101,7 @@ interface BrowserHostRuntime {
 export interface F4VehicleHostDependencies {
   readonly loadReceipt: () => Promise<NativeFactorySnapshot>;
   readonly loadBoundary: () => Promise<F4BoundaryRuntime>;
+  readonly loadWorld?: () => Promise<JvWorldData>;
   readonly startBrowserHost: (
     options: CleanBrowserHostOptions,
   ) => BrowserHostRuntime;
@@ -105,6 +110,8 @@ export interface F4VehicleHostDependencies {
 const DEFAULT_DEPENDENCIES: F4VehicleHostDependencies = {
   loadReceipt: () => loadPinnedNativeFactoryReceipt(),
   loadBoundary: () => Box3DBoundary.load(),
+  loadWorld: async () =>
+    createE2rWorld(await loadLocalJsprev2Scan()),
   startBrowserHost: (options) => CleanBrowserHost.start(options),
 };
 
@@ -118,6 +125,7 @@ export class F4VehicleHost {
   readonly #backend: VehicleRuntimeBackendDescriptor;
   readonly #nativeReceipt: NativeFactorySnapshot;
   readonly #box3dReceipt: Box3DRuntimeReceipt;
+  readonly #worldData: JvWorldData;
   readonly #world: F4WorldRuntime;
   readonly #vehicle: F4VehicleControllerRuntime;
   readonly #state: F4HostState;
@@ -127,6 +135,7 @@ export class F4VehicleHost {
     backend: VehicleRuntimeBackendDescriptor,
     nativeReceipt: NativeFactorySnapshot,
     box3dReceipt: Box3DRuntimeReceipt,
+    worldData: JvWorldData,
     world: F4WorldRuntime,
     vehicle: F4VehicleControllerRuntime,
     state: F4HostState,
@@ -135,6 +144,7 @@ export class F4VehicleHost {
     this.#backend = backend;
     this.#nativeReceipt = nativeReceipt;
     this.#box3dReceipt = box3dReceipt;
+    this.#worldData = worldData;
     this.#world = world;
     this.#vehicle = vehicle;
     this.#state = state;
@@ -154,16 +164,21 @@ export class F4VehicleHost {
       assertVehicleRuntimeBackendDescriptor(LEGACY_TS_M6_BACKEND);
       const nativeReceipt = await dependencies.loadReceipt();
       const boundary = await dependencies.loadBoundary();
+      const worldData = await (
+        dependencies.loadWorld ??
+        (() => Promise.resolve(createE2rWorld()))
+      )();
       const world = boundary.createM6TopologyWorld(
         nativeReceipt,
         options.rateProfileId ?? INITIAL_RATE_STEERING_PROFILE_ID,
+        worldData,
       );
       resources.defer("current M6 topology world", () => {
         world.dispose();
       });
 
       const generation = options.generation ?? 1;
-      const spawn = options.spawn ?? { x: 0, y: 1.2, z: 0 };
+      const spawn = options.spawn ?? worldData.spawn;
       const vehicle = world.createVehicle(spawn, generation);
 
       const browserHost = dependencies.startBrowserHost({
@@ -228,6 +243,7 @@ export class F4VehicleHost {
         LEGACY_TS_M6_BACKEND,
         nativeReceipt,
         boundary.receipt,
+        worldData,
         world,
         vehicle,
         state,
@@ -260,6 +276,11 @@ export class F4VehicleHost {
 
   get box3dReceipt(): Box3DRuntimeReceipt {
     return this.#box3dReceipt;
+  }
+
+  get worldData(): JvWorldData {
+    this.#assertActive();
+    return this.#worldData;
   }
 
   get rateProfile(): RateSteeringProfile {
