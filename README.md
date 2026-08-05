@@ -28,7 +28,7 @@ From the control-plane checkout, run:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Start-JvWebPlayable.ps1
 ```
 
-This creates a detached worktree beside the repository, runs the historical full gate and starts Vite only after the gate passes. It does not switch or reset the active branch. See [`docs/playable-recovery/README.md`](docs/playable-recovery/README.md).
+This uses a short per-user workspace under `%LOCALAPPDATA%\JV-Web-Playable`, creates a detached worktree, runs the historical full gate and starts Vite only after the gate passes. It does not switch or reset the active branch. See [`docs/playable-recovery/README.md`](docs/playable-recovery/README.md).
 
 ## Control-plane validation
 
