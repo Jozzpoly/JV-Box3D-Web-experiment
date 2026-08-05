@@ -172,19 +172,103 @@ function validateDeclaredPositionBounds(accessor, positions, label) {
 
 function material(doc, index, label) {
   if (index === undefined) {
-    return { name:null, baseColorFactor:[0.72,0.74,0.78,1], doubleSided:false, hasBaseColorTexture:false, sourceAlphaMode:'OPAQUE' };
+    return {
+      name: null,
+      baseColorFactor: [0.72,0.74,0.78,1],
+      doubleSided: false,
+      hasBaseColorTexture: false,
+      sourceAlphaMode: 'OPAQUE',
+    };
   }
-  const source = requireObject(requireArray(doc.materials ?? [], 'materials')[integer(index, `${label}.material`)], `${label}.material`);
-  const pbr = source.pbrMetallicRoughness === undefined ? {} : requireObject(source.pbrMetallicRoughness, `${label}.material.pbrMetallicRoughness`);
-  const factor = pbr.baseColorFactor === undefined ? [1,1,1,1] : requireArray(pbr.baseColorFactor, `${label}.baseColorFactor`);
-  if (factor.length !== 4) reject(`${label}.baseColorFactor must contain four values`);
-  const baseColorFactor = factor.map((v,i) => {
-    const value = finite(v,`${label}.baseColorFactor[${i}]`);
-    if (value < 0 || value > 1) reject(`${label}.baseColorFactor must stay inside [0,1]`);
-    return value;
-  });
+  const materialLabel = `${label}.material`;
+  const source = requireObject(
+    requireArray(doc.materials ?? [], 'materials')[integer(index, materialLabel)],
+    materialLabel,
+  );
+  const allowedMaterialKeys = new Set([
+    'name',
+    'pbrMetallicRoughness',
+    'doubleSided',
+    'alphaMode',
+  ]);
+  for (const key of Object.keys(source)) {
+    if (!allowedMaterialKeys.has(key)) {
+      reject(`${materialLabel}.${key} is unsupported by the R1 base-colour boundary`);
+    }
+  }
+  if (
+    source.doubleSided !== undefined &&
+    typeof source.doubleSided !== 'boolean'
+  ) {
+    reject(`${materialLabel}.doubleSided must be boolean`);
+  }
   const alphaMode = source.alphaMode ?? 'OPAQUE';
-  if (!['OPAQUE','MASK','BLEND'].includes(alphaMode)) reject(`${label}.material alphaMode is unsupported`);
+  if (alphaMode !== 'OPAQUE') {
+    reject(`${materialLabel}.alphaMode must remain OPAQUE`);
+  }
+
+  const pbrLabel = `${materialLabel}.pbrMetallicRoughness`;
+  const pbr = source.pbrMetallicRoughness === undefined
+    ? {}
+    : requireObject(source.pbrMetallicRoughness, pbrLabel);
+  const allowedPbrKeys = new Set([
+    'baseColorFactor',
+    'baseColorTexture',
+    'metallicFactor',
+    'roughnessFactor',
+  ]);
+  for (const key of Object.keys(pbr)) {
+    if (!allowedPbrKeys.has(key)) {
+      reject(`${pbrLabel}.${key} is unsupported by the R1 base-colour boundary`);
+    }
+  }
+  const metallicFactor = pbr.metallicFactor === undefined
+    ? 1
+    : finite(pbr.metallicFactor, `${pbrLabel}.metallicFactor`);
+  const roughnessFactor = pbr.roughnessFactor === undefined
+    ? 1
+    : finite(pbr.roughnessFactor, `${pbrLabel}.roughnessFactor`);
+  if (metallicFactor !== 0 || roughnessFactor !== 1) {
+    reject(`${pbrLabel} must use metallicFactor=0 and roughnessFactor=1`);
+  }
+
+  const factor = pbr.baseColorFactor === undefined
+    ? [1,1,1,1]
+    : requireArray(pbr.baseColorFactor, `${pbrLabel}.baseColorFactor`);
+  if (factor.length !== 4) {
+    reject(`${pbrLabel}.baseColorFactor must contain four values`);
+  }
+  const baseColorFactor = factor.map((value, component) => {
+    const finiteValue = finite(
+      value,
+      `${pbrLabel}.baseColorFactor[${component}]`,
+    );
+    if (finiteValue < 0 || finiteValue > 1) {
+      reject(`${pbrLabel}.baseColorFactor must stay inside [0,1]`);
+    }
+    return finiteValue;
+  });
+
+  if (pbr.baseColorTexture !== undefined) {
+    const texture = requireObject(
+      pbr.baseColorTexture,
+      `${pbrLabel}.baseColorTexture`,
+    );
+    const allowedTextureKeys = new Set(['index', 'texCoord']);
+    for (const key of Object.keys(texture)) {
+      if (!allowedTextureKeys.has(key)) {
+        reject(`${pbrLabel}.baseColorTexture.${key} is unsupported`);
+      }
+    }
+    integer(texture.index, `${pbrLabel}.baseColorTexture.index`);
+    if (
+      texture.texCoord !== undefined &&
+      integer(texture.texCoord, `${pbrLabel}.baseColorTexture.texCoord`) !== 0
+    ) {
+      reject(`${pbrLabel}.baseColorTexture.texCoord must equal 0`);
+    }
+  }
+
   return {
     name: typeof source.name === 'string' ? source.name : null,
     baseColorFactor,

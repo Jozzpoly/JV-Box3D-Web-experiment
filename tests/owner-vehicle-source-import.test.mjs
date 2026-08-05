@@ -32,6 +32,8 @@ function source(options = {}) {
     wheelMarkers = false,
     missingWheelMarker = null,
     duplicateWheelMarker = null,
+    materialOverrides = {},
+    pbrOverrides = {},
   } = options;
   const chunks = [];
   const bufferViews = [];
@@ -194,7 +196,13 @@ function source(options = {}) {
     accessors,
     materials: [{
       name: 'Body',
-      pbrMetallicRoughness: { baseColorFactor: [0.3,0.4,0.5,1] },
+      pbrMetallicRoughness: {
+        baseColorFactor: [0.3,0.4,0.5,1],
+        metallicFactor: 0,
+        roughnessFactor: 1,
+        ...pbrOverrides,
+      },
+      ...materialOverrides,
     }],
     meshes: [{
       primitives: [{
@@ -324,6 +332,20 @@ test('animations and matrix plus TRS cannot enter rigid boundary', () => {
     () => inspectBlockbenchRigidSourceV1(source({ matrixAndTrs: true })),
     /matrix cannot coexist with TRS/,
   );
+});
+
+test('unsupported source material semantics fail closed', () => {
+  for (const [options, pattern] of [
+    [{ materialOverrides: { alphaMode: 'BLEND' } }, /alphaMode must remain OPAQUE/],
+    [{ materialOverrides: { emissiveFactor: [1,0,0] } }, /emissiveFactor is unsupported/],
+    [{ pbrOverrides: { metallicFactor: 0.5 } }, /metallicFactor=0/],
+    [{ pbrOverrides: { normalTexture: { index: 0 } } }, /normalTexture is unsupported/],
+  ]) {
+    assert.throws(
+      () => inspectBlockbenchRigidSourceV1(source(options)),
+      pattern,
+    );
+  }
 });
 
 test('skin count and bind-pose drift fail closed', () => {

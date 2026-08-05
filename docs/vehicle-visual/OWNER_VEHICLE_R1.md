@@ -1,6 +1,6 @@
 # Owner vehicle visual R1 — source ingestion boundary
 
-Status: **IMPORTER IMPLEMENTED / SYNTHETIC GATE 9/9 PASS / REAL OWNER SOURCE RUN PENDING / RUNTIME ACTIVATION NOT AUTHORIZED**
+Status: **IMPORTER IMPLEMENTED / SYNTHETIC GATE 10/10 PASS / REAL OWNER SOURCE RUN PENDING / RUNTIME ACTIVATION NOT AUTHORIZED**
 
 ## Base and scope
 
@@ -61,6 +61,8 @@ The importer rejects:
 - attributes outside `POSITION`, `NORMAL`, `TEXCOORD_0`, `JOINTS_0`,
   `WEIGHTS_0`;
 - missing normals or UV coordinates;
+- alpha, emissive, normal/occlusion/metallic-roughness textures and non-default
+  metallic/roughness semantics that R1 cannot render faithfully;
 - non-triangle primitives and index counts not divisible by three;
 - missing or duplicated wheel centre/radius/width/socket markers;
 - wheel centre, mount-axis or requested-dimension drift above `1e-5 m`;
@@ -95,7 +97,7 @@ geometry until their source mapping is implemented and reviewed.
 Current demonstrated evidence:
 
 - Node syntax gate: PASS;
-- deterministic synthetic importer tests: 9/9 PASS;
+- deterministic synthetic importer tests: 10/10 PASS;
 - complete 26-binding output on synthetic skinned sources: PASS;
 - malformed bind pose, skin count, animation, attribute and topology rejection:
   PASS.
