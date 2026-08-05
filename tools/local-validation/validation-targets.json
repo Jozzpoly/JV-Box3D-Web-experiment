@@ -30,6 +30,20 @@
       "passClassification": "CURRENT_HEAD_GATE_PASSED",
       "failClassification": "R2_GATE_DID_NOT_PASS",
       "sourceChangesAllowed": false
+    },
+    {
+      "id": "PRODUCT_CAR_MAP_SCAN",
+      "purpose": "Validate and launch the integrated accepted car, E2R map and exact textured JSPREV2 scan product.",
+      "commit": "04713ab33ba8788d3ee404f2165484366b7a717b",
+      "fetchRef": "product/jv-web-car-map-scan",
+      "gateScript": "tools/run-demonstrator-foundation-gate.ps1",
+      "requiredNodeVersion": "v24.16.0",
+      "requiredNpmVersion": "11.17.0",
+      "historicalClaim": "IMPLEMENTATION_CANDIDATE",
+      "expectedOutcome": "UNKNOWN_UNTIL_LOCAL_RERUN",
+      "passClassification": "PRODUCT_SOURCE_PACKAGE_ASSET_GATE_PASSED",
+      "failClassification": "PRODUCT_GATE_DID_NOT_PASS",
+      "sourceChangesAllowed": false
     }
   ],
   "forensicTargets": [
