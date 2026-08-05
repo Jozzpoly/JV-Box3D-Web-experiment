@@ -8,24 +8,34 @@ Owner: Jozz
 
 Build a serious desktop/mobile browser demonstrator for Jozz Vehicle, support owner-authored vehicle and scene assets, and later replace reference physics with native JV Core + Box3D compiled into one WASM module.
 
-Keep the repository compact, runnable and technically honest. Preserve durable contracts and evidence, not every historical experiment.
+Keep the repository compact, runnable and technically honest. Preserve durable contracts and exact evidence rather than every historical experiment.
 
 ## Active lines
 
 ```text
-foundation branch: agent/jv-web-demonstrator-foundation
-foundation PR:     #18, draft, direct to main
+foundation:
+  branch agent/jv-web-demonstrator-foundation
+  PR #18 draft, direct to main
 
-active visual branch: agent/jv-tiny-unlit-pass
-active visual PR:     #19, draft, based on foundation branch
+working tiny visual:
+  branch agent/jv-tiny-unlit-pass
+  PR #19 draft, based on foundation
+  head f27b92d826e1192016873d8f341ac9ff80ad9ef8
 
-planning branch: agent/jv-real-vehicle-texture-scan-plan
-planning base:   f27b92d826e1192016873d8f341ac9ff80ad9ef8
+architecture plan:
+  branch agent/jv-real-vehicle-texture-scan-plan
+  PR #20 draft, based on tiny visual
+  head d75660889cdafc21622fb5a6c2d067745ce40193
+
+current source implementation:
+  branch agent/jv-lit-normal-foundation
+  based on d75660889cdafc21622fb5a6c2d067745ce40193
+  exact repository gate pending
 ```
 
-Do not merge, mark Ready, change visibility or enable Pages without Jozz. Do not fast-forward the long experimental history into public `main`; prefer an owner-reviewed squash or clean snapshot later.
+Do not merge, mark Ready, change repository visibility, enable Pages or publish without Jozz. Do not fast-forward the long experimental history directly into public `main`; prefer an owner-reviewed squash or clean snapshot later.
 
-Git Diff Patcher Bridge is forbidden. Use the GitHub connector and ordinary Git only. Do not add custom Actions without explicit owner approval.
+Git Diff Patcher Bridge is forbidden. Use the GitHub connector and ordinary local Git only. Do not add custom GitHub Actions without explicit owner approval.
 
 ## Evidence boundary
 
@@ -47,22 +57,15 @@ root + repository-subpath HTTP: PASS
 publication: NOT PERFORMED
 ```
 
-The deterministic package is:
+Deterministic tiny package:
 
 ```text
 id: m6-tiny-rig-proof-v1
-2628 bytes
-SHA-256 b243bf5ae6ed0b185885b6d341ab0a12fd377743408040e14226c1fecbb31281
-26 nodes
-24 triangles
-336 decoded geometry bytes
-```
-
-Non-blocking bundle warnings remain:
-
-```text
-box3d.js imports browser-externalized node:module
-main bundle is about 1.27 MiB / 406 KiB gzip
+bytes: 2628
+SHA-256: b243bf5ae6ed0b185885b6d341ab0a12fd377743408040e14226c1fecbb31281
+nodes: 26
+triangles: 24
+geometry bytes: 336
 ```
 
 ### Owner browser evidence
@@ -73,16 +76,16 @@ Jozz confirmed on desktop and phone:
 tiny GLB proof visibly renders
 controls work
 destroy/rebuild works
-four visual modes work:
+visual modes work:
   tiny proof
   physics debug
   overlay
   hide both
 ```
 
-The blue cubes and orange bars are the generated proof GLB itself, not an imported production car and not leftover debug geometry.
+The blue cubes and orange bars are the generated proof GLB itself, not a production car and not leftover debug geometry.
 
-### Current layer-control candidate
+### Layer-control candidate
 
 ```text
 commit: f27b92d826e1192016873d8f341ac9ff80ad9ef8
@@ -91,17 +94,51 @@ fresh exact-head repository gate: PENDING
 publication: NOT PERFORMED
 ```
 
-Never attribute the green `30facdd…` gate to `f27b92d…` until a full exact-head local gate is recorded.
+Never attribute the green `30facdd…` result to `f27b92d…` or a descendant without a fresh exact-head gate.
 
-### Current planning candidate
+### Lit-normal source candidate
 
-`agent/jv-real-vehicle-texture-scan-plan` is documentation/preparation only. It adds:
+Source-present on `agent/jv-lit-normal-foundation`:
 
-- `ADR-0004-shared-textured-rigid-visual-pipeline.md`;
-- `IMPLEMENTATION_PLAN_REAL_VEHICLE_TEXTURES_AND_SCAN_2026-08-05.md`;
-- this updated memory.
+- scale-relative inverse-transpose normal matrix with caller-owned scratch;
+- complete finite matrix validation and full-frame preflight before the first draw;
+- shared finite float-stream integrity for node matrices, POSITION, NORMAL and TEXCOORD_0;
+- unit-normal validation with explicit tolerance;
+- float integrity before CPU runtime publication and again before GPU allocation;
+- shared `LIT_NORMAL_BASE_COLOR_V1` capability;
+- deterministic normal-bearing 18 PART + 8 SEGMENT fixture;
+- tapered segment geometry with oblique normals to expose incorrect non-uniform stretch handling;
+- shared rigid lit-normal renderer;
+- linear-space directional + ambient lighting;
+- explicit linear-to-sRGB framebuffer encoding;
+- double-sided back-face normal reversal;
+- source-only vehicle adapter with visibility, first-frame receipt, abort and rollback.
 
-It changes no runtime source, physics, asset bytes or publication state.
+Validation performed outside the exact repository checkout:
+
+```text
+TypeScript 5.8 strict isolated normal-matrix compile: PASS
+normal-matrix execution tests: PASS
+shared float/capability core compile and execution: PASS
+shared lit renderer strict compile and execution: PASS
+vehicle lit-normal pass strict compile: PASS
+```
+
+These checks are not Node 24 / TypeScript 7 repository proof. The exact full local gate, generated portable fixture and browser observation remain pending.
+
+Not active yet:
+
+```text
+public lit-normal fixture generation
+portable manifest entries
+main.ts lit pass installation
+lit visual UI mode
+desktop/phone lit observation
+embedded images
+WebGL textures
+owner vehicle model
+static scan renderer
+```
 
 ## Physics authority
 
@@ -134,7 +171,6 @@ Do not add final drivetrain, suspension, tire, aero or steering mechanics to the
 - 18-body / 29-joint / 9-shape M6 reference fixture;
 - physical rack `RELEASE | POSITION | RATE` steering;
 - reference drive/brake/reverse;
-- dependency-free WebGL observer;
 - one renderer-owned WebGL context with isolated passes;
 - portable relative-path build;
 - strict receipt/scene/browser/backend contracts.
@@ -148,34 +184,34 @@ VehicleVisualPackageV1
         ↓
 fetch / hash / GLB policy
         ↓
-sealed CPU mesh asset
+sealed CPU rigid asset
         ↓
-ownership + mobile budget
+float integrity + ownership + budget
         ↓
-renderer-specific capability gate
+renderer capability gate
         ↓
 transactional GPU resources
         ↓
-rigid draw plan on the renderer-owned WebGL context
+vehicle draw plan
+        ↓
+shared rigid renderer
 ```
 
 The model never drives physics and never stores `b3BodyId` or `b3JointId`.
 
-### Runtime channels
+Runtime channels:
 
 ```text
-18 PART transforms:
+18 PART:
   chassis, rack
   wheel/knuckle/upper-arm/lower-arm × 4
 
-8 SEGMENT channels:
+8 SEGMENT:
   coilover × 4
   steering-link × 4
 ```
 
-Rigid transforms come from real post-step bodies. Segment endpoints come from exact joint anchors.
-
-### Binding semantics
+Binding modes:
 
 ```text
 PART
@@ -183,17 +219,15 @@ SEGMENT_STRETCH
 SEGMENT_ENDPOINT_AIM
 ```
 
-Every stretch source has explicit `referenceLengthMeters`.
+Executable composition:
 
 ```text
 worldFromNode = worldFromRuntimeSource × localFromSource
 ```
 
-Segment aim uses deterministic shortest-arc rotation. Stretch meshes must be rotationally symmetric because V1 does not provide roll around the physical segment axis.
+Every stretch source declares `referenceLengthMeters`. Stretch geometry must be rotationally symmetric because V1 does not provide roll around the segment axis.
 
-### Ownership
-
-Every bound GLB node is an independent identity root. Each bound root must own at least one mesh descendant. Every mesh node belongs to exactly one binding root.
+Ownership examples:
 
 ```text
 tire + rim + rotating disc → wheel
@@ -203,30 +237,42 @@ upper damper body          → START endpoint aim
 lower damper shaft         → END endpoint aim
 ```
 
-### Current GLB transport subset
+## GLB and material capability sequence
 
-Require:
+Shared geometry transport accepts:
 
 - one embedded BIN buffer;
 - metre/JV axes;
 - exact SHA-256 and byte length;
 - aligned bufferViews/accessors;
 - triangles with 8/16-bit indices;
-- `POSITION`, optional `NORMAL` and `TEXCOORD_0` only;
-- finite POSITION min/max;
-- unique, root, identity bound nodes;
+- POSITION, optional NORMAL and TEXCOORD_0;
+- finite decoded float streams;
+- unique root identity bound nodes;
 - package-relative URLs.
 
-Reject until their own capability exists:
+Current renderer profiles:
 
-- images/textures;
-- external URI;
-- unknown vertex attributes;
-- skins, animation, morph targets and sparse accessors;
-- non-triangle primitives, extensions and 32-bit indices;
-- empty channels, unowned mesh nodes and byte/hash drift.
+```text
+UNLIT_POSITION_BASE_COLOR_V1
+  POSITION only
+  baseColorFactor + doubleSided
+  rejects NORMAL and TEXCOORD_0
 
-### Current geometry budget
+LIT_NORMAL_BASE_COLOR_V1
+  POSITION + unit NORMAL
+  opaque baseColorFactor + doubleSided
+  rejects TEXCOORD_0
+  inverse-transpose normal matrix
+  linear lighting + sRGB output encoding
+
+LIT_NORMAL_BASE_COLOR_TEXTURE_V1
+  planned, not implemented
+```
+
+No renderer may silently ignore a vertex stream or material feature it does not implement.
+
+Current geometry ceilings:
 
 ```text
 nodes:          512
@@ -238,160 +284,102 @@ geometry bytes: 64 MiB
 
 Raise limits only from real-phone evidence.
 
-### Current renderer capability
+## Colour and future texture policy
+
+Vehicle and scan share one texture interpretation:
 
 ```text
-UNLIT_POSITION_BASE_COLOR_V1
-accepted: POSITION + baseColorFactor + doubleSided
-rejected before GPU allocation: NORMAL, TEXCOORD_0
+baseColorFactor RGB: linear
+baseColorTexture RGB: sRGB encoded → decode to linear
+baseColorTexture alpha: linear
+lighting: linear
+canvas output: encode linear RGB to sRGB
 ```
 
-The CPU decoder already transports optional `NORMAL` and `TEXCOORD_0`. No renderer may silently ignore a stream or material feature it does not implement.
-
-## Textured rigid visual decision
-
-Vehicle and scan will share:
-
-- embedded image descriptors and byte validation;
-- browser image decode boundary;
-- sampler/texture/material subset;
-- decoded and estimated GPU texture budgets;
-- transactional WebGL texture ownership;
-- deterministic image/UV fixtures.
-
-They will not share transform semantics:
+Required decode/upload semantics:
 
 ```text
-vehicle → 18 PART + 8 SEGMENT binding draw plan
-scan    → active glTF scene roots + static hierarchy + worldFromAsset
+imageOrientation: none
+premultiplyAlpha: none
+colorSpaceConversion: none
+UNPACK_FLIP_Y_WEBGL = false
+UNPACK_PREMULTIPLY_ALPHA_WEBGL = false
+UNPACK_COLORSPACE_CONVERSION_WEBGL = NONE
 ```
 
-Capability sequence:
+Pixel-store state must be restored transactionally.
+
+Initial WebGL1 NPOT policy:
 
 ```text
-UNLIT_POSITION_BASE_COLOR_V1
-LIT_NORMAL_BASE_COLOR_V1
-LIT_NORMAL_BASE_COLOR_TEXTURE_V1
+accept NPOT only with CLAMP_TO_EDGE on S/T,
+NEAREST or LINEAR minification,
+and no mipmaps.
+Reject repeat, mirrored repeat or mipmapped NPOT.
+Never silently resize.
 ```
 
-The production lighting pass is separate from the unlit proof pass.
+See `docs/decisions/ADR-0005-gltf-color-and-texture-upload-policy.md`.
 
-Initial texture subset:
+## Shared vehicle/scan boundary
+
+Vehicle and scan share:
+
+- rigid GLB geometry decode;
+- float integrity;
+- embedded image descriptors and decode boundary;
+- sampler/texture/material policy;
+- decoded/GPU memory accounting;
+- transactional WebGL ownership;
+- shared rigid renderers.
+
+They do not share transform semantics:
 
 ```text
-embedded PNG/JPEG
-baseColorFactor
-baseColorTexture
-TEXCOORD_0
-opaque
-doubleSided
+vehicle → 18 PART + 8 SEGMENT bindings and live draw plan
+scan    → active glTF scene roots, static hierarchy and worldFromAsset
 ```
 
-Initially excluded:
-
-```text
-external images
-KTX2/BasisU/extensions
-normal/metallic/roughness/occlusion/emissive maps
-alpha BLEND/MASK
-multiple UV sets
-texture transforms
-shadows/environment/post-processing
-```
-
-Provisional first vehicle texture ceilings:
-
-```text
-images/textures/samplers: 4 each
-single dimension:          2048 px
-decoded RGBA-equivalent:   32 MiB total
-estimated GPU+mips:        48 MiB total
-```
-
-These values are implementation guards and require phone evidence before being raised.
-
-## Preliminary scan direction
-
-`StaticSceneVisualPackageV1` is source-present but inactive. It already pins metre/JV axes, GLB bytes, `worldFromAsset`, local-origin radius and basic CPU budgets.
-
-Before activation it must add executable support for:
-
-- active glTF scene-root selection;
-- static hierarchy world matrices;
-- primitive and geometry-byte budgets;
-- image/texture dimension and memory budgets;
-- transformed local-radius validation;
-- static draw plan and render pass;
-- deterministic textured scene fixture.
-
-Reuse the shared rigid geometry/image/texture core. Do not reuse vehicle bindings. Keep scan visual and collision separate.
-
-The first owner scan must be a small local-origin crop. A large scan waits for an explicit culling/chunk/LOD decision based on measured phone evidence.
+A scan render mesh is never collision implicitly. The first owner scan is a small local-origin crop. Large scans wait for an explicit chunk/culling/LOD decision based on measured evidence.
 
 ## Immediate sequence
 
 ```text
-0 full exact-head gate for f27b92d… and record PR #19 evidence
-1 normal-matrix pure math + tests
-2 LIT_NORMAL_BASE_COLOR_V1 capability gate
-3 deterministic normal-bearing fixture
-4 source-only lit vehicle pass
-5 exact repository gate
-6 desktop then phone lit-fixture validation
-7 embedded image/material CPU transport
-8 transactional GPU texture ownership + budgets
-9 deterministic UV-orientation textured fixture
-10 owner geometry/normals smoke export
-11 owner textured vehicle export
-12 full vehicle acceptance
-13 executable static-scene hierarchy/draw plan
-14 deterministic textured static-scene fixture
-15 small owner scan crop
+1 full exact-head gate for agent/jv-lit-normal-foundation
+2 keep source-only if the gate fails; make the smallest correction
+3 generate lit-normal public fixture without changing tiny fixture bytes
+4 extend portable asset/path/HTTP validation
+5 run another exact-head gate
+6 add explicit lit-normal visual mode through existing pass host
+7 preserve debug fallback and all existing visual modes
+8 run another exact-head gate
+9 desktop browser observation
+10 phone browser observation
+11 only then begin embedded image/material CPU transport
 ```
 
-No image/texture code enters before the lit-normal slice is green. The full owner model and scan are not the first fixtures for any new subsystem.
+No image/texture code enters before the lit-normal slice is green. The owner vehicle and scan are not the first fixtures for any new subsystem.
 
 ## Working rules
 
 - communicate with Jozz in Polish;
-- distinguish source presence, automated PASS, browser observation and owner acceptance;
+- distinguish source presence, isolated checks, exact automated PASS, browser observation and owner acceptance;
 - no hidden physics assists or automatic centering;
 - no destructive local reset/clean/stash;
 - preserve exact receipt and dependency identities;
 - give one safe pasteable command for owner validation;
 - keep progress updates concrete;
-- do not rebuild documentation bureaucracy;
 - no GitHub Actions without explicit approval;
-- no GDP.
+- no GDP;
+- no merge, Ready state or publication without explicit owner approval.
 
 ## Read next
 
 1. `docs/IMPLEMENTATION_PLAN_REAL_VEHICLE_TEXTURES_AND_SCAN_2026-08-05.md`
 2. `docs/decisions/ADR-0004-shared-textured-rigid-visual-pipeline.md`
-3. `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`
-4. `docs/contracts/STATIC_SCENE_VISUAL_PACKAGE_V1.md`
-5. `docs/ARCHITECTURE.md`
-6. `docs/PROJECT_STATE.md`
-7. `docs/decisions/ADR-0003-native-jv-core-wasm.md`
-
-## Immediate boundary
-
-```text
-GREEN AT 30facdd…:
-tiny GLB activation
-245 tests
-portable package and HTTP
-
-OWNER-OBSERVED / FRESH GATE PENDING AT f27b92d…:
-visual layer selector
-proof/debug/overlay/hidden
-same result on desktop and phone
-
-PLANNED / NOT IMPLEMENTED:
-normal matrices
-lighting
-embedded images
-texture GPU ownership
-real vehicle model
-active static scan rendering
-```
+3. `docs/decisions/ADR-0005-gltf-color-and-texture-upload-policy.md`
+4. `docs/contracts/VEHICLE_VISUAL_PACKAGE_V1.md`
+5. `docs/contracts/STATIC_SCENE_VISUAL_PACKAGE_V1.md`
+6. `docs/ARCHITECTURE.md`
+7. `docs/PROJECT_STATE.md`
+8. `docs/decisions/ADR-0003-native-jv-core-wasm.md`
