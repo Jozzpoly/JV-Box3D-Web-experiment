@@ -121,6 +121,26 @@ async function validateFixture(expectation) {
     expectation.doubleSidedPrimitiveCount,
   );
 
+  if (record === LIT_NORMAL_VEHICLE_VISUAL_FIXTURE) {
+    requireEqual(`${record.id} capability vertices`, capability.vertexCount, 48);
+    requireEqual(`${record.id} capability materials`, capability.materialCount, 2);
+    requireEqual(
+      `${record.id} default-material primitives`,
+      capability.defaultMaterialPrimitiveCount,
+      0,
+    );
+    requireEqual(
+      `${record.id} capability NORMAL vectors`,
+      capability.floatIntegrity.normalVectorCount,
+      48,
+    );
+    requireEqual(
+      `${record.id} capability TEXCOORD_0 pairs`,
+      capability.floatIntegrity.texcoordPairCount,
+      0,
+    );
+  }
+
   if (expectation.exactByteLength !== null) {
     requireEqual(
       `${record.id} exact GLB byte length`,
