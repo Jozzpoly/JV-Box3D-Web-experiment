@@ -10,7 +10,8 @@ Jedna scena webowa ma zawierać równocześnie:
 2. aktywną mapę E2R z autorytatywnego repozytorium natywnego;
 3. finalny, poprawnie teksturowany skan JSPREV2;
 4. rzeczywistą kolizję Box3D mapy i skanu;
-5. jedną kamerę oraz jeden kontekst WebGL.
+5. jedną kamerę oraz jeden kontekst WebGL;
+6. jawny wybór miejsca startu: mapa E2R albo aktualnie załadowany skan.
 
 To nie są trzy niezależne demonstratory. Samochód jest głównym obiektem sterowanym w jednym wspólnym świecie.
 
@@ -20,7 +21,7 @@ To nie są trzy niezależne demonstratory. Samochód jest głównym obiektem ste
 - natywna mapa E2R i zaakceptowany stan skanu: `Jozzpoly/Box3d_FunProject@959aefb78587ce60cf2b8eb03ff82797a4165142`;
 - gałąź produktu: `product/jv-web-car-map-scan`.
 
-Kod sterowania, napędu, zawieszenia, jointów i lifecycle'u samochodu nie został przepisany. Produkt rozszerza jego świat oraz renderer.
+Kod sterowania, napędu, zawieszenia, jointów i lifecycle'u samochodu nie został przepisany. Produkt rozszerza jego świat, punkt startu oraz renderer.
 
 ## Mapa E2R
 
@@ -46,7 +47,23 @@ Akceptowany jest wyłącznie pack spełniający jednocześnie:
 - ścieżki względne pozostające wewnątrz wybranego packa;
 - brak symlinków i brak ujawniania lokalnych ścieżek przeglądarce.
 
-Ten sam pack i ten sam origin zasilają renderer oraz kolizję. Origin centruje skan na osi X, ustawia jego najniższy punkt na Y=0 i południową krawędź na Z=320.
+Ten sam pack i ten sam origin zasilają renderer oraz kolizję. Origin centruje skan na osi X, ustawia jego najniższy punkt na Y=0 i południową krawędź na Z=320. Parser zachowuje również dokładne AABB świata używane przez wybór spawnu.
+
+## Spawn mapy i skanu
+
+Produkt uruchamia się przez jawny entrypoint `product-main.ts`, który dodaje dwa cele:
+
+- **Mapa E2R** — zachowuje zaakceptowany spawn baseline'u;
+- **Skan JSPREV2** — przeładowuje stronę z `jvSpawn=scan` i zmienia wyłącznie `scene.spawn.position` przed istniejącą walidacją sceny.
+
+Spawn skanu nie jest ręczną współrzędną przypisaną do jednego packa. Tak jak natywne `BuiltinFragmentSpawn(FragmentScan)`:
+
+1. bierze środek aktualnego AABB załadowanej wyspy;
+2. przecina pionowo collider JSPREV2 w tym punkcie;
+3. wybiera najwyższą trafioną powierzchnię;
+4. dodaje zaakceptowany prześwit startowy samochodu.
+
+Brak packa albo brak powierzchni w środku AABB zatrzymuje start skanu z jawnym błędem. Mapa pozostaje dostępna.
 
 ## Własność mesha Box3D
 
@@ -59,14 +76,19 @@ utworzenie mesha -> utworzenie shape'a -> praca świata
 
 Ta sama kolejność obowiązuje przy rollbacku częściowo zbudowanego świata.
 
+Natywna implementacja celowo scala wszystkie kafle skanu w jeden collider, aby identyfikacja krawędzi mogła widzieć szwy. Web zachowuje jeden collider; wyłącznie render jest dzielony na mniejsze partie.
+
 ## Renderer
 
 - jeden `WebGLRenderingContext`;
 - jedna macierz view/projection dla mapy, skanu i samochodu;
 - statyczne elementy E2R są batchowane według materiału;
-- offroad jest jednym meshem renderowym;
-- skan zachowuje 25 osobnych grup teksturowanych;
-- tekstury mają neutralny placeholder do chwili zakończenia dekodowania.
+- wszystkie meshe renderowe są deterministycznie dzielone na partie do 65 535 wierzchołków;
+- renderer używa wyłącznie indeksów `Uint16` i `gl.UNSIGNED_SHORT`, bez wymagania `OES_element_index_uint`;
+- skan zachowuje 25 osobnych grup teksturowanych, a jedna tekstura jest współdzielona przez partie tej samej grupy;
+- tekstury mają neutralny placeholder do chwili zakończenia dekodowania;
+- obiekty `Image` są odpinane natychmiast po uploadzie albo błędzie;
+- częściowa awaria konstrukcji renderera zwalnia utworzone bufory, programy, tekstury i oczekujące obrazy.
 
 ## Granice aktualnych twierdzeń
 
@@ -77,19 +99,22 @@ Można stwierdzić na podstawie kodu:
 - mapa i skan tworzą rzeczywiste statyczne kształty Box3D;
 - finalny asset jest wybierany fail-closed jako 25/25;
 - przygotowano test rzeczywistego kontaktu kuli z meshem w przypiętym WASM Box3D;
+- przygotowano testy parsera, granic skanu, spawnu, podziału mesha na `Uint16`, selektora assetu i prywatnego middleware Vite;
 - przygotowano pełny operator exact-SHA, pełnej bramki i lokalnego uruchomienia.
 
 Nie można jeszcze stwierdzić bez wykonania lokalnej bramki i obserwacji właściciela:
 
-- że TypeScript, wszystkie testy i portable build przechodzą na Windows w exact toolchainie;
+- że TypeScript 7.0.2, wszystkie testy i portable build przechodzą na Windows w exact toolchainie;
 - że finalny prywatny pack został odnaleziony na aktualnym komputerze;
 - że pełny skan gotuje się w akceptowalnym czasie i mieści się w budżecie pamięci;
+- że środek realnego skanu ma prawidłową przejezdną powierzchnię dla spawnu;
 - że samochód przejeżdża po mapie i skanie bez nowych problemów kontaktowych;
-- że wszystkie 25 tekstur wygląda poprawnie w realnej scenie.
+- że wszystkie 25 tekstur wygląda poprawnie w realnej scenie;
+- że renderer działa poprawnie na konkretnym telefonie właściciela.
 
 ## Znana różnica względem natywnego JV
 
-Przypięty `box3d.js` ustawia dla `b3CreateMesh` spawanie wierzchołków, ale nie udostępnia jawnego przełącznika natywnego `identifyEdges=true`. Rzeczywisty kontakt z meshem jest testowany, lecz pełna równoważność jakości przejazdu po wewnętrznych krawędziach skanu **nie jest deklarowana**.
+Przypięty `box3d.js` ustawia dla `b3CreateMesh` spawanie wierzchołków, ale nie udostępnia jawnego przełącznika natywnego `identifyEdges=true` ani cache'u `.b3mesh`. Rzeczywisty kontakt z meshem jest testowany, lecz pełna równoważność jakości przejazdu po wewnętrznych krawędziach skanu i czasu pierwszego gotowania **nie jest deklarowana**.
 
 Samochód pozostaje zaakceptowanym webowym `legacy_ts_m6` z debugową reprezentacją wizualną. Native-JV parity ani finalny model pojazdu nie są deklarowane.
 
@@ -104,19 +129,27 @@ Operator kontrolny uruchamia kolejno:
 5. zapis logu i JSON receipt poza repozytorium;
 6. Vite na porcie 5175.
 
-Końcowa obserwacja właściciela musi potwierdzić:
+Końcowa obserwacja właściciela musi potwierdzić osobno oba cele startu:
 
 ```text
+Mapa E2R:
 samochód widoczny:
 skręt:
 jazda/hamulec:
 rebuild:
 kamera:
-mapa E2R widoczna:
+mapa widoczna:
 kontakt z mapą:
+
+Skan JSPREV2:
+przełączenie celu:
+spawn na powierzchni:
 skan widoczny:
 tekstury 25/25:
 kontakt ze skanem:
+skręt i jazda:
+rebuild pozostaje na skanie:
+kamera:
 stabilność:
 konsola przeglądarki:
 ```
