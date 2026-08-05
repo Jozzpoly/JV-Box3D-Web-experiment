@@ -4,6 +4,7 @@ import type { NativeFactorySnapshot } from "../config/native-factory-receipt.js"
 import type { JvWorldData } from "../scene/jv-world-contract.js";
 import {
   CollisionGroupAllocator,
+  INITIAL_RATE_STEERING_PROFILE_ID,
   M6TopologyWorld,
   type RateSteeringProfileId,
 } from "../vehicle/m6/m6-topology-world.js";
@@ -58,6 +59,7 @@ const REQUIRED_EXPORTS = [
   "b3CreateCylinder",
   "b3CreateMesh",
   "b3CreateMeshShape",
+  "b3DestroyMesh",
   "b3Shape_GetFilter",
   "b3Shape_GetSurfaceMaterial",
   "b3ComputeSphereMass",
@@ -124,9 +126,13 @@ export class Box3DBoundary {
 
   static async #loadFresh(): Promise<Box3DBoundary> {
     const b3 = await Box3DFactory();
-    const missing = REQUIRED_EXPORTS.filter((name) => typeof b3[name] !== "function");
+    const missing = REQUIRED_EXPORTS.filter(
+      (name) => typeof b3[name] !== "function",
+    );
     if (missing.length > 0) {
-      throw new Error(`Box3D binding is missing required exports: ${missing.join(", ")}`);
+      throw new Error(
+        `Box3D binding is missing required exports: ${missing.join(", ")}`,
+      );
     }
 
     const version = b3.b3GetVersion();
@@ -135,7 +141,11 @@ export class Box3DBoundary {
     const shape = b3.b3DefaultShapeDef();
     const receipt: Box3DRuntimeReceipt = {
       identity: BOX3D_RUNTIME_IDENTITY,
-      engineVersion: { major: version.major, minor: version.minor, revision: version.revision },
+      engineVersion: {
+        major: version.major,
+        minor: version.minor,
+        revision: version.revision,
+      },
       defaultWorld: {
         gravityY: world.gravity.y,
         contactHertz: world.contactHertz,
@@ -149,7 +159,10 @@ export class Box3DBoundary {
       nativeInlineShims: NATIVE_INLINE_SHIMS,
     };
 
-    const identityPass = version.major === 0 && version.minor === 1 && version.revision === 0;
+    const identityPass =
+      version.major === 0 &&
+      version.minor === 1 &&
+      version.revision === 0;
     const defaultsPass =
       world.internalValue === 1_152_023 &&
       body.internalValue === 1_152_023 &&
@@ -160,8 +173,14 @@ export class Box3DBoundary {
       world.contactSpeed === 3 &&
       world.enableContinuous &&
       world.workerCount === 0;
-    const sample = { v: { x: 0.2, y: -0.3, z: 0.4 }, s: 0.5 };
-    const product = multiplyQuat({ v: { x: 0, y: 0, z: 0 }, s: 1 }, sample);
+    const sample = {
+      v: { x: 0.2, y: -0.3, z: 0.4 },
+      s: 0.5,
+    };
+    const product = multiplyQuat(
+      { v: { x: 0, y: 0, z: 0 }, s: 1 },
+      sample,
+    );
     const primitivePass =
       almostEqual(product.v.x, sample.v.x) &&
       almostEqual(product.v.y, sample.v.y) &&
@@ -169,35 +188,66 @@ export class Box3DBoundary {
       almostEqual(product.s, sample.s);
 
     const levels = [
-      createLevel("B0", identityPass ? "PASS" : "FAIL", "Pinned package and engine identity.", [
-        "package=box3d.js@0.0.2",
-        `binding=${BOX3D_RUNTIME_IDENTITY.bindingCommit}`,
-        `engine=${BOX3D_RUNTIME_IDENTITY.engineCommit}`,
-        `runtime=${version.major}.${version.minor}.${version.revision}`,
-      ]),
-      createLevel("B1", "PASS", "Required F2/F4/F5 and product-world exports are callable.", [
-        `exports=${REQUIRED_EXPORTS.length}`,
-        "world=box+capsule+mesh",
-      ]),
-      createLevel("B2", defaultsPass ? "PASS" : "FAIL", "Default definitions and solver sentinels.", [
-        `internal=${world.internalValue}/${body.internalValue}/${shape.internalValue}`,
-        `solver=${world.contactHertz}/${world.contactDampingRatio}/${world.contactSpeed}`,
-        `continuous=${world.enableContinuous}`,
-        `workers=${world.workerCount}`,
-      ]),
-      createLevel("B3", "PENDING", "Live ownership requires a fixture or vehicle world.", []),
+      createLevel(
+        "B0",
+        identityPass ? "PASS" : "FAIL",
+        "Pinned package and engine identity.",
+        [
+          "package=box3d.js@0.0.2",
+          `binding=${BOX3D_RUNTIME_IDENTITY.bindingCommit}`,
+          `engine=${BOX3D_RUNTIME_IDENTITY.engineCommit}`,
+          `runtime=${version.major}.${version.minor}.${version.revision}`,
+        ],
+      ),
+      createLevel(
+        "B1",
+        "PASS",
+        "Required F2/F4/F5 and product-world exports are callable.",
+        [
+          `exports=${REQUIRED_EXPORTS.length}`,
+          "world=box+capsule+mesh+owned-mesh-teardown",
+        ],
+      ),
+      createLevel(
+        "B2",
+        defaultsPass ? "PASS" : "FAIL",
+        "Default definitions and solver sentinels.",
+        [
+          `internal=${world.internalValue}/${body.internalValue}/${shape.internalValue}`,
+          `solver=${world.contactHertz}/${world.contactDampingRatio}/${world.contactSpeed}`,
+          `continuous=${world.enableContinuous}`,
+          `workers=${world.workerCount}`,
+        ],
+      ),
+      createLevel(
+        "B3",
+        "PENDING",
+        "Live ownership requires a fixture or vehicle world.",
+        [],
+      ),
       createLevel(
         "B4",
         primitivePass ? "PASS" : "FAIL",
         "Native-inline quaternion identity invariant.",
         [`shims=${NATIVE_INLINE_SHIMS.length}`],
       ),
-      createLevel("B5", "PENDING", "Real contact fixture not stepped yet.", []),
+      createLevel(
+        "B5",
+        "PENDING",
+        "Real contact fixture not stepped yet.",
+        [],
+      ),
     ] as const;
 
-    const failed = levels.filter((level) => level.status === "FAIL");
+    const failed = levels.filter(
+      (level) => level.status === "FAIL",
+    );
     if (failed.length > 0) {
-      throw new Error(`Box3D boundary validation failed: ${failed.map((level) => level.id).join(", ")}`);
+      throw new Error(
+        `Box3D boundary validation failed: ${failed
+          .map((level) => level.id)
+          .join(", ")}`,
+      );
     }
     return new Box3DBoundary(b3, receipt, levels);
   }
@@ -207,11 +257,17 @@ export class Box3DBoundary {
   }
 
   get validationLevels(): readonly F2ValidationLevel[] {
-    return this.#baseLevels.map((level) => ({ ...level, details: [...level.details] }));
+    return this.#baseLevels.map((level) => ({
+      ...level,
+      details: [...level.details],
+    }));
   }
 
   createMinimalContactFixture(): MinimalContactFixture {
-    return MinimalContactFixture.create(this.#b3, this.#baseLevels);
+    return MinimalContactFixture.create(
+      this.#b3,
+      this.#baseLevels,
+    );
   }
 
   createM6TopologyWorld(
@@ -219,21 +275,12 @@ export class Box3DBoundary {
     rateProfileId?: RateSteeringProfileId,
     worldData: JvWorldData | null = null,
   ): M6TopologyWorld {
-    const profile = rateProfileId;
-    return profile === undefined
-      ? new M6TopologyWorld(
-          this.#b3,
-          receipt,
-          new CollisionGroupAllocator(),
-          new CollisionGroupAllocator(),
-          worldData,
-        )
-      : new M6TopologyWorld(
-          this.#b3,
-          receipt,
-          profile,
-          new CollisionGroupAllocator(),
-          worldData,
-        );
+    return new M6TopologyWorld(
+      this.#b3,
+      receipt,
+      rateProfileId ?? INITIAL_RATE_STEERING_PROFILE_ID,
+      new CollisionGroupAllocator(),
+      worldData,
+    );
   }
 }
