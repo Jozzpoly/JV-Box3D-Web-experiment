@@ -1,0 +1,76 @@
+{
+  "schema": "JV_WEB_BASELINE_MATRIX_V1",
+  "observedAt": "2026-08-05T13:14:00+02:00",
+  "authority": "CONTROL_PLANE_INDEX_ONLY",
+  "repository": "Jozzpoly/JV-Box3D-Web-experiment",
+  "controlBase": {
+    "ref": "main",
+    "commit": "5c64903d753f893adc42be90e0c3d8053a95a922",
+    "status": "MINIMAL_CLEAN_BASE"
+  },
+  "refs": [
+    {
+      "ref": "agent/jv-web-demonstrator-foundation",
+      "commit": "78150858049c64d5bcae1507f696b0bd8d074563",
+      "status": "HISTORICAL_IMPLEMENTATION_STACK",
+      "canonical": false
+    },
+    {
+      "ref": "agent/jv-tiny-unlit-pass",
+      "commit": "f27b92d826e1192016873d8f341ac9ff80ad9ef8",
+      "status": "HISTORICAL_OWNER_OBSERVED_CANDIDATE",
+      "canonical": false
+    },
+    {
+      "ref": "agent/jv-real-vehicle-texture-scan-plan",
+      "commit": "d75660889cdafc21622fb5a6c2d067745ce40193",
+      "status": "PLANNING_ONLY",
+      "canonical": false
+    },
+    {
+      "ref": "agent/jv-lit-normal-foundation",
+      "commit": "26c5022f8dfd33b8c5f80d0900d239a4d80966ea",
+      "status": "QUARANTINED_SOURCE_CONFIRMED_RED",
+      "canonical": false,
+      "exactGateRerun": false
+    }
+  ],
+  "detachedCandidates": [
+    {
+      "commit": "dcec0a7b5938b5d07cf5fdff8f81afd9db89e4ec",
+      "role": "R1_BASELINE",
+      "status": "HISTORICAL_GREEN_CLAIM_RERUN_REQUIRED"
+    },
+    {
+      "commit": "30facdd08c2b0e486cb4a942e93f933a0ae09ef1",
+      "role": "TINY_HISTORICAL_EVIDENCE",
+      "status": "HISTORICAL_GREEN_CLAIM"
+    },
+    {
+      "commit": "891c7561142b601f62ea76b68b0f55f8fababc6c",
+      "role": "PR1_FORENSIC",
+      "status": "SOURCE_USEFUL_NOT_EXACTLY_REPRODUCIBLE_ALONE"
+    }
+  ],
+  "externalReferences": [
+    {
+      "repository": "Jozzpoly/HomeScan-Web-Builder",
+      "commit": "f2c36937062ae431d58d05955c2bc0978c179a13",
+      "role": "THREEJS_GLB_LIFECYCLE_REFERENCE",
+      "canonical": false
+    },
+    {
+      "repository": "Jozzpoly/Box3d_FunProject",
+      "commit": "959aefb78587ce60cf2b8eb03ff82797a4165142",
+      "role": "OBSERVED_NATIVE_PHYSICS_AND_ASSET_AUTHORITY_REF",
+      "canonical": true
+    }
+  ],
+  "nextRequiredGates": [
+    "R1",
+    "R2",
+    "R3",
+    "R4"
+  ],
+  "ordinaryFeatureWorkAllowed": false
+}
