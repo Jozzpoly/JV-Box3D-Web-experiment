@@ -4,9 +4,9 @@ export const RIGID_NORMAL_LENGTH_TOLERANCE_V1 = 1e-3;
 
 export interface RigidFloatStreamIntegrityReceiptV1 {
   readonly nodeMatrixValueCount: number;
-  readonly positionValueCount: number;
+  readonly positionVertexCount: number;
   readonly normalVectorCount: number;
-  readonly texcoordValueCount: number;
+  readonly texcoordPairCount: number;
 }
 
 function reject(message: string): never {
@@ -29,9 +29,9 @@ export function assertRigidFloatStreamIntegrityV1(
   asset: GlbRigidCpuAssetV1,
 ): RigidFloatStreamIntegrityReceiptV1 {
   let nodeMatrixValueCount = 0;
-  let positionValueCount = 0;
+  let positionVertexCount = 0;
   let normalVectorCount = 0;
-  let texcoordValueCount = 0;
+  let texcoordPairCount = 0;
 
   for (const node of asset.nodes) {
     const label = `node ${node.name ?? `#${node.index}`} localFromParent`;
@@ -45,11 +45,18 @@ export function assertRigidFloatStreamIntegrityV1(
   for (const [meshIndex, mesh] of asset.meshes.entries()) {
     for (const [primitiveIndex, primitive] of mesh.primitives.entries()) {
       const label = `mesh ${meshIndex} primitive ${primitiveIndex}`;
+      if (primitive.positions.length % 3 !== 0) {
+        reject(`${label} POSITION must contain complete VEC3 values`);
+      }
       assertFiniteValues(primitive.positions, `${label} POSITION`);
-      positionValueCount += primitive.positions.length;
+      const vertexCount = primitive.positions.length / 3;
+      positionVertexCount += vertexCount;
 
       if (primitive.normals !== null) {
-        if (primitive.normals.length !== primitive.positions.length) {
+        if (
+          primitive.normals.length % 3 !== 0 ||
+          primitive.normals.length !== primitive.positions.length
+        ) {
           reject(`${label} NORMAL count differs from POSITION`);
         }
         assertFiniteValues(primitive.normals, `${label} NORMAL`);
@@ -72,19 +79,22 @@ export function assertRigidFloatStreamIntegrityV1(
       }
 
       if (primitive.texcoord0 !== null) {
-        if (primitive.texcoord0.length / 2 !== primitive.positions.length / 3) {
+        if (
+          primitive.texcoord0.length % 2 !== 0 ||
+          primitive.texcoord0.length / 2 !== vertexCount
+        ) {
           reject(`${label} TEXCOORD_0 count differs from POSITION`);
         }
         assertFiniteValues(primitive.texcoord0, `${label} TEXCOORD_0`);
-        texcoordValueCount += primitive.texcoord0.length;
+        texcoordPairCount += primitive.texcoord0.length / 2;
       }
     }
   }
 
   return Object.freeze({
     nodeMatrixValueCount,
-    positionValueCount,
+    positionVertexCount,
     normalVectorCount,
-    texcoordValueCount,
+    texcoordPairCount,
   });
 }
