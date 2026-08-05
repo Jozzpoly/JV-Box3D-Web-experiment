@@ -53,6 +53,7 @@ export interface VehicleVisualUnlitPassOptionsV1 {
   readonly pageBaseUrl: string;
   readonly packageUrl: string;
   readonly fetcher?: VehicleVisualFetcherV1;
+  readonly isVisible?: () => boolean;
   readonly onFirstFrame?: (
     receipt: VehicleVisualUnlitFirstFrameReceiptV1,
   ) => void;
@@ -336,6 +337,9 @@ export async function createVehicleVisualUnlitPassV1(
       render(frame: M6SceneRenderFrameV1): void {
         if (disposed) {
           throw new Error("Cannot render a disposed vehicle visual unlit pass.");
+        }
+        if (options.isVisible?.() === false) {
+          return;
         }
         const receipt = renderFrame(
           gl,
