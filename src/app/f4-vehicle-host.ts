@@ -23,8 +23,10 @@ import {
   type Box3DRuntimeReceipt,
 } from "../physics/box3d-boundary.js";
 import type { b3Vec3 } from "../physics/box3d-runtime-contract.js";
-import { createE2rWorld } from "../scene/e2r-world.js";
-import { loadLocalJsprev2Scan } from "../scene/jsprev2-scan.js";
+import {
+  createProductWorld,
+  loadProductWorld,
+} from "../scene/product-world.js";
 import type { JvWorldData } from "../scene/jv-world-contract.js";
 import {
   assertVehicleRuntimeBackendDescriptor,
@@ -110,8 +112,7 @@ export interface F4VehicleHostDependencies {
 const DEFAULT_DEPENDENCIES: F4VehicleHostDependencies = {
   loadReceipt: () => loadPinnedNativeFactoryReceipt(),
   loadBoundary: () => Box3DBoundary.load(),
-  loadWorld: async () =>
-    createE2rWorld(await loadLocalJsprev2Scan()),
+  loadWorld: () => loadProductWorld(),
   startBrowserHost: (options) => CleanBrowserHost.start(options),
 };
 
@@ -166,7 +167,7 @@ export class F4VehicleHost {
       const boundary = await dependencies.loadBoundary();
       const worldData = await (
         dependencies.loadWorld ??
-        (() => Promise.resolve(createE2rWorld()))
+        (() => Promise.resolve(createProductWorld()))
       )();
       const world = boundary.createM6TopologyWorld(
         nativeReceipt,
