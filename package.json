@@ -8,6 +8,7 @@
   },
   "scripts": {
     "generate:vehicle-fixture": "tsc -p tsconfig.test.json && node tools/write-tiny-vehicle-visual-fixture.mjs",
+    "generate:owner-vehicle-r1": "node tools/owner-vehicle/write-owner-m6-r1.mjs",
     "predev": "npm run generate:vehicle-fixture",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
