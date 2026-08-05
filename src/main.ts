@@ -7,6 +7,11 @@ import type {
 import type { SteeringCommand } from "./input/steering-command.js";
 import { M6DebugRenderer } from "./render/m6-debug-renderer.js";
 import {
+  installVehicleVisualWithDebugFallbackV1,
+  type VehicleVisualDebugFallbackControllerV1,
+} from "./render/vehicle-visual-debug-fallback.js";
+import { createVehicleVisualUnlitPassFactoryV1 } from "./render/vehicle-visual-unlit-pass.js";
+import {
   formatBrowserRuntimeReport,
   inspectCurrentBrowserRuntime,
 } from "./runtime/browser-runtime-report.js";
@@ -301,8 +306,30 @@ const animationFrames = {
 };
 
 let renderer: M6DebugRenderer | null = null;
+let vehicleVisualFallback: VehicleVisualDebugFallbackControllerV1 | null = null;
 try {
-  renderer = new M6DebugRenderer(sceneCanvas);
+  const nextRenderer = new M6DebugRenderer(sceneCanvas, {
+    onRenderPassError: (error) => {
+      vehicleVisualFallback?.handleRenderPassError(error);
+    },
+  });
+  try {
+    const nextFallback = installVehicleVisualWithDebugFallbackV1({
+      renderer: nextRenderer,
+      createPassFactory: (onFirstFrame) =>
+        createVehicleVisualUnlitPassFactoryV1({
+          pageBaseUrl: document.baseURI,
+          packageUrl: "vehicles/tiny/vehicle.visual.json",
+          onFirstFrame: () => onFirstFrame(),
+        }),
+      reportError: (error) => console.error(error),
+    });
+    renderer = nextRenderer;
+    vehicleVisualFallback = nextFallback;
+  } catch (error: unknown) {
+    nextRenderer.dispose();
+    throw error;
+  }
 } catch (error: unknown) {
   sceneStateElement.textContent =
     `RENDERER UNAVAILABLE · ${formatError(error)}`;
@@ -388,6 +415,8 @@ function renderTrace(trace: M6TraceFrame): void {
     try {
       renderer.render(trace);
     } catch (error: unknown) {
+      vehicleVisualFallback?.dispose();
+      vehicleVisualFallback = null;
       renderer.dispose();
       renderer = null;
       console.error(error);
@@ -613,6 +642,8 @@ window.addEventListener(
     startupGeneration += 1;
     host?.dispose();
     host = null;
+    vehicleVisualFallback?.dispose();
+    vehicleVisualFallback = null;
     renderer?.dispose();
     renderer = null;
   },
