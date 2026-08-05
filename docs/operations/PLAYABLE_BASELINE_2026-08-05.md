@@ -7,7 +7,8 @@ repository: Jozzpoly/JV-Box3D-Web-experiment
 runtime branch: agent/jv-web-playable-runtime
 runtime commit: d6aa218064c2653f918cf7956d2fcd20a940caf3
 Node/npm: 24.16.0 / 11.17.0
-owner observation time: 2026-08-05 18:04 CEST
+first fresh owner observation: 2026-08-05 18:04 CEST
+fresh dynamic owner acceptance: 2026-08-05 18:16 CEST
 ```
 
 ## Fresh owner-machine observation
@@ -33,18 +34,38 @@ SHA-256: fad93b82f371d7a182fbc623e4587b7d764c9d7bdb1692207ca65e95adaa7087
 storage: conversation evidence; not committed to this repository
 ```
 
+## Fresh dynamic owner acceptance
+
+Jozz tested the running exact checkpoint and reported:
+
+```text
+steering: works
+drive/brake: works
+destroy/rebuild: works
+camera: works
+stability: works
+```
+
+This owner acceptance applies to the exact recovered runtime and environment identified above. It does not establish native JV parity, final product physics, phone/LAN acceptance for this fresh run or suitability of later historical commits.
+
 ## Evidence boundary
 
-This fresh screenshot and owner statement prove that the exact recovery path reached a rendered live browser runtime on the owner machine.
+The fresh screenshot, successful recovery path and explicit dynamic checklist establish:
 
-The single screenshot does not independently prove every dynamic behavior. Exact fresh acceptance of steering response, drive/brake response, destroy/rebuild and phone/LAN behavior remains a separate owner checklist. Historical owner evidence for those behaviors already exists for the same source checkpoint but must not be silently substituted for the fresh run.
+```text
+RUNTIME OBSERVED: PASS
+OWNER ACCEPTED — DESKTOP BASELINE: PASS
+```
+
+Historical owner evidence for phone/LAN behavior exists for the same source checkpoint, but it remains separate from this fresh desktop acceptance.
 
 ## Operational status
 
 ```text
-PLAYABLE BASELINE: RESTORED
+PLAYABLE BASELINE: RESTORED AND OWNER-ACCEPTED ON DESKTOP
 PRODUCT PHYSICS AUTHORITY: FALSE
 NATIVE JV PARITY: NOT PROVEN
+PHONE/LAN FRESH ACCEPTANCE: NOT REPEATED
 PUBLISHED: NO
 MERGED TO MAIN: NO
 ```
