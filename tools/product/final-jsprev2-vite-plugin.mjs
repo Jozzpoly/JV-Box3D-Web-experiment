@@ -1,7 +1,10 @@
 import {
+  closeSync,
   createReadStream,
   lstatSync,
+  openSync,
   readFileSync,
+  readSync,
   realpathSync,
   statSync,
 } from "node:fs";
@@ -9,6 +12,7 @@ import path from "node:path";
 
 const INDEX_PATH = "/__jv_scan__/index.json";
 const ASSET_PREFIX = "/__jv_scan__/asset/";
+const MAGIC = Buffer.from("JSPREV2\0", "ascii");
 const REQUIRED_GROUPS = 25;
 const REQUIRED_TEXTURES = 25;
 
@@ -59,6 +63,33 @@ function safeAsset(packDirectory, relativePath) {
   return realAsset;
 }
 
+function inspectBinaryHeader(filePath, expectedGroups) {
+  if (!isPlainFile(filePath) || statSync(filePath).size < 20) {
+    throw new Error("JSPREV2 tile binary is missing or truncated");
+  }
+  const header = Buffer.allocUnsafe(20);
+  const descriptor = openSync(filePath, "r");
+  try {
+    if (readSync(descriptor, header, 0, header.length, 0) !== header.length) {
+      throw new Error("JSPREV2 tile header read was incomplete");
+    }
+  } finally {
+    closeSync(descriptor);
+  }
+  if (!header.subarray(0, MAGIC.length).equals(MAGIC)) {
+    throw new Error("tile binary magic is not JSPREV2");
+  }
+  if (header.readUInt32LE(8) !== 2) {
+    throw new Error("tile binary version is not 2");
+  }
+  const binaryGroupCount = header.readUInt32LE(16);
+  if (binaryGroupCount !== expectedGroups) {
+    throw new Error(
+      `tile binary groups ${binaryGroupCount} != manifest groups ${expectedGroups}`,
+    );
+  }
+}
+
 function loadExactPack(packDirectory) {
   if (
     typeof packDirectory !== "string" ||
@@ -96,6 +127,7 @@ function loadExactPack(packDirectory) {
       throw new Error("selected JSPREV2 tile record is incomplete");
     }
     const binaryPath = safeAsset(realPack, tile.path);
+    inspectBinaryHeader(binaryPath, tile.groups.length);
     const groups = tile.groups.map((group) => {
       if (group === null || typeof group !== "object") {
         throw new Error("selected JSPREV2 group record is invalid");
