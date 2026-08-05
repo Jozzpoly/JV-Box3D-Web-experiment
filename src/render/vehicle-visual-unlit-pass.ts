@@ -5,7 +5,6 @@ import type {
 } from "./m6-scene-render-pass.js";
 import {
   createVehicleVisualRenderResourceV1,
-  type VehicleVisualFetcherV1,
   type VehicleVisualRenderResourceV1,
 } from "./vehicle-visual-render-resource.js";
 import {
@@ -13,6 +12,7 @@ import {
   type VehicleVisualUnlitCapabilityReceiptV1,
 } from "./vehicle-visual-unlit-capability.js";
 import { buildVehicleVisualDrawPlanV1 } from "../visual/rigid-mesh-draw-plan.js";
+import type { VehicleVisualFetcherV1 } from "../visual/vehicle-visual-runtime-loader.js";
 
 const VERTEX_SHADER_SOURCE = `
 attribute vec3 aPosition;
