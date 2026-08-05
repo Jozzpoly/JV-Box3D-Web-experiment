@@ -32,19 +32,24 @@ The operator [`Start-JvWebPlayable.ps1`](../../tools/playable-recovery/Start-JvW
 
 1. verifies repository identity, exact Node `v24.16.0` and npm 11.x;
 2. fetches the pinned runtime branch;
-3. creates or reuses an external detached worktree at the exact commit;
-4. refuses to reset or replace an unexpected existing worktree;
-5. verifies the byte-pinned native receipt;
-6. runs the checkpoint's own complete `run-demonstrator-foundation-gate.ps1`;
-7. writes a local validation receipt outside the repository;
-8. starts Vite on `http://localhost:5173` and exposes the LAN address.
+3. uses a short per-user workspace under `%LOCALAPPDATA%\JV-Web-Playable`;
+4. enables Git long-path handling only for the worktree checkout command;
+5. creates or reuses an external detached worktree at the exact commit;
+6. skips incomplete or unexpected candidate directories without deleting them;
+7. preserves the complete Git checkout log and tries the next untouched candidate path;
+8. verifies the byte-pinned native receipt;
+9. runs the checkpoint's own complete `run-demonstrator-foundation-gate.ps1`;
+10. preserves the complete gate log and writes a machine-readable local receipt;
+11. starts Vite on `http://localhost:5173` and exposes the LAN address.
 
 Default external locations:
 
 ```text
-<parent of repository>\_JV_WEB_PLAYABLE\runtime-d6aa218\
-<parent of repository>\_JV_WEB_PLAYABLE\evidence\
+%LOCALAPPDATA%\JV-Web-Playable\runtime-d6aa218\
+%LOCALAPPDATA%\JV-Web-Playable\evidence\
 ```
+
+The earlier failed operator attempted to create a worktree beside the deeply nested repository. Any partial directory from that attempt is left untouched. The corrected operator does not depend on it and does not require manual cleanup.
 
 Keep the PowerShell window open while playing. Press `Ctrl+C` to stop Vite.
 
@@ -52,6 +57,12 @@ To validate without starting the server:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Start-JvWebPlayable.ps1 -ValidateOnly
+```
+
+A custom external location can be supplied explicitly:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Start-JvWebPlayable.ps1 -WorkspaceRoot C:\JVW
 ```
 
 ## Preservation and forward development
