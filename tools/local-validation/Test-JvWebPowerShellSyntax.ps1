@@ -8,7 +8,8 @@ $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'
 $relativeFiles = @(
     'tools/local-validation/Test-JvWebPowerShellSyntax.ps1',
     'tools/local-validation/Test-JvWebControlPlane.ps1',
-    'tools/local-validation/Invoke-JvWebBaseline.ps1'
+    'tools/local-validation/Invoke-JvWebBaseline.ps1',
+    'tools/playable-recovery/Start-JvWebPlayable.ps1'
 )
 
 $failures = New-Object 'System.Collections.Generic.List[string]'
@@ -47,5 +48,5 @@ if ($failures.Count -gt 0) {
 }
 
 Write-Host 'JV WEB POWERSHELL SYNTAX CHECK: PASS'
-Write-Host 'All local-validation scripts parse in the current PowerShell engine.'
+Write-Host 'All recovery and local-validation scripts parse in the current PowerShell engine.'
 exit 0
