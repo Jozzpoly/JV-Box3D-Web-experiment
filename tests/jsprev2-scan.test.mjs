@@ -82,8 +82,15 @@ test("JSPREV2 loader keeps render geometry and collision bound to one pack", asy
     assert.equal(scan.triangleCount, 1);
     assert.equal(scan.collision.positions.length, 9);
     assert.deepEqual(scan.origin, { x: 0, y: -2, z: 317 });
+    assert.deepEqual(scan.worldBounds, {
+      minimum: { x: -1, y: 0, z: 320 },
+      maximum: { x: 1, y: 2, z: 322 },
+    });
     assert.deepEqual([...scan.collision.indices], [0, 1, 2]);
-    assert.deepEqual([...scan.groups[0].uvs], [0, 0, 1, 0, 0.5, 1]);
+    assert.deepEqual(
+      [...scan.groups[0].uvs],
+      [0, 0, 1, 0, 0.5, 1],
+    );
   } finally {
     globalThis.fetch = previousFetch;
   }
