@@ -6,6 +6,7 @@ import {
   M6_VISUAL_SEGMENT_IDS,
 } from "../.test-dist/vehicle/m6/m6-visual-contract.js";
 import {
+  GENERATED_VEHICLE_VISUAL_FIXTURES,
   LIT_NORMAL_VEHICLE_VISUAL_FIXTURE,
   TINY_VEHICLE_VISUAL_FIXTURE,
 } from "./generated-vehicle-visual-fixture-catalog.mjs";
@@ -73,10 +74,12 @@ if (
 await rm(generatedPublicDirectory, { recursive: true, force: true });
 await mkdir(resolve(root, ".local-assets"), { recursive: true });
 await cp(sourcePublicDirectory, generatedPublicDirectory, { recursive: true });
-await rm(resolve(generatedPublicDirectory, "vehicles"), {
-  recursive: true,
-  force: true,
-});
+for (const record of GENERATED_VEHICLE_VISUAL_FIXTURES) {
+  await rm(resolve(generatedPublicDirectory, record.packageDirectory), {
+    recursive: true,
+    force: true,
+  });
+}
 await writeFixture(TINY_VEHICLE_VISUAL_FIXTURE, tiny);
 await writeFixture(LIT_NORMAL_VEHICLE_VISUAL_FIXTURE, litNormal);
 
