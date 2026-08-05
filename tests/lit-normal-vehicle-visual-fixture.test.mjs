@@ -70,7 +70,14 @@ test("full vehicle loader accepts the lit fixture and the lit capability covers 
   );
 
   assert.equal(requests.length, 2);
-  assert.equal(runtime.ownershipReceipt.bindingCount, 26);
+  const expectedRootCount =
+    M6_VISUAL_PART_IDS.length + M6_VISUAL_SEGMENT_IDS.length;
+  assert.deepEqual(runtime.ownershipReceipt, {
+    boundRootCount: expectedRootCount,
+    ownedNodeCount: expectedRootCount,
+    ownedMeshNodeCount: expectedRootCount,
+  });
+
   const capability = assertRigidLitNormalBaseColorCapabilityV1(
     runtime.cpuAsset,
   );
