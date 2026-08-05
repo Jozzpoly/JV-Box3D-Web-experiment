@@ -10,7 +10,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$targetCommit = '106312083875b5aa94cf1f9fc986ac3c26888aa5'
+$targetCommit = 'c8e0bf24748b0a790a1c0039b1be801eef266580'
 $remoteBranch = 'product/jv-web-car-map-scan'
 $localBranchStem = 'local/jv-web-car-map-scan'
 $expectedNode = 'v24.16.0'

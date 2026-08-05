@@ -1,98 +1,119 @@
 # Active product candidate — car + E2R + JSPREV2
 
-Status: **LOCAL GATE PENDING / OWNER BROWSER ACCEPTANCE PENDING / DO NOT MERGE**
+Status: **BASE PRODUCT GATE PASS / VISUAL FIX GATE PENDING / OWNER VISUAL REVIEW PENDING / DO NOT MERGE**
 
 ## Exact identity
 
 - repository: `Jozzpoly/JV-Box3D-Web-experiment`
 - product branch: `product/jv-web-car-map-scan`
-- product commit: `106312083875b5aa94cf1f9fc986ac3c26888aa5`
+- active visual-fix candidate: `c8e0bf24748b0a790a1c0039b1be801eef266580`
+- first full green integrated product: `106312083875b5aa94cf1f9fc986ac3c26888aa5`
 - accepted car baseline: `d6aa218064c2653f918cf7956d2fcd20a940caf3`
 - native E2R/scan authority: `Jozzpoly/Box3d_FunProject@959aefb78587ce60cf2b8eb03ff82797a4165142`
 - operator: `tools/product-validation/Launch-JvWebCarMapScan.ps1`
 - development port after PASS: `5175`
 
-The product is exactly 52 commits ahead of the accepted car baseline and zero commits behind. The vehicle input, steering controller, drive controller, suspension configuration and joint implementation are not modified by the product diff.
+The active candidate remains a descendant of the accepted car baseline. The vehicle input, steering controller, drive controller, suspension configuration and joint implementation are not modified by the visual-fix diff.
 
-## Intended result
+## Proven integrated checkpoint
 
-One browser runtime contains:
+The owner's exact Windows run at `106312083875b5aa94cf1f9fc986ac3c26888aa5` established:
 
-- owner-accepted `legacy_ts_m6` car mechanics;
-- active E2R plate, offroad, rock islands and bumper banks;
-- one explicit or unambiguously selected JSPREV2 pack;
-- exactly 25 render groups and 25 texture files;
-- real Box3D collision for E2R and the scan authority mesh;
-- separate owned render streams and collision streams from the same pinned pack;
-- one WebGL context and one camera;
-- explicit `Mapa E2R` and `Skan JSPREV2` start targets;
-- scan spawn derived from the current AABB center and real mesh surface;
-- mobile-safe 16-bit render chunks;
-- checked WebGL buffer and texture uploads.
+- exact Node `v24.16.0` and npm `11.17.0`;
+- TypeScript PASS;
+- `251/251` tests PASS;
+- documentation, notices and portable package PASS;
+- real private JSPREV2 pack deeply validated;
+- `7` tiles, `25` groups, `25` textures and `1,775,775` triangles;
+- browser runtime started at `http://localhost:5175`;
+- accepted car visible and controllable on E2R and the scan;
+- rocks and bumper banks present;
+- offroad present;
+- scan geometry and Box3D collision observed working;
+- map/scan target switching working.
 
-## Preserved failed evidence
+This is the first complete integrated product checkpoint. It remains preserved and is not replaced by an unvalidated visual patch.
 
-Two earlier exact attempts remain preserved outside the repository:
+## Owner visual findings at the green checkpoint
 
-1. `04713ab…` — TypeScript stopped on one implicit callback type;
-2. `84910b9…` — TypeScript passed and 237/238 tests passed; the only failure was non-canonical `-0` in scan origin.
+Confirmed working:
 
-Neither worktree nor log is deleted or rewritten. They are evidence of the failures that led to the consolidated hardening commit.
+- car mechanics and controls;
+- E2R plate, offroad, rocks and bumpers;
+- scan geometry;
+- scan collision;
+- camera and target switching.
 
-## Consolidated hardening before the next gate
+Observed defects and omissions:
 
-The current product does not merely change the failed assertion. It also:
+1. JSPREV2 texture atlases were visibly scrambled across otherwise-correct geometry.
+2. Scan filtering was forced to linear smoothing with no interface control.
+3. The observer grid was always drawn over the product world.
+4. The product still uses the primitive debug vehicle; the proper authored vehicle model is not active yet.
 
-- canonicalizes outward numeric zeros;
-- validates the complete JSPREV2 descriptor table and payload;
-- checks finite vertex fields and index bounds in the selected real pack;
-- rejects ambiguous or heuristic pack selection;
-- resolves relative `ACTIVE_PREVIEW.json` paths from the selector directory;
-- refuses fallback when an explicit pack is invalid;
-- validates PNG/JPEG/WebP signatures and pack budgets;
-- exposes V2 counts and memory estimates to browser and receipt;
-- catches WebGL errors reported through `getError()`;
-- adds a full E2R integration test with the accepted M6 on plate and offroad.
+## Root cause and active visual fix
+
+Source comparison with the native scan renderer established that native JV:
+
+- keeps the writer-provided UV stream unchanged;
+- pairs manifest textures with groups in the same order;
+- uploads decoded texture rows without a vertical image flip;
+- uses `NEAREST` filtering.
+
+The browser renderer at `106312…` instead forced `UNPACK_FLIP_Y_WEBGL = 1` and `LINEAR` filtering. With photogrammetry atlases, the vertical flip sends UV islands into unrelated atlas regions, which explains the apparent random texture mosaic rather than a simple upside-down image.
+
+The active candidate `c8e0bf…` therefore:
+
+- forces native-compatible `UNPACK_FLIP_Y_WEBGL = 0`;
+- defaults to native-compatible `NEAREST` filtering;
+- adds live `Piksele / Wygładzanie` controls without reloading the scan;
+- updates all already-created scan textures while preserving the previous WebGL binding;
+- defaults the observer grid to OFF;
+- adds a live `Grid: włączony / wyłączony` diagnostic control;
+- preserves the chosen view settings while switching between E2R and scan targets;
+- adds focused tests for settings, texture upload policy and product entry wiring.
+
+The visual-fix candidate has passed focused strict TypeScript review and isolated policy tests. It has not yet passed the repository's exact Windows gate or owner visual review.
 
 ## Validation boundary
 
-The implementation has undergone source review and independent focused tests, but has not yet passed the owner's exact Windows gate at this SHA. The operator must establish:
+The operator must establish for `c8e0bf…`:
 
 1. exact remote SHA;
 2. clean isolated external worktree;
 3. Node `v24.16.0` and npm `11.17.0`;
-4. full historical foundation gate PASS;
+4. full foundation gate PASS;
 5. deep exact JSPREV2 V2 validation;
 6. source identity unchanged after the gate;
 7. external log and JSON receipt.
 
-Only after those checks does it start Vite at `http://localhost:5175`.
-
-## Owner observation
-
-Both start targets must be inspected separately.
+After the automated gate, owner review must check:
 
 ```text
-Mapa E2R:
-samochód widoczny:
-skręt:
-jazda/hamulec:
-rebuild:
-kamera:
-mapa widoczna:
-kontakt z mapą:
-
 Skan JSPREV2:
-przełączenie celu:
-spawn na powierzchni:
-skan widoczny:
-tekstury 25/25:
-kontakt ze skanem:
-skręt i jazda:
-rebuild pozostaje na skanie:
-kamera:
-stabilność:
-konsola przeglądarki:
+textures correctly mapped:
+Piksele mode:
+Wygładzanie mode:
+filter switch without reload:
+scan geometry unchanged:
+scan collision unchanged:
+
+Mapa E2R / offroad:
+grid off by default:
+grid live toggle:
+rocks and bumpers unchanged:
+car controls unchanged:
+rebuild:
+stability:
+console:
 ```
+
+## Next product stage after visual acceptance
+
+Activate the proper vehicle model through the existing `VehicleVisualFrameV1` and vehicle visual-package pipeline. Do not couple authored vehicle rendering to scan UV repair, and do not change the accepted legacy car mechanics while adding its visual model.
+
+## Git history note
+
+During publication of the visual-fix branch, three accidental technical commits temporarily carried an empty `__invalid__` file. They were not force-pushed away or rewritten. The final candidate tree `3e241761784edd2a2fb6ab18095c25ea0e737185` contains no such file, and the final diff from `106312…` contains only the eight intended visual and test files.
 
 No merge, Ready transition or native-parity claim is authorized by this record.
