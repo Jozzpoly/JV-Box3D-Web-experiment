@@ -107,8 +107,8 @@ export function writeNormalMatrix3FromMat4V1(
     cofactor22,
   ] as const;
 
-  for (let index = 0; index < values.length; index += 1) {
-    const value = values[index] * factor;
+  for (const [index, cofactor] of values.entries()) {
+    const value = cofactor * factor;
     if (!Number.isFinite(value)) {
       throw new Error(
         `Normal matrix V1 rejected: output component ${index} is not finite.`,
