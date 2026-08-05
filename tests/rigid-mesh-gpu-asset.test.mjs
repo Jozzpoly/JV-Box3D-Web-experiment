@@ -115,6 +115,32 @@ test("SharedArrayBuffer data is rejected before any GPU allocation", () => {
   assert.deepEqual(fixture.deleted, []);
 });
 
+test("invalid float streams are rejected before any GPU allocation", () => {
+  const invalidPositionFixture = fakeGl();
+  const invalidPosition = cpuAsset();
+  invalidPosition.meshes[0].primitives[0].positions[4] = Number.NaN;
+  assert.throws(
+    () =>
+      createRigidMeshGpuAssetV1(
+        invalidPositionFixture.gl,
+        invalidPosition,
+      ),
+    /POSITION\[4\] must be finite/,
+  );
+  assert.equal(invalidPositionFixture.allocations, 0);
+  assert.equal(invalidPositionFixture.uploads.length, 0);
+
+  const invalidNormalFixture = fakeGl();
+  const invalidNormal = cpuAsset({ normals: true });
+  invalidNormal.meshes[0].primitives[0].normals[2] = 2;
+  assert.throws(
+    () => createRigidMeshGpuAssetV1(invalidNormalFixture.gl, invalidNormal),
+    /NORMAL vector 0 has length 2/,
+  );
+  assert.equal(invalidNormalFixture.allocations, 0);
+  assert.equal(invalidNormalFixture.uploads.length, 0);
+});
+
 test("buffer allocation failure rolls back every earlier allocation", () => {
   const fixture = fakeGl({ failAllocationAt: 2 });
   assert.throws(
