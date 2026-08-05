@@ -8,6 +8,7 @@ import type {
 import type { JvWorldData } from "../../scene/jv-world-contract.js";
 import {
   installJvWorldPhysics,
+  JvWorldMeshOwner,
   type JvWorldPhysicsReceipt,
 } from "../../scene/jv-world-physics.js";
 import {
@@ -78,6 +79,7 @@ export class M6TopologyWorld {
   readonly #rateProfile: RateSteeringProfile;
   readonly #worldData: JvWorldData | null;
   readonly #worldPhysics: JvWorldPhysicsReceipt | null;
+  readonly #worldMeshes: JvWorldMeshOwner;
   readonly #vehicles: M6VehicleController[] = [];
   #stepIndex = 0;
   #disposed = false;
@@ -120,6 +122,7 @@ export class M6TopologyWorld {
     worldDef.workerCount = this.#config.solver.workerCount;
     this.#worldId = b3.b3CreateWorld(worldDef);
 
+    const worldMeshes = new JvWorldMeshOwner(b3);
     let events: EventsBuffer | null = null;
     let worldPhysics: JvWorldPhysicsReceipt | null = null;
     try {
@@ -151,11 +154,13 @@ export class M6TopologyWorld {
           this.#worldId,
           worldData,
           this.#config.terrainCategoryBits,
+          worldMeshes,
         );
       }
 
       this.#events = events;
       this.#worldPhysics = worldPhysics;
+      this.#worldMeshes = worldMeshes;
     } catch (error: unknown) {
       if (events !== null) {
         b3.destroyEventsBuffer(events);
@@ -163,6 +168,7 @@ export class M6TopologyWorld {
       if (b3.b3World_IsValid(this.#worldId)) {
         b3.b3DestroyWorld(this.#worldId);
       }
+      worldMeshes.disposeAfterWorld();
       throw error;
     }
   }
@@ -268,6 +274,7 @@ export class M6TopologyWorld {
       if (this.#b3.b3World_IsValid(this.#worldId)) {
         this.#b3.b3DestroyWorld(this.#worldId);
       }
+      this.#worldMeshes.disposeAfterWorld();
     }
     if (this.#b3.b3World_IsValid(this.#worldId)) {
       throw new Error(
