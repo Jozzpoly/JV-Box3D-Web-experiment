@@ -1,6 +1,7 @@
 import type { JvWorldData } from "../scene/jv-world-contract.js";
 import type { M6TraceFrame } from "../vehicle/m6/m6-topology-world.js";
 import { JvWorldRenderer } from "./jv-world-renderer.js";
+import { getJvProductViewSettings } from "./jv-product-view-settings.js";
 
 type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 type Rotation = Readonly<{ x: number; y: number; z: number; w: number }>;
@@ -465,7 +466,9 @@ export class M6WorldRenderer {
 
     this.#world?.render(viewProjection);
     gl.useProgram(this.#program);
-    this.#drawGrid(viewProjection, target);
+    if (getJvProductViewSettings().gridVisible) {
+      this.#drawGrid(viewProjection, target);
+    }
     if (this.#origin !== null) {
       this.#draw(
         this.#box,
