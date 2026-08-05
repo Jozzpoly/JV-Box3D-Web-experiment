@@ -1,10 +1,11 @@
-import { cp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   M6_VISUAL_PART_IDS,
   M6_VISUAL_SEGMENT_IDS,
 } from "../.test-dist/vehicle/m6/m6-visual-contract.js";
+import { prepareGeneratedPublicStagingV1 } from "./generated-public-staging.mjs";
 import {
   GENERATED_VEHICLE_VISUAL_FIXTURES,
   LIT_NORMAL_VEHICLE_VISUAL_FIXTURE,
@@ -71,15 +72,13 @@ if (
   );
 }
 
-await rm(generatedPublicDirectory, { recursive: true, force: true });
-await mkdir(resolve(root, ".local-assets"), { recursive: true });
-await cp(sourcePublicDirectory, generatedPublicDirectory, { recursive: true });
-for (const record of GENERATED_VEHICLE_VISUAL_FIXTURES) {
-  await rm(resolve(generatedPublicDirectory, record.packageDirectory), {
-    recursive: true,
-    force: true,
-  });
-}
+await prepareGeneratedPublicStagingV1({
+  sourceDirectory: sourcePublicDirectory,
+  destinationDirectory: generatedPublicDirectory,
+  ownedDirectories: GENERATED_VEHICLE_VISUAL_FIXTURES.map(
+    (record) => record.packageDirectory,
+  ),
+});
 await writeFixture(TINY_VEHICLE_VISUAL_FIXTURE, tiny);
 await writeFixture(LIT_NORMAL_VEHICLE_VISUAL_FIXTURE, litNormal);
 
