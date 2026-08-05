@@ -9,6 +9,7 @@ import { M6DebugRenderer } from "./render/m6-debug-renderer.js";
 import {
   installVehicleVisualWithDebugFallbackV1,
   type VehicleVisualDebugFallbackControllerV1,
+  type VehicleVisualDebugFallbackStateV1,
 } from "./render/vehicle-visual-debug-fallback.js";
 import { createVehicleVisualUnlitPassFactoryV1 } from "./render/vehicle-visual-unlit-pass.js";
 import {
@@ -148,6 +149,19 @@ app.innerHTML = `
         </select>
       </label>
 
+      <label class="profile-control">
+        <span>Vehicle visual layer</span>
+        <select data-vehicle-visual-mode>
+          <option value="TINY_PROOF">Tiny GLB proof · test geometry, not final model</option>
+          <option value="DEBUG">Physics debug vehicle</option>
+          <option value="OVERLAY">Tiny GLB proof + physics debug</option>
+          <option value="HIDDEN">Hide both vehicle layers</option>
+        </select>
+      </label>
+      <p class="hint" data-vehicle-visual-status>
+        TINY GLB PROOF · loading · this is test geometry, not a vehicle model.
+      </p>
+
       <button type="button" data-restart>Destroy and rebuild physical world</button>
 
       <dl class="primary-metrics">
@@ -215,6 +229,12 @@ const sceneDisplacementElement = requireElement<HTMLElement>("[data-scene-displa
 const sceneStepElement = requireElement<HTMLElement>("[data-scene-step]");
 const statusElement = requireElement<HTMLElement>("[data-status]");
 const profileSelect = requireElement<HTMLSelectElement>("[data-rate-profile]");
+const vehicleVisualModeSelect = requireElement<HTMLSelectElement>(
+  "[data-vehicle-visual-mode]",
+);
+const vehicleVisualStatusElement = requireElement<HTMLElement>(
+  "[data-vehicle-visual-status]",
+);
 const browserRuntimeElement = requireElement<HTMLElement>("[data-browser-runtime]");
 const runtimeBackendElement = requireElement<HTMLElement>("[data-runtime-backend]");
 const scenePackageElement = requireElement<HTMLElement>("[data-scene-package]");
@@ -305,8 +325,58 @@ const animationFrames = {
   cancel: (handle: number) => window.cancelAnimationFrame(handle),
 };
 
+type VehicleVisualMode = "TINY_PROOF" | "DEBUG" | "OVERLAY" | "HIDDEN";
+
+function readVehicleVisualMode(): VehicleVisualMode {
+  switch (vehicleVisualModeSelect.value) {
+    case "TINY_PROOF":
+    case "DEBUG":
+    case "OVERLAY":
+    case "HIDDEN":
+      return vehicleVisualModeSelect.value;
+    default:
+      throw new Error(
+        `Unknown vehicle visual mode: ${vehicleVisualModeSelect.value}`,
+      );
+  }
+}
+
+let vehicleVisualMode = readVehicleVisualMode();
+let vehicleVisualState: VehicleVisualDebugFallbackStateV1 = "LOADING";
+
+function tinyProofRequested(): boolean {
+  return vehicleVisualMode === "TINY_PROOF" || vehicleVisualMode === "OVERLAY";
+}
+
+function debugVehicleRequested(): boolean {
+  return vehicleVisualMode === "DEBUG" || vehicleVisualMode === "OVERLAY";
+}
+
 let renderer: M6DebugRenderer | null = null;
 let vehicleVisualFallback: VehicleVisualDebugFallbackControllerV1 | null = null;
+
+function applyVehicleVisualLayers(): void {
+  const proofRequested = tinyProofRequested();
+  const fallbackDebugVisible =
+    proofRequested &&
+    vehicleVisualState !== "ACTIVE" &&
+    vehicleVisualState !== "DISPOSED";
+  const debugVisible = debugVehicleRequested() || fallbackDebugVisible;
+
+  if (renderer !== null) {
+    renderer.setDebugVehicleVisible(debugVisible);
+  }
+
+  const proofStatus = proofRequested
+    ? vehicleVisualState === "ACTIVE"
+      ? "VISIBLE"
+      : vehicleVisualState
+    : "HIDDEN";
+  vehicleVisualStatusElement.textContent =
+    `TINY GLB PROOF: ${proofStatus} · PHYSICS DEBUG: ${debugVisible ? "VISIBLE" : "HIDDEN"} · ` +
+    "the tiny proof is test geometry, not a vehicle model.";
+}
+
 try {
   const nextRenderer = new M6DebugRenderer(sceneCanvas, {
     onRenderPassError: (error) => {
@@ -320,12 +390,18 @@ try {
         createVehicleVisualUnlitPassFactoryV1({
           pageBaseUrl: document.baseURI,
           packageUrl: "vehicles/tiny/vehicle.visual.json",
+          isVisible: () => tinyProofRequested(),
           onFirstFrame: () => onFirstFrame(),
         }),
+      onStateChange: (state) => {
+        vehicleVisualState = state;
+        applyVehicleVisualLayers();
+      },
       reportError: (error) => console.error(error),
     });
     renderer = nextRenderer;
     vehicleVisualFallback = nextFallback;
+    applyVehicleVisualLayers();
   } catch (error: unknown) {
     nextRenderer.dispose();
     throw error;
@@ -634,6 +710,10 @@ restartButton.addEventListener("click", () => {
 });
 profileSelect.addEventListener("change", () => {
   void startHost();
+});
+vehicleVisualModeSelect.addEventListener("change", () => {
+  vehicleVisualMode = readVehicleVisualMode();
+  applyVehicleVisualLayers();
 });
 
 window.addEventListener(
