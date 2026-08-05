@@ -7,6 +7,7 @@ import {
   type OwnedFloat32ArrayV1,
   type OwnedUint16ArrayV1,
 } from "../visual/glb-rigid-array-buffer-contract.js";
+import { assertRigidFloatStreamIntegrityV1 } from "../visual/rigid-float-stream-integrity.js";
 
 export interface RigidMeshGpuPrimitiveV1 {
   readonly positionBuffer: WebGLBuffer;
@@ -71,6 +72,7 @@ export function createRigidMeshGpuAssetV1(
   gl: WebGLRenderingContext,
   cpuAsset: GlbRigidCpuAssetV1,
 ): RigidMeshGpuAssetV1 {
+  assertRigidFloatStreamIntegrityV1(cpuAsset);
   assertGlbRigidCpuAssetArrayBufferBackedV1(cpuAsset);
   const uploadAsset = cpuAsset;
   const owned: WebGLBuffer[] = [];
