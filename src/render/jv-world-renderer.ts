@@ -1,4 +1,5 @@
 import type {
+  JvColor,
   JvIndexedMesh,
   JvQuat,
   JvStaticCapsule,
@@ -8,6 +9,19 @@ import type {
 
 export type JvRenderMatrix = Float32Array;
 
+type CpuPrimitive = Readonly<{
+  positions: readonly number[];
+  normals: readonly number[];
+  indices: readonly number[];
+}>;
+
+type BatchBuilder = {
+  readonly color: JvColor;
+  readonly positions: number[];
+  readonly normals: number[];
+  readonly indices: number[];
+};
+
 type GpuMesh = Readonly<{
   positionBuffer: WebGLBuffer;
   normalBuffer: WebGLBuffer;
@@ -16,6 +30,11 @@ type GpuMesh = Readonly<{
   indexCount: number;
   indexType: number;
   texture: WebGLTexture | null;
+}>;
+
+type SolidBatch = Readonly<{
+  color: JvColor;
+  mesh: GpuMesh;
 }>;
 
 type ProgramLocations = Readonly<{
@@ -83,6 +102,11 @@ void main() {
 
 const IDENTITY_ROTATION: JvQuat = { x: 0, y: 0, z: 0, w: 1 };
 const IDENTITY_SCALE: JvVec3 = { x: 1, y: 1, z: 1 };
+const IDENTITY_MODEL = modelMatrix(
+  { x: 0, y: 0, z: 0 },
+  IDENTITY_ROTATION,
+  IDENTITY_SCALE,
+);
 
 function createShader(
   gl: WebGLRenderingContext,
@@ -201,6 +225,47 @@ function modelMatrix(
   ]);
 }
 
+function rotate(rotation: JvQuat, value: JvVec3): JvVec3 {
+  const ix = rotation.w * value.x + rotation.y * value.z - rotation.z * value.y;
+  const iy = rotation.w * value.y + rotation.z * value.x - rotation.x * value.z;
+  const iz = rotation.w * value.z + rotation.x * value.y - rotation.y * value.x;
+  const iw = -rotation.x * value.x - rotation.y * value.y - rotation.z * value.z;
+  return {
+    x: ix * rotation.w + iw * -rotation.x + iy * -rotation.z - iz * -rotation.y,
+    y: iy * rotation.w + iw * -rotation.y + iz * -rotation.x - ix * -rotation.z,
+    z: iz * rotation.w + iw * -rotation.z + ix * -rotation.y - iy * -rotation.x,
+  };
+}
+
+function add(a: JvVec3, b: JvVec3): JvVec3 {
+  return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
+}
+
+function normalize(value: JvVec3): JvVec3 {
+  const length = Math.hypot(value.x, value.y, value.z) || 1;
+  return { x: value.x / length, y: value.y / length, z: value.z / length };
+}
+
+function rotationFromYAxis(direction: JvVec3): JvQuat {
+  const normalized = normalize(direction);
+  const dot = Math.max(-1, Math.min(1, normalized.y));
+  if (dot > 0.999_999) {
+    return IDENTITY_ROTATION;
+  }
+  if (dot < -0.999_999) {
+    return { x: 1, y: 0, z: 0, w: 0 };
+  }
+  const axis = normalize({ x: normalized.z, y: 0, z: -normalized.x });
+  const half = Math.acos(dot) / 2;
+  const sine = Math.sin(half);
+  return {
+    x: axis.x * sine,
+    y: axis.y * sine,
+    z: axis.z * sine,
+    w: Math.cos(half),
+  };
+}
+
 function calculateNormals(
   positions: Float32Array,
   indices: Uint32Array,
@@ -220,9 +285,9 @@ function calculateNormals(
     const ny = abz * acx - abx * acz;
     const nz = abx * acy - aby * acx;
     for (const index of [ia, ib, ic]) {
-      normals[index] += nx;
-      normals[index + 1] += ny;
-      normals[index + 2] += nz;
+      normals[index] = normals[index]! + nx;
+      normals[index + 1] = normals[index + 1]! + ny;
+      normals[index + 2] = normals[index + 2]! + nz;
     }
   }
   for (let offset = 0; offset < normals.length; offset += 3) {
@@ -232,9 +297,9 @@ function calculateNormals(
         normals[offset + 1]!,
         normals[offset + 2]!,
       ) || 1;
-    normals[offset] /= length;
-    normals[offset + 1] /= length;
-    normals[offset + 2] /= length;
+    normals[offset] = normals[offset]! / length;
+    normals[offset + 1] = normals[offset + 1]! / length;
+    normals[offset + 2] = normals[offset + 2]! / length;
   }
   return normals;
 }
@@ -285,15 +350,11 @@ function uploadMesh(
     );
   }
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  if (useUint32) {
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
-  } else {
-    gl.bufferData(
-      gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(mesh.indices),
-      gl.STATIC_DRAW,
-    );
-  }
+  gl.bufferData(
+    gl.ELEMENT_ARRAY_BUFFER,
+    useUint32 ? mesh.indices : new Uint16Array(mesh.indices),
+    gl.STATIC_DRAW,
+  );
 
   return {
     positionBuffer,
@@ -306,20 +367,30 @@ function uploadMesh(
   };
 }
 
-function unitBox(): JvIndexedMesh {
-  const positions = new Float32Array([
-    -1,-1,-1, 1,-1,-1, 1,1,-1, -1,1,-1,
-    -1,-1,1, 1,-1,1, 1,1,1, -1,1,1,
-  ]);
-  const indices = new Uint32Array([
-    0,1,2, 0,2,3, 4,6,5, 4,7,6,
-    0,4,5, 0,5,1, 3,2,6, 3,6,7,
-    1,5,6, 1,6,2, 0,3,7, 0,7,4,
-  ]);
-  return { positions, indices, color: [1, 1, 1, 1] };
+function boxPrimitive(): CpuPrimitive {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const indices: number[] = [];
+  const faces = [
+    { normal: [0, 0, -1], corners: [[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1]] },
+    { normal: [0, 0, 1], corners: [[-1,-1,1],[-1,1,1],[1,1,1],[1,-1,1]] },
+    { normal: [-1, 0, 0], corners: [[-1,-1,-1],[-1,1,-1],[-1,1,1],[-1,-1,1]] },
+    { normal: [1, 0, 0], corners: [[1,-1,-1],[1,-1,1],[1,1,1],[1,1,-1]] },
+    { normal: [0, -1, 0], corners: [[-1,-1,-1],[-1,-1,1],[1,-1,1],[1,-1,-1]] },
+    { normal: [0, 1, 0], corners: [[-1,1,-1],[1,1,-1],[1,1,1],[-1,1,1]] },
+  ] as const;
+  for (const face of faces) {
+    const base = positions.length / 3;
+    for (const corner of face.corners) {
+      positions.push(corner[0], corner[1], corner[2]);
+      normals.push(face.normal[0], face.normal[1], face.normal[2]);
+    }
+    indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+  return { positions, normals, indices };
 }
 
-function unitCylinder(segments = 20): JvIndexedMesh {
+function cylinderPrimitive(segments = 16): CpuPrimitive {
   const positions: number[] = [];
   const normals: number[] = [];
   const indices: number[] = [];
@@ -338,15 +409,10 @@ function unitCylinder(segments = 20): JvIndexedMesh {
     const nextTop = nextBottom + 1;
     indices.push(bottom, nextBottom, top, top, nextBottom, nextTop);
   }
-  return {
-    positions: new Float32Array(positions),
-    normals: new Float32Array(normals),
-    indices: new Uint32Array(indices),
-    color: [1, 1, 1, 1],
-  };
+  return { positions, normals, indices };
 }
 
-function unitSphere(latitude = 8, longitude = 16): JvIndexedMesh {
+function spherePrimitive(latitude = 6, longitude = 12): CpuPrimitive {
   const positions: number[] = [];
   const normals: number[] = [];
   const indices: number[] = [];
@@ -369,53 +435,61 @@ function unitSphere(latitude = 8, longitude = 16): JvIndexedMesh {
       indices.push(a, b, a + 1, a + 1, b, b + 1);
     }
   }
-  return {
-    positions: new Float32Array(positions),
-    normals: new Float32Array(normals),
-    indices: new Uint32Array(indices),
-    color: [1, 1, 1, 1],
-  };
+  return { positions, normals, indices };
 }
 
-function rotate(rotation: JvQuat, value: JvVec3): JvVec3 {
-  const ix = rotation.w * value.x + rotation.y * value.z - rotation.z * value.y;
-  const iy = rotation.w * value.y + rotation.z * value.x - rotation.x * value.z;
-  const iz = rotation.w * value.z + rotation.x * value.y - rotation.y * value.x;
-  const iw = -rotation.x * value.x - rotation.y * value.y - rotation.z * value.z;
-  return {
-    x: ix * rotation.w + iw * -rotation.x + iy * -rotation.z - iz * -rotation.y,
-    y: iy * rotation.w + iw * -rotation.y + iz * -rotation.x - ix * -rotation.z,
-    z: iz * rotation.w + iw * -rotation.z + ix * -rotation.y - iy * -rotation.x,
-  };
+function colorKey(color: JvColor): string {
+  return color.join(",");
 }
 
-function add(a: JvVec3, b: JvVec3): JvVec3 {
-  return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
-}
-
-function normalize(value: JvVec3): JvVec3 {
-  const length = Math.hypot(value.x, value.y, value.z) || 1;
-  return { x: value.x / length, y: value.y / length, z: value.z / length };
-}
-
-function rotationFromYAxis(direction: JvVec3): JvQuat {
-  const normalized = normalize(direction);
-  const dot = Math.max(-1, Math.min(1, normalized.y));
-  if (dot > 0.999_999) {
-    return IDENTITY_ROTATION;
+function getBatch(
+  batches: Map<string, BatchBuilder>,
+  color: JvColor,
+): BatchBuilder {
+  const key = colorKey(color);
+  const existing = batches.get(key);
+  if (existing !== undefined) {
+    return existing;
   }
-  if (dot < -0.999_999) {
-    return { x: 1, y: 0, z: 0, w: 0 };
-  }
-  const axis = normalize({ x: normalized.z, y: 0, z: -normalized.x });
-  const half = Math.acos(dot) / 2;
-  const sine = Math.sin(half);
-  return {
-    x: axis.x * sine,
-    y: axis.y * sine,
-    z: axis.z * sine,
-    w: Math.cos(half),
+  const created: BatchBuilder = {
+    color,
+    positions: [],
+    normals: [],
+    indices: [],
   };
+  batches.set(key, created);
+  return created;
+}
+
+function appendPrimitive(
+  batch: BatchBuilder,
+  primitive: CpuPrimitive,
+  position: JvVec3,
+  rotation: JvQuat,
+  scale: JvVec3,
+): void {
+  const vertexBase = batch.positions.length / 3;
+  for (let offset = 0; offset < primitive.positions.length; offset += 3) {
+    const local = {
+      x: primitive.positions[offset]! * scale.x,
+      y: primitive.positions[offset + 1]! * scale.y,
+      z: primitive.positions[offset + 2]! * scale.z,
+    };
+    const world = add(position, rotate(rotation, local));
+    batch.positions.push(world.x, world.y, world.z);
+
+    const normal = normalize(
+      rotate(rotation, {
+        x: primitive.normals[offset]!,
+        y: primitive.normals[offset + 1]!,
+        z: primitive.normals[offset + 2]!,
+      }),
+    );
+    batch.normals.push(normal.x, normal.y, normal.z);
+  }
+  for (const index of primitive.indices) {
+    batch.indices.push(vertexBase + index);
+  }
 }
 
 function capsuleWorldEndpoints(capsule: JvStaticCapsule) {
@@ -431,13 +505,89 @@ function capsuleWorldEndpoints(capsule: JvStaticCapsule) {
   };
 }
 
+function buildStaticBatches(world: JvWorldData): readonly Readonly<{
+  color: JvColor;
+  mesh: JvIndexedMesh;
+}>[] {
+  const batches = new Map<string, BatchBuilder>();
+  const box = boxPrimitive();
+  const cylinder = cylinderPrimitive();
+  const sphere = spherePrimitive();
+
+  for (const item of world.boxes) {
+    appendPrimitive(
+      getBatch(batches, item.color),
+      box,
+      item.center,
+      item.rotation,
+      item.halfExtents,
+    );
+  }
+
+  for (const capsule of world.capsules) {
+    const batch = getBatch(batches, capsule.color);
+    const endpoints = capsuleWorldEndpoints(capsule);
+    const delta = {
+      x: endpoints.second.x - endpoints.first.x,
+      y: endpoints.second.y - endpoints.first.y,
+      z: endpoints.second.z - endpoints.first.z,
+    };
+    const length = Math.hypot(delta.x, delta.y, delta.z);
+    const midpoint = {
+      x: (endpoints.first.x + endpoints.second.x) * 0.5,
+      y: (endpoints.first.y + endpoints.second.y) * 0.5,
+      z: (endpoints.first.z + endpoints.second.z) * 0.5,
+    };
+    if (length > 1e-6) {
+      appendPrimitive(
+        batch,
+        cylinder,
+        midpoint,
+        rotationFromYAxis(delta),
+        {
+          x: capsule.radius,
+          y: length * 0.5,
+          z: capsule.radius,
+        },
+      );
+    }
+    const capScale = {
+      x: capsule.radius,
+      y: capsule.radius,
+      z: capsule.radius,
+    };
+    appendPrimitive(
+      batch,
+      sphere,
+      endpoints.first,
+      IDENTITY_ROTATION,
+      capScale,
+    );
+    appendPrimitive(
+      batch,
+      sphere,
+      endpoints.second,
+      IDENTITY_ROTATION,
+      capScale,
+    );
+  }
+
+  return [...batches.values()].map((batch) => ({
+    color: batch.color,
+    mesh: {
+      positions: new Float32Array(batch.positions),
+      normals: new Float32Array(batch.normals),
+      indices: new Uint32Array(batch.indices),
+      color: batch.color,
+    },
+  }));
+}
+
 export class JvWorldRenderer {
   readonly #gl: WebGLRenderingContext;
   readonly #solid: ProgramLocations;
   readonly #textured: ProgramLocations;
-  readonly #box: GpuMesh;
-  readonly #cylinder: GpuMesh;
-  readonly #sphere: GpuMesh;
+  readonly #staticBatches: SolidBatch[] = [];
   readonly #offroad: GpuMesh;
   readonly #scanGroups: Array<Readonly<{
     gpu: GpuMesh;
@@ -464,17 +614,13 @@ export class JvWorldRenderer {
       TEXTURED_FRAGMENT,
       true,
     );
-    this.#box = uploadMesh(gl, unitBox(), uintIndicesAvailable);
-    this.#cylinder = uploadMesh(
-      gl,
-      unitCylinder(),
-      uintIndicesAvailable,
-    );
-    this.#sphere = uploadMesh(
-      gl,
-      unitSphere(),
-      uintIndicesAvailable,
-    );
+
+    for (const batch of buildStaticBatches(world)) {
+      this.#staticBatches.push({
+        color: batch.color,
+        mesh: uploadMesh(gl, batch.mesh, uintIndicesAvailable),
+      });
+    }
     this.#offroad = uploadMesh(
       gl,
       world.offroad,
@@ -497,83 +643,31 @@ export class JvWorldRenderer {
     }
   }
 
+  get drawCallBudget(): number {
+    return (
+      this.#staticBatches.length +
+      1 +
+      this.#scanGroups.length
+    );
+  }
+
   render(viewProjection: JvRenderMatrix): void {
     if (this.#disposed) {
       return;
     }
-    for (const box of this.#world.boxes) {
+    for (const batch of this.#staticBatches) {
       this.#drawSolid(
-        this.#box,
+        batch.mesh,
         viewProjection,
-        modelMatrix(box.center, box.rotation, box.halfExtents),
-        box.color,
-      );
-    }
-
-    for (const capsule of this.#world.capsules) {
-      const endpoints = capsuleWorldEndpoints(capsule);
-      const delta = {
-        x: endpoints.second.x - endpoints.first.x,
-        y: endpoints.second.y - endpoints.first.y,
-        z: endpoints.second.z - endpoints.first.z,
-      };
-      const length = Math.hypot(delta.x, delta.y, delta.z);
-      const midpoint = {
-        x: (endpoints.first.x + endpoints.second.x) * 0.5,
-        y: (endpoints.first.y + endpoints.second.y) * 0.5,
-        z: (endpoints.first.z + endpoints.second.z) * 0.5,
-      };
-      if (length > 1e-6) {
-        this.#drawSolid(
-          this.#cylinder,
-          viewProjection,
-          modelMatrix(
-            midpoint,
-            rotationFromYAxis(delta),
-            {
-              x: capsule.radius,
-              y: length * 0.5,
-              z: capsule.radius,
-            },
-          ),
-          capsule.color,
-        );
-      }
-      const capScale = {
-        x: capsule.radius,
-        y: capsule.radius,
-        z: capsule.radius,
-      };
-      this.#drawSolid(
-        this.#sphere,
-        viewProjection,
-        modelMatrix(
-          endpoints.first,
-          IDENTITY_ROTATION,
-          capScale,
-        ),
-        capsule.color,
-      );
-      this.#drawSolid(
-        this.#sphere,
-        viewProjection,
-        modelMatrix(
-          endpoints.second,
-          IDENTITY_ROTATION,
-          capScale,
-        ),
-        capsule.color,
+        IDENTITY_MODEL,
+        batch.color,
       );
     }
 
     this.#drawSolid(
       this.#offroad,
       viewProjection,
-      modelMatrix(
-        { x: 0, y: 0, z: 0 },
-        IDENTITY_ROTATION,
-        IDENTITY_SCALE,
-      ),
+      IDENTITY_MODEL,
       this.#world.offroad.color,
     );
 
@@ -614,9 +708,10 @@ export class JvWorldRenderer {
       image.src = "";
     }
     this.#images.length = 0;
-    this.#deleteMesh(this.#box);
-    this.#deleteMesh(this.#cylinder);
-    this.#deleteMesh(this.#sphere);
+    for (const batch of this.#staticBatches) {
+      this.#deleteMesh(batch.mesh);
+    }
+    this.#staticBatches.length = 0;
     this.#deleteMesh(this.#offroad);
     for (const group of this.#scanGroups) {
       this.#deleteMesh(group.gpu);
@@ -679,7 +774,7 @@ export class JvWorldRenderer {
     mesh: GpuMesh,
     viewProjection: JvRenderMatrix,
     model: JvRenderMatrix,
-    color: readonly [number, number, number, number],
+    color: JvColor,
   ): void {
     const gl = this.#gl;
     const locations = this.#solid;
@@ -710,18 +805,20 @@ export class JvWorldRenderer {
     mesh: GpuMesh,
     viewProjection: JvRenderMatrix,
     model: JvRenderMatrix,
-    color: readonly [number, number, number, number],
+    color: JvColor,
   ): void {
-    if (mesh.texture === null) {
-      return;
-    }
     const gl = this.#gl;
     const locations = this.#textured;
+    if (
+      mesh.texture === null ||
+      mesh.uvBuffer === null ||
+      locations.uv === null ||
+      locations.sampler === null
+    ) {
+      throw new Error("Textured JV scan group has an incomplete GPU binding.");
+    }
     gl.useProgram(locations.program);
     this.#bindCommon(mesh, locations);
-    if (locations.uv === null || mesh.uvBuffer === null) {
-      throw new Error("Textured JV scan group has no UV buffer.");
-    }
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.uvBuffer);
     gl.enableVertexAttribArray(locations.uv);
     gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0);
