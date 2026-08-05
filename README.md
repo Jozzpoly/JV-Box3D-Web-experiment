@@ -17,13 +17,14 @@ Read in this order:
 
 ## Local validation
 
-R1 and R2 use an isolated PowerShell harness that creates detached worktrees outside the active repository and captures exact evidence bundles.
+Before executing the structural checker or an R1/R2 run on Windows, parse the harness with the operator's installed PowerShell engine:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\local-validation\Test-JvWebControlPlane.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebPowerShellSyntax.ps1
 ```
 
-The harness never switches the active branch and never runs `git reset`, `git clean` or force removal.
+Then follow the one-command-at-a-time procedure in [`docs/local-validation/README.md`](docs/local-validation/README.md).
+
+The harness never switches the active branch and never runs `git reset`, `git clean` or forced worktree removal.
 
 No historical branch, PR body, handoff package or AI summary is authoritative by itself. Exact commits and evidence bundles are authoritative only for the scope they actually prove.

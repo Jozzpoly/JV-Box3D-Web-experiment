@@ -11,13 +11,19 @@ Pass criteria:
 - this refoundation documentation exists on a clean branch from `main`;
 - no implementation branch is declared canonical;
 - every historical claim is classified by evidence level;
+- the PowerShell syntax bootstrap passes in the operator's installed engine;
 - the local control-plane structural check passes.
 
-Local check:
+Syntax bootstrap:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\local-validation\Test-JvWebControlPlane.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebPowerShellSyntax.ps1
+```
+
+Tracked control-plane check:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Test-JvWebControlPlane.ps1
 ```
 
 ## R1 — historical green baseline
@@ -34,13 +40,16 @@ Procedure:
 6. raw logs and artifact hashes;
 7. no source changes during the run.
 
+Preflight:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 -Target R1 -FetchMissingRef -PreflightOnly
+```
+
 Canonical local invocation:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 `
-  -Target R1 `
-  -FetchMissingRef
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 -Target R1 -FetchMissingRef
 ```
 
 Outcome:
@@ -59,10 +68,7 @@ Run the same environment and evidence format as R1. Capture every failure before
 Canonical local invocation:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 `
-  -Target R2 `
-  -FetchMissingRef
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\local-validation\Invoke-JvWebBaseline.ps1 -Target R2 -FetchMissingRef
 ```
 
 Then classify each post-`dcec0a7…` change:
