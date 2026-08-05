@@ -7,6 +7,7 @@ dist/
 .private-work/
 _JV_WEB_LOCAL_VALIDATION/
 .local-validation/
+_JV_WEB_PLAYABLE/
 public/vehicles/tiny/models/m6-rig-proof.glb
 public/vehicles/tiny/vehicle.visual.json
 *.tsbuildinfo
