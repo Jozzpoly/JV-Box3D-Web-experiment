@@ -5,14 +5,33 @@ function reject(message) {
   throw new Error(`Generated public staging rejected: ${message}`);
 }
 
+function containsDirectory(parent, child) {
+  const path = relative(parent, child);
+  return (
+    path.length > 0 &&
+    path !== ".." &&
+    !path.startsWith(`..${sep}`) &&
+    !isAbsolute(path)
+  );
+}
+
 function resolveOwnedDirectory(destinationDirectory, value) {
   if (typeof value !== "string" || value.length === 0) {
     reject("owned directory paths must be non-empty strings");
   }
-  if (isAbsolute(value)) {
-    reject(`owned directory must be relative: ${value}`);
+  if (
+    isAbsolute(value) ||
+    value.includes("\\") ||
+    !/^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/.test(value)
+  ) {
+    reject(`owned directory must be a canonical relative path: ${value}`);
   }
-  const absolute = resolve(destinationDirectory, value);
+  const segments = value.split("/");
+  if (segments.some((segment) => segment === "." || segment === "..")) {
+    reject(`owned directory must not contain dot segments: ${value}`);
+  }
+
+  const absolute = resolve(destinationDirectory, ...segments);
   const relativePath = relative(destinationDirectory, absolute);
   if (
     relativePath.length === 0 ||
@@ -71,8 +90,12 @@ export async function prepareGeneratedPublicStagingV1({
 }) {
   const source = resolve(sourceDirectory);
   const destination = resolve(destinationDirectory);
-  if (source === destination) {
-    reject("source and destination directories must differ");
+  if (
+    source === destination ||
+    containsDirectory(source, destination) ||
+    containsDirectory(destination, source)
+  ) {
+    reject("source and destination directory trees must be disjoint");
   }
   const owned = validateOwnedDirectories(destination, ownedDirectories);
 
