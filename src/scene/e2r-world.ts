@@ -101,35 +101,39 @@ function u32(value: number): number {
 }
 
 function hashLattice(seed: number, ix: number, iz: number): number {
-  let h = u32(seed);
-  h = u32(h ^ Math.imul(ix | 0, 0x27d4eb2d));
-  h = u32(h ^ Math.imul(iz | 0, 0x165667b1));
-  h = u32(Math.imul(h, 0x85ebca6b));
-  h = u32(h ^ (h >>> 13));
-  h = u32(Math.imul(h, 0xc2b2ae35));
-  h = u32(h ^ (h >>> 16));
-  return h;
+  let hash = u32(seed);
+  hash = u32(hash ^ Math.imul(ix | 0, 0x27d4eb2d));
+  hash = u32(hash ^ Math.imul(iz | 0, 0x165667b1));
+  hash = u32(Math.imul(hash, 0x85ebca6b));
+  hash = u32(hash ^ (hash >>> 13));
+  hash = u32(Math.imul(hash, 0xc2b2ae35));
+  return u32(hash ^ (hash >>> 16));
 }
 
-function hashToUnit(h: number): number {
-  return (h & 0x00ff_ffff) / 0x00ff_ffff;
+function hashToUnit(hash: number): number {
+  return (hash & 0x00ff_ffff) / 0x00ff_ffff;
 }
 
-function quintic(t: number): number {
-  return t * t * t * (t * (t * 6 - 15) + 10);
+function quintic(value: number): number {
+  return value * value * value *
+    (value * (value * 6 - 15) + 10);
 }
 
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
+function lerp(a: number, b: number, amount: number): number {
+  return a + (b - a) * amount;
 }
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-function smoothstep(edge0: number, edge1: number, value: number): number {
-  const t = clamp01((value - edge0) / (edge1 - edge0));
-  return t * t * (3 - 2 * t);
+function smoothstep(
+  edge0: number,
+  edge1: number,
+  value: number,
+): number {
+  const amount = clamp01((value - edge0) / (edge1 - edge0));
+  return amount * amount * (3 - 2 * amount);
 }
 
 function valueNoise2D(
@@ -138,19 +142,21 @@ function valueNoise2D(
   z: number,
   wavelength: number,
 ): number {
-  const gx = x / wavelength;
-  const gz = z / wavelength;
-  const ix = Math.floor(gx);
-  const iz = Math.floor(gz);
-  const fx = gx - ix;
-  const fz = gz - iz;
-  const ux = quintic(fx);
-  const uz = quintic(fz);
-  const v00 = hashToUnit(hashLattice(seed, ix, iz));
-  const v10 = hashToUnit(hashLattice(seed, ix + 1, iz));
-  const v01 = hashToUnit(hashLattice(seed, ix, iz + 1));
-  const v11 = hashToUnit(hashLattice(seed, ix + 1, iz + 1));
-  return lerp(lerp(v00, v10, ux), lerp(v01, v11, ux), uz);
+  const gridX = x / wavelength;
+  const gridZ = z / wavelength;
+  const ix = Math.floor(gridX);
+  const iz = Math.floor(gridZ);
+  const ux = quintic(gridX - ix);
+  const uz = quintic(gridZ - iz);
+  const value00 = hashToUnit(hashLattice(seed, ix, iz));
+  const value10 = hashToUnit(hashLattice(seed, ix + 1, iz));
+  const value01 = hashToUnit(hashLattice(seed, ix, iz + 1));
+  const value11 = hashToUnit(hashLattice(seed, ix + 1, iz + 1));
+  return lerp(
+    lerp(value00, value10, ux),
+    lerp(value01, value11, ux),
+    uz,
+  );
 }
 
 function signedNoise2D(
@@ -163,8 +169,8 @@ function signedNoise2D(
 }
 
 function ridged(value: number): number {
-  const result = 1 - Math.abs(value);
-  return result * result;
+  const ridge = 1 - Math.abs(value);
+  return ridge * ridge;
 }
 
 function seedUnit(seed: number): number {
@@ -175,15 +181,18 @@ function ridgedFbm(
   seed: number,
   x: number,
   z: number,
-  wavelength: number,
+  baseWavelength: number,
   octaves: number,
 ): number {
   let sum = 0;
   let amplitude = 1;
   let normalizer = 0;
+  let wavelength = baseWavelength;
   let layer = seed;
   for (let index = 0; index < octaves; index += 1) {
-    sum += ridged(signedNoise2D(layer, x, z, wavelength)) * amplitude;
+    sum +=
+      ridged(signedNoise2D(layer, x, z, wavelength)) *
+      amplitude;
     normalizer += amplitude;
     amplitude *= 0.5;
     wavelength *= 0.5;
@@ -231,8 +240,10 @@ function computeMountain(
   );
   const effectiveRadius =
     MOUNTAIN_RADIUS * (1 + spur * MOUNTAIN_SPUR_AMOUNT);
-  const t = clamp01(1 - distance / effectiveRadius);
-  const mountainMass = t * t * (3 - 2 * t);
+  const radial = clamp01(1 - distance / effectiveRadius);
+  const mountainMass =
+    radial * radial * (3 - 2 * radial);
+
   let mountainHeight = 0;
   if (mountainMass > 0) {
     const surface =
@@ -242,11 +253,11 @@ function computeMountain(
         localZ,
         MOUNTAIN_SURFACE_WAVELENGTH,
         MOUNTAIN_SURFACE_OCTAVES,
-      ) -
-        MOUNTAIN_SURFACE_BIAS) *
+      ) - MOUNTAIN_SURFACE_BIAS) *
       MOUNTAIN_SURFACE_AMPLITUDE;
     mountainHeight =
-      mountainMass * MOUNTAIN_PEAK_HEIGHT + surface * mountainMass;
+      mountainMass * MOUNTAIN_PEAK_HEIGHT +
+      surface * mountainMass;
   }
 
   const armAngularRaw = signedNoise2D(
@@ -255,7 +266,10 @@ function computeMountain(
     Math.sin(angle) * ARM_RING_RADIUS,
     ARM_RING_WAVELENGTH,
   );
-  const armAngular = Math.pow(ridged(armAngularRaw), ARM_SHARPNESS);
+  const armAngular = Math.pow(
+    ridged(armAngularRaw),
+    ARM_SHARPNESS,
+  );
   const armInner = smoothstep(
     ARM_INNER_RADIUS_SCALE * MOUNTAIN_RADIUS,
     ARM_MID_RADIUS_SCALE * MOUNTAIN_RADIUS,
@@ -284,6 +298,7 @@ function computeMountain(
       (MOUNTAIN_PEAK_HEIGHT * ARM_HEIGHT_SCALE +
         subPeak * ARM_SUB_PEAK_AMPLITUDE);
   }
+
   return {
     height: mountainHeight + armHeight,
     mass: clamp01(mountainMass + armMass),
@@ -295,13 +310,25 @@ export function sampleE2rOffroadHeight(
   localZ: number,
   seed = OFFROAD_SEED,
 ): number {
-  const difficulty = smoothstep(0, DIFFICULTY_DISTANCE, localX);
+  const difficulty = smoothstep(
+    0,
+    DIFFICULTY_DISTANCE,
+    localX,
+  );
   const warpX =
-    signedNoise2D(seed + WARP_SEED_X, localX, localZ, WARP_WAVELENGTH) *
-    WARP_STRENGTH;
+    signedNoise2D(
+      seed + WARP_SEED_X,
+      localX,
+      localZ,
+      WARP_WAVELENGTH,
+    ) * WARP_STRENGTH;
   const warpZ =
-    signedNoise2D(seed + WARP_SEED_Z, localX, localZ, WARP_WAVELENGTH) *
-    WARP_STRENGTH;
+    signedNoise2D(
+      seed + WARP_SEED_Z,
+      localX,
+      localZ,
+      WARP_WAVELENGTH,
+    ) * WARP_STRENGTH;
   const warpedX = localX + warpX;
   const warpedZ = localZ + warpZ;
   const ridge1 = ridged(
@@ -317,7 +344,8 @@ export function sampleE2rOffroadHeight(
       seed + MACRO_OCTAVE_2_SEED_OFFSET,
       warpedX,
       warpedZ,
-      MACRO_WAVELENGTH * MACRO_OCTAVE_2_WAVELENGTH_SCALE,
+      MACRO_WAVELENGTH *
+        MACRO_OCTAVE_2_WAVELENGTH_SCALE,
     ),
   );
   const elevationShape = lerp(
@@ -325,15 +353,24 @@ export function sampleE2rOffroadHeight(
     ridge2,
     MACRO_OCTAVE_2_WEIGHT,
   );
-  const macro = (elevationShape * 2 - 1) * MACRO_AMPLITUDE;
+  const macro =
+    (elevationShape * 2 - 1) * MACRO_AMPLITUDE;
   const mountain = computeMountain(seed, localX, localZ);
   const edgeDistance = Math.min(
     localZ,
     OFFROAD_SIZE - localZ,
     OFFROAD_SIZE - localX,
   );
-  const edgeMass = smoothstep(0, EDGE_FADE_DISTANCE, edgeDistance);
-  const edgeBase = lerp(EDGE_FADE_BASE_FLOOR, 1, edgeMass);
+  const edgeMass = smoothstep(
+    0,
+    EDGE_FADE_DISTANCE,
+    edgeDistance,
+  );
+  const edgeBase = lerp(
+    EDGE_FADE_BASE_FLOOR,
+    1,
+    edgeMass,
+  );
   const mountainHeight = mountain.height * edgeMass;
   const mountainMass = mountain.mass * edgeMass;
   const roughnessNoise = valueNoise2D(
@@ -342,10 +379,17 @@ export function sampleE2rOffroadHeight(
     localZ,
     ROUGHNESS_WAVELENGTH,
   );
-  const roughnessSignal = Math.max(elevationShape, 0.8 * mountainMass);
+  const roughnessSignal = Math.max(
+    elevationShape,
+    0.8 * mountainMass,
+  );
   const roughness = clamp01(
     roughnessSignal *
-      lerp(ROUGHNESS_NOISE_LOW, ROUGHNESS_NOISE_HIGH, roughnessNoise),
+      lerp(
+        ROUGHNESS_NOISE_LOW,
+        ROUGHNESS_NOISE_HIGH,
+        roughnessNoise,
+      ),
   );
   const meso =
     signedNoise2D(
@@ -366,13 +410,16 @@ export function sampleE2rOffroadHeight(
     MICRO_AMPLITUDE *
     lerp(ROUGHNESS_MICRO_FLOOR, 1, roughness);
   const baseScale =
-    (1 - mountainMass * MOUNTAIN_BASE_SUPPRESS) * edgeBase;
+    (1 - mountainMass * MOUNTAIN_BASE_SUPPRESS) *
+    edgeBase;
   const seamRamp =
     SEAM_OVERLAP_DEPTH *
     (1 - smoothstep(0, SEAM_OVERLAP_RUN, localX));
   const height =
     seamRamp +
-    difficulty * ((macro + meso + micro) * baseScale + mountainHeight);
+    difficulty *
+      ((macro + meso + micro) * baseScale +
+        mountainHeight);
   return Math.max(
     OFFROAD_MIN_HEIGHT + 0.5,
     Math.min(OFFROAD_MAX_HEIGHT - 0.5, height),
@@ -383,7 +430,7 @@ function calculateNormals(
   positions: Float32Array,
   indices: Uint32Array,
 ): Float32Array {
-  const normals = new Float32Array(positions.length);
+  const accumulated = new Array<number>(positions.length).fill(0);
   for (let offset = 0; offset < indices.length; offset += 3) {
     const ia = indices[offset]! * 3;
     const ib = indices[offset + 1]! * 3;
@@ -398,21 +445,23 @@ function calculateNormals(
     const ny = abz * acx - abx * acz;
     const nz = abx * acy - aby * acx;
     for (const index of [ia, ib, ic]) {
-      normals[index] += nx;
-      normals[index + 1] += ny;
-      normals[index + 2] += nz;
+      accumulated[index] = accumulated[index]! + nx;
+      accumulated[index + 1] =
+        accumulated[index + 1]! + ny;
+      accumulated[index + 2] =
+        accumulated[index + 2]! + nz;
     }
   }
-  for (let offset = 0; offset < normals.length; offset += 3) {
-    const length =
-      Math.hypot(
-        normals[offset]!,
-        normals[offset + 1]!,
-        normals[offset + 2]!,
-      ) || 1;
-    normals[offset] /= length;
-    normals[offset + 1] /= length;
-    normals[offset + 2] /= length;
+
+  const normals = new Float32Array(positions.length);
+  for (let offset = 0; offset < accumulated.length; offset += 3) {
+    const x = accumulated[offset]!;
+    const y = accumulated[offset + 1]!;
+    const z = accumulated[offset + 2]!;
+    const length = Math.hypot(x, y, z) || 1;
+    normals[offset] = x / length;
+    normals[offset + 1] = y / length;
+    normals[offset + 2] = z / length;
   }
   return normals;
 }
@@ -424,20 +473,25 @@ function createOffroadMesh(seed = OFFROAD_SEED): JvIndexedMesh {
   let vertexOffset = 0;
   for (let row = 0; row < OFFROAD_GRID_POINTS; row += 1) {
     const localZ = row * OFFROAD_CELL_SIZE;
-    for (let column = 0; column < OFFROAD_GRID_POINTS; column += 1) {
+    for (
+      let column = 0;
+      column < OFFROAD_GRID_POINTS;
+      column += 1
+    ) {
       const localX = column * OFFROAD_CELL_SIZE;
       positions[vertexOffset] = OFFROAD_ORIGIN_X + localX;
-      positions[vertexOffset + 1] = sampleE2rOffroadHeight(
-        localX,
-        localZ,
-        seed,
-      );
-      positions[vertexOffset + 2] = OFFROAD_ORIGIN_Z + localZ;
+      positions[vertexOffset + 1] =
+        sampleE2rOffroadHeight(localX, localZ, seed);
+      positions[vertexOffset + 2] =
+        OFFROAD_ORIGIN_Z + localZ;
       vertexOffset += 3;
     }
   }
+
   const cellCount = OFFROAD_GRID_POINTS - 1;
-  const indices = new Uint32Array(cellCount * cellCount * 6);
+  const indices = new Uint32Array(
+    cellCount * cellCount * 6,
+  );
   let indexOffset = 0;
   for (let row = 0; row < cellCount; row += 1) {
     for (let column = 0; column < cellCount; column += 1) {
@@ -453,6 +507,7 @@ function createOffroadMesh(seed = OFFROAD_SEED): JvIndexedMesh {
       indices[indexOffset++] = d;
     }
   }
+
   return {
     positions,
     indices,
@@ -527,19 +582,54 @@ interface RockIslandSpec {
   readonly clusterRadius: number;
   readonly minSize: number;
   readonly maxSize: number;
-  readonly seed: number;
+  readonly seedOffset: number;
 }
 
 const ROCK_ISLANDS: readonly RockIslandSpec[] = [
-  { center:{x:34,y:0,z:-14}, yaw:90, lengthX:8, widthZ:14, clusters:3, rocksPerCluster:31, clusterRadius:2.4, minSize:.16, maxSize:.34, seed:910 },
-  { center:{x:34,y:0,z:0}, yaw:90, lengthX:8, widthZ:14, clusters:4, rocksPerCluster:32, clusterRadius:2.5, minSize:.2, maxSize:.42, seed:920 },
-  { center:{x:34,y:0,z:14}, yaw:90, lengthX:8, widthZ:14, clusters:5, rocksPerCluster:36, clusterRadius:2.7, minSize:.24, maxSize:.52, seed:930 },
+  {
+    center: { x: 34, y: 0, z: -14 },
+    yaw: 90,
+    lengthX: 8,
+    widthZ: 14,
+    clusters: 3,
+    rocksPerCluster: 31,
+    clusterRadius: 2.4,
+    minSize: 0.16,
+    maxSize: 0.34,
+    seedOffset: 910,
+  },
+  {
+    center: { x: 34, y: 0, z: 0 },
+    yaw: 90,
+    lengthX: 8,
+    widthZ: 14,
+    clusters: 4,
+    rocksPerCluster: 32,
+    clusterRadius: 2.5,
+    minSize: 0.2,
+    maxSize: 0.42,
+    seedOffset: 920,
+  },
+  {
+    center: { x: 34, y: 0, z: 14 },
+    yaw: 90,
+    lengthX: 8,
+    widthZ: 14,
+    clusters: 5,
+    rocksPerCluster: 36,
+    clusterRadius: 2.7,
+    minSize: 0.24,
+    maxSize: 0.52,
+    seedOffset: 930,
+  },
 ];
 
 function createRockBoxes(): JvStaticBox[] {
   const boxes: JvStaticBox[] = [];
   for (const spec of ROCK_ISLANDS) {
-    const state = { value: spec.seed || 1 };
+    const state = {
+      value: OFFROAD_SEED + spec.seedOffset,
+    };
     const columns = Math.ceil(Math.sqrt(spec.clusters));
     const rows = Math.ceil(spec.clusters / columns);
     for (let cluster = 0; cluster < spec.clusters; cluster += 1) {
@@ -547,26 +637,62 @@ function createRockBoxes(): JvStaticBox[] {
       const column = cluster % columns;
       const u = columns === 1 ? 0.5 : column / (columns - 1);
       const v = rows === 1 ? 0.5 : row / (rows - 1);
-      const clusterX = (u - 0.5) * spec.lengthX * 0.58 + randomRange(state, -1, 1);
-      const clusterZ = (v - 0.5) * spec.widthZ * 0.58 + randomRange(state, -1, 1);
-      for (let rock = 0; rock < spec.rocksPerCluster; rock += 1) {
+      const clusterX =
+        (u - 0.5) * spec.lengthX * 0.58 +
+        randomRange(state, -1, 1);
+      const clusterZ =
+        (v - 0.5) * spec.widthZ * 0.58 +
+        randomRange(state, -1, 1);
+      for (
+        let rock = 0;
+        rock < spec.rocksPerCluster;
+        rock += 1
+      ) {
         const angle = randomRange(state, 0, Math.PI * 2);
-        const radial = Math.sqrt(randomUnit(state)) * spec.clusterRadius;
+        const radial =
+          Math.sqrt(randomUnit(state)) * spec.clusterRadius;
         let rx = clusterX + Math.cos(angle) * radial;
         let rz = clusterZ + Math.sin(angle) * radial;
-        const size = randomRange(state, spec.minSize, spec.maxSize);
-        const hx = size * randomRange(state, 0.7, 1.25) * 0.5;
-        const hy = size * randomRange(state, 0.55, 1.15) * 0.5;
-        const hz = size * randomRange(state, 0.7, 1.25) * 0.5;
-        rx = Math.max(-spec.lengthX / 2 + hx, Math.min(spec.lengthX / 2 - hx, rx));
-        rz = Math.max(-spec.widthZ / 2 + hz, Math.min(spec.widthZ / 2 - hz, rz));
+        const size = randomRange(
+          state,
+          spec.minSize,
+          spec.maxSize,
+        );
+        const hx =
+          size * randomRange(state, 0.7, 1.25) * 0.5;
+        const hy =
+          size * randomRange(state, 0.55, 1.15) * 0.5;
+        const hz =
+          size * randomRange(state, 0.7, 1.25) * 0.5;
+        rx = Math.max(
+          -spec.lengthX / 2 + hx,
+          Math.min(spec.lengthX / 2 - hx, rx),
+        );
+        rz = Math.max(
+          -spec.widthZ / 2 + hz,
+          Math.min(spec.widthZ / 2 - hz, rz),
+        );
         const embed = hy * randomRange(state, 0.35, 0.55);
         const localYaw = randomRange(state, 0, 360);
-        const tilt = (randomRange(state, -18, 18) * Math.PI) / 180;
-        const localCenter = { x: rx, y: hy - embed, z: rz };
+        const tilt =
+          (randomRange(state, -18, 18) * Math.PI) / 180;
+        const localCenter = {
+          x: rx,
+          y: hy - embed,
+          z: rz,
+        };
         boxes.push({
-          center: add(spec.center, rotateYaw(localCenter, spec.yaw)),
-          rotation: multiplyQuat(yawQuaternion(spec.yaw), multiplyQuat(yawQuaternion(localYaw), axisXQuaternion(tilt))),
+          center: add(
+            spec.center,
+            rotateYaw(localCenter, spec.yaw),
+          ),
+          rotation: multiplyQuat(
+            yawQuaternion(spec.yaw),
+            multiplyQuat(
+              yawQuaternion(localYaw),
+              axisXQuaternion(tilt),
+            ),
+          ),
           halfExtents: { x: hx, y: hy, z: hz },
           friction: 1,
           color: ROCK_COLOR,
@@ -578,10 +704,17 @@ function createRockBoxes(): JvStaticBox[] {
 }
 
 type BumperPattern = "FULL" | "ALTERNATING" | "WAVE";
+
 interface BumperSpec {
-  readonly center: JvVec3; readonly yaw: number; readonly count: number;
-  readonly spacing: number; readonly radius: number; readonly width: number;
-  readonly centerY: number; readonly sideOffset: number; readonly pattern: BumperPattern;
+  readonly center: JvVec3;
+  readonly yaw: number;
+  readonly count: number;
+  readonly spacing: number;
+  readonly radius: number;
+  readonly width: number;
+  readonly centerY: number;
+  readonly sideOffset: number;
+  readonly pattern: BumperPattern;
 }
 
 const BUMPER_BANKS: readonly BumperSpec[] = [
@@ -603,24 +736,41 @@ const BUMPER_BANKS: readonly BumperSpec[] = [
 function createBumperCapsules(): JvStaticCapsule[] {
   const capsules: JvStaticCapsule[] = [];
   for (const spec of BUMPER_BANKS) {
-    const startX = -spec.spacing * (spec.count - 1) * 0.5;
+    const startX =
+      -spec.spacing * (spec.count - 1) * 0.5;
     for (let index = 0; index < spec.count; index += 1) {
       const localX = startX + spec.spacing * index;
       let localZ = 0;
       let elementWidth = spec.width;
       if (spec.pattern === "ALTERNATING") {
-        localZ = (index & 1) === 0 ? -spec.sideOffset : spec.sideOffset;
+        localZ =
+          (index & 1) === 0
+            ? -spec.sideOffset
+            : spec.sideOffset;
         elementWidth = spec.width * 0.58;
       } else if (spec.pattern === "WAVE") {
-        localZ = ((index % 4) < 2 ? -1 : 1) * spec.sideOffset;
-        elementWidth = spec.width * ((index & 1) === 0 ? 0.72 : 0.48);
+        localZ =
+          (index % 4 < 2 ? -1 : 1) * spec.sideOffset;
+        elementWidth =
+          spec.width * ((index & 1) === 0 ? 0.72 : 0.48);
       }
-      const halfSpan = Math.max(0.1, elementWidth * 0.5 - spec.radius);
+      const halfSpan = Math.max(
+        0.1,
+        elementWidth * 0.5 - spec.radius,
+      );
       capsules.push({
         bodyCenter: spec.center,
         bodyRotation: yawQuaternion(spec.yaw),
-        point1: { x: localX, y: spec.centerY, z: localZ - halfSpan },
-        point2: { x: localX, y: spec.centerY, z: localZ + halfSpan },
+        point1: {
+          x: localX,
+          y: spec.centerY,
+          z: localZ - halfSpan,
+        },
+        point2: {
+          x: localX,
+          y: spec.centerY,
+          z: localZ + halfSpan,
+        },
         radius: spec.radius,
         friction: 0.85,
         color: BUMPER_COLOR,
@@ -633,11 +783,23 @@ function createBumperCapsules(): JvStaticCapsule[] {
 function createPlateBoxes(): JvStaticBox[] {
   const boxes: JvStaticBox[] = [];
   for (let row = 0; row < PLATE_TILE_COUNT; row += 1) {
-    for (let column = 0; column < PLATE_TILE_COUNT; column += 1) {
+    for (
+      let column = 0;
+      column < PLATE_TILE_COUNT;
+      column += 1
+    ) {
       boxes.push({
-        center: { x: (column - 1) * PLATE_TILE_SIZE, y: PLATE_BODY_Y, z: (row - 1) * PLATE_TILE_SIZE },
+        center: {
+          x: (column - 1) * PLATE_TILE_SIZE,
+          y: PLATE_BODY_Y,
+          z: (row - 1) * PLATE_TILE_SIZE,
+        },
         rotation: IDENTITY,
-        halfExtents: { x: PLATE_TILE_HALF, y: 1, z: PLATE_TILE_HALF },
+        halfExtents: {
+          x: PLATE_TILE_HALF,
+          y: 1,
+          z: PLATE_TILE_HALF,
+        },
         friction: 0.9,
         color: PLATE_COLOR,
       });
@@ -646,7 +808,9 @@ function createPlateBoxes(): JvStaticBox[] {
   return boxes;
 }
 
-export function createE2rWorld(scan: JvWorldData["scan"] = null): JvWorldData {
+export function createE2rWorld(
+  scan: JvWorldData["scan"] = null,
+): JvWorldData {
   return {
     schema: "JV_WEB_E2R_WORLD_V1",
     nativeAuthorityCommit: NATIVE_AUTHORITY_COMMIT,
