@@ -3,13 +3,14 @@ param(
     [ValidateRange(1024, 65535)]
     [int]$Port = 5175,
     [switch]$ValidateOnly,
-    [string]$WorkspaceRoot
+    [string]$WorkspaceRoot,
+    [string]$ScanRoot = 'C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject'
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$targetCommit = 'e571079ad346f4d8d4744978c09b0653f8a11951'
+$targetCommit = '5fbbb83449722fda7b4c45e1fd7c3dc6a2a14052'
 $remoteBranch = 'product/jv-web-car-map-scan'
 $localBranchStem = 'local/jv-web-car-map-scan'
 $expectedNode = 'v24.16.0'
@@ -57,7 +58,8 @@ function Invoke-NativeCode {
     param(
         [Parameter(Mandatory = $true)][string]$File,
         [Parameter(Mandatory = $true)][string[]]$Arguments,
-        [string]$WorkingDirectory
+        [string]$WorkingDirectory,
+        [switch]$Quiet
     )
 
     $oldLocation = Get-Location
@@ -68,33 +70,12 @@ function Invoke-NativeCode {
             Set-Location -LiteralPath $WorkingDirectory
         }
         $ErrorActionPreference = 'Continue'
-        & $File @Arguments
-        $exitCode = $LASTEXITCODE
-    }
-    finally {
-        $ErrorActionPreference = $oldPreference
-        Set-Location -LiteralPath $oldLocation.Path
-    }
-
-    return [int]$exitCode
-}
-
-function Invoke-NativeQuietCode {
-    param(
-        [Parameter(Mandatory = $true)][string]$File,
-        [Parameter(Mandatory = $true)][string[]]$Arguments,
-        [string]$WorkingDirectory
-    )
-
-    $oldLocation = Get-Location
-    $oldPreference = $ErrorActionPreference
-    $exitCode = 0
-    try {
-        if ($WorkingDirectory) {
-            Set-Location -LiteralPath $WorkingDirectory
+        if ($Quiet) {
+            & $File @Arguments 1>$null 2>$null
         }
-        $ErrorActionPreference = 'Continue'
-        & $File @Arguments 1>$null 2>$null
+        else {
+            & $File @Arguments
+        }
         $exitCode = $LASTEXITCODE
     }
     finally {
@@ -146,32 +127,6 @@ function Invoke-NativeCapturedCode {
     return [int]$exitCode
 }
 
-function Add-UniquePath {
-    param(
-        [Parameter(Mandatory = $true)]
-        [System.Collections.Generic.List[string]]$List,
-        [Parameter(Mandatory = $true)]
-        [System.Collections.Generic.HashSet[string]]$Seen,
-        [string]$Path
-    )
-
-    if ([string]::IsNullOrWhiteSpace($Path)) {
-        return
-    }
-    try {
-        $resolved = [System.IO.Path]::GetFullPath($Path)
-    }
-    catch {
-        return
-    }
-    if (-not (Test-Path -LiteralPath $resolved -PathType Container)) {
-        return
-    }
-    if ($Seen.Add($resolved)) {
-        $List.Add($resolved)
-    }
-}
-
 foreach ($command in @('git', 'node', 'npm')) {
     if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
         throw ("Required command '{0}' is unavailable." -f $command)
@@ -179,10 +134,15 @@ foreach ($command in @('git', 'node', 'npm')) {
 }
 
 $repositoryCandidate = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$repositoryRootText = Invoke-NativeText -File 'git' -Arguments @('-C', $repositoryCandidate, 'rev-parse', '--show-toplevel')
-$repositoryRoot = [System.IO.Path]::GetFullPath($repositoryRootText)
+$repositoryRoot = [System.IO.Path]::GetFullPath(
+    (Invoke-NativeText -File 'git' -Arguments @('-C', $repositoryCandidate, 'rev-parse', '--show-toplevel'))
+)
 $separator = [System.IO.Path]::DirectorySeparatorChar
-if (-not [string]::Equals($repositoryCandidate.TrimEnd($separator), $repositoryRoot.TrimEnd($separator), [System.StringComparison]::OrdinalIgnoreCase)) {
+if (-not [string]::Equals(
+    $repositoryCandidate.TrimEnd($separator),
+    $repositoryRoot.TrimEnd($separator),
+    [System.StringComparison]::OrdinalIgnoreCase
+)) {
     throw ('Unexpected repository root: {0}' -f $repositoryRoot)
 }
 
@@ -220,8 +180,15 @@ if (-not $WorkspaceRoot) {
 $WorkspaceRoot = [System.IO.Path]::GetFullPath($WorkspaceRoot)
 $repositoryPrefix = $repositoryRoot.TrimEnd($separator) + $separator
 if (
-    [string]::Equals($WorkspaceRoot.TrimEnd($separator), $repositoryRoot.TrimEnd($separator), [System.StringComparison]::OrdinalIgnoreCase) -or
-    $WorkspaceRoot.StartsWith($repositoryPrefix, [System.StringComparison]::OrdinalIgnoreCase)
+    [string]::Equals(
+        $WorkspaceRoot.TrimEnd($separator),
+        $repositoryRoot.TrimEnd($separator),
+        [System.StringComparison]::OrdinalIgnoreCase
+    ) -or
+    $WorkspaceRoot.StartsWith(
+        $repositoryPrefix,
+        [System.StringComparison]::OrdinalIgnoreCase
+    )
 ) {
     throw 'Product workspace must be outside the active repository.'
 }
@@ -242,12 +209,16 @@ Write-Host ''
 
 $remoteTrackingRef = 'refs/remotes/origin/{0}' -f $remoteBranch
 $fetchSpec = 'refs/heads/{0}:{1}' -f $remoteBranch, $remoteTrackingRef
-$fetchCode = Invoke-NativeCode -File 'git' -Arguments @('-C', $repositoryRoot, 'fetch', '--no-tags', 'origin', $fetchSpec) -WorkingDirectory $repositoryRoot
+$fetchCode = Invoke-NativeCode -File 'git' -Arguments @(
+    '-C', $repositoryRoot, 'fetch', '--no-tags', 'origin', $fetchSpec
+) -WorkingDirectory $repositoryRoot
 if ($fetchCode -ne 0) {
     throw 'Unable to fetch the pinned product branch.'
 }
 
-$remoteCommit = Invoke-NativeText -File 'git' -Arguments @('-C', $repositoryRoot, 'rev-parse', ('{0}^{{commit}}' -f $remoteTrackingRef))
+$remoteCommit = Invoke-NativeText -File 'git' -Arguments @(
+    '-C', $repositoryRoot, 'rev-parse', ('{0}^{{commit}}' -f $remoteTrackingRef)
+)
 if ($remoteCommit -ne $targetCommit) {
     throw ('Remote product moved: {0} != {1}. Validation stopped.' -f $remoteCommit, $targetCommit)
 }
@@ -255,51 +226,52 @@ if ($remoteCommit -ne $targetCommit) {
 $selectedWorktree = $null
 $selectedLocalBranch = $null
 $worktreeLogs = New-Object 'System.Collections.Generic.List[string]'
-for ($attempt = 1; $attempt -le 4; $attempt++) {
+for ($attempt = 1; $attempt -le 6; $attempt++) {
     $suffix = if ($attempt -eq 1) { '' } else { '-{0}' -f $attempt }
     $localBranch = '{0}{1}' -f $localBranchStem, $suffix
     $branchRef = 'refs/heads/{0}' -f $localBranch
     $worktreePath = Join-Path $WorkspaceRoot ('worktree{0}' -f $suffix)
 
-    $branchExists = Invoke-NativeQuietCode -File 'git' -Arguments @('-C', $repositoryRoot, 'show-ref', '--verify', '--quiet', $branchRef) -WorkingDirectory $repositoryRoot
+    $branchExists = Invoke-NativeCode -File 'git' -Arguments @(
+        '-C', $repositoryRoot, 'show-ref', '--verify', '--quiet', $branchRef
+    ) -WorkingDirectory $repositoryRoot -Quiet
+
     if ($branchExists -eq 0) {
-        $branchCommit = Invoke-NativeText -File 'git' -Arguments @('-C', $repositoryRoot, 'rev-parse', ('{0}^{{commit}}' -f $branchRef))
+        $branchCommit = Invoke-NativeText -File 'git' -Arguments @(
+            '-C', $repositoryRoot, 'rev-parse', ('{0}^{{commit}}' -f $branchRef)
+        )
         if ($branchCommit -ne $targetCommit) {
             Write-Host ('Skipping local branch with unexpected commit: {0}' -f $localBranch)
             continue
         }
     }
     else {
-        $branchCode = Invoke-NativeCode -File 'git' -Arguments @('-C', $repositoryRoot, 'branch', $localBranch, $targetCommit) -WorkingDirectory $repositoryRoot
+        $branchCode = Invoke-NativeCode -File 'git' -Arguments @(
+            '-C', $repositoryRoot, 'branch', $localBranch, $targetCommit
+        ) -WorkingDirectory $repositoryRoot
         if ($branchCode -ne 0) {
             throw ('Unable to create local product branch {0}.' -f $localBranch)
         }
     }
 
     if (Test-Path -LiteralPath $worktreePath) {
-        $isWorktree = Invoke-NativeQuietCode -File 'git' -Arguments @('-C', $worktreePath, 'rev-parse', '--is-inside-work-tree')
+        $isWorktree = Invoke-NativeCode -File 'git' -Arguments @(
+            '-C', $worktreePath, 'rev-parse', '--is-inside-work-tree'
+        ) -WorkingDirectory $repositoryRoot -Quiet
         if ($isWorktree -ne 0) {
             Write-Host ('Skipping existing non-worktree path without deleting it: {0}' -f $worktreePath)
             continue
         }
 
         $candidateHead = Invoke-NativeText -File 'git' -Arguments @('-C', $worktreePath, 'rev-parse', 'HEAD')
-        $candidateStatus = Invoke-NativeText -File 'git' -Arguments @('-C', $worktreePath, 'status', '--porcelain=v1', '--untracked-files=all')
-        if ($candidateHead -ne $targetCommit -or -not [string]::IsNullOrWhiteSpace($candidateStatus)) {
-            Write-Host ('Skipping changed or unexpected worktree without deleting it: {0}' -f $worktreePath)
-            continue
-        }
-
         $candidateBranch = Invoke-NativeText -File 'git' -Arguments @('-C', $worktreePath, 'branch', '--show-current')
-        if ([string]::IsNullOrWhiteSpace($candidateBranch)) {
-            $switchCode = Invoke-NativeCode -File 'git' -Arguments @('-C', $worktreePath, 'switch', $localBranch) -WorkingDirectory $worktreePath
-            if ($switchCode -ne 0) {
-                throw ('Unable to attach product worktree to {0}.' -f $localBranch)
-            }
-            $candidateBranch = $localBranch
-        }
-        if ($candidateBranch -ne $localBranch) {
-            Write-Host ('Skipping worktree attached to another branch: {0}' -f $candidateBranch)
+        $candidateStatus = Invoke-NativeText -File 'git' -Arguments @('-C', $worktreePath, 'status', '--porcelain=v1', '--untracked-files=all')
+        if (
+            $candidateHead -ne $targetCommit -or
+            $candidateBranch -ne $localBranch -or
+            -not [string]::IsNullOrWhiteSpace($candidateStatus)
+        ) {
+            Write-Host ('Skipping changed or unexpected worktree without deleting it: {0}' -f $worktreePath)
             continue
         }
 
@@ -308,22 +280,28 @@ for ($attempt = 1; $attempt -le 4; $attempt++) {
         break
     }
 
-    $worktreeLog = Join-Path $evidencePath ('worktree-add-{0}-{1}.log' -f $attempt, (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssfffZ'))
+    $worktreeLog = Join-Path $evidencePath (
+        'worktree-add-{0}-{1}.log' -f
+        $attempt,
+        (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssfffZ')
+    )
     $worktreeLogs.Add($worktreeLog)
     Write-Host ('Creating exact product worktree: {0}' -f $worktreePath)
-    $addCode = Invoke-NativeCapturedCode -File 'git' -Arguments @('-c', 'core.longpaths=true', '-C', $repositoryRoot, 'worktree', 'add', $worktreePath, $localBranch) -WorkingDirectory $repositoryRoot -LogPath $worktreeLog
+    $addCode = Invoke-NativeCapturedCode -File 'git' -Arguments @(
+        '-c', 'core.longpaths=true', '-C', $repositoryRoot,
+        'worktree', 'add', $worktreePath, $localBranch
+    ) -WorkingDirectory $repositoryRoot -LogPath $worktreeLog
     if ($addCode -eq 0) {
         $selectedWorktree = $worktreePath
         $selectedLocalBranch = $localBranch
         break
     }
 
-    Write-Host ('Product worktree creation failed; log: {0}' -f $worktreeLog)
-    Write-Host 'Trying the next untouched product path.'
+    Write-Host ('Worktree creation failed; preserved log: {0}' -f $worktreeLog)
 }
 
 if (-not $selectedWorktree -or -not $selectedLocalBranch) {
-    throw ('Unable to prepare product worktree after four non-destructive attempts. Logs:{0}{1}' -f
+    throw ('Unable to prepare an untouched product worktree after six attempts. Logs:{0}{1}' -f
         [Environment]::NewLine,
         (($worktreeLogs | ForEach-Object { ' - {0}' -f $_ }) -join [Environment]::NewLine)
     )
@@ -332,7 +310,11 @@ if (-not $selectedWorktree -or -not $selectedLocalBranch) {
 $headBefore = Invoke-NativeText -File 'git' -Arguments @('-C', $selectedWorktree, 'rev-parse', 'HEAD')
 $branchBefore = Invoke-NativeText -File 'git' -Arguments @('-C', $selectedWorktree, 'branch', '--show-current')
 $statusBefore = Invoke-NativeText -File 'git' -Arguments @('-C', $selectedWorktree, 'status', '--porcelain=v1', '--untracked-files=all')
-if ($headBefore -ne $targetCommit -or $branchBefore -ne $selectedLocalBranch -or -not [string]::IsNullOrWhiteSpace($statusBefore)) {
+if (
+    $headBefore -ne $targetCommit -or
+    $branchBefore -ne $selectedLocalBranch -or
+    -not [string]::IsNullOrWhiteSpace($statusBefore)
+) {
     throw 'Product worktree identity or cleanliness check failed before the gate.'
 }
 
@@ -351,10 +333,15 @@ if (-not (Test-Path -LiteralPath $powerShellExecutable -PathType Leaf)) {
     throw 'Current PowerShell executable was not found.'
 }
 
-$gateLog = Join-Path $evidencePath ('foundation-gate-{0}.log' -f (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssfffZ'))
+$gateLog = Join-Path $evidencePath (
+    'foundation-gate-{0}.log' -f
+    (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssfffZ')
+)
 Write-Host ''
-Write-Host 'Running the exact full repository gate. This can remain quiet while npm and tests complete...'
-$gateCode = Invoke-NativeCapturedCode -File $powerShellExecutable -Arguments @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $gateScript) -WorkingDirectory $selectedWorktree -LogPath $gateLog
+Write-Host 'Running the exact full repository gate. Output is emitted after the command completes...'
+$gateCode = Invoke-NativeCapturedCode -File $powerShellExecutable -Arguments @(
+    '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $gateScript
+) -WorkingDirectory $selectedWorktree -LogPath $gateLog
 if ($gateCode -ne 0) {
     throw ('JV car/map/scan gate failed with exit code {0}. Full log: {1}' -f $gateCode, $gateLog)
 }
@@ -363,53 +350,45 @@ $gateLogSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $gateLog).Hash.ToL
 $headAfter = Invoke-NativeText -File 'git' -Arguments @('-C', $selectedWorktree, 'rev-parse', 'HEAD')
 $branchAfter = Invoke-NativeText -File 'git' -Arguments @('-C', $selectedWorktree, 'branch', '--show-current')
 $statusAfter = Invoke-NativeText -File 'git' -Arguments @('-C', $selectedWorktree, 'status', '--porcelain=v1', '--untracked-files=all')
-if ($headAfter -ne $headBefore -or $branchAfter -ne $branchBefore -or -not [string]::IsNullOrWhiteSpace($statusAfter)) {
-    throw ('Product source identity changed during the gate. Before {0}/{1}; after {2}/{3}. Status:{4}{5}' -f
+if (
+    $headAfter -ne $headBefore -or
+    $branchAfter -ne $branchBefore -or
+    -not [string]::IsNullOrWhiteSpace($statusAfter)
+) {
+    throw ('Product source identity changed during the gate. Before {0}/{1}; after {2}/{3}.' -f
         $branchBefore,
         $headBefore,
         $branchAfter,
-        $headAfter,
-        [Environment]::NewLine,
-        $statusAfter
+        $headAfter
     )
 }
-
-$searchRoots = New-Object 'System.Collections.Generic.List[string]'
-$seenRoots = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
-$currentRoot = $repositoryRoot
-for ($level = 0; $level -le 6; $level++) {
-    Add-UniquePath -List $searchRoots -Seen $seenRoots -Path $currentRoot
-    Add-UniquePath -List $searchRoots -Seen $seenRoots -Path (Join-Path $currentRoot 'build')
-    Add-UniquePath -List $searchRoots -Seen $seenRoots -Path (Join-Path $currentRoot 'build\scan_pipeline')
-    Add-UniquePath -List $searchRoots -Seen $seenRoots -Path (Join-Path $currentRoot 'JS_Photogrametry')
-    Add-UniquePath -List $searchRoots -Seen $seenRoots -Path (Join-Path $currentRoot '_private_scan_local')
-    $parent = Split-Path -Parent $currentRoot
-    if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $currentRoot) {
-        break
-    }
-    $currentRoot = $parent
-}
-Add-UniquePath -List $searchRoots -Seen $seenRoots -Path 'C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject'
 
 $selectorScript = Join-Path $selectedWorktree 'tools\product\find-jsprev2-pack.mjs'
 if (-not (Test-Path -LiteralPath $selectorScript -PathType Leaf)) {
     throw ('JSPREV2 selector is missing: {0}' -f $selectorScript)
 }
+
 $selectorArguments = New-Object 'System.Collections.Generic.List[string]'
 $selectorArguments.Add($selectorScript)
-foreach ($root in $searchRoots) {
-    $selectorArguments.Add('--root')
-    $selectorArguments.Add($root)
+if (-not [string]::IsNullOrWhiteSpace($ScanRoot)) {
+    $resolvedScanRoot = [System.IO.Path]::GetFullPath($ScanRoot)
+    if (Test-Path -LiteralPath $resolvedScanRoot -PathType Container) {
+        $selectorArguments.Add('--root')
+        $selectorArguments.Add($resolvedScanRoot)
+    }
 }
 
 Write-Host ''
-Write-Host ('Selecting the exact final JSPREV2 pack across {0} bounded roots...' -f $searchRoots.Count)
+Write-Host 'Selecting the exact final JSPREV2 pack (25 groups / 25 textures)...'
 $selectionText = Invoke-NativeText -File 'node' -Arguments $selectorArguments.ToArray() -WorkingDirectory $selectedWorktree
 try {
     $scanSelection = $selectionText | ConvertFrom-Json
 }
 catch {
-    throw ('JSPREV2 selector did not return valid JSON:{0}{1}' -f [Environment]::NewLine, $selectionText)
+    throw ('JSPREV2 selector did not return valid JSON:{0}{1}' -f
+        [Environment]::NewLine,
+        $selectionText
+    )
 }
 if (
     $scanSelection.schema -ne 'JV_WEB_JSPREV2_PACK_SELECTION_V1' -or
@@ -419,13 +398,17 @@ if (
 ) {
     throw 'JSPREV2 selector receipt failed the exact 25/25 contract.'
 }
+
 $scanPackPath = [System.IO.Path]::GetFullPath([string]$scanSelection.packDirectory)
 if (-not (Test-Path -LiteralPath $scanPackPath -PathType Container)) {
     throw ('Selected JSPREV2 pack disappeared: {0}' -f $scanPackPath)
 }
 $env:JOZZ_SCAN_PREVIEW_PACK = $scanPackPath
 
-$selectionFile = Join-Path $evidencePath ('jsprev2-selection-{0}.json' -f (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssfffZ'))
+$selectionFile = Join-Path $evidencePath (
+    'jsprev2-selection-{0}.json' -f
+    (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssfffZ')
+)
 $scanSelection | ConvertTo-Json -Depth 8 | Out-File -LiteralPath $selectionFile -Encoding utf8
 $selectionSha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $selectionFile).Hash.ToLowerInvariant()
 
@@ -468,11 +451,16 @@ $receipt = [ordered]@{
         car = 'legacy_ts_m6 owner-accepted baseline; mechanics unchanged'
         map = 'E2R authority 959aefb78587ce60cf2b8eb03ff82797a4165142'
         scan = 'JSPREV2 exact 25/25; shared render/collision origin'
+        meshEdgeParity = 'binding welds vertices; native identifyEdges parity not claimed'
         nativeParity = 'NOT CLAIMED'
         ownerBrowserObservation = 'PENDING'
     }
 }
-$receiptFile = Join-Path $evidencePath ('jv-web-car-map-scan-{0}.json' -f (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssfffZ'))
+
+$receiptFile = Join-Path $evidencePath (
+    'jv-web-car-map-scan-{0}.json' -f
+    (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssfffZ')
+)
 $receipt | ConvertTo-Json -Depth 8 | Out-File -LiteralPath $receiptFile -Encoding utf8
 
 Write-Host ''
@@ -483,7 +471,10 @@ Write-Host ('Commit:         {0}' -f $targetCommit)
 Write-Host ('Gate log:       {0}' -f $gateLog)
 Write-Host ('Gate SHA256:    {0}' -f $gateLogSha256)
 Write-Host ('Scan pack:      {0}' -f $scanPackPath)
-Write-Host ('Scan contract:  {0} groups / {1} textures' -f $scanSelection.groupCount, $scanSelection.textureCount)
+Write-Host ('Scan contract:  {0} groups / {1} textures' -f
+    $scanSelection.groupCount,
+    $scanSelection.textureCount
+)
 Write-Host ('Receipt:        {0}' -f $receiptFile)
 
 if ($ValidateOnly) {
@@ -493,10 +484,12 @@ if ($ValidateOnly) {
 
 Write-Host ''
 Write-Host ('Starting the integrated product at http://localhost:{0}' -f $Port)
-Write-Host 'Target: working car + E2R map + correctly textured JSPREV2 scan + real Box3D collision.'
-Write-Host 'The owner-accepted baseline can remain separately on port 5173.'
+Write-Host 'Target: working car + E2R map + textured JSPREV2 scan + real Box3D collision.'
+Write-Host 'The accepted baseline may remain on port 5173.'
 Write-Host 'Keep this PowerShell window open. Press Ctrl+C to stop this server.'
 Write-Host ''
 
-$devCode = Invoke-NativeCode -File 'npm' -Arguments @('run', 'dev', '--', '--host', '0.0.0.0', '--port', $Port.ToString(), '--strictPort') -WorkingDirectory $selectedWorktree
+$devCode = Invoke-NativeCode -File 'npm' -Arguments @(
+    'run', 'dev', '--', '--host', '0.0.0.0', '--port', $Port.ToString(), '--strictPort'
+) -WorkingDirectory $selectedWorktree
 exit $devCode
