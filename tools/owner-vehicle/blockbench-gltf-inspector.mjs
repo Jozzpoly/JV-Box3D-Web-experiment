@@ -54,6 +54,8 @@ export function inspectBlockbenchRigidSourceV1(text, label='source') {
   const worldByNode = new Array(nodes.length);
   const traversal = [];
   const nodeNames = [];
+  const nodeNameCounts = new Map();
+  const nodeWorldPositionsByName = new Map();
 
   const visit = (nodeIndex, parentWorld) => {
     if (nodeIndex >= nodes.length) reject(`${label} node index ${nodeIndex} is out of range`);
@@ -69,7 +71,17 @@ export function inspectBlockbenchRigidSourceV1(text, label='source') {
     const world = multiply(parentWorld, nodeMatrix(node,nodeLabel));
     worldByNode[nodeIndex] = world;
     traversal.push(nodeIndex);
-    nodeNames.push(typeof node.name === 'string' ? node.name : null);
+    const nodeName = typeof node.name === 'string' && node.name.length > 0
+      ? node.name
+      : null;
+    nodeNames.push(nodeName);
+    if (nodeName !== null) {
+      nodeNameCounts.set(nodeName, (nodeNameCounts.get(nodeName) ?? 0) + 1);
+      nodeWorldPositionsByName.set(
+        nodeName,
+        Object.freeze([world[12], world[13], world[14]]),
+      );
+    }
     for (const [slot,child] of requireArray(node.children ?? [], `${nodeLabel}.children`).entries()) {
       visit(integer(child,`${nodeLabel}.children[${slot}]`),world);
     }
@@ -181,6 +193,17 @@ export function inspectBlockbenchRigidSourceV1(text, label='source') {
   const vertexCount = primitives.reduce((sum,primitive)=>sum+primitive.positions.length/3,0);
   const triangleCount = primitives.reduce((sum,primitive)=>sum+primitive.indices.length/3,0);
   const texturedMaterialCount = primitives.filter((primitive)=>primitive.material.hasBaseColorTexture).length;
+  const duplicateNodeNames = [...nodeNameCounts.entries()]
+    .filter(([, count]) => count > 1)
+    .map(([name]) => name)
+    .sort();
+  const uniqueNodeWorldPositions = Object.freeze(
+    Object.fromEntries(
+      [...nodeWorldPositionsByName.entries()]
+        .filter(([name]) => nodeNameCounts.get(name) === 1)
+        .sort(([a], [b]) => a.localeCompare(b)),
+    ),
+  );
 
   return Object.freeze({
     label,
@@ -197,6 +220,8 @@ export function inspectBlockbenchRigidSourceV1(text, label='source') {
     hasEmbeddedImages:Array.isArray(doc.images)&&doc.images.some((image)=>typeof image?.uri==='string'&&image.uri.startsWith('data:')),
     texturedMaterialCount,
     nodeNames:Object.freeze(nodeNames),
+    duplicateNodeNames:Object.freeze(duplicateNodeNames),
+    uniqueNodeWorldPositions,
     primitives:Object.freeze(primitives),
   });
 }

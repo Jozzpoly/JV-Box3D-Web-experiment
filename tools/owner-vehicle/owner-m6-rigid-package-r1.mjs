@@ -1,6 +1,13 @@
 import { createHash } from 'node:crypto';
 import { align4 } from './blockbench-gltf-core.mjs';
 import { inspectBlockbenchRigidSourceV1 } from './blockbench-gltf-inspector.mjs';
+import {
+  M6_R1_CHASSIS_LOCAL_FROM_SOURCE,
+  M6_R1_CHASSIS_SOURCE_GIT_BLOB,
+  M6_R1_HISTORICAL_VISUAL_COMMIT,
+  M6_R1_SOURCE_AUTHORITY_COMMIT,
+  calibrateOwnerWheelR1,
+} from './owner-m6-visual-calibration-r1.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const GLB_VERSION = 2;
@@ -53,6 +60,7 @@ function sourceReport(source) {
 export function buildOwnerM6RigidPackageR1({chassisText,wheelText}) {
   const chassis=inspectBlockbenchRigidSourceV1(chassisText,'Nadwozie.gltf');
   const wheel=inspectBlockbenchRigidSourceV1(wheelText,'Offroad_Big_Wheels.gltf');
+  const calibratedWheel=calibrateOwnerWheelR1(wheel);
   const binaryParts=[]; let binaryLength=0;
   const views=[]; const accessors=[]; const materials=[]; const materialKeys=new Map();
   const addMaterial=(m)=>{const rendered={name:m.name??null,doubleSided:m.doubleSided,baseColorFactor:m.baseColorFactor}; const key=JSON.stringify(rendered); if(materialKeys.has(key)) return materialKeys.get(key); const index=materials.length; materials.push({name:m.name??undefined,doubleSided:m.doubleSided,pbrMetallicRoughness:{baseColorFactor:m.baseColorFactor,metallicFactor:0,roughnessFactor:1}}); materialKeys.set(key,index); return index;};
@@ -71,7 +79,7 @@ export function buildOwnerM6RigidPackageR1({chassisText,wheelText}) {
     return {name,primitives};
   };
   const chassisMesh=meshFrom('JV_Owner_Nadwozie',chassis.primitives);
-  const wheelMesh=meshFrom('JV_Owner_Offroad_Big_Wheel',wheel.primitives);
+  const wheelMesh=meshFrom('JV_Owner_Offroad_Big_Wheel',calibratedWheel.primitives);
   const diagnosticPart=meshFrom('JV_Diagnostic_Part',[boxGeometry(0.06,0.06,0.06)]);
   const diagnosticSegment=meshFrom('JV_Diagnostic_Segment',[boxGeometry(0.025,0.5,0.025)]);
   const meshes=[chassisMesh,wheelMesh,diagnosticPart,diagnosticSegment];
@@ -88,9 +96,16 @@ export function buildOwnerM6RigidPackageR1({chassisText,wheelText}) {
   const binHeader=20+json.length; view.setUint32(binHeader,binary.length,true); view.setUint32(binHeader+4,GLB_BIN_CHUNK,true); glb.set(binary,binHeader+8);
   const sha256=createHash('sha256').update(glb).digest('hex');
   const bindings=[
-    ...PART_IDS.map((partId)=>({bindingId:`bind.${partId}`,nodeName:nodeName(partId),source:{kind:'PART',partId},localFromSource:localIdentity()})),
+    ...PART_IDS.map((partId)=>({
+      bindingId:`bind.${partId}`,
+      nodeName:nodeName(partId),
+      source:{kind:'PART',partId},
+      localFromSource:partId==='m6.chassis'
+        ? M6_R1_CHASSIS_LOCAL_FROM_SOURCE
+        : localIdentity(),
+    })),
     ...SEGMENT_IDS.map((segmentId)=>({bindingId:`bind.${segmentId}`,nodeName:nodeName(segmentId),source:{kind:'SEGMENT_STRETCH',segmentId,axis:'+Y',referenceLengthMeters:1},localFromSource:localIdentity()})),
   ];
   const visualPackage={format:'jv-web-vehicle-visual-package',schemaVersion:1,id:'m6-owner-rigid-r1',displayName:'M6 Owner Body + Wheels R1',vehicleFamily:'M6',rigProfile:'M6_FULL_RIG_V1',units:'meter',axes:{forward:'+X',up:'+Y',right:'+Z'},asset:{kind:'GLB',url:'models/m6-owner-rigid-r1.glb',sha256,byteLength:glb.length},bindings};
-  return Object.freeze({glb,visualPackage:Object.freeze(visualPackage),manifestText:`${JSON.stringify(visualPackage,null,2)}\n`,report:Object.freeze({schema:'JV_WEB_OWNER_M6_RIGID_IMPORT_R1',chassis:sourceReport(chassis),wheel:sourceReport(wheel),output:{byteLength:glb.length,sha256,nodeCount:nodes.length,meshCount:meshes.length,realChannels:['m6.chassis','m6.fl.wheel','m6.fr.wheel','m6.rl.wheel','m6.rr.wheel'],diagnosticChannelCount:PART_IDS.length+SEGMENT_IDS.length-5,textureRendering:'NOT_IMPLEMENTED'}})});
+  return Object.freeze({glb,visualPackage:Object.freeze(visualPackage),manifestText:`${JSON.stringify(visualPackage,null,2)}\n`,report:Object.freeze({schema:'JV_WEB_OWNER_M6_RIGID_IMPORT_R1',chassis:sourceReport(chassis),wheel:{...sourceReport(wheel),calibration:calibratedWheel.report},chassisCalibration:{localFromSource:M6_R1_CHASSIS_LOCAL_FROM_SOURCE,authority:{repository:'Jozzpoly/Box3d_FunProject',sourceAuthorityCommit:M6_R1_SOURCE_AUTHORITY_COMMIT,chassisSourceGitBlob:M6_R1_CHASSIS_SOURCE_GIT_BLOB,historicalVisualCommit:M6_R1_HISTORICAL_VISUAL_COMMIT}},output:{byteLength:glb.length,sha256,nodeCount:nodes.length,meshCount:meshes.length,realChannels:['m6.chassis','m6.fl.wheel','m6.fr.wheel','m6.rl.wheel','m6.rr.wheel'],diagnosticChannelCount:PART_IDS.length+SEGMENT_IDS.length-5,textureRendering:'NOT_IMPLEMENTED'}})});
 }
