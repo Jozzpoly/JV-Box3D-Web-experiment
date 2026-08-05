@@ -45,10 +45,16 @@ void main() {
 `;
 
 const DEFAULT_BASE_COLOR = Object.freeze([1, 1, 1, 1] as const);
+const RAW_LIGHT_DIRECTION_TO_LIGHT = Object.freeze([
+  0.35,
+  0.85,
+  -0.4,
+] as const);
+const RAW_LIGHT_LENGTH = Math.hypot(...RAW_LIGHT_DIRECTION_TO_LIGHT);
 const LIGHT_DIRECTION_TO_LIGHT = Object.freeze([
-  0.34912827,
-  0.84788366,
-  -0.39900374,
+  RAW_LIGHT_DIRECTION_TO_LIGHT[0] / RAW_LIGHT_LENGTH,
+  RAW_LIGHT_DIRECTION_TO_LIGHT[1] / RAW_LIGHT_LENGTH,
+  RAW_LIGHT_DIRECTION_TO_LIGHT[2] / RAW_LIGHT_LENGTH,
 ] as const);
 const AMBIENT_INTENSITY = 0.28;
 const DIRECTIONAL_INTENSITY = 0.72;
@@ -91,6 +97,137 @@ function assertNoGlError(
   if (error !== gl.NO_ERROR) {
     throw new Error(`${label} failed with WebGL error 0x${error.toString(16)}.`);
   }
+}
+
+function assertFiniteMatrix4(
+  matrix: Float32Array,
+  label: string,
+): void {
+  if (matrix.length !== 16) {
+    throw new Error(`${label} must contain exactly 16 values.`);
+  }
+  for (let index = 0; index < matrix.length; index += 1) {
+    const value = matrix[index];
+    if (value === undefined || !Number.isFinite(value)) {
+      throw new Error(`${label}[${index}] must be finite.`);
+    }
+  }
+}
+
+function assertOpaqueBaseColor(
+  baseColor: readonly [number, number, number, number],
+  label: string,
+): void {
+  for (let index = 0; index < baseColor.length; index += 1) {
+    const value = baseColor[index];
+    if (value === undefined || !Number.isFinite(value) || value < 0 || value > 1) {
+      throw new Error(`${label}[${index}] must be finite in [0,1].`);
+    }
+  }
+  if (baseColor[3] !== 1) {
+    throw new Error(`${label}[3] must equal opaque alpha 1.`);
+  }
+}
+
+function preflightLitFrame(
+  cpuAsset: GlbRigidCpuAssetV1,
+  gpuAsset: RigidMeshGpuAssetV1,
+  drawPlan: readonly RigidMeshDrawCommandV1[],
+  viewProjection: Float32Array,
+  normalScratch: Float32Array,
+): number {
+  if (gpuAsset.disposed) {
+    throw new Error("Rigid lit-normal GPU asset is disposed.");
+  }
+  assertFiniteMatrix4(viewProjection, "Rigid lit-normal viewProjection");
+  if (drawPlan.length === 0) {
+    throw new Error("Rigid lit-normal draw plan contains no commands.");
+  }
+
+  let primitiveCount = 0;
+  for (const [commandIndex, command] of drawPlan.entries()) {
+    assertFiniteMatrix4(
+      command.worldFromNode,
+      `Rigid lit-normal draw command ${commandIndex} worldFromNode`,
+    );
+    writeNormalMatrix3FromMat4V1(command.worldFromNode, normalScratch);
+
+    const gpuMesh = gpuAsset.meshes[command.meshIndex];
+    const cpuMesh = cpuAsset.meshes[command.meshIndex];
+    if (gpuMesh === undefined || cpuMesh === undefined) {
+      throw new Error(
+        `Rigid lit-normal draw command ${commandIndex} references missing mesh ${command.meshIndex}.`,
+      );
+    }
+    if (gpuMesh.primitives.length !== cpuMesh.primitives.length) {
+      throw new Error(
+        `Rigid lit-normal mesh ${command.meshIndex} CPU/GPU primitive counts differ.`,
+      );
+    }
+
+    for (
+      let primitiveIndex = 0;
+      primitiveIndex < gpuMesh.primitives.length;
+      primitiveIndex += 1
+    ) {
+      const gpuPrimitive = gpuMesh.primitives[primitiveIndex];
+      const cpuPrimitive = cpuMesh.primitives[primitiveIndex];
+      if (gpuPrimitive === undefined || cpuPrimitive === undefined) {
+        throw new Error(
+          `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} is missing.`,
+        );
+      }
+      if (
+        gpuPrimitive.normalBuffer === null ||
+        cpuPrimitive.normals === null
+      ) {
+        throw new Error(
+          `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} is missing NORMAL.`,
+        );
+      }
+      if (
+        gpuPrimitive.texcoord0Buffer !== null ||
+        cpuPrimitive.texcoord0 !== null
+      ) {
+        throw new Error(
+          `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} contains unsupported TEXCOORD_0.`,
+        );
+      }
+      if (gpuPrimitive.materialIndex !== cpuPrimitive.materialIndex) {
+        throw new Error(
+          `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} CPU/GPU material indices differ.`,
+        );
+      }
+      if (
+        gpuPrimitive.indexCount !== cpuPrimitive.indices.length ||
+        gpuPrimitive.indexCount <= 0 ||
+        gpuPrimitive.indexCount % 3 !== 0
+      ) {
+        throw new Error(
+          `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} has inconsistent triangle indices.`,
+        );
+      }
+
+      const material =
+        cpuPrimitive.materialIndex === null
+          ? null
+          : cpuAsset.materials[cpuPrimitive.materialIndex];
+      if (
+        cpuPrimitive.materialIndex !== null &&
+        material === undefined
+      ) {
+        throw new Error(
+          `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} references missing material ${cpuPrimitive.materialIndex}.`,
+        );
+      }
+      assertOpaqueBaseColor(
+        material?.baseColorFactor ?? DEFAULT_BASE_COLOR,
+        `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} baseColorFactor`,
+      );
+      primitiveCount += 1;
+    }
+  }
+  return primitiveCount;
 }
 
 function createShader(
@@ -236,9 +373,13 @@ export function createRigidLitNormalRendererV1(
       if (isDisposed) {
         throw new Error("Cannot render with a disposed rigid lit-normal renderer.");
       }
-      if (viewProjection.length < 16) {
-        throw new Error("Rigid lit-normal viewProjection must contain 16 values.");
-      }
+      const expectedPrimitiveCount = preflightLitFrame(
+        cpuAsset,
+        gpuAsset,
+        drawPlan,
+        viewProjection,
+        normalFromNode,
+      );
 
       assertNoGlError(gl, "Rigid lit-normal renderer entry");
       restoreLitState(gl);
@@ -262,18 +403,8 @@ export function createRigidLitNormalRendererV1(
 
       let primitiveDrawCount = 0;
       for (const command of drawPlan) {
-        const gpuMesh = gpuAsset.meshes[command.meshIndex];
-        const cpuMesh = cpuAsset.meshes[command.meshIndex];
-        if (gpuMesh === undefined || cpuMesh === undefined) {
-          throw new Error(
-            `Rigid lit-normal draw command references missing mesh ${command.meshIndex}.`,
-          );
-        }
-        if (gpuMesh.primitives.length !== cpuMesh.primitives.length) {
-          throw new Error(
-            `Rigid lit-normal mesh ${command.meshIndex} CPU/GPU primitive counts differ.`,
-          );
-        }
+        const gpuMesh = gpuAsset.meshes[command.meshIndex]!;
+        const cpuMesh = cpuAsset.meshes[command.meshIndex]!;
 
         writeNormalMatrix3FromMat4V1(command.worldFromNode, normalFromNode);
         gl.uniformMatrix4fv(
@@ -292,42 +423,12 @@ export function createRigidLitNormalRendererV1(
           primitiveIndex < gpuMesh.primitives.length;
           primitiveIndex += 1
         ) {
-          const gpuPrimitive = gpuMesh.primitives[primitiveIndex];
-          const cpuPrimitive = cpuMesh.primitives[primitiveIndex];
-          if (gpuPrimitive === undefined || cpuPrimitive === undefined) {
-            throw new Error(
-              `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} is missing.`,
-            );
-          }
-          if (
-            gpuPrimitive.normalBuffer === null ||
-            cpuPrimitive.normals === null
-          ) {
-            throw new Error(
-              `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} is missing NORMAL.`,
-            );
-          }
-          if (
-            gpuPrimitive.texcoord0Buffer !== null ||
-            cpuPrimitive.texcoord0 !== null
-          ) {
-            throw new Error(
-              `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} contains unsupported TEXCOORD_0.`,
-            );
-          }
-
+          const gpuPrimitive = gpuMesh.primitives[primitiveIndex]!;
+          const cpuPrimitive = cpuMesh.primitives[primitiveIndex]!;
           const material =
             cpuPrimitive.materialIndex === null
               ? null
-              : cpuAsset.materials[cpuPrimitive.materialIndex];
-          if (
-            cpuPrimitive.materialIndex !== null &&
-            material === undefined
-          ) {
-            throw new Error(
-              `Rigid lit-normal mesh ${command.meshIndex} primitive ${primitiveIndex} references missing material ${cpuPrimitive.materialIndex}.`,
-            );
-          }
+              : cpuAsset.materials[cpuPrimitive.materialIndex]!;
           const baseColor = material?.baseColorFactor ?? DEFAULT_BASE_COLOR;
           const doubleSided = material?.doubleSided ?? false;
           if (doubleSided) {
@@ -349,7 +450,7 @@ export function createRigidLitNormalRendererV1(
             0,
             0,
           );
-          gl.bindBuffer(gl.ARRAY_BUFFER, gpuPrimitive.normalBuffer);
+          gl.bindBuffer(gl.ARRAY_BUFFER, gpuPrimitive.normalBuffer!);
           gl.enableVertexAttribArray(program.normalLocation);
           gl.vertexAttribPointer(
             program.normalLocation,
@@ -377,6 +478,11 @@ export function createRigidLitNormalRendererV1(
         }
       }
 
+      if (primitiveDrawCount !== expectedPrimitiveCount) {
+        throw new Error(
+          `Rigid lit-normal rendered ${primitiveDrawCount} primitives after preflighting ${expectedPrimitiveCount}.`,
+        );
+      }
       assertNoGlError(gl, "Rigid lit-normal frame");
       return Object.freeze({
         drawCommandCount: drawPlan.length,
