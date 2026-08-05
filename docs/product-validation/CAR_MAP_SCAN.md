@@ -6,13 +6,13 @@ Status: **LOCAL GATE PENDING / OWNER BROWSER ACCEPTANCE PENDING / DO NOT MERGE**
 
 - repository: `Jozzpoly/JV-Box3D-Web-experiment`
 - product branch: `product/jv-web-car-map-scan`
-- product commit: `04713ab33ba8788d3ee404f2165484366b7a717b`
+- product commit: `84910b9c84edd33db5e1f09baf456f978f8368ca`
 - accepted car baseline: `d6aa218064c2653f918cf7956d2fcd20a940caf3`
 - native E2R/scan authority: `Jozzpoly/Box3d_FunProject@959aefb78587ce60cf2b8eb03ff82797a4165142`
 - operator: `tools/product-validation/Launch-JvWebCarMapScan.ps1`
 - development port after PASS: `5175`
 
-The product commit is exactly 50 commits ahead of the accepted car baseline and zero commits behind it. The vehicle input, steering controller, drive controller, suspension configuration and joint implementation are not modified by the product diff.
+The product commit is exactly 51 commits ahead of the accepted car baseline and zero commits behind it. The vehicle input, steering controller, drive controller, suspension configuration and joint implementation are not modified by the product diff.
 
 ## Intended result
 
@@ -29,7 +29,9 @@ One browser runtime contains:
 
 ## Validation boundary
 
-The implementation and tests exist in the product branch. They have not yet been executed in the owner's exact Windows toolchain. The operator must establish all of the following before browser observation:
+The first exact local gate at `04713ab33ba8788d3ee404f2165484366b7a717b` stopped in TypeScript before tests because runtime array validation widened one `ScanIndexGroup` callback parameter to implicit `any`. Commit `84910b9c84edd33db5e1f09baf456f978f8368ca` contains the minimal explicit type fix; no runtime behavior or data contract changed.
+
+The operator must establish all of the following before browser observation:
 
 1. exact remote product SHA;
 2. clean isolated external worktree;
