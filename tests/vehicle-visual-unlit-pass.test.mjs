@@ -261,6 +261,39 @@ test("tiny unlit pass draws all 18 parts and 8 segments before publishing first 
   assert.deepEqual(fixture.deletedBuffers, [4, 3, 2, 1]);
 });
 
+test("visibility predicate suppresses draws and first-frame publication until enabled", async () => {
+  const generated = generatedFixture();
+  const fixture = fakeGl();
+  const firstFrames = [];
+  let visible = false;
+  const pass = await createVehicleVisualUnlitPassV1(
+    fixture.gl,
+    new AbortController().signal,
+    {
+      pageBaseUrl: "https://example.test/",
+      packageUrl: "vehicles/tiny/vehicle.visual.json",
+      fetcher: fixtureFetcher(generated),
+      isVisible: () => visible,
+      onFirstFrame: (receipt) => firstFrames.push(receipt),
+    },
+  );
+
+  pass.render(renderFrame(fixture.gl));
+  assert.equal(fixture.draws.length, 0);
+  assert.deepEqual(firstFrames, []);
+
+  visible = true;
+  pass.render(renderFrame(fixture.gl));
+  assert.equal(fixture.draws.length, 26);
+  assert.equal(firstFrames.length, 1);
+
+  visible = false;
+  pass.render(renderFrame(fixture.gl));
+  assert.equal(fixture.draws.length, 26);
+  assert.equal(firstFrames.length, 1);
+  pass.dispose();
+});
+
 test("a failed draw cannot publish the first-frame receipt", async () => {
   const generated = generatedFixture();
   const fixture = fakeGl({ failDrawAt: 10 });
