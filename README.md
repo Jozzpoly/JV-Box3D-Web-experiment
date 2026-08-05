@@ -25,10 +25,10 @@ The pinned recovery runtime is `agent/jv-web-playable-runtime` at exact commit `
 From the control-plane checkout, run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Start-JvWebPlayable.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\playable-recovery\Launch-JvWebPlayable.ps1
 ```
 
-This uses a short per-user workspace under `%LOCALAPPDATA%\JV-Web-Playable`, creates a detached worktree, runs the historical full gate and starts Vite only after the gate passes. It does not switch or reset the active branch. See [`docs/playable-recovery/README.md`](docs/playable-recovery/README.md).
+The compatibility launcher prepares an attached local-only worktree at the exact commit, then transfers execution to the full recovery operator. This preserves compatibility with the historical gate, which requires a named branch, while leaving the active control-plane checkout untouched. The complete gate must pass before Vite starts. See [`docs/playable-recovery/README.md`](docs/playable-recovery/README.md).
 
 ## Control-plane validation
 
