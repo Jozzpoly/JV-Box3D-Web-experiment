@@ -263,7 +263,9 @@ export async function loadLocalJsprev2Scan(
     groups.push(
       ...parseTile(
         await tileResponse.arrayBuffer(),
-        tile.groups.map((group) => group.textureUrl),
+        tile.groups.map(
+          (group: ScanIndexGroup) => group.textureUrl,
+        ),
       ),
     );
   }
