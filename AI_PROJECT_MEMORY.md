@@ -8,7 +8,7 @@ This file is a compact map for a fresh agent. It is not a test receipt and must 
 
 ## Gate 0
 
-Read `AGENTS.md` and verify the physical repository identity before doing anything.
+Read `AGENTS.md`. Use Gate 0-R for connector-only repository work and Gate 0-L before every local edit, build, test or artifact claim.
 
 ```text
 repository: Jozzpoly/JV-Box3D-Web-experiment
@@ -17,6 +17,7 @@ preserved product commit: c8e0bf24748b0a790a1c0039b1be801eef266580
 preserved product tree:   3e241761784edd2a2fb6ab18095c25ea0e737185
 controlled repair branch: repair/jv-web-release-r0
 repair base:              exact c8e0bf...
+repair tip:               verify current GitHub ref before every operation
 ```
 
 `main@5c64903...` is a minimal historical default branch, not the product implementation. Do not begin product work from `main`.
@@ -53,14 +54,17 @@ Classification: `OWNER OBSERVED`, not a current exact release gate.
 ## Current campaign
 
 ```text
-R0-A authority/documentation       IN PROGRESS
-R0-B exact toolchain               NOT STARTED
-R0-C public product mode           NOT STARTED
-R0-D reproducible public artifact  NOT STARTED
-R0-E desktop/phone proof           NOT STARTED
-R0-F Pages publication             NOT AUTHORIZED
-R0-G default branch normalization  NOT AUTHORIZED
-R1 owner chassis/four wheels       FROZEN UNTIL R0
+R0-A1 initial authority checkpoint       COMPLETE at 63bbff...
+R0-A2 remote/local guard correction      CURRENT STAGE
+R0-A3 default-main landing guard         OWNER DECISION PENDING
+R0-B0 disposable toolchain operator      PREPARATION STARTED
+R0-B exact toolchain                     NOT PROVEN
+R0-C public product mode                 NOT STARTED
+R0-D reproducible public artifact        NOT STARTED
+R0-E desktop/phone proof                 NOT STARTED
+R0-F Pages publication                   NOT AUTHORIZED
+R0-G default branch normalization        NOT AUTHORIZED
+R1 owner chassis/four wheels             FROZEN UNTIL R0
 ```
 
 R0-A may change only operational and state documentation. It must not alter runtime source, physics, controls, camera, map, scan, assets or packaging.
@@ -76,7 +80,7 @@ docs: PASS
 third-party notices: PASS
 ```
 
-These results are non-canonical. Exact Node 24 / npm comparison, TypeScript 7.0.2, Vite 8.1.5, clean `npm ci`, portable build, browser and phone proof remain required.
+These results are non-canonical. Exact Node 24.16.0, accepted npm, TypeScript 7.0.2, Vite 8.1.5, clean `npm ci`, portable build, browser and phone proof remain required.
 
 ## Source that is not active product behavior
 
@@ -120,5 +124,6 @@ Stop when identity differs, source is dirty, lockfile drifts, build changes sour
 
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
-3. `docs/BRANCH_ROLES.md`
-4. exact source and tests for the current R0 stage
+3. `docs/repair/R0_WORK_ORDER.md`
+4. `docs/BRANCH_ROLES.md`
+5. exact source and tests for the current R0 stage

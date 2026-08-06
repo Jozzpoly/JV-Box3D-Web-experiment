@@ -5,22 +5,22 @@ Purpose: navigation only; always verify current branch tips through GitHub befor
 
 ## Active and authoritative lines
 
-| Branch | Verified tip before R0-A | Role |
+| Branch | Fixed identity | Role |
 |---|---:|---|
-| `repair/jv-web-release-r0` | starts at `c8e0bf24748b...` | Controlled R0 repair line. Only current campaign work belongs here. |
-| `product/jv-web-car-map-scan` | `c8e0bf24748b...` | Strongest preserved product base. Freeze as comparison/rollback while R0 is developed. |
-| `main` | `5c64903d753f...` | Minimal historical default branch. Not the current product implementation. |
+| `repair/jv-web-release-r0` | base `c8e0bf24748b...`; current tip must be fetched | Controlled R0 repair line. Only current campaign work belongs here. |
+| `product/jv-web-car-map-scan` | preserved `c8e0bf24748b...` | Strongest preserved product base. Freeze as comparison/rollback while R0 is developed. |
+| `main` | historical `5c64903d753f...` until separately changed | Minimal historical default branch. Not the current product implementation. |
 
 ## Frozen candidates
 
-| Branch | Verified tip | Classification |
+| Branch | Verified historical tip | Classification |
 |---|---:|---|
 | `candidate/jv-web-owner-vehicle-visual-r1` | `796b050b4b90...` | `FROZEN / BROKEN / SALVAGE ONLY`; no merge or continuation as a product line. |
 | `candidate/jv-web-render-host-r1` | `e263e3e05ea2...` | Historical bounded render-host experiment; selective source review only. |
 
 ## Historical evidence and salvage lines
 
-| Branch | Verified tip | Role |
+| Branch | Verified historical tip | Role |
 |---|---:|---|
 | `agent/jv-lit-normal-foundation` | `26c5022f8dfd...` | Historical lit-normal source and tests; never promote wholesale. |
 | `agent/jv-real-vehicle-texture-scan-plan` | `d75660889cda...` | Historical architecture plan; not current product state. |
@@ -37,6 +37,7 @@ Purpose: navigation only; always verify current branch tips through GitHub befor
 ## Rules
 
 - Branch names and documents do not prove runtime quality.
+- The current repair tip is dynamic; fetch it immediately before analysis or writes.
 - Closed PR text is historical context, not the current work order.
 - Do not delete these branches during R0; preservation is cheaper and safer than history rewriting.
 - Do not merge or cherry-pick a complete historical branch into the repair line.

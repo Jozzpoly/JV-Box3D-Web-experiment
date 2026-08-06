@@ -1,7 +1,7 @@
 # JV Web — current project state
 
 Updated: 2026-08-06
-Status: `CONTROLLED REPAIR R0-A / NO PRODUCT CODE CHANGE`
+Status: `CONTROLLED REPAIR R0-A2 / NO PRODUCT CODE CHANGE`
 Owner: Jozz
 
 ## 1. Exact identity
@@ -94,8 +94,11 @@ native JV parity:                             NOT PROVEN
 R0 exists to create a truthful and reproducible map-only release lane without changing the product behavior.
 
 ```text
-R0-A authority and truthful operating documents     IN PROGRESS
-R0-B exact Node/npm/toolchain comparison             BLOCKED IN THIS CONTAINER / REQUIRED EXTERNALLY
+R0-A1 initial authority checkpoint                   COMPLETE at 63bbff...
+R0-A2 remote/local Gate 0 correction                 CURRENT STAGE
+R0-A3 default-main landing guard                     OWNER DECISION PENDING
+R0-B0 disposable toolchain operator                  PREPARATION STARTED
+R0-B exact Node/npm/toolchain comparison             NOT PROVEN
 R0-C shared local/public product configuration       NOT STARTED
 R0-D hardened portable public artifact               NOT STARTED
 R0-E desktop and real-phone validation               NOT STARTED
@@ -155,9 +158,9 @@ This classification does not mean the files are worthless or defective. It means
 
 See [`BRANCH_ROLES.md`](BRANCH_ROLES.md).
 
-## 7. R0-A acceptance conditions
+## 7. R0-A2 acceptance conditions
 
-R0-A is complete only when:
+The repair-line authority checkpoint is complete only when:
 
 - `AGENTS.md`, `README.md`, `AI_PROJECT_MEMORY.md`, this file and `BRANCH_ROLES.md` agree on exact `c8e0bf...`;
 - no active-state text points to PR #18 or another historical PR;
@@ -168,4 +171,4 @@ R0-A is complete only when:
 
 ## 8. Next allowed step
 
-After R0-A passes, R0-B compares clean installations using Node 24.16.0 with bundled npm 11.13.0 and explicitly installed npm 11.17.0. The comparison must record lockfile cleanliness, dependency tree, full source gate and portable payload hashes on Windows and Linux before pinning a package-manager version.
+Follow [`repair/R0_WORK_ORDER.md`](repair/R0_WORK_ORDER.md). First complete the remote/local Gate 0 correction, then validate a disposable R0-B0 operator. The first canonical candidate is Node 24.16.0 with bundled npm 11.13.0 on clean Linux and Windows checkouts. npm 11.17.0 is a forensic comparator; expand the matrix only if it changes a relevant result. Do not pin a package-manager version before this evidence.

@@ -2,9 +2,27 @@
 
 This file is the first operational authority for work in this repository. It is a guardrail, not evidence that any build or runtime passed.
 
-## Gate 0 — establish the physical project identity
+## Gate 0-R — remote repository identity
 
-Before analysis, edits, tests or GitHub writes, print and verify:
+Use this gate for GitHub/connector-only inspection and every remote write. Verify from current GitHub data, not from a stored report:
+
+```text
+REPOSITORY: Jozzpoly/JV-Box3D-Web-experiment
+VISIBILITY: expected private
+DEFAULT:    current default branch
+TARGET REF: exact intended branch
+TIP:        exact current 40-character commit SHA
+TREE:       exact current tree SHA
+OPERATION:  READ or bounded WRITE
+```
+
+Before a remote write, fetch the target ref again immediately. Create the new commit with the verified current tip as its only parent. Stop on any ref movement, identity mismatch, unexpected file scope or permission ambiguity.
+
+Gate 0-R permits repository analysis without a local checkout. It does not permit claims about a local build, working tree or browser run.
+
+## Gate 0-L — local execution identity
+
+A build, test, generated artifact or local edit requires a complete checkout of this repository. Verify:
 
 ```text
 PROJECT:  Jozzpoly/JV-Box3D-Web-experiment
@@ -12,10 +30,11 @@ ROOT:     git rev-parse --show-toplevel
 ORIGIN:   git remote get-url origin
 BRANCH:   git branch --show-current
 HEAD:     git rev-parse HEAD
+TREE:     git rev-parse HEAD^{tree}
 STATUS:   git status --short --branch
 ```
 
-Stop immediately when the repository, remote, branch, commit or working-tree state is not the intended one. A laboratory, extracted model folder, native `Box3d_FunProject` checkout, temporary replay or generated artifact is never a substitute for this repository.
+Stop immediately when the repository, remote, branch, commit, tree or working-tree state is not the intended one. A laboratory, extracted model folder, native `Box3d_FunProject` checkout, temporary replay or generated artifact is never a substitute for this repository.
 
 ## Current authority and campaign
 
@@ -27,7 +46,8 @@ preserved product base:
 
 controlled repair line:
   repair/jv-web-release-r0
-  must descend directly from the preserved product base
+  base: exact preserved product commit above
+  current tip: always verify through GitHub
 ```
 
 The repair line exists to establish repository authority, an exact toolchain and a reproducible map-only static release. R0 must not change physics, vehicle controls, camera behavior, E2R terrain, scan parsing/collision or the owner vehicle model.
@@ -38,13 +58,14 @@ The repair line exists to establish repository authority, an exact toolchain and
 
 Stop the current stage when any of the following occurs:
 
-- branch or HEAD differs from the declared target;
-- the source tree is dirty before a gate;
+- repository, ref, parent commit or tree differs from the declared target;
+- a local source tree is dirty before a gate;
 - `npm ci`, tests or a build change tracked source or `package-lock.json`;
-- an artifact cannot be reproduced from a clean checkout;
+- a tool requires deleting, resetting or overwriting unexplained state;
+- an artifact cannot be reproduced from a disposable clean checkout;
 - a public build requests `/__jv_scan__/` or includes private scan bytes;
-- a PASS claim lacks an exact command, exit code, environment and source/artifact identity;
-- progress requires bypassing a gate, force-pushing, resetting or cleaning away unexplained state.
+- a PASS claim lacks exact commands, exit codes, environment and source/artifact identity;
+- progress requires bypassing a gate, force-pushing or rewriting history.
 
 Never use `git reset --hard`, `git clean`, force-push, forced worktree removal or history rewriting as routine recovery. Preserve evidence and report the blocker.
 
@@ -66,7 +87,8 @@ A lower level never implies a higher one. Documents and historical PR descriptio
 ## Current boundaries
 
 - The strongest preserved product base is `c8e0bf...`; it is not a proven public release.
-- The exact Node/npm decision is pending controlled comparison in R0-B. Do not call a Node 22 or TypeScript 5.8 auxiliary run canonical.
+- R0-A1 established the repair line at commit `63bbff84dc24ec071b9b5424043d6fc426bb727c`.
+- The exact Node/npm decision is pending controlled R0-B evidence. Do not call a Node 22 or TypeScript 5.8 auxiliary run canonical.
 - `00e1c8...` is not a release base; its release work is stacked on unaccepted owner-vehicle commits.
 - `candidate/jv-web-owner-vehicle-visual-r1@796b050...` is frozen, broken and salvage-only.
 - Twenty-one TypeScript files are compiled/tested but not statically reachable from `src/product-main.ts`; see `docs/PROJECT_STATE.md`.
@@ -77,7 +99,8 @@ A lower level never implies a higher one. Documents and historical PR descriptio
 1. `AGENTS.md`
 2. `AI_PROJECT_MEMORY.md`
 3. `docs/PROJECT_STATE.md`
-4. `docs/BRANCH_ROLES.md`
-5. the exact source, tests and build scripts relevant to the current stage
+4. `docs/repair/R0_WORK_ORDER.md`
+5. `docs/BRANCH_ROLES.md`
+6. exact source, tests and build scripts relevant to the current stage
 
 Use repository files and current GitHub state as evidence. Do not fill gaps from conversational memory.
