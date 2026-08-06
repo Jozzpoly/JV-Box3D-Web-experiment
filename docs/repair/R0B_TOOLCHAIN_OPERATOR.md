@@ -1,10 +1,12 @@
 # R0-B disposable exact-toolchain operator
 
-Status: `SOURCE-PRESENT / AUXILIARY TESTS REQUIRED / NO CANONICAL RECEIPT YET`
+Status: `SOURCE-PRESENT / AUXILIARY-TESTED / NO CANONICAL RECEIPT YET`
 
 ## Purpose
 
-`tools/repair/run-r0b-toolchain-gate.mjs` executes one exact toolchain candidate in a disposable detached checkout. It writes all evidence outside the repository and refuses to delete, reset or clean existing state.
+`tools/repair/run-r0b-toolchain-gate-entry.mjs` is the required entrypoint for one exact toolchain candidate in a disposable detached checkout. It collapses duplicate `PATH`/`Path` keys, puts the exact current Node directory first, pins `NODE` and `npm_node_execpath`, then delegates to the internal gate runner. The operator writes all evidence outside the repository and refuses to delete, reset or clean existing state.
+
+Do not invoke `run-r0b-toolchain-gate.mjs` directly for a canonical candidate; it is the internal implementation behind the guarded entrypoint.
 
 It is not a downloader or environment manager. Node and npm must already be installed from independently verified distributions.
 
@@ -38,7 +40,7 @@ npm 11.17.0 is a later forensic comparator. It does not become the project packa
 Run with the current exact repair commit and tree, not the abbreviated examples below:
 
 ```text
-node tools/repair/run-r0b-toolchain-gate.mjs \
+node tools/repair/run-r0b-toolchain-gate-entry.mjs \
   --repo <disposable-checkout> \
   --expected-repository Jozzpoly/JV-Box3D-Web-experiment \
   --expected-commit <40-char-repair-commit> \
