@@ -55,9 +55,9 @@ Classification: `OWNER OBSERVED`, not a current exact release gate.
 
 ```text
 R0-A1 initial authority checkpoint       COMPLETE at 63bbff...
-R0-A2 remote/local guard correction      CURRENT STAGE
+R0-A2 remote/local guard correction      COMPLETE AT fb16cb5...
 R0-A3 default-main landing guard         OWNER DECISION PENDING
-R0-B0 disposable toolchain operator      PREPARATION STARTED
+R0-B0 disposable toolchain operator      SOURCE-PRESENT / AUXILIARY-TESTED
 R0-B exact toolchain                     NOT PROVEN
 R0-C public product mode                 NOT STARTED
 R0-D reproducible public artifact        NOT STARTED

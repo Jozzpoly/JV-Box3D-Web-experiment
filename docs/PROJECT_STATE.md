@@ -95,9 +95,9 @@ R0 exists to create a truthful and reproducible map-only release lane without ch
 
 ```text
 R0-A1 initial authority checkpoint                   COMPLETE at 63bbff...
-R0-A2 remote/local Gate 0 correction                 CURRENT STAGE
+R0-A2 remote/local Gate 0 correction                 COMPLETE AT fb16cb5...
 R0-A3 default-main landing guard                     OWNER DECISION PENDING
-R0-B0 disposable toolchain operator                  PREPARATION STARTED
+R0-B0 disposable toolchain operator                  SOURCE-PRESENT / AUXILIARY-TESTED
 R0-B exact Node/npm/toolchain comparison             NOT PROVEN
 R0-C shared local/public product configuration       NOT STARTED
 R0-D hardened portable public artifact               NOT STARTED
