@@ -41,7 +41,7 @@ R0 must not change:
 | R0-C map-only product mode | Not started | structural zero-scan mode with behavior characterization |
 | R0-D public artifact | Not started | reproducible allowlisted payload and hardened manifest |
 | R0-E runtime validation | Not started | desktop and real-phone receipts for exact artifact |
-| R0-F Pages | Not authorized | owner-approved target, publication and rollback proof |
+| R0-F public repository / Pages | Target initialized; artifact not present | exact promotion to `Jozzpoly/JV-Box3D-Web-Public@release/r0`, owner approval and rollback proof |
 | R0-G default branch | Not authorized | owner-reviewed final repository model |
 | R1 real chassis/four wheels | Frozen | begins only from accepted release-capable R0 |
 
@@ -68,6 +68,10 @@ MAP_ONLY_R0 = E2R only; scan capability absent
 ```
 
 Before refactoring, add behavior-characterization tests. Public mode must neither import/use the scan loader as its world provider nor request `/__jv_scan__/`.
+
+## Public repository target
+
+The artifact destination is defined in [`PUBLIC_REPOSITORY_CONTRACT.md`](PUBLIC_REPOSITORY_CONTRACT.md). `Jozzpoly/JV-Box3D-Web-Public@main` is the publication control plane and `release/r0` is reserved for the accepted artifact. Neither branch currently contains the application, and Pages has not been enabled by this campaign.
 
 ## R0-D minimum artifact model
 
