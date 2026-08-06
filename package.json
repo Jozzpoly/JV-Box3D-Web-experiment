@@ -28,6 +28,7 @@
     "prebuild:bundle": "npm run generate:vehicle-fixture",
     "build:bundle": "vite build",
     "build:portable": "npm run check:third-party && npm run build:bundle && node tools/write-portable-build-manifest.mjs && npm run check:portable",
+    "build:public": "node tools/release/build-public-playable.mjs",
     "build": "npm run check && npm run build:portable",
     "preview": "vite preview"
   },
