@@ -46,4 +46,4 @@ A full same-OS result is canonical only when:
 - both manifest SHA-256 values are identical;
 - the orchestrator records `PASS` and `canonical: true`.
 
-A failed or mismatched run leaves its worktrees in place and records their paths. A complete matching run attempts normal, non-forced worktree removal and preserves the external evidence.
+A failed or mismatched run leaves its worktrees in place and records their paths. A complete matching run becomes `PASS` only after both disposable worktrees are removed normally without force. The receipt directory must remain outside every registered worktree and outside the repository common Git directory. The comparison includes the normalized command plan in addition to identity, toolchain, dependency and artifact evidence.

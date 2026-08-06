@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdir, readFile, readdir, realpath, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, readdir, realpath, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import {
   assertExactHexSha,
@@ -58,12 +58,41 @@ async function save(path, receipt) {
   await writeFile(path, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
 }
 
+async function exists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const options = parseSameOsArguments(process.argv.slice(2));
-assertExternalAbsolutePath(options.repositoryRoot, options.receiptRoot, "Receipt root");
-await mkdir(options.receiptRoot, { recursive: true });
 const repositoryRoot = await realpath(options.repositoryRoot);
-const receiptRoot = await realpath(options.receiptRoot);
+const unresolvedReceiptRoot = resolve(options.receiptRoot);
+assertExternalAbsolutePath(repositoryRoot, unresolvedReceiptRoot, "Receipt root");
+const commonGitDirectory = await realpath(
+  resolve(repositoryRoot, git(repositoryRoot, "rev-parse", "--git-common-dir")),
+);
+assertExternalAbsolutePath(commonGitDirectory, unresolvedReceiptRoot, "Receipt root");
+const listedWorktrees = git(repositoryRoot, "worktree", "list", "--porcelain")
+  .split(/\r?\n/)
+  .filter((line) => line.startsWith("worktree "))
+  .map((line) => line.slice("worktree ".length));
+for (const listed of listedWorktrees) {
+  if (await exists(listed)) {
+    assertExternalAbsolutePath(await realpath(listed), unresolvedReceiptRoot, "Receipt root");
+  }
+}
+await mkdir(unresolvedReceiptRoot, { recursive: true });
+const receiptRoot = await realpath(unresolvedReceiptRoot);
 assertExternalAbsolutePath(repositoryRoot, receiptRoot, "Receipt root");
+assertExternalAbsolutePath(commonGitDirectory, receiptRoot, "Receipt root");
+for (const listed of listedWorktrees) {
+  if (await exists(listed)) {
+    assertExternalAbsolutePath(await realpath(listed), receiptRoot, "Receipt root");
+  }
+}
 
 const runId = createReceiptId();
 const campaignRoot = resolve(receiptRoot, `same-os-${runId}`);
@@ -83,8 +112,18 @@ async function removeWorktree(path) {
     cwd: repositoryRoot,
     allowFailure: true,
   });
-  receipt.cleanup.push({ path, status: result.status, stderr: result.stderr.trim() });
-  if (result.status === 0) await rm(path, { recursive: true, force: false }).catch(() => {});
+  const remains = await exists(path);
+  receipt.cleanup.push({
+    path,
+    status: result.status,
+    stderr: result.stderr.trim(),
+    remains,
+  });
+  if (result.status !== 0 || remains) {
+    throw new Error(
+      `Failed to remove disposable worktree ${path}; exit ${result.status}, remains ${remains}.`,
+    );
+  }
 }
 
 try {
@@ -176,8 +215,9 @@ try {
     throw new Error(`Same-OS receipts differ: ${comparison.differences.join(", ")}.`);
   }
 
-  markSameOsPass(receipt, comparison);
+  receipt.phase = "CLEANUP";
   for (const path of [...createdWorktrees].reverse()) await removeWorktree(path);
+  markSameOsPass(receipt, comparison);
   await save(receiptPath, receipt);
   console.log(`R0-B same-OS receipt: ${receiptPath}`);
 } catch (error) {

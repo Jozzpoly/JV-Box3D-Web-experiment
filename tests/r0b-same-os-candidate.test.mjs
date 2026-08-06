@@ -5,6 +5,7 @@ import {
   compareToolchainReceipts,
   createSameOsReceipt,
   normalizeArtifactFileTable,
+  normalizeCommandPlan,
   parseSameOsArguments,
 } from "../tools/repair/r0b-same-os-candidate-lib.mjs";
 
@@ -25,6 +26,11 @@ function baseReceipt({ preflight = false, fileSha = "a".repeat(64) } = {}) {
       tree: "2".repeat(40),
     },
     environment: {
+      platform: "linux",
+      arch: "x64",
+      osRelease: "test-release",
+      osVersion: "test-version",
+      endianness: "LE",
       node: "24.16.0",
       npm: "11.13.0",
       typescript: preflight ? undefined : "7.0.2",
@@ -40,6 +46,9 @@ function baseReceipt({ preflight = false, fileSha = "a".repeat(64) } = {}) {
     dependencies: preflight
       ? null
       : { logicalTreeSha256: "8".repeat(64), nativePackages: [] },
+    commands: [
+      { command: "/node", args: ["npm-cli.js", "--version"], status: 0 },
+    ],
     artifact: preflight
       ? null
       : {
@@ -125,4 +134,28 @@ test("same-OS receipt is never canonical while running", () => {
   });
   assert.equal(receipt.result, "RUNNING");
   assert.equal(receipt.canonical, false);
+});
+
+
+test("same-OS comparison reports command-plan mismatch", () => {
+  const a = baseReceipt();
+  const b = baseReceipt();
+  b.commands[0].args = ["npm-cli.js", "ci"];
+  const result = compareToolchainReceipts(a, b);
+  assert.equal(result.identical, false);
+  assert.ok(result.differences.includes("shared identity/toolchain/dependencies/commands"));
+});
+
+test("command plan rejects non-integer status", () => {
+  assert.throws(
+    () => normalizeCommandPlan([{ command: "node", args: [], status: "0" }]),
+    /status must be an integer/,
+  );
+});
+
+test("receipt root must remain outside the common Git directory", () => {
+  assert.throws(
+    () => assertExternalAbsolutePath("/repo/.git", "/repo/.git/r0b", "Receipt root"),
+    /outside/,
+  );
 });

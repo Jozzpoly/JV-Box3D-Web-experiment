@@ -195,11 +195,32 @@ function extractSharedIdentity(receipt, label) {
       receipt.packageJsonSha256,
       `${label}.packageJsonSha256`,
     ),
+    platform: expectString(environment.platform, `${label}.environment.platform`),
+    arch: expectString(environment.arch, `${label}.environment.arch`),
+    osRelease: expectString(environment.osRelease, `${label}.environment.osRelease`),
+    osVersion: expectString(environment.osVersion, `${label}.environment.osVersion`),
+    endianness: expectString(environment.endianness, `${label}.environment.endianness`),
     dependencies:
       receipt.result === "PASS"
         ? normalizeDependencyEvidence(receipt.dependencies, `${label}.dependencies`)
         : null,
+    commands: normalizeCommandPlan(receipt.commands, `${label}.commands`),
   };
+}
+
+export function normalizeCommandPlan(commands, label = "commands") {
+  if (!Array.isArray(commands)) throw new Error(`${label} must be an array.`);
+  return commands.map((record, index) => {
+    expectObject(record, `${label}[${index}]`);
+    const command = expectString(record.command, `${label}[${index}].command`);
+    if (!Array.isArray(record.args) || !record.args.every((value) => typeof value === "string")) {
+      throw new Error(`${label}[${index}].args must be an array of strings.`);
+    }
+    if (!Number.isInteger(record.status)) {
+      throw new Error(`${label}[${index}].status must be an integer.`);
+    }
+    return { command, args: [...record.args], status: record.status };
+  });
 }
 
 function compareJsonValues(a, b, label, differences) {
@@ -222,7 +243,12 @@ export function compareToolchainReceipts(receiptA, receiptB, { preflightOnly = f
 
   const identityA = extractSharedIdentity(receiptA, "runA");
   const identityB = extractSharedIdentity(receiptB, "runB");
-  compareJsonValues(identityA, identityB, "shared identity/toolchain/lock", differences);
+  compareJsonValues(
+    identityA,
+    identityB,
+    "shared identity/toolchain/dependencies/commands",
+    differences,
+  );
 
   let artifact = null;
   if (!preflightOnly) {
