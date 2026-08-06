@@ -20,7 +20,7 @@ repair base:              exact c8e0bf...
 repair tip:               verify current GitHub ref before every operation
 ```
 
-`main@5c64903...` is a minimal historical default branch, not the product implementation. Do not begin product work from `main`.
+`main` is a minimal historical default branch with a navigation-only guard. Fetch its current tip; do not begin product work from it.
 
 ## Current owner need
 
@@ -56,8 +56,8 @@ Classification: `OWNER OBSERVED`, not a current exact release gate.
 ```text
 R0-A1 initial authority checkpoint       COMPLETE at 63bbff...
 R0-A2 remote/local guard correction      COMPLETE AT fb16cb5...
-R0-A3 default-main landing guard         OWNER DECISION PENDING
-R0-B0 disposable toolchain operator      SOURCE-PRESENT / AUXILIARY-TESTED
+R0-A3 default-main landing guard         COMPLETE at main@b48c506...
+R0-B0 single/two-run toolchain operators SOURCE-PRESENT / AUXILIARY-TESTED
 R0-B exact toolchain                     NOT PROVEN
 R0-C public product mode                 NOT STARTED
 R0-D reproducible public artifact        NOT STARTED
@@ -71,16 +71,16 @@ R0-A may change only operational and state documentation. It must not alter runt
 
 ## Evidence boundary
 
-Auxiliary results previously reproduced on the exact product tree with Node 22 / TypeScript 5.8:
+Current auxiliary R0-B0 validation with Node 22.16.0 / TypeScript 5.8.3 reached:
 
 ```text
 typecheck: PASS
-tests: 256/256 PASS
-docs: PASS
-third-party notices: PASS
+tests: 278/278 PASS
+document links: 16/16 PASS
+same-OS preflight: 2/2 identical / canonical false
 ```
 
-These results are non-canonical. Exact Node 24.16.0, accepted npm, TypeScript 7.0.2, Vite 8.1.5, clean `npm ci`, portable build, browser and phone proof remain required.
+The exact third-party/toolchain gate is intentionally not claimed under TypeScript 5.8. Exact Node 24.16.0, accepted npm, TypeScript 7.0.2, Vite 8.1.5, clean `npm ci`, portable build, browser and phone proof remain required.
 
 ## Source that is not active product behavior
 

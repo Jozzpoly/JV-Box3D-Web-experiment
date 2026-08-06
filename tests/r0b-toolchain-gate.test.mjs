@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import {
   assertCleanStatus,
   assertDetachedBranch,
+  assertNativeDependencySelection,
   assertDisposableOutputsAbsent,
   assertExactHexSha,
   assertExactVersion,
@@ -15,6 +16,8 @@ import {
   markGatePass,
   markPreflightPass,
   markReceiptFailure,
+  collectNativeDependencyRecords,
+  normalizeNpmDependencyTree,
   normalizeGitHubRepositoryUrl,
   parseCliArguments,
 } from "../tools/repair/r0b-toolchain-gate-lib.mjs";
@@ -155,4 +158,83 @@ test("receipt states never imply canonical evidence before full pass", () => {
   markGatePass(passed);
   assert.equal(passed.result, "PASS");
   assert.equal(passed.canonical, true);
+});
+
+
+test("npm dependency tree normalization is deterministic", () => {
+  const normalized = normalizeNpmDependencyTree({
+    name: "root",
+    version: "1.0.0",
+    dependencies: {
+      z: { version: "2.0.0" },
+      a: { version: "1.0.0", dependencies: { b: { version: "3.0.0" } } },
+    },
+  });
+  assert.deepEqual(Object.keys(normalized.dependencies), ["a", "z"]);
+  assert.equal(normalized.dependencies.a.name, "a");
+  assert.equal(normalized.dependencies.a.dependencies.b.name, "b");
+});
+
+test("native dependency receipt records TypeScript and Rolldown bindings", () => {
+  const normalized = normalizeNpmDependencyTree({
+    dependencies: {
+      "@typescript/typescript-linux-x64": { version: "7.0.2" },
+      rolldown: {
+        version: "1.1.5",
+        dependencies: {
+          "@rolldown/binding-linux-x64-gnu": { version: "1.1.5" },
+        },
+      },
+      vite: { version: "8.1.5" },
+    },
+  });
+  assert.deepEqual(collectNativeDependencyRecords(normalized), [
+    {
+      name: "@typescript/typescript-linux-x64",
+      version: "7.0.2",
+      dependencyPath: "@typescript/typescript-linux-x64",
+    },
+    {
+      name: "@rolldown/binding-linux-x64-gnu",
+      version: "1.1.5",
+      dependencyPath: "rolldown > @rolldown/binding-linux-x64-gnu",
+    },
+  ]);
+});
+
+
+test("native dependency collection ignores omitted optional packages", () => {
+  const normalized = normalizeNpmDependencyTree({
+    dependencies: {
+      "@typescript/typescript-linux-x64": { version: "7.0.2" },
+      rolldown: {
+        version: "1.1.5",
+        dependencies: {
+          "@rolldown/binding-linux-x64-gnu": { version: "1.1.5" },
+          "@rolldown/binding-win32-x64-msvc": {},
+        },
+      },
+    },
+  });
+  const selected = collectNativeDependencyRecords(normalized);
+  assert.equal(selected.length, 2);
+  assert.doesNotThrow(() => assertNativeDependencySelection(selected, "linux", "x64"));
+});
+
+test("native dependency selection rejects a wrong-platform binding", () => {
+  assert.throws(
+    () => assertNativeDependencySelection([
+      {
+        name: "@typescript/typescript-win32-x64",
+        version: "7.0.2",
+        dependencyPath: "typescript > @typescript/typescript-win32-x64",
+      },
+      {
+        name: "@rolldown/binding-win32-x64-msvc",
+        version: "1.1.5",
+        dependencyPath: "rolldown > @rolldown/binding-win32-x64-msvc",
+      },
+    ], "linux", "x64"),
+    /does not match/,
+  );
 });

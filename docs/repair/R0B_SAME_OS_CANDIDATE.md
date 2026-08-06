@@ -1,0 +1,49 @@
+# R0-B same-OS reproducibility candidate
+
+Status: `SOURCE-PRESENT / AUXILIARY PREFLIGHT 2/2 PASS / NO CANONICAL RECEIPT YET`
+
+## Purpose
+
+`tools/repair/run-r0b-same-os-candidate.mjs` creates two independent detached worktrees at the exact same commit and tree, runs the guarded R0-B gate in both, and compares their receipts.
+
+It does not build inside the operator checkout used to launch it. It never runs `git reset`, `git clean`, force-removes a worktree, rewrites history, activates Actions, or publishes Pages.
+
+## Canonical candidate
+
+```text
+Node:       24.16.0
+npm:        11.13.0
+TypeScript: 7.0.2
+Vite:       8.1.5
+```
+
+The command must itself be launched by the exact Node candidate. The script creates all evidence and disposable worktrees under an absolute directory outside the repository.
+
+## Invocation
+
+```text
+node tools/repair/run-r0b-same-os-candidate.mjs \
+  --repo <any-local-worktree-of-this-repository> \
+  --expected-repository Jozzpoly/JV-Box3D-Web-experiment \
+  --expected-commit <40-char-repair-commit> \
+  --expected-tree <40-char-repair-tree> \
+  --expected-node 24.16.0 \
+  --expected-npm 11.13.0 \
+  --expected-typescript 7.0.2 \
+  --expected-vite 8.1.5 \
+  --receipt-root <absolute-path-outside-repository>
+```
+
+`--preflight-only` performs both detached worktree identity checks and both exact Node/npm/lock preflights without `npm ci`. Its result is always non-canonical.
+
+## Acceptance
+
+A full same-OS result is canonical only when:
+
+- both child gates return `PASS` and `canonical: true`;
+- both use the same repository, commit, tree, Node, npm, TypeScript, Vite, lock and package bytes;
+- both complete artifact file tables are byte-identical;
+- both manifest SHA-256 values are identical;
+- the orchestrator records `PASS` and `canonical: true`.
+
+A failed or mismatched run leaves its worktrees in place and records their paths. A complete matching run attempts normal, non-forced worktree removal and preserves the external evidence.

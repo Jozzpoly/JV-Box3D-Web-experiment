@@ -87,8 +87,8 @@ A lower level never implies a higher one. Documents and historical PR descriptio
 ## Current boundaries
 
 - The strongest preserved product base is `c8e0bf...`; it is not a proven public release.
-- R0-A1 established the repair line at commit `63bbff84dc24ec071b9b5424043d6fc426bb727c`.
-- The exact Node/npm decision is pending controlled R0-B evidence. Do not call a Node 22 or TypeScript 5.8 auxiliary run canonical.
+- R0-A established the repair line and a navigation-only guard on historical `main`; fetch both current refs before acting.
+- R0-B0 contains fail-closed single-run and same-OS two-run operators. Their Node 22 preflight/tests are auxiliary only; exact Node/npm evidence remains pending.
 - `00e1c8...` is not a release base; its release work is stacked on unaccepted owner-vehicle commits.
 - `candidate/jv-web-owner-vehicle-visual-r1@796b050...` is frozen, broken and salvage-only.
 - Twenty-one TypeScript files are compiled/tested but not statically reachable from `src/product-main.ts`; see `docs/PROJECT_STATE.md`.

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { lstat, readdir, readFile, realpath } from "node:fs/promises";
 import { delimiter, dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import { endianness, release as osRelease, version as osVersion } from "node:os";
 
 export const RECEIPT_SCHEMA = "JV_WEB_R0B_TOOLCHAIN_RECEIPT_V1";
 
@@ -182,6 +183,9 @@ export function createInitialReceipt(options, now = new Date()) {
     environment: {
       platform: process.platform,
       arch: process.arch,
+      osRelease: osRelease(),
+      osVersion: osVersion(),
+      endianness: endianness(),
       nodeExecutable: process.execPath,
       node: process.version.replace(/^v/, ""),
     },
@@ -242,6 +246,97 @@ export async function collectFileTable(root) {
   }
   await visit(await realpath(root));
   return records;
+}
+
+
+function expectDependencyNode(value, label) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object.`);
+  }
+  return value;
+}
+
+export function normalizeNpmDependencyTree(tree, label = "npm dependency tree") {
+  const node = expectDependencyNode(tree, label);
+  const normalized = {};
+  if (typeof node.name === "string" && node.name.length > 0) normalized.name = node.name;
+  if (typeof node.version === "string" && node.version.length > 0) {
+    normalized.version = node.version;
+  }
+  const dependencies = node.dependencies;
+  if (dependencies !== undefined) {
+    const dependencyObject = expectDependencyNode(
+      dependencies,
+      `${label}.dependencies`,
+    );
+    const names = Object.keys(dependencyObject).sort((a, b) => a.localeCompare(b));
+    normalized.dependencies = {};
+    for (const name of names) {
+      const child = normalizeNpmDependencyTree(
+        dependencyObject[name],
+        `${label}.dependencies.${name}`,
+      );
+      if (child.name === undefined) child.name = name;
+      normalized.dependencies[name] = child;
+    }
+  }
+  return normalized;
+}
+
+export function collectNativeDependencyRecords(tree) {
+  const records = [];
+  function visit(node, path = []) {
+    const dependencies = node?.dependencies;
+    if (dependencies === null || typeof dependencies !== "object" || Array.isArray(dependencies)) {
+      return;
+    }
+    for (const name of Object.keys(dependencies).sort((a, b) => a.localeCompare(b))) {
+      const child = dependencies[name];
+      const nextPath = [...path, name];
+      if (
+        (name.startsWith("@typescript/typescript-") ||
+          name.startsWith("@rolldown/binding-")) &&
+        typeof child?.version === "string" &&
+        child.version.length > 0
+      ) {
+        records.push({
+          name,
+          version: child.version,
+          dependencyPath: nextPath.join(" > "),
+        });
+      }
+      visit(child, nextPath);
+    }
+  }
+  visit(tree);
+  return records;
+}
+
+export function assertNativeDependencySelection(records, platform, arch) {
+  if (!Array.isArray(records)) throw new Error("Native dependency records must be an array.");
+  if (arch !== "x64" || (platform !== "linux" && platform !== "win32")) {
+    throw new Error(`R0-B native dependency selection does not support ${platform}/${arch}.`);
+  }
+
+  const expectedTypeScript = `@typescript/typescript-${platform}-x64`;
+  const expectedRolldownPrefix = `@rolldown/binding-${platform}-x64`;
+  const typeScript = records.filter((record) => record.name.startsWith("@typescript/typescript-"));
+  const rolldown = records.filter((record) => record.name.startsWith("@rolldown/binding-"));
+
+  if (typeScript.length === 0 || !typeScript.every((record) => record.name === expectedTypeScript)) {
+    throw new Error(
+      `Installed TypeScript native package does not match ${expectedTypeScript}: ${typeScript.map((record) => record.name).join(", ") || "none"}.`,
+    );
+  }
+  if (
+    rolldown.length === 0 ||
+    !rolldown.every((record) => record.name.startsWith(expectedRolldownPrefix))
+  ) {
+    throw new Error(
+      `Installed Rolldown native package does not match ${expectedRolldownPrefix}*: ${rolldown.map((record) => record.name).join(", ") || "none"}.`,
+    );
+  }
+  return { typeScript, rolldown };
 }
 
 export function summarizeCommand(command, args, status, startedAt, finishedAt) {

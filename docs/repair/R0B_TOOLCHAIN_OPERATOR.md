@@ -73,6 +73,8 @@ The full run performs:
 
 Only the final result `PASS` has `canonical: true`. `PREFLIGHT_ONLY_PASS` and `BLOCKED` are never canonical.
 
+For the required two-run same-OS comparison, use [`R0B_SAME_OS_CANDIDATE.md`](R0B_SAME_OS_CANDIDATE.md) and `tools/repair/run-r0b-same-os-candidate.mjs`. Do not manually compare partial console output.
+
 ## Same-OS and cross-platform comparison
 
 Run two independent disposable checkouts on the same OS. Their final artifact file tables must be byte-identical before same-OS reproducibility is accepted.

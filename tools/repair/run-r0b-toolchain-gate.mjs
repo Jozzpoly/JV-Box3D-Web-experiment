@@ -11,14 +11,17 @@ import {
   assertExactVersion,
   assertReceiptDirectoryOutsideRepository,
   assertRepositoryOrigin,
+  assertNativeDependencySelection,
   buildPinnedNodeEnvironment,
   collectFileTable,
+  collectNativeDependencyRecords,
   createInitialReceipt,
   createReceiptId,
   hashFile,
   markGatePass,
   markPreflightPass,
   markReceiptFailure,
+  normalizeNpmDependencyTree,
   parseCliArguments,
   sha256Bytes,
   summarizeCommand,
@@ -215,6 +218,25 @@ try {
   assertExactVersion("Vite", installedVite, options.expectedVite);
   receipt.environment.typescript = installedTypeScript;
   receipt.environment.vite = installedVite;
+
+  receipt.phase = "DEPENDENCY_TREE";
+  const npmTreeResult = await run(process.execPath, [npmCli, "ls", "--all", "--json"], {
+    cwd: options.repositoryRoot,
+    receipt,
+    evidenceDirectory: receiptDirectory,
+    label: "npm-ls-all",
+  });
+  const npmTree = JSON.parse(npmTreeResult.stdout);
+  if (Array.isArray(npmTree.problems) && npmTree.problems.length > 0) {
+    throw new Error(`npm ls reported dependency problems: ${npmTree.problems.join(" | ")}`);
+  }
+  const normalizedNpmTree = normalizeNpmDependencyTree(npmTree);
+  const nativePackages = collectNativeDependencyRecords(normalizedNpmTree);
+  assertNativeDependencySelection(nativePackages, process.platform, process.arch);
+  receipt.dependencies = {
+    logicalTreeSha256: sha256Bytes(JSON.stringify(normalizedNpmTree)),
+    nativePackages,
+  };
 
   receipt.phase = "SOURCE_GATE";
   await run(process.execPath, [npmCli, "run", "check"], {

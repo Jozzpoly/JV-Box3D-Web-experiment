@@ -9,7 +9,7 @@ Purpose: navigation only; always verify current branch tips through GitHub befor
 |---|---:|---|
 | `repair/jv-web-release-r0` | base `c8e0bf24748b...`; current tip must be fetched | Controlled R0 repair line. Only current campaign work belongs here. |
 | `product/jv-web-car-map-scan` | preserved `c8e0bf24748b...` | Strongest preserved product base. Freeze as comparison/rollback while R0 is developed. |
-| `main` | historical `5c64903d753f...` until separately changed | Minimal historical default branch. Not the current product implementation. |
+| `main` | navigation guard at `b48c50699a7c...`; fetch current tip | Minimal historical default branch. Not the current product implementation. |
 
 ## Frozen candidates
 
