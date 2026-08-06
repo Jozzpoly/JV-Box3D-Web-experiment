@@ -1,8 +1,23 @@
 import { createHash } from "node:crypto";
 import { lstat, readdir, readFile, realpath } from "node:fs/promises";
-import { isAbsolute, relative, resolve, sep } from "node:path";
+import { delimiter, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 
 export const RECEIPT_SCHEMA = "JV_WEB_R0B_TOOLCHAIN_RECEIPT_V1";
+
+export function buildPinnedNodeEnvironment(environment, nodeExecutable) {
+  const source = { ...environment };
+  const pathKey = Object.keys(source).find((key) => key.toLowerCase() === "path") ?? "PATH";
+  const currentPath = String(source[pathKey] ?? "");
+  const nodeDirectory = dirname(resolve(nodeExecutable));
+  source[pathKey] = currentPath.length === 0
+    ? nodeDirectory
+    : `${nodeDirectory}${delimiter}${currentPath}`;
+  source.NODE = resolve(nodeExecutable);
+  source.npm_node_execpath = resolve(nodeExecutable);
+  source.CI = "true";
+  source.NO_COLOR = "1";
+  return source;
+}
 
 export function sha256Bytes(bytes) {
   return createHash("sha256").update(bytes).digest("hex");

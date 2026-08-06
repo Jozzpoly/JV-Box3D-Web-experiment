@@ -11,6 +11,7 @@ import {
   assertExactVersion,
   assertReceiptDirectoryOutsideRepository,
   assertRepositoryOrigin,
+  buildPinnedNodeEnvironment,
   collectFileTable,
   createInitialReceipt,
   createReceiptId,
@@ -30,7 +31,7 @@ function run(command, args, { cwd, receipt, evidenceDirectory, label, allowFailu
     encoding: "utf8",
     shell: false,
     maxBuffer: 128 * 1024 * 1024,
-    env: { ...process.env, CI: "true", NO_COLOR: "1" },
+    env: buildPinnedNodeEnvironment(process.env, process.execPath),
   });
   const finishedAt = new Date();
   const status = result.status ?? 1;

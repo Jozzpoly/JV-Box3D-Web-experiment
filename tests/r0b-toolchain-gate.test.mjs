@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import {
   assertCleanStatus,
   assertDetachedBranch,
@@ -8,6 +9,7 @@ import {
   assertExactVersion,
   assertReceiptDirectoryOutsideRepository,
   assertRepositoryOrigin,
+  buildPinnedNodeEnvironment,
   createInitialReceipt,
   isPathInside,
   markGatePass,
@@ -19,6 +21,32 @@ import {
 
 const SHA_A = "a".repeat(40);
 const SHA_B = "b".repeat(40);
+
+test("child commands pin PATH and NODE to the current Node executable", () => {
+  const executable = process.platform === "win32"
+    ? "C:\\toolchains\\node-v24.16.0\\node.exe"
+    : "/toolchains/node-v24.16.0/bin/node";
+  const pathKey = process.platform === "win32" ? "Path" : "PATH";
+  const environment = buildPinnedNodeEnvironment({ [pathKey]: "existing-path" }, executable);
+  const firstPath = environment[pathKey].split(process.platform === "win32" ? ";" : ":")[0];
+  assert.equal(firstPath, process.platform === "win32" ? "C:\\toolchains\\node-v24.16.0" : "/toolchains/node-v24.16.0/bin");
+  assert.equal(environment.NODE, executable);
+  assert.equal(environment.npm_node_execpath, executable);
+  assert.equal(environment.CI, "true");
+  assert.equal(environment.NO_COLOR, "1");
+});
+
+test("pinned environment resolves node to the executing runtime", () => {
+  const pathKey = Object.keys(process.env).find((key) => key.toLowerCase() === "path") ?? "PATH";
+  const environment = buildPinnedNodeEnvironment(process.env, process.execPath);
+  const result = spawnSync("node", ["-p", "process.execPath"], {
+    encoding: "utf8",
+    env: environment,
+    shell: false,
+  });
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout.trim(), process.execPath);
+});
 
 test("GitHub repository origins normalize without broad hostname matching", () => {
   for (const value of [
