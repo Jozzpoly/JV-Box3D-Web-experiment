@@ -13,6 +13,7 @@ import {
   transformNormal,
   decodeAccessor,
   validateDeclaredPositionBounds,
+  parseTextureResources,
   material,
   validateDocumentBoundary,
 } from './blockbench-gltf-core.mjs';
@@ -38,6 +39,7 @@ export function inspectBlockbenchRigidSourceV1(text, label='source') {
   if (integer(buffer.byteLength, `${label}.buffers[0].byteLength`, 1) !== binary.byteLength) {
     reject(`${label} embedded buffer length differs from declaration`);
   }
+  const textureResources = parseTextureResources(doc, label);
 
   const scenes = requireArray(doc.scenes, `${label}.scenes`);
   if (scenes.length !== 1) reject(`${label} must contain exactly one active scene`);
@@ -192,7 +194,7 @@ export function inspectBlockbenchRigidSourceV1(text, label='source') {
 
   const vertexCount = primitives.reduce((sum,primitive)=>sum+primitive.positions.length/3,0);
   const triangleCount = primitives.reduce((sum,primitive)=>sum+primitive.indices.length/3,0);
-  const texturedMaterialCount = primitives.filter((primitive)=>primitive.material.hasBaseColorTexture).length;
+  const texturedMaterialCount = primitives.filter((primitive)=>primitive.material.baseColorTextureIndex !== null).length;
   const duplicateNodeNames = [...nodeNameCounts.entries()]
     .filter(([, count]) => count > 1)
     .map(([name]) => name)
@@ -217,12 +219,12 @@ export function inspectBlockbenchRigidSourceV1(text, label='source') {
     validatedJointCount:[...validatedSkins.values()].reduce((sum,skin)=>sum+skin.jointCount,0),
     bindPoseFlattening:validatedSkins.size>0?'VERIFIED':'NOT_REQUIRED',
     hasSkin:validatedSkins.size>0,
-    hasEmbeddedImages:Array.isArray(doc.images)&&doc.images.some((image)=>typeof image?.uri==='string'&&image.uri.startsWith('data:')),
+    hasEmbeddedImages:textureResources.images.length > 0,
     texturedMaterialCount,
     nodeNames:Object.freeze(nodeNames),
     duplicateNodeNames:Object.freeze(duplicateNodeNames),
     uniqueNodeWorldPositions,
+    textureResources,
     primitives:Object.freeze(primitives),
   });
 }
-

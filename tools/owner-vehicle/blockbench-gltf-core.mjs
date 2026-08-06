@@ -8,6 +8,8 @@ const ALLOWED_ATTRIBUTES = new Set([
 ]);
 const BIND_POSE_TOLERANCE = 2e-4;
 const WEIGHT_TOLERANCE = 2e-4;
+const GLTF_NEAREST = 9728;
+const GLTF_CLAMP_TO_EDGE = 33071;
 
 function reject(message) {
   throw new Error(`Owner vehicle source rejected: ${message}`);
@@ -34,16 +36,26 @@ function rejectNonEmptyArray(value, label) {
     reject(`${label} is unsupported`);
   }
 }
-function decodeDataUri(uri, label) {
-  if (typeof uri !== 'string' || !uri.startsWith('data:application/octet-stream;base64,')) {
-    reject(`${label} must be one embedded application/octet-stream base64 URI`);
+function decodeBase64DataUri(uri, expectedMime, label) {
+  const prefix = `data:${expectedMime};base64,`;
+  if (typeof uri !== 'string' || !uri.startsWith(prefix)) {
+    reject(`${label} must be one embedded ${expectedMime} base64 URI`);
   }
-  const encoded = uri.slice(uri.indexOf(',') + 1);
+  const encoded = uri.slice(prefix.length);
   const bytes = Buffer.from(encoded, 'base64');
   if (bytes.length === 0 || bytes.toString('base64').replace(/=+$/u, '') !== encoded.replace(/=+$/u, '')) {
     reject(`${label} contains invalid base64`);
   }
   return new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+}
+function decodeDataUri(uri, label) {
+  return decodeBase64DataUri(uri, 'application/octet-stream', label);
+}
+function assertPng(bytes, label) {
+  const signature = [0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a];
+  if (bytes.byteLength < signature.length || signature.some((value, index) => bytes[index] !== value)) {
+    reject(`${label} does not contain a PNG signature`);
+  }
 }
 
 function identity() {
@@ -170,14 +182,88 @@ function validateDeclaredPositionBounds(accessor, positions, label) {
   }
 }
 
+function parseTextureResources(doc, label) {
+  const rawImages = requireArray(doc.images ?? [], `${label}.images`);
+  const rawSamplers = requireArray(doc.samplers ?? [], `${label}.samplers`);
+  const rawTextures = requireArray(doc.textures ?? [], `${label}.textures`);
+
+  const images = rawImages.map((value, index) => {
+    const imageLabel = `${label}.images[${index}]`;
+    const image = requireObject(value, imageLabel);
+    const allowed = new Set(['name', 'mimeType', 'uri']);
+    for (const key of Object.keys(image)) {
+      if (!allowed.has(key)) reject(`${imageLabel}.${key} is unsupported`);
+    }
+    if (image.mimeType !== 'image/png') reject(`${imageLabel}.mimeType must equal image/png`);
+    const bytes = decodeBase64DataUri(image.uri, 'image/png', `${imageLabel}.uri`);
+    assertPng(bytes, imageLabel);
+    return Object.freeze({
+      name: typeof image.name === 'string' ? image.name : null,
+      mimeType: 'image/png',
+      bytes: new Uint8Array(bytes),
+    });
+  });
+
+  const samplers = rawSamplers.map((value, index) => {
+    const samplerLabel = `${label}.samplers[${index}]`;
+    const sampler = requireObject(value, samplerLabel);
+    const allowed = new Set(['name', 'magFilter', 'minFilter', 'wrapS', 'wrapT']);
+    for (const key of Object.keys(sampler)) {
+      if (!allowed.has(key)) reject(`${samplerLabel}.${key} is unsupported`);
+    }
+    const magFilter = integer(sampler.magFilter, `${samplerLabel}.magFilter`);
+    const minFilter = integer(sampler.minFilter, `${samplerLabel}.minFilter`);
+    const wrapS = integer(sampler.wrapS, `${samplerLabel}.wrapS`);
+    const wrapT = integer(sampler.wrapT, `${samplerLabel}.wrapT`);
+    if (magFilter !== GLTF_NEAREST || minFilter !== GLTF_NEAREST) {
+      reject(`${samplerLabel} must use NEAREST filtering`);
+    }
+    if (wrapS !== GLTF_CLAMP_TO_EDGE || wrapT !== GLTF_CLAMP_TO_EDGE) {
+      reject(`${samplerLabel} must use CLAMP_TO_EDGE wrapping`);
+    }
+    return Object.freeze({
+      name: typeof sampler.name === 'string' ? sampler.name : null,
+      magFilter,
+      minFilter,
+      wrapS,
+      wrapT,
+    });
+  });
+
+  const textures = rawTextures.map((value, index) => {
+    const textureLabel = `${label}.textures[${index}]`;
+    const texture = requireObject(value, textureLabel);
+    const allowed = new Set(['name', 'sampler', 'source']);
+    for (const key of Object.keys(texture)) {
+      if (!allowed.has(key)) reject(`${textureLabel}.${key} is unsupported`);
+    }
+    const source = integer(texture.source, `${textureLabel}.source`);
+    const sampler = integer(texture.sampler, `${textureLabel}.sampler`);
+    if (images[source] === undefined) reject(`${textureLabel}.source references missing image ${source}`);
+    if (samplers[sampler] === undefined) reject(`${textureLabel}.sampler references missing sampler ${sampler}`);
+    return Object.freeze({
+      name: typeof texture.name === 'string' ? texture.name : null,
+      source,
+      sampler,
+    });
+  });
+
+  return Object.freeze({
+    images: Object.freeze(images),
+    samplers: Object.freeze(samplers),
+    textures: Object.freeze(textures),
+  });
+}
+
 function material(doc, index, label) {
   if (index === undefined) {
     return {
       name: null,
       baseColorFactor: [0.72,0.74,0.78,1],
       doubleSided: false,
-      hasBaseColorTexture: false,
+      baseColorTextureIndex: null,
       sourceAlphaMode: 'OPAQUE',
+      alphaCutoff: 0,
     };
   }
   const materialLabel = `${label}.material`;
@@ -190,21 +276,28 @@ function material(doc, index, label) {
     'pbrMetallicRoughness',
     'doubleSided',
     'alphaMode',
+    'alphaCutoff',
   ]);
   for (const key of Object.keys(source)) {
-    if (!allowedMaterialKeys.has(key)) {
-      reject(`${materialLabel}.${key} is unsupported by the R1 base-colour boundary`);
-    }
+    if (!allowedMaterialKeys.has(key)) reject(`${materialLabel}.${key} is unsupported by the R1 base-colour boundary`);
   }
-  if (
-    source.doubleSided !== undefined &&
-    typeof source.doubleSided !== 'boolean'
-  ) {
+  if (source.doubleSided !== undefined && typeof source.doubleSided !== 'boolean') {
     reject(`${materialLabel}.doubleSided must be boolean`);
   }
   const alphaMode = source.alphaMode ?? 'OPAQUE';
-  if (alphaMode !== 'OPAQUE') {
-    reject(`${materialLabel}.alphaMode must remain OPAQUE`);
+  if (alphaMode !== 'OPAQUE' && alphaMode !== 'MASK') {
+    reject(`${materialLabel}.alphaMode must be OPAQUE or MASK`);
+  }
+  let alphaCutoff = 0;
+  if (alphaMode === 'MASK') {
+    alphaCutoff = source.alphaCutoff === undefined
+      ? 0.5
+      : finite(source.alphaCutoff, `${materialLabel}.alphaCutoff`);
+    if (alphaCutoff < 0 || alphaCutoff > 1) {
+      reject(`${materialLabel}.alphaCutoff must stay inside [0,1]`);
+    }
+  } else if (source.alphaCutoff !== undefined) {
+    reject(`${materialLabel}.alphaCutoff is only valid for MASK materials`);
   }
 
   const pbrLabel = `${materialLabel}.pbrMetallicRoughness`;
@@ -218,9 +311,7 @@ function material(doc, index, label) {
     'roughnessFactor',
   ]);
   for (const key of Object.keys(pbr)) {
-    if (!allowedPbrKeys.has(key)) {
-      reject(`${pbrLabel}.${key} is unsupported by the R1 base-colour boundary`);
-    }
+    if (!allowedPbrKeys.has(key)) reject(`${pbrLabel}.${key} is unsupported by the R1 base-colour boundary`);
   }
   const metallicFactor = pbr.metallicFactor === undefined
     ? 1
@@ -235,37 +326,27 @@ function material(doc, index, label) {
   const factor = pbr.baseColorFactor === undefined
     ? [1,1,1,1]
     : requireArray(pbr.baseColorFactor, `${pbrLabel}.baseColorFactor`);
-  if (factor.length !== 4) {
-    reject(`${pbrLabel}.baseColorFactor must contain four values`);
-  }
+  if (factor.length !== 4) reject(`${pbrLabel}.baseColorFactor must contain four values`);
   const baseColorFactor = factor.map((value, component) => {
-    const finiteValue = finite(
-      value,
-      `${pbrLabel}.baseColorFactor[${component}]`,
-    );
-    if (finiteValue < 0 || finiteValue > 1) {
-      reject(`${pbrLabel}.baseColorFactor must stay inside [0,1]`);
-    }
+    const finiteValue = finite(value, `${pbrLabel}.baseColorFactor[${component}]`);
+    if (finiteValue < 0 || finiteValue > 1) reject(`${pbrLabel}.baseColorFactor must stay inside [0,1]`);
     return finiteValue;
   });
 
+  let baseColorTextureIndex = null;
   if (pbr.baseColorTexture !== undefined) {
-    const texture = requireObject(
-      pbr.baseColorTexture,
-      `${pbrLabel}.baseColorTexture`,
-    );
+    const texture = requireObject(pbr.baseColorTexture, `${pbrLabel}.baseColorTexture`);
     const allowedTextureKeys = new Set(['index', 'texCoord']);
     for (const key of Object.keys(texture)) {
-      if (!allowedTextureKeys.has(key)) {
-        reject(`${pbrLabel}.baseColorTexture.${key} is unsupported`);
-      }
+      if (!allowedTextureKeys.has(key)) reject(`${pbrLabel}.baseColorTexture.${key} is unsupported`);
     }
-    integer(texture.index, `${pbrLabel}.baseColorTexture.index`);
-    if (
-      texture.texCoord !== undefined &&
-      integer(texture.texCoord, `${pbrLabel}.baseColorTexture.texCoord`) !== 0
-    ) {
+    baseColorTextureIndex = integer(texture.index, `${pbrLabel}.baseColorTexture.index`);
+    if (texture.texCoord !== undefined && integer(texture.texCoord, `${pbrLabel}.baseColorTexture.texCoord`) !== 0) {
       reject(`${pbrLabel}.baseColorTexture.texCoord must equal 0`);
+    }
+    const textures = requireArray(doc.textures ?? [], 'textures');
+    if (textures[baseColorTextureIndex] === undefined) {
+      reject(`${pbrLabel}.baseColorTexture.index references missing texture ${baseColorTextureIndex}`);
     }
   }
 
@@ -273,8 +354,9 @@ function material(doc, index, label) {
     name: typeof source.name === 'string' ? source.name : null,
     baseColorFactor,
     doubleSided: source.doubleSided === true,
-    hasBaseColorTexture: pbr.baseColorTexture !== undefined,
+    baseColorTextureIndex,
     sourceAlphaMode: alphaMode,
+    alphaCutoff,
   };
 }
 
@@ -290,11 +372,12 @@ function validateDocumentBoundary(doc, label) {
   if (doc.extensions !== undefined) reject(`${label}.extensions is unsupported`);
 }
 
-
 export {
   EXPECTED_GENERATOR,
   ALLOWED_ATTRIBUTES,
   WEIGHT_TOLERANCE,
+  GLTF_NEAREST,
+  GLTF_CLAMP_TO_EDGE,
   reject,
   align4,
   requireObject,
@@ -302,6 +385,7 @@ export {
   finite,
   integer,
   decodeDataUri,
+  decodeBase64DataUri,
   identity,
   multiply,
   matrixClose,
@@ -310,6 +394,7 @@ export {
   transformNormal,
   decodeAccessor,
   validateDeclaredPositionBounds,
+  parseTextureResources,
   material,
   validateDocumentBoundary,
 };
