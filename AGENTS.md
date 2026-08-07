@@ -88,7 +88,7 @@ A lower level never implies a higher one. Documents and historical PR descriptio
 
 - The strongest preserved product base is `c8e0bf...`; it is not a proven public release.
 - R0-A established the repair line and a navigation-only guard on historical `main`; fetch both current refs before acting.
-- R0-B0 contains fail-closed single-run and same-OS two-run operators. Their Node 22 preflight/tests are auxiliary only; exact Node/npm evidence remains pending.
+- R0-B established an exact Windows baseline at `f1c0ffe...`: two independent Node 24.16.0 / npm 11.13.0 / TypeScript 7.0.2 / Vite 8.1.5 runs produced byte-identical artifacts and passed an independent 119-check evidence audit. Windows is the canonical R0 release-engineering platform; Linux is outside the R0 guarantee and is not a release gate. Any later commit requires a fresh Windows gate before inheriting PASS status.
 - `00e1c8...` is not a release base; its release work is stacked on unaccepted owner-vehicle commits.
 - `candidate/jv-web-owner-vehicle-visual-r1@796b050...` is frozen, broken and salvage-only.
 - Twenty-one TypeScript files are compiled/tested but not statically reachable from `src/product-main.ts`; see `docs/PROJECT_STATE.md`.
@@ -101,6 +101,8 @@ A lower level never implies a higher one. Documents and historical PR descriptio
 3. `docs/PROJECT_STATE.md`
 4. `docs/repair/R0_WORK_ORDER.md`
 5. `docs/BRANCH_ROLES.md`
-6. exact source, tests and build scripts relevant to the current stage
+6. `docs/repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md`
+7. `docs/repair/R0C_MAP_ONLY_ARCHITECTURE.md`
+8. exact source, tests and build scripts relevant to the current stage
 
 Use repository files and current GitHub state as evidence. Do not fill gaps from conversational memory.

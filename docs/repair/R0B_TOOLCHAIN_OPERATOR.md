@@ -1,6 +1,6 @@
 # R0-B disposable exact-toolchain operator
 
-Status: `SOURCE-PRESENT / AUXILIARY-TESTED / NO CANONICAL RECEIPT YET`
+Status: `OPERATOR ACCEPTED / EXACT WINDOWS BASELINE PASS AT f1c0ffe...`
 
 ## Purpose
 
@@ -33,7 +33,7 @@ TypeScript: 7.0.2
 Vite:       8.1.5
 ```
 
-npm 11.17.0 is a later forensic comparator. It does not become the project package manager unless recorded evidence shows a relevant difference.
+This exact toolchain is now the canonical R0 candidate. Another npm or mandatory platform is introduced only to diagnose a concrete failure or by separate owner decision.
 
 ## Invocation
 
@@ -52,7 +52,7 @@ node tools/repair/run-r0b-toolchain-gate-entry.mjs \
   --receipt-root <absolute-path-outside-checkout>
 ```
 
-Pass `--npm-cli <absolute npm-cli.js>` for the npm 11.17.0 comparator or when bundled npm cannot be located safely.
+Pass `--npm-cli <absolute npm-cli.js>` only when it identifies an independently verified npm 11.13.0 CLI; otherwise use the npm bundled with the verified Node archive.
 
 `--preflight-only` stops after identity, exact Node/npm and lock hashing. Its receipt is explicitly non-canonical.
 
@@ -75,8 +75,8 @@ Only the final result `PASS` has `canonical: true`. `PREFLIGHT_ONLY_PASS` and `B
 
 For the required two-run same-OS comparison, use [`R0B_SAME_OS_CANDIDATE.md`](R0B_SAME_OS_CANDIDATE.md) and `tools/repair/run-r0b-same-os-candidate.mjs`. Do not manually compare partial console output.
 
-## Same-OS and cross-platform comparison
+## Canonical Windows comparison
 
-Run two independent disposable checkouts on the same OS. Their final artifact file tables must be byte-identical before same-OS reproducibility is accepted.
+Run two independent disposable checkouts on Windows 11 x64. Their source identity, lock cleanliness, logical package versions, expected Windows native bindings and complete artifact file tables must agree; artifact bytes must be identical.
 
-For Windows versus Linux, first compare source identity, lock cleanliness, logical package versions, expected native bindings, file set, manifest semantics and runtime behavior. Measure byte identity before making it mandatory; do not compare raw `node_modules` directories.
+Linux is outside the R0 release guarantee and is not a release gate. Do not copy or compare raw `node_modules` directories across machines or operating systems.

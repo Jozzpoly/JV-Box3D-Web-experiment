@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24 <25"
+    "node": "24.16.0",
+    "npm": "11.13.0"
   },
   "scripts": {
     "generate:vehicle-fixture": "tsc -p tsconfig.test.json && node tools/write-tiny-vehicle-visual-fixture.mjs",
@@ -36,5 +37,18 @@
   "devDependencies": {
     "typescript": "7.0.2",
     "vite": "8.1.5"
+  },
+  "packageManager": "npm@11.13.0",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.16.0",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": "11.13.0",
+      "onFail": "error"
+    }
   }
 }

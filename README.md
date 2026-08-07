@@ -37,11 +37,12 @@ Jozz's recorded owner observation for the exact product line states that the sca
 
 ## Evidence boundary
 
-The preserved source is not yet a release artifact. The following remain unproven for the repair line:
+The exact `f1c0ffe...` baseline passed two clean Windows gates with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. Both 14-file artifacts were byte-identical and the retained evidence passed an independent 119-check audit. That PASS is tied only to `f1c0ffe...`; the current toolchain-pinning commit must be revalidated before runtime work inherits it.
 
-- clean exact Node 24 / npm / TypeScript 7 / Vite 8 gates on Windows and Linux;
-- two byte-reproducible static builds;
-- a public mode with zero scan requests and no private scan bytes;
+The following remain unproven:
+
+- the exact post-pin repair commit under the same two-run Windows gate;
+- a structural public mode with zero scan imports, requests and private scan bytes;
 - desktop browser console/network evidence for the exact artifact;
 - real-phone touch, rotation, rebuild and stability evidence;
 - GitHub Pages publication and rollback.
@@ -52,8 +53,8 @@ Do not use `PASS`, `READY`, `RELEASE` or `PUBLISHED` without matching exact evid
 
 ```text
 R0-A repository authority and truthful documentation
-R0-B exact toolchain comparison and pinning
-R0-C one shared product bootstrap with an explicit map-only public mode
+R0-B exact canonical Windows toolchain pin and revalidation
+R0-C structural local-full and MAP_ONLY_R0 product profiles
 R0-D reproducible portable public artifact and adversarial gates
 R0-E desktop and real-phone validation
 R0-F owner decision and GitHub Pages publication
@@ -65,7 +66,7 @@ R0 freezes physics, controls, camera, map, terrain, scan parsing/collision and o
 
 ## Local development
 
-The historical package contract requires Node 24 and pinned dependencies, but the exact accepted npm version is still being established in R0-B. Do not copy `node_modules` between operating systems.
+The canonical R0 release toolchain is Node 24.16.0 with npm 11.13.0. The package metadata fails closed on another Node/npm pair. Do not copy `node_modules` between machines or operating systems.
 
 ```powershell
 npm ci
@@ -112,9 +113,9 @@ See [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) for the exact list and [`do
 
 ## Publication direction
 
-The leading R0 hypothesis is a separately reviewed static artifact published through GitHub Pages, most likely from a small public artifact repository. This is not yet an owner-approved deployment decision.
+The selected target is the separate public artifact repository `Jozzpoly/JV-Box3D-Web-Public`. Its `main` branch is the publication control plane and `release/r0` is reserved for already validated static bytes. GitHub Pages is not enabled yet.
 
-A public artifact must contain only the approved map-only payload, full SHA-256 provenance, third-party notices and no private scan data or hidden external network dependency.
+A public artifact must contain only the approved `MAP_ONLY_R0` payload, full SHA-256 provenance, third-party notices and no private scan data or hidden external network dependency. See [`docs/repair/R0C_MAP_ONLY_ARCHITECTURE.md`](docs/repair/R0C_MAP_ONLY_ARCHITECTURE.md).
 
 ## License and ownership
 

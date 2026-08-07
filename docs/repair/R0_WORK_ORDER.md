@@ -1,6 +1,6 @@
 # JV Web — active R0 repair work order
 
-Updated: 2026-08-06
+Updated: 2026-08-07
 Owner: Jozz
 Mode: controlled repair toward a static browser release
 
@@ -36,8 +36,10 @@ R0 must not change:
 | R0-A1 initial authority | Complete at `63bbff...` | one documentation-only commit from `c8e0bf...` |
 | R0-A2 Gate 0 correction | Complete at `fb16cb5...` | remote/local gates separated; documents agree |
 | R0-A3 default-main landing guard | Complete at `main@b48c506...` | fresh repo landing points to dynamic repair ref and fixed product rollback |
-| R0-B0 toolchain operators | Source-present / auxiliary-tested | single-run fail-closed plus two-run same-OS orchestration; canonical Node 24 pending |
-| R0-B exact toolchain | Not proven | clean Linux and Windows receipts |
+| R0-B0 toolchain operators | Complete | fail-closed single-run plus two-run Windows orchestration |
+| R0-B1 Windows baseline | Accepted at `f1c0ffe...` | two clean exact runs, byte-identical artifact, 119-check evidence audit |
+| R0-B2 canonical toolchain pin | Source-present / revalidation required | exact post-pin Windows receipt |
+| R0-C0 map-only architecture | Defined | [`R0C_MAP_ONLY_ARCHITECTURE.md`](R0C_MAP_ONLY_ARCHITECTURE.md) |
 | R0-C map-only product mode | Not started | structural zero-scan mode with behavior characterization |
 | R0-D public artifact | Not started | reproducible allowlisted payload and hardened manifest |
 | R0-E runtime validation | Not started | desktop and real-phone receipts for exact artifact |
@@ -47,16 +49,15 @@ R0 must not change:
 
 ## R0-B sequence
 
-Do not pin a package manager before evidence.
+The exact Windows baseline for `f1c0ffe...` is accepted and indexed in [`R0B_WINDOWS_EVIDENCE_2026-08-07.md`](R0B_WINDOWS_EVIDENCE_2026-08-07.md). Jozz selected Windows as the canonical R0 release-engineering platform; Linux is outside the guarantee and is not a release gate.
 
-1. Use the guarded single-run operator in [`R0B_TOOLCHAIN_OPERATOR.md`](R0B_TOOLCHAIN_OPERATOR.md) through the two-run orchestrator in [`R0B_SAME_OS_CANDIDATE.md`](R0B_SAME_OS_CANDIDATE.md).
-2. Verify official Node `24.16.0` and its bundled npm `11.13.0` by signed/checksummed release data.
-3. Run the first canonical candidate on Linux and Windows from clean disposable checkouts.
-4. Run npm `11.17.0` as a forensic comparator only.
-5. Require the receipts to record the normalized logical dependency graph and selected TypeScript/Rolldown native bindings; expand the comparison matrix only if the comparator changes the lock, dependency graph, source gate or artifact.
-6. Commit exact toolchain constraints only after the evidence is reviewed.
+1. Pin Node `24.16.0`, npm `11.13.0`, TypeScript `7.0.2` and Vite `8.1.5` in package metadata.
+2. Run the guarded two-worktree Windows gate on the exact post-pin commit.
+3. Require clean source before/after, unchanged lockfile, identical logical dependency evidence, expected Windows native bindings and byte-identical artifact tables.
+4. Close R0-B only for the exact commit named by the accepted receipt.
+5. Begin R0-C with characterization tests only.
 
-Do not compare raw cross-platform `node_modules` directories. Compare lockfile cleanliness, logical package versions, expected native platform bindings, source results and artifact semantics. Same-OS repeated builds must be byte-identical; cross-platform byte identity is measured before it is made mandatory.
+Do not add an npm comparator or another mandatory platform without a concrete failure or a separate owner decision. Never compare copied `node_modules` directories.
 
 ## R0-C minimum architecture
 
@@ -67,7 +68,7 @@ LOCAL_FULL  = E2R + optional local JSPREV2 capability
 MAP_ONLY_R0 = E2R only; scan capability absent
 ```
 
-Before refactoring, add behavior-characterization tests. Public mode must neither import/use the scan loader as its world provider nor request `/__jv_scan__/`.
+Follow [`R0C_MAP_ONLY_ARCHITECTURE.md`](R0C_MAP_ONLY_ARCHITECTURE.md). Before refactoring, add behavior-characterization tests. Public mode must neither import/use the scan loader as its world provider nor request `/__jv_scan__/`.
 
 ## Public repository target
 

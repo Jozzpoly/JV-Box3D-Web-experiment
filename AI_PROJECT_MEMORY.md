@@ -57,8 +57,9 @@ Classification: `OWNER OBSERVED`, not a current exact release gate.
 R0-A1 initial authority checkpoint       COMPLETE at 63bbff...
 R0-A2 remote/local guard correction      COMPLETE AT fb16cb5...
 R0-A3 default-main landing guard         COMPLETE at main@b48c506...
-R0-B0 single/two-run toolchain operators SOURCE-PRESENT / AUXILIARY-TESTED
-R0-B exact toolchain                     NOT PROVEN
+R0-B Windows baseline at f1c0ffe         ACCEPTED / 119-CHECK EVIDENCE AUDIT
+R0-B canonical toolchain pin             SOURCE-PRESENT / REVALIDATION REQUIRED
+R0-C architecture                        DEFINED / RUNTIME NOT STARTED
 R0-C public product mode                 NOT STARTED
 R0-D reproducible public artifact        NOT STARTED
 R0-E desktop/phone proof                 NOT STARTED
@@ -80,7 +81,7 @@ document links: 16/16 PASS
 same-OS preflight: 2/2 identical / canonical false
 ```
 
-The exact third-party/toolchain gate is intentionally not claimed under TypeScript 5.8. Exact Node 24.16.0, accepted npm, TypeScript 7.0.2, Vite 8.1.5, clean `npm ci`, portable build, browser and phone proof remain required.
+The earlier Node 22 / TypeScript 5.8 results remain auxiliary only. Exact Windows evidence for `f1c0ffe...` used Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5 in two clean runs with byte-identical artifacts. Windows is the canonical R0 build platform; Linux is outside scope. The current post-pin tip must pass the same Windows gate before runtime work begins. Browser and phone proof remain required.
 
 ## Source that is not active product behavior
 
@@ -125,5 +126,7 @@ Stop when identity differs, source is dirty, lockfile drifts, build changes sour
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
 3. `docs/repair/R0_WORK_ORDER.md`
-4. `docs/BRANCH_ROLES.md`
-5. exact source and tests for the current R0 stage
+4. `docs/repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md`
+5. `docs/repair/R0C_MAP_ONLY_ARCHITECTURE.md`
+6. `docs/BRANCH_ROLES.md`
+7. exact source and tests for the current R0 stage

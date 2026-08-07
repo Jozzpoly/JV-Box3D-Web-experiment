@@ -1,7 +1,7 @@
 # JV Web — current project state
 
-Updated: 2026-08-06
-Status: `CONTROLLED REPAIR R0-B0 / NO PRODUCT BEHAVIOR CHANGE`
+Updated: 2026-08-07
+Status: `CONTROLLED REPAIR R0-B PIN CANDIDATE / WINDOWS BASELINE ACCEPTED / NO PRODUCT BEHAVIOR CHANGE`
 Owner: Jozz
 
 ## 1. Exact identity
@@ -60,30 +60,29 @@ vehicle collision works correctly
 
 This is `OWNER OBSERVED`. It does not prove a current clean build, public artifact or Pages deployment.
 
-### Auxiliary automated evidence
+### Exact Windows R0-B baseline
 
-The current R0-B0 source was validated auxiliarily with Node 22.16.0 and TypeScript 5.8.3:
+The exact `f1c0ffe5ebc6b22cd6e3f435bab8529ca50fb67f` source tree passed two independent clean Windows 11 x64 gates with:
 
 ```text
-typecheck: PASS
-test compile: PASS
-Node tests: 278/278 PASS
-document links: 16/16 PASS
-same-OS preflight: two detached runs identical
-same-OS classification: PREFLIGHT_ONLY_PASS / canonical false
+Node:       24.16.0
+npm:        11.13.0
+TypeScript: 7.0.2
+Vite:       8.1.5
+tests:      281/281 PASS in each run
+artifacts:  14 files / byte-identical
+evidence:   independent 119/119 audit PASS
 ```
 
-This is auxiliary evidence only. The exact third-party/toolchain gate is not claimed under TypeScript 5.8 and this is not the canonical Node 24 / TypeScript 7 / Vite 8 gate.
+This is accepted baseline evidence for `f1c0ffe...` only. The current toolchain-pinning commit changes package metadata and therefore requires the same two-run Windows gate before it inherits PASS. Linux is outside the R0 release guarantee and is not a release gate. See [`repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md`](repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md).
 
 ## 3. What is not proven
 
 ```text
-exact Node 24.16.0 clean install on Windows: NOT PROVEN FOR REPAIR LINE
-exact Node 24.16.0 clean install on Linux:   NOT PROVEN FOR REPAIR LINE
-accepted npm version:                        UNDECIDED (11.13.0 vs 11.17.0 comparison pending)
-TypeScript 7.0.2 exact gate:                 NOT PROVEN FOR REPAIR LINE
-Vite 8.1.5 exact build:                      NOT PROVEN FOR REPAIR LINE
-byte-reproducible public artifact:           NOT PROVEN
+post-pin current-tip Windows gate:            NOT YET RUN
+MAP_ONLY_R0 import/request isolation:         NOT PROVEN
+byte-reproducible public artifact:            NOT PROVEN
+public target-path behavior:                  NOT PROVEN
 public zero-scan-request runtime:             NOT PROVEN
 desktop exact-artifact browser receipt:       NOT PROVEN
 real-phone exact-artifact receipt:            NOT PROVEN
@@ -99,8 +98,10 @@ R0 exists to create a truthful and reproducible map-only release lane without ch
 R0-A1 initial authority checkpoint                   COMPLETE at 63bbff...
 R0-A2 remote/local Gate 0 correction                 COMPLETE AT fb16cb5...
 R0-A3 default-main landing guard                     COMPLETE at main@b48c506...
-R0-B0 single/two-run toolchain operators             SOURCE-PRESENT / AUXILIARY-TESTED
-R0-B exact Node/npm/toolchain comparison             NOT PROVEN
+R0-B0 single/two-run toolchain operators             COMPLETE / EXACT WINDOWS BASELINE USED
+R0-B1 Windows baseline at f1c0ffe                    ACCEPTED / 119-CHECK AUDIT
+R0-B2 exact toolchain pin                            SOURCE-PRESENT / WINDOWS REVALIDATION REQUIRED
+R0-C0 map-only architecture                          DEFINED / RUNTIME NOT STARTED
 R0-C shared local/public product configuration       NOT STARTED
 R0-D hardened portable public artifact               NOT STARTED
 R0-E desktop and real-phone validation               NOT STARTED
@@ -173,4 +174,6 @@ The authority checkpoint is complete because:
 
 ## 8. Next allowed step
 
-Follow [`repair/R0_WORK_ORDER.md`](repair/R0_WORK_ORDER.md), [`repair/R0B_TOOLCHAIN_OPERATOR.md`](repair/R0B_TOOLCHAIN_OPERATOR.md), and [`repair/R0B_SAME_OS_CANDIDATE.md`](repair/R0B_SAME_OS_CANDIDATE.md). The first canonical candidate is two independent Node 24.16.0 + bundled npm 11.13.0 runs on one OS, followed by the other OS. The receipts must record exact TypeScript/Vite, a deterministic logical npm tree, selected native bindings, source gates and byte-identical same-OS artifact tables. npm 11.17.0 remains a forensic comparator. Do not pin a package-manager version or begin R0-C before this evidence.
+Re-run the exact two-worktree Windows gate on the toolchain-pinning commit. Require Node 24.16.0, npm 11.13.0, TypeScript 7.0.2, Vite 8.1.5, clean source before/after, unchanged lockfile and byte-identical artifacts. Do not begin runtime refactoring until that exact commit passes.
+
+After the post-pin PASS, begin only slice C0 from [`repair/R0C_MAP_ONLY_ARCHITECTURE.md`](repair/R0C_MAP_ONLY_ARCHITECTURE.md): characterization tests that freeze current local-full behavior. A public mode must be structural; the current map path still reaches `product-world.ts`, which statically imports and invokes the local JSPREV2 loader. Hiding a control or tolerating a scan 404 is not an acceptable release boundary.

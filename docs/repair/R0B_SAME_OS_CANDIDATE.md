@@ -1,6 +1,6 @@
 # R0-B same-OS reproducibility candidate
 
-Status: `SOURCE-PRESENT / AUXILIARY PREFLIGHT 2/2 PASS / NO CANONICAL RECEIPT YET`
+Status: `OPERATOR ACCEPTED / WINDOWS BASELINE PASS AT f1c0ffe... / POST-PIN REVALIDATION REQUIRED`
 
 ## Purpose
 
@@ -18,6 +18,10 @@ Vite:       8.1.5
 ```
 
 The command must itself be launched by the exact Node candidate. The script creates all evidence and disposable worktrees under an absolute directory outside the repository.
+
+## Platform scope
+
+Windows 11 x64 is the canonical R0 release-engineering platform. The accepted `f1c0ffe...` campaign completed two byte-identical full runs and a 119-check evidence audit. Linux is not an R0 release gate. A PASS applies only to the exact commit/tree in its receipt; the toolchain-pinning commit must be run again.
 
 ## Invocation
 
