@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-07
-Status: `R0 PUBLISHED / FOUNDATION GROUNDED / R1 DEVELOPMENT READY`
+Status: `R0 PUBLISHED / FOUNDATION GROUNDED / R1-F0 VEHICLE FOUNDATION DECIDED`
 Owner: Jozz
 
 This is a compact navigation map for a fresh agent. It must never override Git, exact source, raw evidence or owner validation.
@@ -110,7 +110,7 @@ The public release deliberately excludes the private JSPREV2 scan.
 
 Do not “fix” any of these by mutating the published R0 artifact in place.
 
-## Next active line
+## Active R1 line
 
 Use:
 
@@ -118,16 +118,74 @@ Use:
 development/jv-web-r1
 ```
 
-as the post-R0 product development branch. Verify its exact current tip before work.
+Verify its exact current tip before every operation.
 
-R1 should be systematic:
+The R0 grounding commit that opened R1 is:
 
-1. define the target vehicle/product architecture before importing old candidate code;
-2. selectively salvage only proven pieces from historical branches;
-3. establish the real chassis/four-wheel visual path;
-4. keep R0 behavior available as a regression reference;
-5. preserve desktop and mobile usability continuously;
-6. create new release artifacts rather than rewriting R0.
+```text
+6e132a61f1ae0e81b15d954b32ed92ad1f60ec4e
+```
+
+## R1-F0 vehicle foundation decision
+
+Canonical audit:
+
+```text
+docs/r1/R1_F0_VEHICLE_FOUNDATION_AUDIT.md
+```
+
+The live vehicle renderer is still procedural:
+
+```text
+main
+→ M6DebugRenderer
+→ M6ProductRenderer
+→ M6WorldRenderer
+→ box chassis + cylinder wheels
+```
+
+However, the current source already contains a strong dormant GLB visual foundation:
+
+- `M6TraceFrame.visualFrame` is a complete `VehicleVisualFrameV1` produced every physics step;
+- frame covers 18 parts + 8 visual segments;
+- `VehicleVisualPackageV1` provides a strict `M6_FULL_RIG_V1` binding contract;
+- `loadVehicleVisualRuntimeV1()` validates/fetches/decodes GLB assets;
+- `createRigidMeshGpuAssetV1()` uploads owned GPU geometry buffers;
+- `resolveVehicleVisualBindingsV1()` resolves full-rig world matrices;
+- the deterministic tiny vehicle fixture already generates the complete full-rig package.
+
+The missing core is only the live draw integration between those pieces and `M6ProductRenderer`/`M6WorldRenderer`.
+
+### Architecture decision
+
+Do NOT create a reduced chassis+4-wheels runtime contract now. Keep `M6_FULL_RIG_V1` and preserve `trace.visualFrame` as the sole pose authority.
+
+Implementation order:
+
+```text
+R1-F1 — live GLB full-rig proof using deterministic tiny fixture
+R1-F2 — real owner chassis + four wheels, untextured first
+R1-F3 — pixel textures / alpha masks after geometry+pose are proven
+```
+
+The frozen `candidate/jv-web-owner-vehicle-visual-r1@796b050...` remains salvage-only. Its owner import/calibration ideas are useful, but its final renderer is still the same procedural renderer and its texture-producing toolchain outruns the current runtime decoder/GPU/draw capabilities.
+
+No wholesale merge.
+
+## R1-F1 guardrails
+
+R1-F1 must not change physics/input/world semantics just to render GLB geometry.
+
+Success means:
+
+- tiny GLB full rig is visibly driven by the existing `trace.visualFrame`;
+- terrain/world remain unchanged;
+- destroy/rebuild remains correct;
+- desktop/mobile controls remain usable;
+- GLB resource lifecycle/disposal is explicit;
+- a GLB failure is not silently disguised as procedural PASS.
+
+No owner assets, texture support, native-parity work, scan work or release plumbing belong to R1-F1.
 
 ## Historical branches
 
@@ -141,5 +199,6 @@ R1 should be systematic:
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
 3. `docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md`
-4. `docs/BRANCH_ROLES.md`
-5. exact files relevant to the next R1 goal
+4. `docs/r1/R1_F0_VEHICLE_FOUNDATION_AUDIT.md`
+5. `docs/BRANCH_ROLES.md`
+6. exact files relevant to R1-F1
