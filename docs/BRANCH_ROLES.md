@@ -1,45 +1,47 @@
 # JV Web — branch roles and preserved history
 
-Updated: 2026-08-06  
-Purpose: navigation only; always verify current branch tips through GitHub before acting.
+Updated: 2026-08-07
+Purpose: navigation only; always fetch exact current tips before acting.
 
-## Active and authoritative lines
+## Active development
 
-| Branch | Fixed identity | Role |
-|---|---:|---|
-| `repair/jv-web-release-r0` | base `c8e0bf24748b...`; current tip must be fetched | Controlled R0 repair line. Only current campaign work belongs here. |
-| `product/jv-web-car-map-scan` | preserved `c8e0bf24748b...` | Strongest preserved product base. Freeze as comparison/rollback while R0 is developed. |
-| `main` | navigation guard at `b48c50699a7c...`; fetch current tip | Minimal historical default branch. Not the current product implementation. |
+| Branch | Role |
+|---|---|
+| `development/jv-web-r1` | Active post-R0 product-development line. Starts from the R0 grounding checkpoint. New product work belongs here. |
+
+## Closed/frozen authoritative lines
+
+| Branch | Role |
+|---|---|
+| `repair/jv-web-release-r0` | Closed R0 repair/release history. Contains source/build-profile work that produced the first public release. Do not use as the ongoing feature lane. |
+| `product/jv-web-car-map-scan` | Preserved pre-R0 product comparison line at `c8e0bf24748b...`. |
+| private `main` | Historical/navigation default branch, not active product implementation. |
+
+## Public repository
+
+`Jozzpoly/JV-Box3D-Web-Public` is an artifact repository, not a source-development repo.
+
+| Branch | Fixed R0 role |
+|---|---|
+| `main@401068f5734c...` | Neutral public control-plane/rollback reference. |
+| `release/r0@c3e33e3dcd34...` | Frozen first public artifact, tree `f1c5c9a97120...`, Pages source. |
 
 ## Frozen candidates
 
 | Branch | Verified historical tip | Classification |
 |---|---:|---|
-| `candidate/jv-web-owner-vehicle-visual-r1` | `796b050b4b90...` | `FROZEN / BROKEN / SALVAGE ONLY`; no merge or continuation as a product line. |
-| `candidate/jv-web-render-host-r1` | `e263e3e05ea2...` | Historical bounded render-host experiment; selective source review only. |
+| `candidate/jv-web-owner-vehicle-visual-r1` | `796b050b4b90...` | `FROZEN / BROKEN / SALVAGE ONLY`; do not resume or merge wholesale. |
+| `candidate/jv-web-render-host-r1` | `e263e3e05ea2...` | Historical bounded render-host experiment; selective review only. |
 
-## Historical evidence and salvage lines
+## Historical evidence/salvage lines
 
-| Branch | Verified historical tip | Role |
-|---|---:|---|
-| `agent/jv-lit-normal-foundation` | `26c5022f8dfd...` | Historical lit-normal source and tests; never promote wholesale. |
-| `agent/jv-real-vehicle-texture-scan-plan` | `d75660889cda...` | Historical architecture plan; not current product state. |
-| `agent/jv-refoundation-control-plane` | `fd4d96fdf479...` | Historical operators/evidence model; its active-state claims are superseded. |
-| `agent/jv-render-host-r1-validation-operator` | `b452c375b092...` | Historical validation operator tied to the render-host candidate. |
-| `agent/jv-tiny-unlit-pass` | `f27b92d826e1...` | Historical tiny-proof/layer-control line. |
-| `agent/jv-web-demonstrator-foundation` | `78150858049c...` | Historical large foundation formerly associated with PR #18. |
-| `agent/jv-web-playable-runtime` | `d6aa218064c2...` | Earlier accepted playable reference; superseded by later product integration for current direction. |
-| `agent/jv-web-playable-attached-gate-fix` | `0c3bb543f806...` | Historical recovery helper. |
-| `agent/jv-web-playable-pathfix` | `99cbd10e7b65...` | Historical recovery helper. |
-| `agent/jv-web-playable-recovery` | `99cbd10e7b65...` | Historical alias at the same tip. |
-| `agent/jv-web-playable-recovery-v2` | `99cbd10e7b65...` | Historical alias at the same tip. |
+Existing `agent/*` refoundation, playable, render, texture and visual branches remain historical evidence or selective salvage sources. None is an authority merely because it has more features.
 
-## Rules
+## Rules for R1
 
-- Branch names and documents do not prove runtime quality.
-- The current repair tip is dynamic; fetch it immediately before analysis or writes.
-- Closed PR text is historical context, not the current work order.
-- Do not delete these branches during R0; preservation is cheaper and safer than history rewriting.
-- Do not merge or cherry-pick a complete historical branch into the repair line.
-- Salvage must identify exact files/commits, restate the technical question and pass fresh gates on the current base.
-- The product base remains the rollback target until an owner-accepted R0 commit supersedes it.
+- Start from the current `development/jv-web-r1` tip, not from an old candidate.
+- Preserve public R0 as a regression/rollback reference.
+- Salvage exact files/ideas only after restating the technical question and validating against current R1.
+- Do not wholesale merge historical branches.
+- Prefer bounded product slices with visible runtime value over infrastructure-only expansion.
+- Release engineering should become lightweight until a new public artifact is actually needed.

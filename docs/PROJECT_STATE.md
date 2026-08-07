@@ -1,201 +1,211 @@
 # JV Web — current project state
 
 Updated: 2026-08-07
-Status: `C2 SOURCE-PRESENT / EXACT WINDOWS + MAP_ONLY_R0 ISOLATION REVALIDATION REQUIRED`
+Status: `R0 PUBLISHED PASS / OWNER ACCEPTED / POST-R0 FOUNDATION GROUNDED`
 Owner: Jozz
 
-## 1. Exact identity
+## 1. Exact identities
+
+### Private source
 
 ```text
 repository: Jozzpoly/JV-Box3D-Web-experiment
-visibility: private
-default branch: main
-main navigation guard: b48c50699a7c257b6d9cc00995ee8b20600ef8fe
-
-preserved product branch:
-  product/jv-web-car-map-scan
-
-preserved product commit:
-  c8e0bf24748b0a790a1c0039b1be801eef266580
-
-preserved product tree:
-  3e241761784edd2a2fb6ab18095c25ea0e737185
-
-controlled repair branch:
-  repair/jv-web-release-r0
-
-repair base:
-  exact preserved product commit above
-
-last validated architectural predecessor:
-  c1b7894476dc4da26eec45033b92042919aff1ae
-  tree 22d0734d78d6dacd3d81d46b980423ed9480f3e8
-
-current C2 tip:
-  this commit; exact SHA/tree must be read from GitHub
-  SOURCE-PRESENT / REVALIDATION REQUIRED
+R0 source branch: repair/jv-web-release-r0
+R0 source commit: 5ba6cc406b8c1541e29cd1ae59ffed78a7509284
+R0 source tree:   08314a0182a38bbcd106e984dde73e737a1a13e7
 ```
 
-The default `main` branch contains only a minimal historical project root plus a navigation guard. It is not the product implementation. Default-branch normalization is deferred until a release-capable line passes exact build, browser and owner gates.
+The historical private `main` remains a navigation/default branch and is not the active product implementation.
 
-## 2. Current product truth
-
-### Source-confirmed
-
-The exact preserved product tree contains:
-
-- real Box3D/WASM M6 reference physics and contacts;
-- physical rack steering plus drive, reverse, coast and braking;
-- deterministic keyboard and mobile Pointer Events input;
-- WebGL observer, orbit/zoom camera and destroy/rebuild lifecycle;
-- E2R/offroad terrain with stones and bumpers;
-- optional local JSPREV2 visual data and triangle collision;
-- map/scan spawn selection in the local product;
-- nearest/linear texture-filter controls;
-- grid disabled by default and toggleable;
-- relative Vite base and portable-build infrastructure.
-
-### Owner-observed
-
-The recorded owner verdict for the product line states that:
+### Public artifact
 
 ```text
-scan displays correctly
-pixel smoothing is disabled and can be enabled
-grid is disabled and can be enabled
-vehicle collision works correctly
+repository: Jozzpoly/JV-Box3D-Web-Public
+main:       401068f5734c841d43907b71484bc03a2396c604
+release/r0: c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+tree:       f1c5c9a971208d89da05143f10913891a58b3b70
+previous release rollback:
+            401068f5734c841d43907b71484bc03a2396c604
 ```
 
-This is `OWNER OBSERVED`. It does not prove a current clean build, public artifact or Pages deployment.
-
-### Exact Windows C0-CHAR predecessor
-
-The exact `746dda0b09aeb0906412ef8a2d110a6f3fa83561` / `db9eadf45f75784314d62ae8caf1db528e1de622` C0-CHAR predecessor passed two independent clean Windows 11 x64 gates with:
+### GitHub Pages
 
 ```text
-Node:       24.16.0
-npm:        11.13.0
-TypeScript: 7.0.2
-Vite:       8.1.5
-tests:      287/287 PASS in each run
-doc links:  18
-artifacts:  14 files / byte-identical
-cleanup:    both disposable worktrees removed
+URL:
+  https://jozzpoly.github.io/JV-Box3D-Web-Public/
+
+status:
+  built
+
+build type:
+  legacy branch source
+
+source:
+  release/r0 /(root)
+
+HTTPS:
+  enforced
 ```
 
-External evidence ZIP SHA-256:
+## 2. Exact published artifact
 
 ```text
-f1e6b385cca9e80517c57e8c5680fd5f794a0f6a1d1337bc61b304d356520a80
+validated candidate ZIP SHA-256:
+f7585b8cd3233849ae9002814e2c245e51f6aeb53fbe32f41552b228f27796b2
+
+public file count:
+14
+
+public Git tree:
+f1c5c9a971208d89da05143f10913891a58b3b70
 ```
 
-Classification: `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for exact C0-CHAR and its LOCAL_FULL portable baseline only. Browser/runtime, MAP_ONLY_R0, owner acceptance and publication remain unproven. Linux is outside the R0 release guarantee and is not a release gate.
+The public tree contains only the static artifact payload: HTML/CSS/JS, manifest, notices, synthetic scene/receipt, tiny proof vehicle files and `.nojekyll`. It does not contain the private source repository or JSPREV2 scan bytes.
 
-C1 `c1b7894476dc4da26eec45033b92042919aff1ae` / `22d0734d78d6dacd3d81d46b980423ed9480f3e8` passed its own exact two-worktree Windows source/artifact gate: 288/288 tests in each run, 18 documentation links, unchanged lockfile and byte-identical 14-file LOCAL_FULL artifacts. Source/artifact evidence SHA-256: `0eea31c7ebfbe34c3495049c67afafb65595c3ce77b449982d252b4a67e65a56`. Bounded Edge evidence on the same tip reached a Running/LIVE WebGL map world with four contacts and expected LOCAL_FULL controls; v3 then blocked only at synthetic keyboard injection (`c2348b69a855b1867812ede6b39f3a1d2ed6d00a9c91f585b4a82a255a709c81`). This is sufficient to progress the world-provider refactor into C2, but does not claim R0-E physical keyboard, phone, owner or final exact-artifact browser acceptance. The historical repository file [`repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md`](repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md) remains an earlier-campaign index.
+## 3. Evidence classification
 
-## 3. What is not proven
+### Source/artifact proof
+
+The final pre-public Windows gate on source `5ba6cc...` established:
 
 ```text
-C1 exact-tip Windows source/artifact gate:      PASS
-C1 bounded Edge map smoke:                      RUNTIME OBSERVED / SYNTHETIC KEYBOARD HARNESS BLOCKED
-MAP_ONLY_R0 import/request isolation:           SOURCE-PRESENT / EXACT C2 GATE REQUIRED
-byte-reproducible public artifact:              NOT PROVEN
-public target-path behavior:                    NOT PROVEN
-public zero-scan-request runtime:               NOT PROVEN
-desktop exact-artifact browser receipt:         NOT PROVEN
-real-phone exact-artifact receipt:              NOT PROVEN
-GitHub Pages publication:                       NOT PERFORMED
-native JV parity:                               NOT PROVEN
+Windows 11 x64
+Node 24.16.0
+npm 11.13.0
+TypeScript 7.0.2
+Vite 8.1.5
+tests: 290/290 PASS
+two independent MAP_ONLY_R0 builds
+14/14 artifact files byte-identical
+zero public scan requests in project-path Edge smoke
 ```
 
-## 4. Current controlled campaign
+### Publication proof
 
-R0 exists to create a truthful and reproducible map-only release lane without changing the product behavior.
+Publication evidence ZIP SHA-256:
 
 ```text
-R0-A1 initial authority checkpoint                   COMPLETE at 63bbff...
-R0-A2 remote/local Gate 0 correction                 COMPLETE AT fb16cb5...
-R0-A3 default-main landing guard                     COMPLETE at main@b48c506...
-R0-B0 single/two-run toolchain operators             COMPLETE / EXACT WINDOWS BASELINE USED
-R0-B1 historical Windows baseline at f1c0ffe         ACCEPTED / HISTORICAL REPOSITORY RECEIPT
-R0-B2 canonical toolchain pin + exact revalidation   COMPLETE PASS at e33b226... only
-R0-C0-ARCH map-only architecture                     DEFINED / RUNTIME NOT CHANGED
-C0-CHAR current lifecycle characterization           COMPLETE PASS at 746dda0...
-C1 scan-free world service + LOCAL_FULL provider     COMPLETE FOR C2 PROGRESSION
-C2 dedicated MAP_ONLY_R0 entry                       SOURCE-PRESENT / REVALIDATION REQUIRED
-R0-D hardened portable public artifact               NOT STARTED
-R0-E desktop and real-phone validation               NOT STARTED
-R0-F owner Pages decision and publication            NOT AUTHORIZED
-R0-G default-branch normalization                    NOT AUTHORIZED
-R1 real owner chassis and four wheels                FROZEN UNTIL R0
+18bed9b4ed11c8620afebfdc5f78a21750a945b60ee6e0baa6337a52a4437fd1
 ```
 
-R0 may not change physics, controls, camera, map, terrain, JSPREV2 parsing/collision or owner-vehicle rendering.
+It proves:
 
-## 5. C1 closure and C2 boundary
+- public Gate 0 started from `release/r0@401068f...`;
+- generated public commit `c3e33e3...` has sole parent `401068f...`;
+- its tree is exact `f1c5c9a...`;
+- push was normal fast-forward, no force;
+- fresh clone after push reproduced exact HEAD/tree;
+- Pages was created from `release/r0 /`;
+- live GitHub Pages returned the application;
+- final online Edge reached Running/LIVE;
+- generation advanced 1 → 2 through rebuild;
+- grid toggle worked;
+- project responses succeeded;
+- scan request count was zero;
+- unexpected browser errors were empty.
 
-C0-CHAR is closed at `746dda0b09aeb0906412ef8a2d110a6f3fa83561` / `db9eadf45f75784314d62ae8caf1db528e1de622` by the exact Windows evidence above. It freezes the singleton/lifecycle behavior needed for the dependency split.
+The only observed non-project HTTP miss is the browser's host-level `https://jozzpoly.github.io/favicon.ico` request returning 404. It is cosmetic and outside the project prefix.
 
-C1 changes only the capability boundary:
+### Owner validation
 
-- `src/scene/product-world.ts` becomes scan-free and owns the configured loader, singleton promise, current world and subscribers;
-- `src/scene/local-full-product-world.ts` owns the static JSPREV2 dependency and builds the LOCAL_FULL world;
-- `src/product-main.ts` configures LOCAL_FULL before importing `main.ts`;
-- `F4VehicleHost` and `M6ProductRenderer` continue to use `product-world` and remain scan-loader-free;
-- profile replacement fails closed; repeated configuration with the exact same loader is idempotent;
-- physics, controls, camera, E2R, JSPREV2 parsing/render/collision, assets, package-lock and build configuration remain unchanged.
+Jozz manually used the live URL after publication:
 
-C1 is closed for architectural progression by its exact Windows source/artifact PASS plus bounded Edge Running/LIVE smoke. The synthetic-keyboard automation failure is retained as a harness limitation and is not promoted to R0-E evidence. C2 must now prove the dedicated public entry is structurally scan-free and preserves the accepted map runtime.
+- desktop browser: page/live world works;
+- real smartphone: page works in portrait and landscape;
+- mobile controls are visible and usable;
+- vehicle drives, steers and brakes;
+- offroad/terrain and standard scene behavior are usable.
 
-## 6. Product-reachability boundary
+This is `OWNER ACCEPTED` manual live-URL evidence. The screenshots visually support the live/responsive layouts; interaction claims are owner observation, not machine-generated phone telemetry.
 
-A reproducible static import scan of the exact product tree used `src/product-main.ts` as the entrypoint and resolved relative TypeScript imports, exports and dynamic imports (`.js` references mapped to `.ts`). Result:
+## 4. R0 campaign closure
 
 ```text
-TypeScript files:                  73
-reachable from product-main.ts:    52
-not reachable from product-main.ts:21
-unresolved relative code imports:  0
-non-code import:                   src/main.ts -> ./style.css
+R0-A repository authority             COMPLETE
+R0-B canonical Windows/toolchain      COMPLETE PASS
+R0-C structural MAP_ONLY_R0           COMPLETE PASS
+C0-CHAR lifecycle characterization    COMPLETE PASS
+C1 scan-free provider split           COMPLETE
+C2 dedicated MAP_ONLY_R0 entry        COMPLETE PASS
+R0-D reproducible public artifact     COMPLETE PASS
+R0-E runtime validation               COMPLETE:
+                                      automated live desktop Edge
+                                      + owner real-phone/desktop validation
+R0-F public repo + GitHub Pages       PUBLISHED PASS
+R0-G default-branch normalization     DEFERRED / NOT REQUIRED FOR R0
 ```
 
-Files classified as `SOURCE-PRESENT / NOT PRODUCT-REACHABLE`:
+R0 is CLOSED. Do not continue treating `repair/jv-web-release-r0` as an active feature-development campaign.
+
+## 5. Product truth after R0
+
+### Proven public behavior
+
+- WebGL browser world runs from GitHub Pages;
+- map-only E2R/synthetic terrain content is available;
+- reference vehicle has contacts and movement;
+- desktop and mobile input are usable;
+- rebuild lifecycle works;
+- public runtime makes no JSPREV2 scan request.
+
+### Deliberately private/local behavior
+
+- JSPREV2 scan loading/render/collision remains LOCAL_FULL/private;
+- scan publication rights, size and hosting are not resolved by R0.
+
+### Not yet final product authority
 
 ```text
-src/app/f2-contact-host.ts
-src/app/f3-validated-host.ts
-src/assets/asset-contract.ts
-src/render/rigid-mesh-gpu-asset.ts
-src/render/vehicle-visual-render-resource.ts
-src/scene/static-scene-visual-package.ts
-src/visual/glb-container.ts
-src/visual/glb-material-policy-v1.ts
-src/visual/glb-rigid-array-buffer-contract.ts
-src/visual/glb-rigid-mesh-decoder.ts
-src/visual/glb-runtime-policy-v1.ts
-src/visual/rigid-cpu-asset-seal.ts
-src/visual/rigid-mesh-draw-plan.ts
-src/visual/vehicle-visual-asset-gate.ts
-src/visual/vehicle-visual-binding-policy.ts
-src/visual/vehicle-visual-budget.ts
-src/visual/vehicle-visual-cpu-gate.ts
-src/visual/vehicle-visual-package.ts
-src/visual/vehicle-visual-runtime-loader.ts
-src/visual/vehicle-visual-transform.ts
-src/visual/vehicle-visual-url.ts
+runtimeBackend.id: legacy_ts_m6
+runtimeBackend.role: REFERENCE_BROWSER_FIXTURE
+productPhysicsAuthority: false
+nativeParity: NOT_PROVEN
 ```
 
-This classification does not mean the files are worthless or defective. It means their source/tests cannot be presented as proof of current product runtime behavior.
+Do not present the current reference M6 as proven native-JV parity.
 
-## 7. Candidate and history classification
+## 6. Known limitations / technical debt
 
-- `00e1c8...`: do not use as a release base. Its release work is stacked on three unaccepted owner-vehicle commits and has no complete release proof.
-- `candidate/jv-web-owner-vehicle-visual-r1@796b050...`: frozen/broken/salvage-only. It generates texture/material features that the product runtime does not decode, upload or render end-to-end.
-- refoundation, render-host, tiny-unlit and lit-normal lines: historical evidence and selective salvage only.
-- no historical branch may be merged wholesale into R0.
+1. **Vehicle presentation** — current public vehicle is a proof/synthetic M6, not Jozz's intended final models/chassis/wheels.
+2. **Manifest lifecycle semantics** — `build-manifest.json` correctly binds the source and hashes but its publication booleans describe build-time dormant state. They were intentionally not rewritten after publication because that would mutate the validated artifact.
+3. **Favicon** — host-level favicon request returns 404.
+4. **Hardening** — branch protection, default-branch normalization, CSP/security headers, wider browser/device matrix and performance optimization remain future work.
+5. **Bundle size** — main JS is roughly 1.23 MB; acceptable for R0, worth profiling later.
+6. **Public scan** — intentionally absent.
+7. **Licensing** — no general public reuse license has been granted.
 
-See [`BRANCH_ROLES.md`](BRANCH_ROLES.md).
+None of these invalidates the R0 publication proof.
 
-## 8. Next allowed step
+## 7. New development foundation
 
-Run one exact Windows C2 gate on the current tip with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. It must require clean source before/after, unchanged lockfile, the new MAP_ONLY_R0 characterization tests, a static import-closure proof with no local scan provider/request boundary, and a bounded map-only Edge smoke. If that passes, proceed directly to the public build-profile/manifest slice; do not add another C1 retry.
+Create/continue post-R0 product work on:
+
+```text
+development/jv-web-r1
+```
+
+The branch starts from the R0 grounding checkpoint and must preserve R0 as an immutable comparison/rollback.
+
+### First R1 questions before implementation
+
+1. What exact visual/vehicle architecture should represent Jozz's real chassis and four wheels?
+2. Which existing dormant GLB/vehicle-visual foundation pieces are worth salvaging versus rewriting?
+3. What is the intended authority relationship between browser `legacy_ts_m6`, future native JV and Box3D mechanics?
+4. Which R0 UI/debug surfaces remain development instrumentation and which belong in a user-facing demo?
+5. What data can eventually be public (models, textures, scan) and under what license/hosting model?
+
+Do not answer these by wholesale-merging historical candidate branches. Reinspect exact source and salvage only bounded, justified pieces.
+
+## 8. Next allowed technical work
+
+The next implementation should be an R1 product slice, not another R0 release gate.
+
+Recommended first slice:
+
+```text
+R1-F0 vehicle foundation audit
+```
+
+It should map the current reachable vehicle render path, the 21 historically non-product-reachable visual files, current synthetic assets and frozen R1 candidate work. Its output should be a decision on the smallest credible path to Jozz's real chassis + four wheels in the live browser without destabilizing R0 physics/input.
+
+No product code change is required merely to perform this audit.

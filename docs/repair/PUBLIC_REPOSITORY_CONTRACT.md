@@ -1,46 +1,91 @@
-# JV Web — public repository handoff contract
+# JV Web — public repository contract
 
-Status: `TARGET INITIALIZED / CONTROL PLANE ONLY / NO APPLICATION ARTIFACT`
+Status: `R0 ARTIFACT PUBLISHED / PAGES LIVE`
 
 ## Exact public target
 
 ```text
-repository:       Jozzpoly/JV-Box3D-Web-Public
-visibility:       public
-default branch:   main
-control commit:   401068f5734c841d43907b71484bc03a2396c604
-control tree:     d66569f5e557db01f2f0b7ee1bb465df208442aa
-artifact branch:  release/r0
-artifact tip:     401068f5734c841d43907b71484bc03a2396c604
-Pages status:     NOT ENABLED BY THIS CAMPAIGN
-artifact status:  NOT PRESENT
-```
+repository:
+  Jozzpoly/JV-Box3D-Web-Public
 
-The public repository contains only publication guards, the artifact contract and `.nojekyll`. `release/r0` currently points to the same neutral control-plane commit as `main`; it is not a released application.
+visibility:
+  public
+
+default/control branch:
+  main@401068f5734c841d43907b71484bc03a2396c604
+
+artifact branch:
+  release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+
+artifact tree:
+  f1c5c9a971208d89da05143f10913891a58b3b70
+
+Pages:
+  https://jozzpoly.github.io/JV-Box3D-Web-Public/
+  source release/r0 /(root)
+  HTTPS enforced
+```
 
 ## Repository separation
 
-The private repository remains the source, repair, build and evidence workspace. The public repository is not permitted to rebuild private source. It receives only exact bytes from an accepted static artifact after all private gates pass.
+The private repository remains the source/build/development authority. The public repository is an artifact host.
 
-Do not copy:
+Public release branches must not rebuild private source. They receive exact validated static bytes.
 
-- private Git history or development branches;
-- `src/`, `node_modules`, package-manager caches or build workspaces;
-- JSPREV2 scan bytes, indexes, textures or the `/__jv_scan__/` dependency;
-- local filesystem paths, secrets, credentials, temporary tests or unreviewed receipts;
-- inactive laboratory vehicle assets or source maps without separate approval.
+Do not copy into a public artifact:
 
-## Promotion gate
+- private Git history/development branches;
+- `src/`, `node_modules`, caches or workspaces;
+- JSPREV2 scan bytes/indexes/textures or `/__jv_scan__/`;
+- local paths, credentials, temporary evidence or secrets;
+- source maps or unapproved development-only data.
 
-Promotion to `release/r0` requires all of the following:
+## Published R0 provenance
 
-1. exact R0-B Node/npm/TypeScript/Vite evidence;
-2. structural `MAP_ONLY_R0` with no scan capability or scan request;
-3. reproducible, positive-allowlist artifact for `/JV-Box3D-Web-Public/`;
-4. complete manifest and SHA-256 file table;
-5. static path/network audit and runtime request capture;
-6. desktop and real-phone validation of the exact artifact;
-7. owner acceptance tied to the artifact hash;
-8. known previous public commit for rollback.
+```text
+source commit:
+  5ba6cc406b8c1541e29cd1ae59ffed78a7509284
 
-Updating `release/r0`, accepting the artifact and enabling GitHub Pages are three separate operations. Pages must remain disabled until the promoted bytes and rollback are reverified in the public repository.
+candidate ZIP SHA-256:
+  f7585b8cd3233849ae9002814e2c245e51f6aeb53fbe32f41552b228f27796b2
+
+public commit:
+  c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+
+public tree:
+  f1c5c9a971208d89da05143f10913891a58b3b70
+
+previous public rollback:
+  401068f5734c841d43907b71484bc03a2396c604
+```
+
+Publication evidence established a normal fast-forward promotion and a fresh-clone verification of the exact tree before Pages activation.
+
+## Public release rule after R0
+
+Never edit an already accepted release artifact in place merely to update metadata or cosmetics.
+
+For R0 specifically, `build-manifest.json` contains build-time publication flags that say `DORMANT`/`publicReady:false`. Those fields are historically stale after publication but remain part of the validated artifact. Correct this model in a future manifest schema/release, not by mutating R0.
+
+## Future promotion gate
+
+A future release should at minimum require:
+
+1. exact private source identity;
+2. explicit public capability boundary;
+3. reproducible public build;
+4. positive payload allowlist;
+5. sorted file hashes/manifest;
+6. static and runtime network/privacy checks;
+7. desktop runtime validation;
+8. representative real-device owner validation when relevant;
+9. known rollback;
+10. byte-exact promotion to a new public commit.
+
+Do not require unrelated historical R0 gates when they do not cover the new change.
+
+## Branch roles
+
+- `main` remains the neutral public control/documentation line for now.
+- `release/r0` is the frozen first public release.
+- later release naming/branching should be explicit; do not silently overwrite `release/r0`.
