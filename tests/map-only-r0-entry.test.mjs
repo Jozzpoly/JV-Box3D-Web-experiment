@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -13,6 +13,11 @@ function importSpecifiers(source) {
     result.push(match[1] ?? match[2]);
   }
   return result;
+}
+
+function isCodeSpecifier(specifier) {
+  const extension = extname(specifier).toLowerCase();
+  return extension === "" || extension === ".js" || extension === ".ts";
 }
 
 async function resolveTypeScriptImport(fromFile, specifier) {
@@ -35,12 +40,20 @@ async function staticClosure(entryRelative) {
   const pending = [resolve(root, entryRelative)];
   const seen = new Set();
   const unresolved = [];
+  const ignoredNonCodeImports = [];
   while (pending.length > 0) {
     const current = pending.pop();
     if (seen.has(current)) continue;
     seen.add(current);
     const source = await readFile(current, "utf8");
     for (const specifier of importSpecifiers(source)) {
+      if (!isCodeSpecifier(specifier)) {
+        ignoredNonCodeImports.push({
+          from: relative(root, current).replaceAll("\\", "/"),
+          specifier,
+        });
+        continue;
+      }
       const target = await resolveTypeScriptImport(current, specifier);
       if (target === null) {
         unresolved.push({ from: current, specifier });
@@ -52,6 +65,7 @@ async function staticClosure(entryRelative) {
   return {
     files: new Set([...seen].map((file) => relative(root, file).replaceAll("\\", "/"))),
     unresolved,
+    ignoredNonCodeImports,
   };
 }
 
@@ -88,6 +102,11 @@ test("MAP_ONLY_R0 entry excludes local scan semantics and exposes only valid con
 
   const closure = await staticClosure("src/map-only-r0-main.ts");
   assert.deepEqual(closure.unresolved, []);
+  assert.deepEqual(
+    closure.ignoredNonCodeImports,
+    [{ from: "src/main.ts", specifier: "./style.css" }],
+    "the public closure may ignore only the known non-code CSS import",
+  );
   for (const forbidden of [
     "src/scene/jsprev2-scan.ts",
     "src/scene/local-full-product-world.ts",
