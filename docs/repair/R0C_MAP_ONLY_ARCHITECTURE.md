@@ -1,12 +1,14 @@
 # R0-C structural MAP_ONLY_R0 architecture
 
-Status: `VALIDATED IMPLEMENTATION CONTRACT / C1 SOURCE-PRESENT / REVALIDATION REQUIRED`
+Status: `VALIDATED IMPLEMENTATION CONTRACT / C1 ARCHITECTURAL GATE CLOSED / C2 SOURCE-PRESENT`
 
 Goal: produce a truthful static JV Web artifact for the GitHub Pages project path `/JV-Box3D-Web-Public/` while preserving the accepted local full product and excluding the private JSPREV2 capability from the public import graph, runtime requests and payload.
 
-## C1 source checkpoint
+## C1 closure and C2 source checkpoint
 
-The current C1 source candidate implements the first half of the module boundary: `product-world.ts` is scan-free, a LOCAL_FULL-only provider owns the static JSPREV2 dependency, and `product-main.ts` configures that provider before importing the unchanged host. `F4VehicleHost` and the renderer remain consumers of `product-world`. This source state is not yet a PASS; C1 still requires its exact Windows gate and LOCAL_FULL browser regression. C2 has not started.
+C1 `c1b7894476dc4da26eec45033b92042919aff1ae` / `22d0734d78d6dacd3d81d46b980423ed9480f3e8` passed the exact two-run Windows source/artifact gate (288/288 tests in each run, identical LOCAL_FULL artifacts, clean source/lock) and bounded Edge evidence reached a real Running/LIVE WebGL map world with expected LOCAL_FULL controls. The browser harness later blocked on synthetic keyboard injection; that is retained as a harness limitation and deferred to R0-E because C1 changed no input code.
+
+C2 now adds the dedicated `MAP_ONLY_R0` entry and capability-driven control boundary. The public entry configures E2R-only `createProductWorld()` before importing the unchanged host. Its static TypeScript closure excludes `jsprev2-scan.ts`, the LOCAL_FULL provider, `product-spawn.ts` and `product-main.ts`, and contains no private scan endpoint, `jvSpawn=scan`, scan control label or scan-loader call. This source state still requires its own exact Windows/isolation gate before D0.
 
 ## Why a UI-only change is rejected
 

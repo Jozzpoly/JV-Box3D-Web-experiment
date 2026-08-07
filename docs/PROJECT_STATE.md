@@ -1,7 +1,7 @@
 # JV Web — current project state
 
 Updated: 2026-08-07
-Status: `C1 SOURCE-PRESENT / WINDOWS REVALIDATION + LOCAL_FULL BROWSER REGRESSION REQUIRED`
+Status: `C2 SOURCE-PRESENT / EXACT WINDOWS + MAP_ONLY_R0 ISOLATION REVALIDATION REQUIRED`
 Owner: Jozz
 
 ## 1. Exact identity
@@ -27,11 +27,11 @@ controlled repair branch:
 repair base:
   exact preserved product commit above
 
-last validated predecessor:
-  746dda0b09aeb0906412ef8a2d110a6f3fa83561
-  tree db9eadf45f75784314d62ae8caf1db528e1de622
+last validated architectural predecessor:
+  c1b7894476dc4da26eec45033b92042919aff1ae
+  tree 22d0734d78d6dacd3d81d46b980423ed9480f3e8
 
-current C1 tip:
+current C2 tip:
   this commit; exact SHA/tree must be read from GitHub
   SOURCE-PRESENT / REVALIDATION REQUIRED
 ```
@@ -91,14 +91,14 @@ f1e6b385cca9e80517c57e8c5680fd5f794a0f6a1d1337bc61b304d356520a80
 
 Classification: `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for exact C0-CHAR and its LOCAL_FULL portable baseline only. Browser/runtime, MAP_ONLY_R0, owner acceptance and publication remain unproven. Linux is outside the R0 release guarantee and is not a release gate.
 
-The current C1 tip changes only the world-service dependency boundary plus tests/status documentation. It does not inherit C0 PASS and requires its own exact two-worktree Windows gate plus LOCAL_FULL browser regression before C2. The historical repository file [`repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md`](repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md) remains an index for the earlier R0-B campaign.
+C1 `c1b7894476dc4da26eec45033b92042919aff1ae` / `22d0734d78d6dacd3d81d46b980423ed9480f3e8` passed its own exact two-worktree Windows source/artifact gate: 288/288 tests in each run, 18 documentation links, unchanged lockfile and byte-identical 14-file LOCAL_FULL artifacts. Source/artifact evidence SHA-256: `0eea31c7ebfbe34c3495049c67afafb65595c3ce77b449982d252b4a67e65a56`. Bounded Edge evidence on the same tip reached a Running/LIVE WebGL map world with four contacts and expected LOCAL_FULL controls; v3 then blocked only at synthetic keyboard injection (`c2348b69a855b1867812ede6b39f3a1d2ed6d00a9c91f585b4a82a255a709c81`). This is sufficient to progress the world-provider refactor into C2, but does not claim R0-E physical keyboard, phone, owner or final exact-artifact browser acceptance. The historical repository file [`repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md`](repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md) remains an earlier-campaign index.
 
 ## 3. What is not proven
 
 ```text
-current C1 exact-tip Windows gate:              NOT YET RUN
-LOCAL_FULL exact-tip browser regression:          NOT YET RUN
-MAP_ONLY_R0 import/request isolation:           NOT PROVEN
+C1 exact-tip Windows source/artifact gate:      PASS
+C1 bounded Edge map smoke:                      RUNTIME OBSERVED / SYNTHETIC KEYBOARD HARNESS BLOCKED
+MAP_ONLY_R0 import/request isolation:           SOURCE-PRESENT / EXACT C2 GATE REQUIRED
 byte-reproducible public artifact:              NOT PROVEN
 public target-path behavior:                    NOT PROVEN
 public zero-scan-request runtime:               NOT PROVEN
@@ -121,8 +121,8 @@ R0-B1 historical Windows baseline at f1c0ffe         ACCEPTED / HISTORICAL REPOS
 R0-B2 canonical toolchain pin + exact revalidation   COMPLETE PASS at e33b226... only
 R0-C0-ARCH map-only architecture                     DEFINED / RUNTIME NOT CHANGED
 C0-CHAR current lifecycle characterization           COMPLETE PASS at 746dda0...
-C1 scan-free world service + LOCAL_FULL provider     SOURCE-PRESENT / REVALIDATION REQUIRED
-C2 dedicated MAP_ONLY_R0 entry                       NOT STARTED
+C1 scan-free world service + LOCAL_FULL provider     COMPLETE FOR C2 PROGRESSION
+C2 dedicated MAP_ONLY_R0 entry                       SOURCE-PRESENT / REVALIDATION REQUIRED
 R0-D hardened portable public artifact               NOT STARTED
 R0-E desktop and real-phone validation               NOT STARTED
 R0-F owner Pages decision and publication            NOT AUTHORIZED
@@ -132,7 +132,7 @@ R1 real owner chassis and four wheels                FROZEN UNTIL R0
 
 R0 may not change physics, controls, camera, map, terrain, JSPREV2 parsing/collision or owner-vehicle rendering.
 
-## 5. C0-CHAR closure and C1 boundary
+## 5. C1 closure and C2 boundary
 
 C0-CHAR is closed at `746dda0b09aeb0906412ef8a2d110a6f3fa83561` / `db9eadf45f75784314d62ae8caf1db528e1de622` by the exact Windows evidence above. It freezes the singleton/lifecycle behavior needed for the dependency split.
 
@@ -145,7 +145,7 @@ C1 changes only the capability boundary:
 - profile replacement fails closed; repeated configuration with the exact same loader is idempotent;
 - physics, controls, camera, E2R, JSPREV2 parsing/render/collision, assets, package-lock and build configuration remain unchanged.
 
-C1 is not complete merely because the source exists. Its exact commit/tree requires the same two-worktree Windows source/artifact gate and a LOCAL_FULL browser regression before C2.
+C1 is closed for architectural progression by its exact Windows source/artifact PASS plus bounded Edge Running/LIVE smoke. The synthetic-keyboard automation failure is retained as a harness limitation and is not promoted to R0-E evidence. C2 must now prove the dedicated public entry is structurally scan-free and preserves the accepted map runtime.
 
 ## 6. Product-reachability boundary
 
@@ -198,6 +198,4 @@ See [`BRANCH_ROLES.md`](BRANCH_ROLES.md).
 
 ## 8. Next allowed step
 
-Run the exact two-worktree Windows gate on the current C1 tip with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. Require clean source before/after, unchanged lockfile and byte-identical artifacts. Then perform a bounded LOCAL_FULL browser regression proving that map/scan startup, controls, renderer/world publication and restart still behave as before.
-
-Do not begin C2 until both C1 exit gates close. C2 may then add only the dedicated MAP_ONLY_R0 entry and capability-driven controls from [`repair/R0C_MAP_ONLY_ARCHITECTURE.md`](repair/R0C_MAP_ONLY_ARCHITECTURE.md).
+Run one exact Windows C2 gate on the current tip with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. It must require clean source before/after, unchanged lockfile, the new MAP_ONLY_R0 characterization tests, a static import-closure proof with no local scan provider/request boundary, and a bounded map-only Edge smoke. If that passes, proceed directly to the public build-profile/manifest slice; do not add another C1 retry.

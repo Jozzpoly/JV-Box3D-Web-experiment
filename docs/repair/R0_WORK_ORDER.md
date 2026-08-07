@@ -14,7 +14,7 @@ preserved product commit: c8e0bf24748b0a790a1c0039b1be801eef266580
 preserved product tree:   3e241761784edd2a2fb6ab18095c25ea0e737185
 repair branch:            repair/jv-web-release-r0
 rollback target:          exact preserved product commit
-last validated predecessor: 746dda0b09aeb0906412ef8a2d110a6f3fa83561
+last validated architectural predecessor: c1b7894476dc4da26eec45033b92042919aff1ae
 predecessor tree:           db9eadf45f75784314d62ae8caf1db528e1de622
 ```
 
@@ -43,8 +43,8 @@ R0 must not change:
 | R0-B2 canonical toolchain pin + revalidation | Complete PASS at `e33b226...` only | external v4 evidence, 285/285 ×2, 18 doc links, identical 14-file artifacts |
 | R0-C0-ARCH map-only architecture | Defined | [`R0C_MAP_ONLY_ARCHITECTURE.md`](R0C_MAP_ONLY_ARCHITECTURE.md) |
 | C0-CHAR lifecycle characterization | Complete PASS at `746dda0...` | 287/287 ×2, identical 14-file artifacts, clean worktree cleanup |
-| C1 scan-free world service + LOCAL_FULL provider | Source-present / revalidation required | exact current-tip Windows gate + LOCAL_FULL browser regression |
-| C2 dedicated MAP_ONLY_R0 entry | Not started | Windows gate + zero-scan static/import/request proof |
+| C1 scan-free world service + LOCAL_FULL provider | Complete for C2 progression | exact Windows source/artifact PASS + bounded Edge Running/LIVE smoke; synthetic keyboard automation not R0-E proof |
+| C2 dedicated MAP_ONLY_R0 entry | Source-present / revalidation required | exact Windows gate + zero-scan static/import/request proof + bounded map-only smoke |
 | R0-D public artifact | Not started | reproducible allowlisted payload and hardened manifest |
 | R0-E runtime validation | Not started | desktop and real-phone receipts for exact artifact |
 | R0-F public repository / Pages | Target initialized; artifact not present | exact promotion to `Jozzpoly/JV-Box3D-Web-Public@release/r0`, owner approval and rollback proof |
@@ -86,9 +86,9 @@ external evidence ZIP SHA-256:
 f1e6b385cca9e80517c57e8c5680fd5f794a0f6a1d1337bc61b304d356520a80
 ```
 
-This is the last validated predecessor for C1. It is not C1 runtime/browser evidence and does not authorize C2 by inheritance.
+This remains the exact C0-CHAR evidence. C1 later passed its own exact Windows source/artifact gate at `c1b7894476dc4da26eec45033b92042919aff1ae` / `22d0734d78d6dacd3d81d46b980423ed9480f3e8` with 288/288 tests in both runs and byte-identical LOCAL_FULL artifacts (evidence SHA-256 `0eea31c7ebfbe34c3495049c67afafb65595c3ce77b449982d252b4a67e65a56`). Bounded Edge evidence reached Running/LIVE map runtime and expected LOCAL_FULL controls; v3 synthetic keyboard injection then blocked (evidence SHA-256 `c2348b69a855b1867812ede6b39f3a1d2ed6d00a9c91f585b4a82a255a709c81`). That limitation is not R0-E input proof, but C1 is accepted as the architectural predecessor for C2 because it changed no input code.
 
-## C0-CHAR closure and C1 scope
+## C1 closure and C2 scope
 
 C0-CHAR is closed by the exact evidence above. C1 may now change only the world-provider dependency boundary and the tests/documentation needed to prove it.
 
@@ -104,7 +104,7 @@ keep package-lock, build configuration and assets unchanged
 
 C1 must not change physics, controls, camera, E2R terrain, scan parsing/render/collision behavior or owner-vehicle rendering. A different world profile must not be able to replace an already configured profile in the same runtime.
 
-C1 exit requires a fresh exact two-worktree Windows gate on its exact commit/tree plus a bounded LOCAL_FULL browser regression. Do not begin C2 until both pass.
+C1 architectural exit is closed by the exact source/artifact PASS plus bounded Edge Running/LIVE smoke above. Do not spend further release time on synthetic C1 keyboard retries; physical keyboard/touch belongs to R0-E. C2 now owns the next blocking proof: structural MAP_ONLY_R0 isolation and a bounded map-only browser smoke.
 
 ## R0-C minimum architecture
 

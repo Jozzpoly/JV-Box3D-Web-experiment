@@ -11,6 +11,7 @@ test("browser boots through the explicit car map scan product entry", async () =
     html,
     entry,
     localFullProvider,
+    controls,
     main,
     settings,
     policy,
@@ -20,6 +21,7 @@ test("browser boots through the explicit car map scan product entry", async () =
     readFile(resolve(root, "index.html"), "utf8"),
     readFile(resolve(root, "src/product-main.ts"), "utf8"),
     readFile(resolve(root, "src/scene/local-full-product-world.ts"), "utf8"),
+    readFile(resolve(root, "src/product-controls.ts"), "utf8"),
     readFile(resolve(root, "src/main.ts"), "utf8"),
     readFile(
       resolve(root, "src/render/jv-product-view-settings.ts"),
@@ -41,18 +43,21 @@ test("browser boots through the explicit car map scan product entry", async () =
 
   assert.match(html, /src\/product-main\.ts/);
   assert.doesNotMatch(html, /src\/main\.ts/);
-  assert.match(entry, /Mapa E2R/);
-  assert.match(entry, /Skan JSPREV2/);
-  assert.match(entry, /Piksele/);
-  assert.match(entry, /Wygładzanie/);
-  assert.match(entry, /Grid: włączony/);
-  assert.match(entry, /Grid: wyłączony/);
-  assert.match(entry, /setJvTextureFilter/);
-  assert.match(entry, /setJvGridVisible/);
   assert.match(entry, /DEFAULT_SCENE_PACKAGE_URL/);
   assert.match(entry, /applyProductSpawnToScene/);
   assert.match(entry, /await import\("\.\/main\.js"\)/);
   assert.match(entry, /configureProductWorldLoader\(loadLocalFullProductWorld\)/);
+  assert.match(entry, /textureFilter: true/);
+  assert.match(entry, /grid: true/);
+  assert.match(entry, /Mapa E2R/);
+  assert.match(entry, /Skan JSPREV2/);
+  assert.match(entry, /targetUrl\("scan"\)/);
+  assert.match(controls, /Piksele/);
+  assert.match(controls, /Wygładzanie/);
+  assert.match(controls, /Grid: włączony/);
+  assert.match(controls, /Grid: wyłączony/);
+  assert.match(controls, /setJvTextureFilter/);
+  assert.match(controls, /setJvGridVisible/);
   assert.match(localFullProvider, /jsprev2-scan\.js/);
   assert.match(main, /loadScenePackageV1\(\)/);
 
