@@ -1,6 +1,6 @@
 # AI project memory — JV Web
 
-Updated: 2026-08-06
+Updated: 2026-08-07
 Status: `NAVIGATION ONLY — VERIFY EVERY CLAIM`
 Owner: Jozz
 
@@ -18,6 +18,8 @@ preserved product tree:   3e241761784edd2a2fb6ab18095c25ea0e737185
 controlled repair branch: repair/jv-web-release-r0
 repair base:              exact c8e0bf...
 repair tip:               verify current GitHub ref before every operation
+last validated predecessor: e33b226c45005016daa2775226680c3b4db6a724
+predecessor tree:           91215f5da39c0a770688f2ad082e5bf5998adb7e
 ```
 
 `main` is a minimal historical default branch with a navigation-only guard. Fetch its current tip; do not begin product work from it.
@@ -57,10 +59,11 @@ Classification: `OWNER OBSERVED`, not a current exact release gate.
 R0-A1 initial authority checkpoint       COMPLETE at 63bbff...
 R0-A2 remote/local guard correction      COMPLETE AT fb16cb5...
 R0-A3 default-main landing guard         COMPLETE at main@b48c506...
-R0-B Windows baseline at f1c0ffe         ACCEPTED / 119-CHECK EVIDENCE AUDIT
-R0-B canonical toolchain pin             SOURCE-PRESENT / REVALIDATION REQUIRED
-R0-C architecture                        DEFINED / RUNTIME NOT STARTED
-R0-C public product mode                 NOT STARTED
+R0-B Windows/toolchain line              COMPLETE PASS at e33b226... only
+R0-C0-ARCH map-only architecture         DEFINED / RUNTIME NOT CHANGED
+C0-CHAR singleton/lifecycle tests        SOURCE-PRESENT / REVALIDATION REQUIRED
+C1 scan-free world service               NOT STARTED
+C2 dedicated MAP_ONLY_R0 entry           NOT STARTED
 R0-D reproducible public artifact        NOT STARTED
 R0-E desktop/phone proof                 NOT STARTED
 R0-F Pages publication                   NOT AUTHORIZED
@@ -68,20 +71,31 @@ R0-G default branch normalization        NOT AUTHORIZED
 R1 owner chassis/four wheels             FROZEN UNTIL R0
 ```
 
-R0-A may change only operational and state documentation. It must not alter runtime source, physics, controls, camera, map, scan, assets or packaging.
+R0-A may change only operational and state documentation. C0-CHAR may change only characterization tests plus the five status documents named by the handoff. It must not alter runtime source, physics, controls, camera, map, scan, assets, package-lock or build configuration.
 
 ## Evidence boundary
 
-Current auxiliary R0-B0 validation with Node 22.16.0 / TypeScript 5.8.3 reached:
+The last validated predecessor `e33b226c45005016daa2775226680c3b4db6a724` / `91215f5da39c0a770688f2ad082e5bf5998adb7e` passed two independent clean Windows 11 x64 gates with:
 
 ```text
-typecheck: PASS
-tests: 278/278 PASS
-document links: 16/16 PASS
-same-OS preflight: 2/2 identical / canonical false
+Node:       24.16.0
+npm:        11.13.0
+TypeScript: 7.0.2
+Vite:       8.1.5
+tests:      285/285 PASS in each run
+doc links:  18
+artifacts:  14 files / byte-identical
 ```
 
-The earlier Node 22 / TypeScript 5.8 results remain auxiliary only. Exact Windows evidence for `f1c0ffe...` used Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5 in two clean runs with byte-identical artifacts. Windows is the canonical R0 build platform; Linux is outside scope. The current post-pin tip must pass the same Windows gate before runtime work begins. Browser and phone proof remain required.
+External evidence ZIP SHA-256:
+
+```text
+65a98e8175541207c63f21b32d93b4403e3c1b46157289e5c6edeb3d65636a3e
+```
+
+Classification: `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for the exact predecessor and LOCAL_FULL portable baseline only. Browser, phone, owner acceptance and publication are not implied. Linux is outside scope. The current C0-CHAR tip does not inherit this PASS and must pass the same exact Windows gate before C1.
+
+`docs/repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md` intentionally remains the historical repository receipt index for the earlier `f1c0ffe...` campaign and must not be rewritten as an e33 receipt.
 
 ## Source that is not active product behavior
 

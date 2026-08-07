@@ -14,6 +14,8 @@ preserved product commit: c8e0bf24748b0a790a1c0039b1be801eef266580
 preserved product tree:   3e241761784edd2a2fb6ab18095c25ea0e737185
 repair branch:            repair/jv-web-release-r0
 rollback target:          exact preserved product commit
+last validated predecessor: e33b226c45005016daa2775226680c3b4db6a724
+predecessor tree:           91215f5da39c0a770688f2ad082e5bf5998adb7e
 ```
 
 The repair branch must remain a linear descendant of the preserved product commit. Do not merge historical or candidate branches into it.
@@ -37,27 +39,54 @@ R0 must not change:
 | R0-A2 Gate 0 correction | Complete at `fb16cb5...` | remote/local gates separated; documents agree |
 | R0-A3 default-main landing guard | Complete at `main@b48c506...` | fresh repo landing points to dynamic repair ref and fixed product rollback |
 | R0-B0 toolchain operators | Complete | fail-closed single-run plus two-run Windows orchestration |
-| R0-B1 Windows baseline | Accepted at `f1c0ffe...` | two clean exact runs, byte-identical artifact, 119-check evidence audit |
-| R0-B2 canonical toolchain pin | Source-present / revalidation required | exact post-pin Windows receipt |
-| R0-C0 map-only architecture | Defined | [`R0C_MAP_ONLY_ARCHITECTURE.md`](R0C_MAP_ONLY_ARCHITECTURE.md) |
-| R0-C map-only product mode | Not started | structural zero-scan mode with behavior characterization |
+| R0-B1 historical Windows baseline | Accepted at `f1c0ffe...` | historical repository receipt |
+| R0-B2 canonical toolchain pin + revalidation | Complete PASS at `e33b226...` only | external v4 evidence, 285/285 ×2, 18 doc links, identical 14-file artifacts |
+| R0-C0-ARCH map-only architecture | Defined | [`R0C_MAP_ONLY_ARCHITECTURE.md`](R0C_MAP_ONLY_ARCHITECTURE.md) |
+| C0-CHAR lifecycle characterization | Source-present / revalidation required | exact current-tip two-worktree Windows PASS |
+| C1 scan-free world service + LOCAL_FULL provider | Not started | Windows gate + LOCAL_FULL browser regression |
+| C2 dedicated MAP_ONLY_R0 entry | Not started | Windows gate + zero-scan static/import/request proof |
 | R0-D public artifact | Not started | reproducible allowlisted payload and hardened manifest |
 | R0-E runtime validation | Not started | desktop and real-phone receipts for exact artifact |
 | R0-F public repository / Pages | Target initialized; artifact not present | exact promotion to `Jozzpoly/JV-Box3D-Web-Public@release/r0`, owner approval and rollback proof |
 | R0-G default branch | Not authorized | owner-reviewed final repository model |
 | R1 real chassis/four wheels | Frozen | begins only from accepted release-capable R0 |
 
-## R0-B sequence
+## R0-B evidence boundary
 
-The exact Windows baseline for `f1c0ffe...` is accepted and indexed in [`R0B_WINDOWS_EVIDENCE_2026-08-07.md`](R0B_WINDOWS_EVIDENCE_2026-08-07.md). Jozz selected Windows as the canonical R0 release-engineering platform; Linux is outside the guarantee and is not a release gate.
+The last validated predecessor is exactly:
 
-1. Pin Node `24.16.0`, npm `11.13.0`, TypeScript `7.0.2` and Vite `8.1.5` in package metadata.
-2. Run the guarded two-worktree Windows gate on the exact post-pin commit.
-3. Require clean source before/after, unchanged lockfile, identical logical dependency evidence, expected Windows native bindings and byte-identical artifact tables.
-4. Close R0-B only for the exact commit named by the accepted receipt.
-5. Begin R0-C with characterization tests only.
+```text
+commit: e33b226c45005016daa2775226680c3b4db6a724
+tree:   91215f5da39c0a770688f2ad082e5bf5998adb7e
+Windows 11 x64
+Node 24.16.0 / npm 11.13.0 / TypeScript 7.0.2 / Vite 8.1.5
+285/285 tests in each run
+18 documentation links
+14-file byte-identical LOCAL_FULL portable artifacts
+external evidence ZIP SHA-256:
+65a98e8175541207c63f21b32d93b4403e3c1b46157289e5c6edeb3d65636a3e
+```
 
-Do not add an npm comparator or another mandatory platform without a concrete failure or a separate owner decision. Never compare copied `node_modules` directories.
+This is `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for that predecessor only. It is not browser, MAP_ONLY_R0, owner or publication evidence. Linux is outside the guarantee and is not a release gate. [`R0B_WINDOWS_EVIDENCE_2026-08-07.md`](R0B_WINDOWS_EVIDENCE_2026-08-07.md) remains intentionally historical for the earlier `f1c0ffe...` campaign.
+
+## C0-CHAR scope and exit
+
+C0-CHAR may change only:
+
+```text
+tests/**
+AGENTS.md
+README.md
+AI_PROJECT_MEMORY.md
+docs/PROJECT_STATE.md
+docs/repair/R0_WORK_ORDER.md
+```
+
+Do not change `src/`, Vite/build, package-lock, assets, physics, controls, camera, terrain or scan parsing/collision. Existing coverage for E2R behavior, missing-pack map availability, scan-spawn fail-closed, nearest/grid defaults, local map+scan controls and M6 E2R drive/contact must not be duplicated.
+
+The missing characterization is limited to the product-world singleton/load promise, one scan-index request per successful lifecycle, exact subscriber world identity, restart reuse of the module singleton and host/renderer wiring to that service. If exact renderer↔host runtime identity requires a production seam, defer that seam to C1.
+
+The C0-CHAR tip containing this file is not validated merely because its parent passed. Before C1, run a fresh exact two-worktree Windows gate on its exact commit/tree and require clean source before/after, unchanged lockfile and byte-identical artifacts.
 
 ## R0-C minimum architecture
 
@@ -68,7 +97,7 @@ LOCAL_FULL  = E2R + optional local JSPREV2 capability
 MAP_ONLY_R0 = E2R only; scan capability absent
 ```
 
-Follow [`R0C_MAP_ONLY_ARCHITECTURE.md`](R0C_MAP_ONLY_ARCHITECTURE.md). Before refactoring, add behavior-characterization tests. Public mode must neither import/use the scan loader as its world provider nor request `/__jv_scan__/`.
+Follow [`R0C_MAP_ONLY_ARCHITECTURE.md`](R0C_MAP_ONLY_ARCHITECTURE.md). C1 makes the world service scan-free and moves the static JSPREV2 dependency behind a LOCAL_FULL-only provider. C2 adds the dedicated MAP_ONLY_R0 entry and capability-driven controls. Public mode must neither import/use the scan loader as its world provider nor request `/__jv_scan__/`.
 
 ## Public repository target
 

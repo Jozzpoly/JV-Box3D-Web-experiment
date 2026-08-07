@@ -10,7 +10,10 @@ preserved product branch: product/jv-web-car-map-scan
 preserved product commit: c8e0bf24748b0a790a1c0039b1be801eef266580
 preserved product tree:   3e241761784edd2a2fb6ab18095c25ea0e737185
 controlled repair branch: repair/jv-web-release-r0
-public release:           NOT PROVEN / NOT PUBLISHED
+last validated predecessor: e33b226c45005016daa2775226680c3b4db6a724
+predecessor tree:          91215f5da39c0a770688f2ad082e5bf5998adb7e
+current C0-CHAR tip:       SOURCE-PRESENT / REVALIDATION REQUIRED
+public release:            NOT PROVEN / NOT PUBLISHED
 ```
 
 The current repair campaign starts from the exact preserved product tree. It does not use the minimal `main` branch or the owner-vehicle candidate as a base.
@@ -37,11 +40,13 @@ Jozz's recorded owner observation for the exact product line states that the sca
 
 ## Evidence boundary
 
-The exact `f1c0ffe...` baseline passed two clean Windows gates with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. Both 14-file artifacts were byte-identical and the retained evidence passed an independent 119-check audit. That PASS is tied only to `f1c0ffe...`; the current toolchain-pinning commit must be revalidated before runtime work inherits it.
+The last validated predecessor `e33b226c45005016daa2775226680c3b4db6a724` / `91215f5da39c0a770688f2ad082e5bf5998adb7e` passed two clean Windows 11 x64 gates with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. Both runs reached 285/285 tests, the documentation audit found 18 local links, and both 14-file LOCAL_FULL portable artifacts were byte-identical. The retained external evidence ZIP has SHA-256 `65a98e8175541207c63f21b32d93b4403e3c1b46157289e5c6edeb3d65636a3e`.
+
+That PASS is tied only to `e33b226...`. The C0-CHAR tip containing this file adds characterization tests and status corrections only; it must pass a fresh exact two-worktree Windows gate before C1 and does not inherit predecessor PASS.
 
 The following remain unproven:
 
-- the exact post-pin repair commit under the same two-run Windows gate;
+- the exact current C0-CHAR tip under its required fresh Windows gate;
 - a structural public mode with zero scan imports, requests and private scan bytes;
 - desktop browser console/network evidence for the exact artifact;
 - real-phone touch, rotation, rebuild and stability evidence;
@@ -54,7 +59,10 @@ Do not use `PASS`, `READY`, `RELEASE` or `PUBLISHED` without matching exact evid
 ```text
 R0-A repository authority and truthful documentation
 R0-B exact canonical Windows toolchain pin and revalidation
-R0-C structural local-full and MAP_ONLY_R0 product profiles
+R0-C0-ARCH structural MAP_ONLY_R0 architecture contract
+C0-CHAR characterization of current singleton/lifecycle behavior
+C1 scan-free world service + LOCAL_FULL provider
+C2 dedicated MAP_ONLY_R0 entry and capability-driven controls
 R0-D reproducible portable public artifact and adversarial gates
 R0-E desktop and real-phone validation
 R0-F owner decision and GitHub Pages publication

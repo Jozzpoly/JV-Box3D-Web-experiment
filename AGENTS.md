@@ -88,7 +88,8 @@ A lower level never implies a higher one. Documents and historical PR descriptio
 
 - The strongest preserved product base is `c8e0bf...`; it is not a proven public release.
 - R0-A established the repair line and a navigation-only guard on historical `main`; fetch both current refs before acting.
-- R0-B established an exact Windows baseline at `f1c0ffe...`: two independent Node 24.16.0 / npm 11.13.0 / TypeScript 7.0.2 / Vite 8.1.5 runs produced byte-identical artifacts and passed an independent 119-check evidence audit. Windows is the canonical R0 release-engineering platform; Linux is outside the R0 guarantee and is not a release gate. Any later commit requires a fresh Windows gate before inheriting PASS status.
+- R0-B is closed only for the last validated predecessor `e33b226c45005016daa2775226680c3b4db6a724`, tree `91215f5da39c0a770688f2ad082e5bf5998adb7e`: two independent Windows 11 x64 runs on Node 24.16.0 / npm 11.13.0 / TypeScript 7.0.2 / Vite 8.1.5 reached 285/285 tests, 18 documentation links and byte-identical 14-file LOCAL_FULL portable artifacts. The retained external evidence ZIP has SHA-256 `65a98e8175541207c63f21b32d93b4403e3c1b46157289e5c6edeb3d65636a3e`. Linux remains outside the R0 guarantee and is not a release gate.
+- The C0-CHAR tip that contains this file is `SOURCE-PRESENT / REVALIDATION REQUIRED`; it does not inherit the predecessor PASS. Its exact commit/tree must pass a fresh two-worktree Windows gate before C1.
 - `00e1c8...` is not a release base; its release work is stacked on unaccepted owner-vehicle commits.
 - `candidate/jv-web-owner-vehicle-visual-r1@796b050...` is frozen, broken and salvage-only.
 - Twenty-one TypeScript files are compiled/tested but not statically reachable from `src/product-main.ts`; see `docs/PROJECT_STATE.md`.
