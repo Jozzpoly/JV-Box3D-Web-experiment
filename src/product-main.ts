@@ -2,7 +2,13 @@ import {
   DEFAULT_SCENE_PACKAGE_URL,
   validateScenePackageV1,
 } from "./scene/scene-package.js";
-import { loadProductWorld } from "./scene/product-world.js";
+import {
+  configureProductWorldLoader,
+  loadProductWorld,
+} from "./scene/product-world.js";
+import {
+  loadLocalFullProductWorld,
+} from "./scene/local-full-product-world.js";
 import { applyProductSpawnToScene } from "./scene/product-scene-package.js";
 import {
   parseProductSpawnTarget,
@@ -206,6 +212,8 @@ function installProductControls(
   window.addEventListener("pagehide", unsubscribe, { once: true });
   panel.prepend(controls);
 }
+
+configureProductWorldLoader(loadLocalFullProductWorld);
 
 const initialSettings = {
   textureFilter: selectedTextureFilter(),

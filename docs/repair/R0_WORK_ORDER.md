@@ -14,8 +14,8 @@ preserved product commit: c8e0bf24748b0a790a1c0039b1be801eef266580
 preserved product tree:   3e241761784edd2a2fb6ab18095c25ea0e737185
 repair branch:            repair/jv-web-release-r0
 rollback target:          exact preserved product commit
-last validated predecessor: e33b226c45005016daa2775226680c3b4db6a724
-predecessor tree:           91215f5da39c0a770688f2ad082e5bf5998adb7e
+last validated predecessor: 746dda0b09aeb0906412ef8a2d110a6f3fa83561
+predecessor tree:           db9eadf45f75784314d62ae8caf1db528e1de622
 ```
 
 The repair branch must remain a linear descendant of the preserved product commit. Do not merge historical or candidate branches into it.
@@ -42,8 +42,8 @@ R0 must not change:
 | R0-B1 historical Windows baseline | Accepted at `f1c0ffe...` | historical repository receipt |
 | R0-B2 canonical toolchain pin + revalidation | Complete PASS at `e33b226...` only | external v4 evidence, 285/285 ×2, 18 doc links, identical 14-file artifacts |
 | R0-C0-ARCH map-only architecture | Defined | [`R0C_MAP_ONLY_ARCHITECTURE.md`](R0C_MAP_ONLY_ARCHITECTURE.md) |
-| C0-CHAR lifecycle characterization | Source-present / revalidation required | exact current-tip two-worktree Windows PASS |
-| C1 scan-free world service + LOCAL_FULL provider | Not started | Windows gate + LOCAL_FULL browser regression |
+| C0-CHAR lifecycle characterization | Complete PASS at `746dda0...` | 287/287 ×2, identical 14-file artifacts, clean worktree cleanup |
+| C1 scan-free world service + LOCAL_FULL provider | Source-present / revalidation required | exact current-tip Windows gate + LOCAL_FULL browser regression |
 | C2 dedicated MAP_ONLY_R0 entry | Not started | Windows gate + zero-scan static/import/request proof |
 | R0-D public artifact | Not started | reproducible allowlisted payload and hardened manifest |
 | R0-E runtime validation | Not started | desktop and real-phone receipts for exact artifact |
@@ -69,24 +69,42 @@ external evidence ZIP SHA-256:
 
 This is `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for that predecessor only. It is not browser, MAP_ONLY_R0, owner or publication evidence. Linux is outside the guarantee and is not a release gate. [`R0B_WINDOWS_EVIDENCE_2026-08-07.md`](R0B_WINDOWS_EVIDENCE_2026-08-07.md) remains intentionally historical for the earlier `f1c0ffe...` campaign.
 
-## C0-CHAR scope and exit
+## C0-CHAR evidence boundary
 
-C0-CHAR may change only:
+Exact C0-CHAR closure:
 
 ```text
-tests/**
-AGENTS.md
-README.md
-AI_PROJECT_MEMORY.md
-docs/PROJECT_STATE.md
-docs/repair/R0_WORK_ORDER.md
+commit: 746dda0b09aeb0906412ef8a2d110a6f3fa83561
+tree:   db9eadf45f75784314d62ae8caf1db528e1de622
+Windows 11 Home x64 / 10.0.26200
+Node 24.16.0 / npm 11.13.0 / TypeScript 7.0.2 / Vite 8.1.5
+287/287 tests in each run
+18 documentation links across 26 Markdown files
+14-file byte-identical LOCAL_FULL portable artifacts
+both disposable worktrees removed
+external evidence ZIP SHA-256:
+f1e6b385cca9e80517c57e8c5680fd5f794a0f6a1d1337bc61b304d356520a80
 ```
 
-Do not change `src/`, Vite/build, package-lock, assets, physics, controls, camera, terrain or scan parsing/collision. Existing coverage for E2R behavior, missing-pack map availability, scan-spawn fail-closed, nearest/grid defaults, local map+scan controls and M6 E2R drive/contact must not be duplicated.
+This is the last validated predecessor for C1. It is not C1 runtime/browser evidence and does not authorize C2 by inheritance.
 
-The missing characterization is limited to the product-world singleton/load promise, one scan-index request per successful lifecycle, exact subscriber world identity, restart reuse of the module singleton and host/renderer wiring to that service. If exact renderer↔host runtime identity requires a production seam, defer that seam to C1.
+## C0-CHAR closure and C1 scope
 
-The C0-CHAR tip containing this file is not validated merely because its parent passed. Before C1, run a fresh exact two-worktree Windows gate on its exact commit/tree and require clean source before/after, unchanged lockfile and byte-identical artifacts.
+C0-CHAR is closed by the exact evidence above. C1 may now change only the world-provider dependency boundary and the tests/documentation needed to prove it.
+
+C1 must:
+
+```text
+make src/scene/product-world.ts scan-free
+move the static jsprev2-scan.ts dependency to a LOCAL_FULL-only provider
+configure LOCAL_FULL before the existing app host starts
+keep F4VehicleHost and renderer on the shared product-world service
+keep package-lock, build configuration and assets unchanged
+```
+
+C1 must not change physics, controls, camera, E2R terrain, scan parsing/render/collision behavior or owner-vehicle rendering. A different world profile must not be able to replace an already configured profile in the same runtime.
+
+C1 exit requires a fresh exact two-worktree Windows gate on its exact commit/tree plus a bounded LOCAL_FULL browser regression. Do not begin C2 until both pass.
 
 ## R0-C minimum architecture
 

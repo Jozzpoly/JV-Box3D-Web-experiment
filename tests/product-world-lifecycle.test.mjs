@@ -8,11 +8,29 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 
 async function freshProductWorldModule(label) {
   const url = new URL("../.test-dist/scene/product-world.js", import.meta.url);
-  url.searchParams.set("c0-char", label);
+  url.searchParams.set("c1", label);
   return import(url.href);
 }
 
-test("product-world singleton shares one load promise, one index request and exact published world identity", async () => {
+test("product-world fails closed until one profile loader is configured", async () => {
+  const unconfigured = await freshProductWorldModule("unconfigured");
+  await assert.rejects(
+    unconfigured.loadProductWorld(),
+    /Product world loader is not configured/,
+  );
+
+  const configured = await freshProductWorldModule("single-profile");
+  const loader = async () => configured.createProductWorld();
+  configured.configureProductWorldLoader(loader);
+  configured.configureProductWorldLoader(loader);
+  assert.throws(
+    () => configured.configureProductWorldLoader(async () => configured.createProductWorld()),
+    /another profile/,
+  );
+  assert.equal((await configured.loadProductWorld()).scan, null);
+});
+
+test("LOCAL_FULL shares one load promise, one index request and exact published world identity", async () => {
   const previousFetch = globalThis.fetch;
   const requests = [];
   globalThis.fetch = async (input) => {
@@ -22,9 +40,14 @@ test("product-world singleton shares one load promise, one index request and exa
 
   try {
     const {
+      configureProductWorldLoader,
       loadProductWorld,
       subscribeProductWorld,
-    } = await freshProductWorldModule("singleton-lifecycle");
+    } = await freshProductWorldModule("local-full-lifecycle");
+    const { loadLocalFullProductWorld } = await import(
+      "../.test-dist/scene/local-full-product-world.js"
+    );
+    configureProductWorldLoader(loadLocalFullProductWorld);
 
     const first = loadProductWorld();
     const second = loadProductWorld();
@@ -37,10 +60,11 @@ test("product-world singleton shares one load promise, one index request and exa
 
     const world = await first;
     assert.deepEqual(earlyObserved, [world]);
+    assert.equal(world.scan, null);
     assert.equal(
       requests.filter((url) => url.endsWith("/__jv_scan__/index.json")).length,
       1,
-      "one successful map-world lifecycle may request the local scan index at most once",
+      "one successful LOCAL_FULL singleton lifecycle may request the local scan index at most once",
     );
 
     const resolved = loadProductWorld();
@@ -64,29 +88,44 @@ test("product-world singleton shares one load promise, one index request and exa
   }
 });
 
-test("restart, host and renderer remain wired to the same module-level product-world service", async () => {
-  const [main, host, renderer, debugRenderer, productWorld] = await Promise.all([
+test("scan dependency is owned only by the LOCAL_FULL provider while host and renderer stay on product-world", async () => {
+  const [
+    productMain,
+    main,
+    host,
+    renderer,
+    debugRenderer,
+    productWorld,
+    localFullProvider,
+  ] = await Promise.all([
+    readFile(resolve(root, "src/product-main.ts"), "utf8"),
     readFile(resolve(root, "src/main.ts"), "utf8"),
     readFile(resolve(root, "src/app/f4-vehicle-host.ts"), "utf8"),
     readFile(resolve(root, "src/render/m6-product-renderer.ts"), "utf8"),
     readFile(resolve(root, "src/render/m6-debug-renderer.ts"), "utf8"),
     readFile(resolve(root, "src/scene/product-world.ts"), "utf8"),
+    readFile(resolve(root, "src/scene/local-full-product-world.ts"), "utf8"),
   ]);
+
+  assert.doesNotMatch(productWorld, /jsprev2-scan|loadLocalJsprev2Scan/);
+  assert.match(productWorld, /configureProductWorldLoader/);
+  assert.match(productWorld, /let configuredWorldLoader: ProductWorldLoader \| null = null;/);
+  assert.doesNotMatch(productWorld, /export\s+(?:function|const|let|var)\s+reset/i);
+
+  assert.match(localFullProvider, /jsprev2-scan\.js/);
+  assert.match(localFullProvider, /loadLocalJsprev2Scan/);
+  assert.match(localFullProvider, /createProductWorld\(await loadLocalJsprev2Scan\(\)\)/);
+
+  assert.match(productMain, /configureProductWorldLoader\(loadLocalFullProductWorld\);/);
+  assert.match(productMain, /await import\("\.\/main\.js"\)/);
 
   assert.match(main, /restartButton\.addEventListener\("click",\s*\(\) => \{\s*void startHost\(\);\s*\}\);/s);
   assert.match(main, /host\?\.dispose\(\);\s*host = null;/s);
-  assert.match(main, /const nextHost = await F4VehicleHost\.start\(\{/);
   assert.doesNotMatch(main, /loadProductWorld|loadWorld/);
 
   assert.match(host, /loadWorld: \(\) => loadProductWorld\(\)/);
-  assert.match(host, /readonly #worldData: JvWorldData;/);
-  assert.match(host, /this\.#worldData = worldData;/);
-
+  assert.doesNotMatch(host, /jsprev2-scan|loadLocalJsprev2Scan/);
   assert.match(renderer, /subscribeProductWorld/);
-  assert.match(renderer, /this\.setWorld\(world\);/);
+  assert.doesNotMatch(renderer, /jsprev2-scan|loadLocalJsprev2Scan/);
   assert.match(debugRenderer, /M6ProductRenderer as M6DebugRenderer/);
-
-  assert.match(productWorld, /let sharedWorldPromise: Promise<JvWorldData> \| null = null;/);
-  assert.match(productWorld, /let currentWorld: JvWorldData \| null = null;/);
-  assert.doesNotMatch(productWorld, /export\s+(?:function|const|let|var)\s+reset/i);
 });

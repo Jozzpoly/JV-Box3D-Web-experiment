@@ -1,18 +1,24 @@
 # R0-C structural MAP_ONLY_R0 architecture
 
-Status: `VALIDATED IMPLEMENTATION CONTRACT / RUNTIME NOT YET CHANGED`
+Status: `VALIDATED IMPLEMENTATION CONTRACT / C1 SOURCE-PRESENT / REVALIDATION REQUIRED`
 
 Goal: produce a truthful static JV Web artifact for the GitHub Pages project path `/JV-Box3D-Web-Public/` while preserving the accepted local full product and excluding the private JSPREV2 capability from the public import graph, runtime requests and payload.
 
+## C1 source checkpoint
+
+The current C1 source candidate implements the first half of the module boundary: `product-world.ts` is scan-free, a LOCAL_FULL-only provider owns the static JSPREV2 dependency, and `product-main.ts` configures that provider before importing the unchanged host. `F4VehicleHost` and the renderer remain consumers of `product-world`. This source state is not yet a PASS; C1 still requires its exact Windows gate and LOCAL_FULL browser regression. C2 has not started.
+
 ## Why a UI-only change is rejected
 
-The current map selection is not structurally map-only:
+The pre-C1 baseline was not structurally map-only:
 
-- `src/app/f4-vehicle-host.ts` loads `loadProductWorld()` by default;
-- `src/render/m6-product-renderer.ts` subscribes to the same product-world singleton;
-- `src/scene/product-world.ts` statically imports `jsprev2-scan.ts`;
-- `loadProductWorld()` calls `loadLocalJsprev2Scan()` even when the selected spawn is the E2R map;
-- the local scan loader requests `/__jv_scan__/index.json`.
+- `src/app/f4-vehicle-host.ts` loaded `loadProductWorld()` by default;
+- `src/render/m6-product-renderer.ts` subscribed to the same product-world singleton;
+- `src/scene/product-world.ts` statically imported `jsprev2-scan.ts`;
+- `loadProductWorld()` called `loadLocalJsprev2Scan()` even when the selected spawn was the E2R map;
+- the local scan loader requested `/__jv_scan__/index.json`.
+
+C1 removes the third and fourth coupling points from `product-world.ts` while intentionally preserving LOCAL_FULL behavior through the local-only provider. It does not yet create MAP_ONLY_R0.
 
 Therefore hiding the scan button, forcing `jvSpawn=map`, tolerating a 404, intercepting `fetch`, or deleting scan bytes after bundling does not satisfy R0-C.
 

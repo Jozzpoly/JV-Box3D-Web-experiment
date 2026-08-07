@@ -1,7 +1,7 @@
 # JV Web — current project state
 
 Updated: 2026-08-07
-Status: `C0-CHAR SOURCE-PRESENT / WINDOWS REVALIDATION REQUIRED / NO PRODUCT BEHAVIOR CHANGE`
+Status: `C1 SOURCE-PRESENT / WINDOWS REVALIDATION + LOCAL_FULL BROWSER REGRESSION REQUIRED`
 Owner: Jozz
 
 ## 1. Exact identity
@@ -28,10 +28,10 @@ repair base:
   exact preserved product commit above
 
 last validated predecessor:
-  e33b226c45005016daa2775226680c3b4db6a724
-  tree 91215f5da39c0a770688f2ad082e5bf5998adb7e
+  746dda0b09aeb0906412ef8a2d110a6f3fa83561
+  tree db9eadf45f75784314d62ae8caf1db528e1de622
 
-current C0-CHAR tip:
+current C1 tip:
   this commit; exact SHA/tree must be read from GitHub
   SOURCE-PRESENT / REVALIDATION REQUIRED
 ```
@@ -57,7 +57,7 @@ The exact preserved product tree contains:
 
 ### Owner-observed
 
-The recorded owner verdict for the product line states:
+The recorded owner verdict for the product line states that:
 
 ```text
 scan displays correctly
@@ -68,34 +68,36 @@ vehicle collision works correctly
 
 This is `OWNER OBSERVED`. It does not prove a current clean build, public artifact or Pages deployment.
 
-### Exact Windows R0-B predecessor
+### Exact Windows C0-CHAR predecessor
 
-The exact `e33b226c45005016daa2775226680c3b4db6a724` / `91215f5da39c0a770688f2ad082e5bf5998adb7e` predecessor passed two independent clean Windows 11 x64 gates with:
+The exact `746dda0b09aeb0906412ef8a2d110a6f3fa83561` / `db9eadf45f75784314d62ae8caf1db528e1de622` C0-CHAR predecessor passed two independent clean Windows 11 x64 gates with:
 
 ```text
 Node:       24.16.0
 npm:        11.13.0
 TypeScript: 7.0.2
 Vite:       8.1.5
-tests:      285/285 PASS in each run
+tests:      287/287 PASS in each run
 doc links:  18
 artifacts:  14 files / byte-identical
+cleanup:    both disposable worktrees removed
 ```
 
 External evidence ZIP SHA-256:
 
 ```text
-65a98e8175541207c63f21b32d93b4403e3c1b46157289e5c6edeb3d65636a3e
+f1e6b385cca9e80517c57e8c5680fd5f794a0f6a1d1337bc61b304d356520a80
 ```
 
-Classification: `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for that exact predecessor and LOCAL_FULL portable baseline only. Browser/runtime, MAP_ONLY_R0, owner acceptance and publication remain unproven. Linux is outside the R0 release guarantee and is not a release gate.
+Classification: `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for exact C0-CHAR and its LOCAL_FULL portable baseline only. Browser/runtime, MAP_ONLY_R0, owner acceptance and publication remain unproven. Linux is outside the R0 release guarantee and is not a release gate.
 
-The current C0-CHAR tip contains only characterization tests plus the five bounded status-document corrections. It does not inherit the predecessor PASS and requires its own exact two-worktree Windows gate before C1. The historical repository file [`repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md`](repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md) intentionally remains an index for the earlier `f1c0ffe...` evidence campaign.
+The current C1 tip changes only the world-service dependency boundary plus tests/status documentation. It does not inherit C0 PASS and requires its own exact two-worktree Windows gate plus LOCAL_FULL browser regression before C2. The historical repository file [`repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md`](repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md) remains an index for the earlier R0-B campaign.
 
 ## 3. What is not proven
 
 ```text
-current C0-CHAR exact-tip Windows gate:         NOT YET RUN
+current C1 exact-tip Windows gate:              NOT YET RUN
+LOCAL_FULL exact-tip browser regression:          NOT YET RUN
 MAP_ONLY_R0 import/request isolation:           NOT PROVEN
 byte-reproducible public artifact:              NOT PROVEN
 public target-path behavior:                    NOT PROVEN
@@ -118,8 +120,8 @@ R0-B0 single/two-run toolchain operators             COMPLETE / EXACT WINDOWS BA
 R0-B1 historical Windows baseline at f1c0ffe         ACCEPTED / HISTORICAL REPOSITORY RECEIPT
 R0-B2 canonical toolchain pin + exact revalidation   COMPLETE PASS at e33b226... only
 R0-C0-ARCH map-only architecture                     DEFINED / RUNTIME NOT CHANGED
-C0-CHAR current lifecycle characterization           SOURCE-PRESENT / REVALIDATION REQUIRED
-C1 scan-free world service + LOCAL_FULL provider     NOT STARTED
+C0-CHAR current lifecycle characterization           COMPLETE PASS at 746dda0...
+C1 scan-free world service + LOCAL_FULL provider     SOURCE-PRESENT / REVALIDATION REQUIRED
 C2 dedicated MAP_ONLY_R0 entry                       NOT STARTED
 R0-D hardened portable public artifact               NOT STARTED
 R0-E desktop and real-phone validation               NOT STARTED
@@ -130,25 +132,28 @@ R1 real owner chassis and four wheels                FROZEN UNTIL R0
 
 R0 may not change physics, controls, camera, map, terrain, JSPREV2 parsing/collision or owner-vehicle rendering.
 
-## 5. C0-CHAR characterization boundary
+## 5. C0-CHAR closure and C1 boundary
 
-Existing tests already cover E2R geometry/spawn/seeds, missing-pack map availability, scan-spawn fail-closed, nearest/grid defaults, local map+scan controls and M6 E2R drive/contact. C0-CHAR adds only the missing lifecycle characterization:
+C0-CHAR is closed at `746dda0b09aeb0906412ef8a2d110a6f3fa83561` / `db9eadf45f75784314d62ae8caf1db528e1de622` by the exact Windows evidence above. It freezes the singleton/lifecycle behavior needed for the dependency split.
 
-- repeated/concurrent `loadProductWorld()` calls share one in-flight/resolved promise and exact world object;
-- one successful map-world singleton lifecycle issues at most one local scan-index request;
-- a late `subscribeProductWorld()` subscriber receives the exact published world object;
-- restart wiring recreates the host without replacing/resetting the module-level product-world service;
-- host and renderer remain wired to that same service without adding a production test seam.
+C1 changes only the capability boundary:
 
-The exact renderer↔host runtime identity is not exposed through a dedicated production test seam in C0-CHAR. Dynamic singleton identity plus source/wiring characterization is the bounded proof; any new runtime seam belongs to C1 only if later required.
+- `src/scene/product-world.ts` becomes scan-free and owns the configured loader, singleton promise, current world and subscribers;
+- `src/scene/local-full-product-world.ts` owns the static JSPREV2 dependency and builds the LOCAL_FULL world;
+- `src/product-main.ts` configures LOCAL_FULL before importing `main.ts`;
+- `F4VehicleHost` and `M6ProductRenderer` continue to use `product-world` and remain scan-loader-free;
+- profile replacement fails closed; repeated configuration with the exact same loader is idempotent;
+- physics, controls, camera, E2R, JSPREV2 parsing/render/collision, assets, package-lock and build configuration remain unchanged.
+
+C1 is not complete merely because the source exists. Its exact commit/tree requires the same two-worktree Windows source/artifact gate and a LOCAL_FULL browser regression before C2.
 
 ## 6. Product-reachability boundary
 
 A reproducible static import scan of the exact product tree used `src/product-main.ts` as the entrypoint and resolved relative TypeScript imports, exports and dynamic imports (`.js` references mapped to `.ts`). Result:
 
 ```text
-TypeScript files:                  72
-reachable from product-main.ts:    51
+TypeScript files:                  73
+reachable from product-main.ts:    52
 not reachable from product-main.ts:21
 unresolved relative code imports:  0
 non-code import:                   src/main.ts -> ./style.css
@@ -193,6 +198,6 @@ See [`BRANCH_ROLES.md`](BRANCH_ROLES.md).
 
 ## 8. Next allowed step
 
-Run the exact two-worktree Windows gate on the current C0-CHAR tip. Require Node 24.16.0, npm 11.13.0, TypeScript 7.0.2, Vite 8.1.5, clean source before/after, unchanged lockfile and byte-identical artifacts. Do not begin C1 until that exact commit passes.
+Run the exact two-worktree Windows gate on the current C1 tip with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. Require clean source before/after, unchanged lockfile and byte-identical artifacts. Then perform a bounded LOCAL_FULL browser regression proving that map/scan startup, controls, renderer/world publication and restart still behave as before.
 
-After C0-CHAR PASS, begin only C1 from [`repair/R0C_MAP_ONLY_ARCHITECTURE.md`](repair/R0C_MAP_ONLY_ARCHITECTURE.md): make `product-world.ts` scan-free and move the JSPREV2 static dependency behind a LOCAL_FULL-only provider. Do not add MAP_ONLY_R0 controls/build work until the C1 gate closes.
+Do not begin C2 until both C1 exit gates close. C2 may then add only the dedicated MAP_ONLY_R0 entry and capability-driven controls from [`repair/R0C_MAP_ONLY_ARCHITECTURE.md`](repair/R0C_MAP_ONLY_ARCHITECTURE.md).

@@ -10,9 +10,9 @@ preserved product branch: product/jv-web-car-map-scan
 preserved product commit: c8e0bf24748b0a790a1c0039b1be801eef266580
 preserved product tree:   3e241761784edd2a2fb6ab18095c25ea0e737185
 controlled repair branch: repair/jv-web-release-r0
-last validated predecessor: e33b226c45005016daa2775226680c3b4db6a724
-predecessor tree:          91215f5da39c0a770688f2ad082e5bf5998adb7e
-current C0-CHAR tip:       SOURCE-PRESENT / REVALIDATION REQUIRED
+last validated predecessor: 746dda0b09aeb0906412ef8a2d110a6f3fa83561
+predecessor tree:          db9eadf45f75784314d62ae8caf1db528e1de622
+current C1 tip:            SOURCE-PRESENT / REVALIDATION REQUIRED
 public release:            NOT PROVEN / NOT PUBLISHED
 ```
 
@@ -40,13 +40,13 @@ Jozz's recorded owner observation for the exact product line states that the sca
 
 ## Evidence boundary
 
-The last validated predecessor `e33b226c45005016daa2775226680c3b4db6a724` / `91215f5da39c0a770688f2ad082e5bf5998adb7e` passed two clean Windows 11 x64 gates with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. Both runs reached 285/285 tests, the documentation audit found 18 local links, and both 14-file LOCAL_FULL portable artifacts were byte-identical. The retained external evidence ZIP has SHA-256 `65a98e8175541207c63f21b32d93b4403e3c1b46157289e5c6edeb3d65636a3e`.
+The last validated predecessor `746dda0b09aeb0906412ef8a2d110a6f3fa83561` / `db9eadf45f75784314d62ae8caf1db528e1de622` passed two clean Windows 11 x64 gates with Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. Both runs reached 287/287 tests, the documentation audit found 18 local links, both 14-file LOCAL_FULL portable artifacts were byte-identical, and both disposable worktrees were removed. The retained external evidence ZIP has SHA-256 `f1e6b385cca9e80517c57e8c5680fd5f794a0f6a1d1337bc61b304d356520a80`.
 
-That PASS is tied only to `e33b226...`. The C0-CHAR tip containing this file adds characterization tests and status corrections only; it must pass a fresh exact two-worktree Windows gate before C1 and does not inherit predecessor PASS.
+That PASS is tied only to `746dda0b...`. The C1 tip containing this file structurally removes the JSPREV2 dependency from `product-world.ts` and moves it behind a LOCAL_FULL-only provider; it does not inherit C0 PASS and requires its own exact Windows gate plus LOCAL_FULL browser regression.
 
 The following remain unproven:
 
-- the exact current C0-CHAR tip under its required fresh Windows gate;
+- the exact current C1 tip under its required fresh Windows gate and LOCAL_FULL browser regression;
 - a structural public mode with zero scan imports, requests and private scan bytes;
 - desktop browser console/network evidence for the exact artifact;
 - real-phone touch, rotation, rebuild and stability evidence;
@@ -115,7 +115,7 @@ The TypeScript vehicle supports browser and release work but is not a proven nat
 
 ## Source/runtime boundary
 
-The repository also contains a larger GLB/vehicle-visual foundation. A static import audit of the exact product tree found 72 TypeScript files: 51 reachable from `src/product-main.ts` and 21 not reachable from that entrypoint. Those 21 files are `SOURCE-PRESENT / TESTED IN ISOLATION / NOT PRODUCT-REACHABLE`, not active product functionality.
+The repository also contains a larger GLB/vehicle-visual foundation. The pre-C1 static import audit found 72 TypeScript files: 51 reachable from `src/product-main.ts` and 21 not reachable. C1 adds one reachable LOCAL_FULL provider, so the source candidate has 73 TypeScript files: 52 reachable and the same 21 not reachable. Those 21 files are `SOURCE-PRESENT / TESTED IN ISOLATION / NOT PRODUCT-REACHABLE`, not active product functionality.
 
 See [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) for the exact list and [`docs/BRANCH_ROLES.md`](docs/BRANCH_ROLES.md) for branch classification.
 

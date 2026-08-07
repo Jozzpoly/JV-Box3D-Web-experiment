@@ -10,6 +10,7 @@ test("browser boots through the explicit car map scan product entry", async () =
   const [
     html,
     entry,
+    localFullProvider,
     main,
     settings,
     policy,
@@ -18,6 +19,7 @@ test("browser boots through the explicit car map scan product entry", async () =
   ] = await Promise.all([
     readFile(resolve(root, "index.html"), "utf8"),
     readFile(resolve(root, "src/product-main.ts"), "utf8"),
+    readFile(resolve(root, "src/scene/local-full-product-world.ts"), "utf8"),
     readFile(resolve(root, "src/main.ts"), "utf8"),
     readFile(
       resolve(root, "src/render/jv-product-view-settings.ts"),
@@ -50,6 +52,8 @@ test("browser boots through the explicit car map scan product entry", async () =
   assert.match(entry, /DEFAULT_SCENE_PACKAGE_URL/);
   assert.match(entry, /applyProductSpawnToScene/);
   assert.match(entry, /await import\("\.\/main\.js"\)/);
+  assert.match(entry, /configureProductWorldLoader\(loadLocalFullProductWorld\)/);
+  assert.match(localFullProvider, /jsprev2-scan\.js/);
   assert.match(main, /loadScenePackageV1\(\)/);
 
   assert.match(settings, /textureFilter: "nearest"/);

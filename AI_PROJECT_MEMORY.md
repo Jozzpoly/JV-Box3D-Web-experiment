@@ -18,8 +18,8 @@ preserved product tree:   3e241761784edd2a2fb6ab18095c25ea0e737185
 controlled repair branch: repair/jv-web-release-r0
 repair base:              exact c8e0bf...
 repair tip:               verify current GitHub ref before every operation
-last validated predecessor: e33b226c45005016daa2775226680c3b4db6a724
-predecessor tree:           91215f5da39c0a770688f2ad082e5bf5998adb7e
+last validated predecessor: 746dda0b09aeb0906412ef8a2d110a6f3fa83561
+predecessor tree:           db9eadf45f75784314d62ae8caf1db528e1de622
 ```
 
 `main` is a minimal historical default branch with a navigation-only guard. Fetch its current tip; do not begin product work from it.
@@ -59,10 +59,10 @@ Classification: `OWNER OBSERVED`, not a current exact release gate.
 R0-A1 initial authority checkpoint       COMPLETE at 63bbff...
 R0-A2 remote/local guard correction      COMPLETE AT fb16cb5...
 R0-A3 default-main landing guard         COMPLETE at main@b48c506...
-R0-B Windows/toolchain line              COMPLETE PASS at e33b226... only
-R0-C0-ARCH map-only architecture         DEFINED / RUNTIME NOT CHANGED
-C0-CHAR singleton/lifecycle tests        SOURCE-PRESENT / REVALIDATION REQUIRED
-C1 scan-free world service               NOT STARTED
+R0-B Windows/toolchain line              COMPLETE PASS at e33b226...
+R0-C0-ARCH map-only architecture         DEFINED
+C0-CHAR singleton/lifecycle tests        COMPLETE PASS at 746dda0...
+C1 scan-free world service               SOURCE-PRESENT / REVALIDATION REQUIRED
 C2 dedicated MAP_ONLY_R0 entry           NOT STARTED
 R0-D reproducible public artifact        NOT STARTED
 R0-E desktop/phone proof                 NOT STARTED
@@ -75,27 +75,32 @@ R0-A may change only operational and state documentation. C0-CHAR may change onl
 
 ## Evidence boundary
 
-The last validated predecessor `e33b226c45005016daa2775226680c3b4db6a724` / `91215f5da39c0a770688f2ad082e5bf5998adb7e` passed two independent clean Windows 11 x64 gates with:
+The last validated predecessor `746dda0b09aeb0906412ef8a2d110a6f3fa83561` / `db9eadf45f75784314d62ae8caf1db528e1de622` passed two independent clean Windows 11 x64 gates with:
 
 ```text
 Node:       24.16.0
 npm:        11.13.0
 TypeScript: 7.0.2
 Vite:       8.1.5
-tests:      285/285 PASS in each run
+tests:      287/287 PASS in each run
 doc links:  18
 artifacts:  14 files / byte-identical
+cleanup:    both disposable worktrees removed
 ```
 
 External evidence ZIP SHA-256:
 
 ```text
-65a98e8175541207c63f21b32d93b4403e3c1b46157289e5c6edeb3d65636a3e
+f1e6b385cca9e80517c57e8c5680fd5f794a0f6a1d1337bc61b304d356520a80
 ```
 
-Classification: `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for the exact predecessor and LOCAL_FULL portable baseline only. Browser, phone, owner acceptance and publication are not implied. Linux is outside scope. The current C0-CHAR tip does not inherit this PASS and must pass the same exact Windows gate before C1.
+Classification: `SOURCE-GATE PASS + same-OS ARTIFACT-GATE PASS` for exact C0-CHAR and the LOCAL_FULL portable baseline only. Browser, phone, owner acceptance and publication are not implied. Linux is outside scope. The current C1 tip is source-present only until its own exact Windows gate and LOCAL_FULL browser regression pass.
 
 `docs/repair/R0B_WINDOWS_EVIDENCE_2026-08-07.md` intentionally remains the historical repository receipt index for the earlier `f1c0ffe...` campaign and must not be rewritten as an e33 receipt.
+
+## Current C1 source boundary
+
+The C1 source candidate makes `src/scene/product-world.ts` scan-free. A new `src/scene/local-full-product-world.ts` is the only product runtime module that statically imports `jsprev2-scan.ts`; `src/product-main.ts` configures that LOCAL_FULL loader before importing the unchanged application host. `F4VehicleHost` and the renderer continue to consume `product-world` and do not import the scan loader. No physics, controls, camera, terrain, scan parser/collision, Vite/build, package-lock or asset change belongs to C1.
 
 ## Source that is not active product behavior
 
