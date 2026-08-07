@@ -9,6 +9,10 @@ async function json(path) {
   return JSON.parse(await readFile(new URL(path, root), "utf8"));
 }
 
+function canonicalText(value) {
+  return value.replace(/\r\n?/g, "\n");
+}
+
 test("canonical package metadata pins the accepted Windows R0 toolchain", async () => {
   const packageJson = await json("package.json");
   assert.deepEqual(packageJson.engines, {
@@ -36,8 +40,10 @@ test("devEngines fails closed on runtime or package-manager drift", async () => 
 });
 
 test("canonical pin does not rewrite the accepted dependency lock", async () => {
-  const bytes = await readFile(new URL("package-lock.json", root));
-  const lock = JSON.parse(bytes.toString("utf8"));
+  const text = canonicalText(
+    await readFile(new URL("package-lock.json", root), "utf8"),
+  );
+  const lock = JSON.parse(text);
   const rootPackage = lock.packages?.[""];
   assert.ok(rootPackage, "package-lock root package is missing");
   assert.equal(lock.lockfileVersion, 3);
@@ -45,7 +51,7 @@ test("canonical pin does not rewrite the accepted dependency lock", async () => 
   assert.equal(rootPackage.devDependencies?.typescript, "7.0.2");
   assert.equal(rootPackage.devDependencies?.vite, "8.1.5");
   assert.equal(
-    createHash("sha256").update(bytes).digest("hex"),
+    createHash("sha256").update(text).digest("hex"),
     "8d84e565e0322326824ca93c5f4ca1f8df618b9e8e2026451ac08f9cc211e446",
   );
 });
@@ -53,7 +59,7 @@ test("canonical pin does not rewrite the accepted dependency lock", async () => 
 test("repository launch metadata points at the exact Node line", async () => {
   const nodeVersion = await readFile(new URL(".node-version", root), "utf8");
   const npmrc = await readFile(new URL(".npmrc", root), "utf8");
-  assert.equal(nodeVersion, "24.16.0\n");
+  assert.equal(canonicalText(nodeVersion), "24.16.0\n");
   assert.match(npmrc, /^engine-strict=true$/m);
   assert.match(npmrc, /^save-exact=true$/m);
 });
