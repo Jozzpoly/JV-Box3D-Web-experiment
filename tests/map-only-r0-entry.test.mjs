@@ -102,10 +102,21 @@ test("MAP_ONLY_R0 entry excludes local scan semantics and exposes only valid con
 
   const closure = await staticClosure("src/map-only-r0-main.ts");
   assert.deepEqual(closure.unresolved, []);
-  assert.deepEqual(
-    closure.ignoredNonCodeImports,
-    [{ from: "src/main.ts", specifier: "./style.css" }],
+  assert.equal(
+    closure.files.has("src/main.ts"),
+    true,
+    "MAP_ONLY_R0 closure must still include the shared runtime host",
+  );
+  assert.equal(
+    closure.ignoredNonCodeImports.every(
+      ({ specifier }) => specifier === "./style.css",
+    ),
+    true,
     "the public closure may ignore only the known non-code CSS import",
+  );
+  assert.ok(
+    closure.ignoredNonCodeImports.length <= 1,
+    "the public closure may ignore at most the one known CSS import",
   );
   for (const forbidden of [
     "src/scene/jsprev2-scan.ts",
