@@ -173,15 +173,44 @@ Stop and investigate when:
 - validation/release/foundation machinery is expanding without proportional product value;
 - Jozz is being asked to do technical work the agent can perform itself.
 
-## 10. Fresh-agent bootstrap order
+## 10. Fresh-conversation orchestrator bootstrap
 
-Keep cold start small.
+The next conversation inherits **orchestration responsibility**, not an implementation order.
+
+Keep cold start small and run three stages before product implementation:
+
+### O0 — reconstruct and challenge
 
 1. Resolve current private/public refs and live Pages.
 2. Read `AGENTS.md`.
 3. Read `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`.
-4. If the handoff resource pack is attached, read only `00_START_HERE.md`, `02_RESOURCE_MAP.md` and `09_COLD_AGENT_TAKEOVER_CHECKLIST.md` first.
-5. Inspect the exact current source/evidence required to challenge the proposed first task.
+4. If the handoff resource pack is attached, read only `00_START_HERE.md`, `02_RESOURCE_MAP.md` and the **mandatory Gate A** in `09_COLD_AGENT_TAKEOVER_CHECKLIST.md`.
+5. Verify that repository authority, owner intent, pack provenance and known blockers are internally consistent.
+6. Treat any package-build-time active SHA as provenance only; current Git wins.
+
+Do not implement during O0 merely because the handoff proposes a first slice.
+
+### O1 — revalidate options
+
+Inspect only current source/resources needed to falsify or support the leading work candidates. The existing `REAL CAR V1` proposal is a prepared hypothesis, not inherited authority.
+
+Do not preload lane-specific scan, drivetrain, camera or `b3Wheel` evidence unless that lane is being compared or selected.
+
+### O2 — design execution
+
+Before writing product code, produce a concise takeover verdict containing:
+
+```text
+current authority/state
+material handoff defects or contradictions
+revalidated opportunity ordering
+chosen bounded first slice + why
+explicit falsifiers / stop conditions
+minimum Tier-1 evidence plan
+what, if anything, genuinely requires Jozz's decision/observation
+```
+
+Only then begin implementation unless Jozz explicitly asks the new conversation to stop after takeover/replanning.
 
 Load deeper context **on demand**, not automatically:
 
@@ -195,6 +224,4 @@ docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md
 docs/r1/R1_F0_VEHICLE_FOUNDATION_AUDIT.md
 ```
 
-The takeover brief contains the current first-slice hypothesis, but it is not a frozen roadmap. Revalidate it against current code/resources and Jozz's current feel before implementation.
-
-Do not begin a fresh conversation by broadly rediscovering resources already indexed or physically attached. Do not begin implementation until the exact current code seams relevant to the chosen task have been checked.
+Do not begin a fresh conversation by broadly rediscovering resources already indexed or physically attached. The purpose of the handoff is to preserve useful context while allowing the next orchestrator to independently challenge the current plan.

@@ -1,34 +1,40 @@
-# JV Web — fresh-agent takeover brief
+# JV Web — orchestrator takeover brief
 
 Date: 2026-08-08
-Status: **DRAFT V4 ORCHESTRATION LAYER — NOT A FROZEN ROADMAP**
+Status: **DRAFT V5 — ORCHESTRATOR TRANSFER LAYER / NOT A FROZEN ROADMAP**
 Owner: Jozz
 
-This is the minimum cold-start layer for a fresh agent. It exists so the next conversation does not need to load the full project history before it can reason correctly.
+## 0. Why this handoff exists
 
-Current Git and live evidence always outrank this brief. If a current ref, source file, runtime observation or Jozz's actual feel contradicts a scheduling hypothesis below, re-evaluate it rather than preserving the hypothesis.
+This handoff exists to move JV-Web into a **new clean conversation without losing the project**.
 
-## 1. Start here
+Its job is not to preserve the previous agent's conclusions as authority and not to tell the next agent which commit to write. It must transfer enough verified context, evidence, resources and owner intent that a new orchestrator can:
 
-Before implementation:
+```text
+understand what JV-Web is and why it matters
+→ verify the current reality independently
+→ detect what changed or what the previous agent misunderstood
+→ choose the next work intelligently
+→ continue systematic development without resource archaeology
+```
 
-1. resolve the current tip/tree of `Jozzpoly/JV-Box3D-Web-experiment:development/jv-web-r1`;
-2. verify public `Jozzpoly/JV-Box3D-Web-Public:release/r0` and live Pages still exist;
-3. read `AGENTS.md`;
-4. read this brief;
-5. if the handoff resource pack is attached, read only its `00_START_HERE.md`, `02_RESOURCE_MAP.md` and `09_COLD_AGENT_TAKEOVER_CHECKLIST.md` first;
-6. inspect only the current source/evidence needed to challenge the proposed first task.
+The desired tradeoff is deliberate:
 
-Do **not** automatically preload `AI_PROJECT_MEMORY.md`, full `PROJECT_STATE`, the full handoff CORE and every evidence document. They are deeper references for questions that require them.
+```text
+preserve project continuity
+without preserving context bloat or stale planning authority
+```
 
-## 2. Campaign identity
+Current Git, live evidence and Jozz's current intent always outrank this brief.
+
+## 1. Campaign identity and owner intent
 
 ```text
 ACTIVE PRIVATE CORE
 Jozzpoly/JV-Box3D-Web-experiment
 development/jv-web-r1
 
-PUBLIC CLOSED BASELINE
+PUBLIC CLOSED BASELINE / FRIEND-DEMO SURFACE
 Jozzpoly/JV-Box3D-Web-Public
 release/r0
 https://jozzpoly.github.io/JV-Box3D-Web-Public/
@@ -38,234 +44,224 @@ Jozzpoly/Box3d_FunProject
 READ-ONLY for this campaign; maintained by another agent
 ```
 
-Public R0 is an immutable rollback/regression baseline. Do not modify it in place.
+The current campaign is about finishing and polishing **JV-Web + Web-Public**, not advancing native JV.
 
-The current Web backend is `legacy_ts_m6`, a deterministic browser reference fixture. It is not native parity and not final product-physics authority. That does not prevent bounded friend-demo configuration or presentation work; it prevents silently presenting new TypeScript physics as authoritative native behavior.
+Jozz wants a browser demo that increasingly feels like a real piece of his own game and gives useful motivation/confidence for the later long native-JV program. It should become enjoyable to launch, drive, tune and show friends.
 
-## 3. Owner objective
+Desired closure includes most of:
 
-Finish a motivating browser friend-demo that increasingly feels like Jozz's own game and is worth launching, driving, tuning and showing friends.
+- Jozz's real authored vehicle;
+- materially better racing-game chase camera and mobile view interaction;
+- usable JSPREV2 scan and real-phone assessment;
+- faster in-app location/teleport switching;
+- Web-native presets/settings;
+- FWD/RWD/AWD;
+- a mechanically defined drivetrain/shaft lock;
+- useful QoL and rebuilt Web/mobile UI;
+- selected newer native `b3Wheel` port if technically sane.
 
-Important desired capabilities include the real authored vehicle, better chase camera/mobile view interaction, usable JSPREV2, fast location switching, vehicle presets/settings, FWD/RWD/AWD, a precisely defined drivetrain lock, useful QoL, rebuilt Web/mobile UI and — if technically sane — a selected newer native `b3Wheel` port.
+Social-media polish is later. Actual play/feel is legitimate scheduling evidence. Do not preserve a roadmap when the product says otherwise.
 
-Order is adaptive. Product feel may legitimately change scheduling.
+## 2. Immutable baseline and evidence discipline
 
-## 4. Current first-slice hypothesis — `REAL CAR V1`
-
-After a cold-agent/adversarial review of current R1, the strongest **current hypothesis** for the first main owner-visible slice is:
-
-> render Jozz's exact real chassis and four exact real wheels in the existing current physics/world/camera, with the minimum real pixel-texture/material support needed by those assets.
-
-This is deliberately **not** `CAR + CAMERA` in one slice. Keeping the current camera unchanged isolates visual-import/render defects from camera-feel defects and gives Jozz one clear visual question to judge.
-
-Challenge this choice if current Git/resources have materially changed.
-
-### Why this currently wins
-
-- exact owner assets are already recovered and physically present in the handoff resource pack;
-- historical calibration/marker evidence exists;
-- current R1 already has semantic visual frames, GLB validation/decode, GPU geometry ownership and binding transforms;
-- the live renderer is still procedural, making the result immediately owner-visible;
-- the frozen owner-vehicle candidate contains deterministic real-asset conversion/calibration/material work that can be selectively salvaged;
-- scan cannot yet perform its decisive current-R1 runtime test without the missing exact textured pack;
-- `b3Wheel` is a deeper Box3D/Emscripten/binding risk and is better treated as a bounded secondary spike.
-
-## 5. Exact resources for `REAL CAR V1`
-
-### Chassis
+Public R0 is closed, published and owner-accepted. It is a rollback/regression reference, not the development branch.
 
 ```text
-Nadwozie.gltf
-SHA-256:
-45055fee11458290d107e8442d1da0d032ed9a094bea98a069d99e1a87954ca8
+public release/r0:
+c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+tree f1c5c9a971208d89da05143f10913891a58b3b70
 
-historical integration start:
-yaw = -90°
-chassis-local position = (0, -0.60, 0)
-model approx. 3.28m × 2.73m × 1.23m
+rollback/main:
+401068f5734c841d43907b71484bc03a2396c604
 ```
 
-### Wheel
+Keep evidence levels separate:
 
 ```text
-Offroad_Big_Wheels.gltf
-SHA-256:
-1fe1d08dd068157d699dc5232054ee61f6aa5a14af15480be0c77aeb55b5b617
+CURRENT FACT
+HISTORICAL EXACT PROOF
+OWNER OBSERVED / OWNER ACCEPTED
+RECOVERED SOURCE
+HYPOTHESIS
+UNKNOWN
 ```
 
-Useful semantic markers include:
+When sources disagree:
 
 ```text
-Socket_WheelMount
-Axis_WheelSpin_A
-Axis_WheelSpin_B
-Marker_TireRadiusOuter
-Marker_TireWidthLeft
-Marker_TireWidthRight
+1 current Git / current code / current live runtime
+2 raw exact execution evidence + tied owner observation
+3 exact recovered resources
+4 historical documentation/plans
+5 current interpretation/scheduling hypothesis
 ```
 
-### Frozen selective-salvage candidate
+## 3. The next conversation's role: orchestrator first
+
+Do not begin by implementing the first proposal in this document.
+
+### O0 — RECONSTRUCT & CHALLENGE
+
+Verify current private/public refs, live Pages, repository scope, owner intent and the resource pack's provenance. Check whether the handoff itself contains contradictions or stale authority.
+
+Mandatory pack reading is deliberately small: `00_START_HERE.md`, `02_RESOURCE_MAP.md`, and only **Gate A** of `09_COLD_AGENT_TAKEOVER_CHECKLIST.md`.
+
+### O1 — REVALIDATE OPTIONS
+
+Use current source and only the resources needed to compare plausible next directions. Do not broadly preload the entire project.
+
+### O2 — DESIGN EXECUTION
+
+Before product writes, produce a takeover verdict:
 
 ```text
-candidate/jv-web-owner-vehicle-visual-r1
-796b050b4b90a2383803cab13f9dcd3aeca5f97f
+current state/authority
+handoff defects found or none
+revalidated opportunity ordering
+chosen first bounded slice
+why it wins now
+explicit falsifiers / stop conditions
+minimum evidence plan
+owner input genuinely required, if any
 ```
 
-Important candidate resources include `docs/vehicle-visual/OWNER_VEHICLE_R1.md` and `tools/owner-vehicle/owner-m6-rigid-package-r1.mjs`.
+Only after this should systematic implementation begin.
 
-The candidate already demonstrates deterministic source→rigid-GLB packaging ideas and the real authored material requirements. Do not merge the branch wholesale.
+## 4. Current leading hypothesis — REAL CAR V1
 
-## 6. Current R1 visual gap to inspect first
-
-Recommended first 30–60 minute source pass:
+The previous orchestration pass found **REAL CAR V1** to be the strongest current first owner-visible candidate:
 
 ```text
-src/render/m6-world-renderer.ts
-src/render/m6-product-renderer.ts
-src/render/vehicle-visual-render-resource.ts
-src/render/rigid-mesh-gpu-asset.ts
-src/visual/glb-material-policy-v1.ts
-src/visual/glb-rigid-mesh-decoder.ts
-src/visual/rigid-mesh-draw-plan.ts
-src/visual/vehicle-visual-runtime-loader.ts
+exact Nadwozie.gltf chassis
++ four exact Offroad_Big_Wheels.gltf visual channels
++ minimum authored pixel texture/material runtime
++ live authored-GLB draw bridge
++ current physics/world/camera unchanged
 ```
 
-Current known facts:
+This is useful prepared work, not inherited authority.
+
+### Why it currently looks strong
+
+- exact owner assets, hashes and historical calibration are already recovered;
+- frozen selective-salvage tooling exists for deterministic source→rigid-GLB packaging;
+- current R1 already has semantic vehicle visual frames, GLB loading/validation, CPU mesh decode, GPU geometry upload and binding→world transforms;
+- current live vehicle still renders procedurally, so success is immediately owner-visible;
+- scan's decisive runtime revalidation is blocked by the absent exact textured pack;
+- `b3Wheel` is a deeper Box3D/Emscripten/binding question and currently looks better as a bounded risk spike.
+
+### Current source-level refinement
+
+The seam is more precise than "add textures":
 
 ```text
-semantic visual frame                 PRESENT
-GLB fetch/hash/decode                 PRESENT
-GPU geometry buffers                  PRESENT
-binding→world transforms              PRESENT
-live authored-GLB draw bridge         MISSING
-production textured material path     MISSING
+GPU geometry layer:
+  POSITION / NORMAL / TEXCOORD_0 / materialIndex already preserved
+
+CPU material V1:
+  baseColorFactor + doubleSided only
+
+missing authored-material state:
+  embedded image bytes
+  baseColorTexture relation
+  sampler state
+  MASK alpha/cutoff
+
+live M6WorldRenderer:
+  still owns a simple procedural position+color shader and debug meshes
 ```
 
-The real owner assets require at least the relevant subset of:
+`M6WorldRenderer` is long-lived while the physics `F4VehicleHost` may be destroyed/restarted independently. Therefore the current **ownership hypothesis** is to keep authored vehicle visual resources in the renderer lifecycle rather than making the physics host own them. Revalidate this before coding; it is not an ABI promise.
 
-```text
-baseColorTexture
-embedded PNG
-MASK alpha mode / cutoff 0.05
-doubleSided
-NEAREST sampling
-CLAMP_TO_EDGE wrapping
-```
+The tiny full-rig GLB remains a diagnostic fallback only if direct real-asset integration leaves an ambiguous importer/package-vs-live-draw failure.
 
-Do not generalize the renderer beyond what the real assets and near-term product path justify.
+### Explicit falsifiers for REAL CAR V1
 
-## 7. `REAL CAR V1` scope guard
+Reject, split or reprioritize this first-slice hypothesis if current revalidation shows any of the following:
 
-Keep unchanged unless current evidence proves it must move:
+1. current Git already contains an equivalent or newer real-owner live visual path;
+2. exact chassis/wheel provenance or generated package cannot be validated from the available resources;
+3. the current visual-frame/binding model cannot represent the five real channels without a prerequisite architectural redesign;
+4. supporting the exact authored pixel materials requires a broad general-purpose renderer rewrite rather than a bounded subset;
+5. correct resource ownership requires unrelated physics-host/lifecycle surgery, making the slice no longer isolated;
+6. a newly available resource removes another lane's blocker and creates a smaller/higher-value owner-visible slice (for example the exact JSPREV2 pack is recovered and current LOCAL_FULL is immediately testable);
+7. a bounded `b3Wheel` feasibility result reveals that current visual work would likely become disposable;
+8. Jozz's current intent/feel materially changes the priority.
 
-- current physics/backend;
-- current world/location behavior;
-- current camera behavior;
-- public R0;
-- unrelated suspension/rack diagnostic visuals.
+A falsifier is a reason to rethink, not a reason to force the task through.
 
-The first owner-visible target may use real authored channels for:
+## 5. Other opportunity lanes — load details only if compared/selected
 
-```text
-m6.chassis
-wheel FL
-wheel FR
-wheel RL
-wheel RR
-```
+### CAMERA / MOBILE VIEW
 
-while other diagnostic rig geometry remains procedural.
+High owner-visible value. Current camera lives in `M6WorldRenderer`; touch driving already owns pointer interactions. Previous reasoning separated it from the first car-visual checkpoint to keep evidence attributable. Re-evaluate after O1 rather than assuming it must be second.
 
-The deterministic tiny full-rig GLB is **not** a required milestone. Use it only as a diagnostic fallback if a direct real-owner-asset failure cannot be localized between package/import code and the live draw bridge.
+### WORLD / SCAN / TELEPORT
 
-Expected evidence before asking Jozz to judge the result:
-
-- exact branch/source identity;
-- focused package/material/renderer tests;
-- relevant TypeScript/build checks;
-- browser smoke showing the live vehicle renders and moves without new runtime errors;
-- exact candidate identity.
-
-Then use Tier 2 owner observation for proportions, placement, texture appearance and whether the result genuinely reads as Jozz's car.
-
-No public release is implied by this slice.
-
-## 8. Why the other lanes are not the first main slice today
-
-### SCAN / TELEPORT
-
-Current R1 already retains LOCAL_FULL scan wiring and important c8e0 scan/view-policy code. The first real question is revalidation of **current R1** with exact pack:
+Current R1 still contains LOCAL_FULL scan wiring and key c8e0 code. The decisive next question is current-path revalidation with exact:
 
 ```text
 source-preview-aee5242a20848294
 ```
 
-That full textured pack is not currently present in the handoff resources. Until it is recovered, scan can be inspected but cannot complete the decisive runtime proof. Do not reconstruct the old branch merely to stay busy.
+That full textured pack is not in the handoff resources. Do not wholesale-recover c8e0 just to make progress. Once the pack is available, this lane may become extremely high-value quickly.
 
-Once the pack is available, this lane may become a very fast high-value task.
+Local dev scan serving is not a GitHub Pages delivery design.
 
-### `b3Wheel`
+### VEHICLE CONFIG / PRESETS / DRIVETRAIN
 
-The resource pack contains exact recovered source surfaces for `B3X-WHEEL-001` and `B3X-WHEEL-SOFT-002`, but current Web uses the published `box3d.js@0.0.2` boundary and has no existing custom Emscripten build pipeline for that wheel API.
+Current fixture has RWD/AWD semantics; FWD is new bounded friend-demo work. Exact shaft-lock mechanics remain unresolved and must not be invented from the label. Load this lane only when it becomes a candidate.
 
-Treat this as at most one short secondary feasibility spike while the main owner-visible slice continues. Answer source delta, build, export/binding and focused-test questions. Do not reopen tire/contact R&D.
+### TRUE WHEEL / `b3Wheel`
 
-### CAMERA / MOBILE VIEW
+Exact recovered native patch surfaces exist, but current Web binding does not expose them. Treat as a bounded feasibility/port investigation unless evidence makes it foundational. Port an existing selected mechanism; do not restart tire/contact R&D or the full native→WASM campaign.
 
-Current camera already lives in `M6WorldRenderer` and touch driving already owns pointer interactions. Camera is high-value, but it should follow the first real-car visual checkpoint so visual and camera feedback are attributable separately.
+### UI / QoL / PUBLIC DEMO
 
-## 9. Deeper references — load only when needed
+Build the final interface around capabilities that actually exist. Public promotion should correspond to meaningful owner-visible jumps and keep R0 frozen.
+
+## 6. Known unknowns to preserve
+
+Do not resolve these by prose:
+
+- current accessible location of full textured JSPREV2 pack;
+- actual scan phone cost and public asset delivery design;
+- exact shaft-lock mechanics;
+- exact current native wheel revision to target and Web build/binding cost;
+- final chase-camera feel;
+- final UI hierarchy;
+- whether real owner-asset integration reveals a better visual contract.
+
+## 7. Context-control rule
+
+The handoff succeeds when the next orchestrator can find what it needs **without loading what it does not need**.
+
+Do not automatically preload:
 
 ```text
 AI_PROJECT_MEMORY.md
-  short broader navigation memory
-
-docs/PROJECT_STATE.md
-  detailed current state/evidence inventory
-
-docs/handoff/JV_WEB_HANDOFF_2026-08-08.md
-  full controlled handoff CORE and reasoning
-
-docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md
-  exact resource retrieval map
-
-docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md
-  historical scan proof
-
-docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md
-  public R0 closure/provenance
-
-docs/r1/R1_F0_VEHICLE_FOUNDATION_AUDIT.md
-  technical visual-foundation findings; old scheduling superseded
-
-docs/decisions/ADR-0003-native-jv-core-wasm.md
-  long-term product-physics direction; full migration deferred in current campaign
+full PROJECT_STATE
+full handoff CORE
+all scan evidence
+all b3Wheel evidence
+all historical branch docs
 ```
 
-Historical/candidate documents do not override current Git or this campaign scope.
+Use `docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md` and the resource pack to retrieve targeted evidence when a question actually needs it.
 
-## 10. Known blockers / unknowns that must remain explicit
+The original large source ZIPs are fallback archaeology, not default context.
 
-- current accessible location of the full textured JSPREV2 pack;
-- actual phone cost of that pack;
-- public Pages scan delivery design;
-- exact requested shaft-lock mechanics;
-- exact Web build/binding cost of selected `b3Wheel`;
-- which then-current native wheel revision should become the Web port target;
-- final chase-camera feel and final UI hierarchy.
+## 8. Orchestrator takeover success condition
 
-Do not guess these to make the roadmap look complete.
+Before implementation, the next orchestrator should be able to state in its own words:
 
-## 11. Cold-takeover success condition
+1. what project it is controlling and what is out of scope;
+2. what Jozz is trying to achieve and why the work order must stay adaptive;
+3. what is verified current reality vs historical proof vs hypothesis;
+4. whether this handoff itself has material defects;
+5. which opportunity currently wins and what would falsify that choice;
+6. the smallest current source seam it needs to inspect/change;
+7. the minimum evidence needed before asking Jozz for a visual/feel/device verdict;
+8. how it will keep context and validation work proportional to product value.
 
-Before implementation, a fresh agent should be able to explain — without old-chat archaeology:
-
-- project/repository scope and immutable R0 boundary;
-- why `REAL CAR V1` is the current first-slice hypothesis rather than a mandate;
-- exact owner asset identity and current live-render/material gap;
-- why camera is deliberately separated from the first car slice;
-- why scan is currently resource-blocked rather than code-lost;
-- why `b3Wheel` is a secondary risk spike;
-- where to retrieve deeper evidence only when needed.
-
-If it cannot, treat the problem as a handoff defect before starting product implementation.
+If it cannot do that without old-chat archaeology, repair the handoff before broad implementation.
