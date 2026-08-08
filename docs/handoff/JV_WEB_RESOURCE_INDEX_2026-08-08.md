@@ -1,10 +1,10 @@
 # JV Web — resource index for fresh-agent handoff
 
 Date: 2026-08-08
-Status: **DRAFT / RESOURCE MAP**
+Status: **DRAFT V2.1 / RESOURCE MAP**
 Owner: Jozz
 
-Purpose: let a fresh agent reach the relevant source/evidence in a few targeted reads instead of rediscovering the project.
+Purpose: let a fresh agent reach relevant source/evidence in a few targeted reads instead of rediscovering the project.
 
 ## 1. Active repositories
 
@@ -40,73 +40,54 @@ Do not advance it in this campaign.
 ### Old JV-Web source snapshot
 
 ```text
-uploaded filename:
-  JV-Box3D-Web-experiment(1).zip
-
+JV-Box3D-Web-experiment(1).zip
 SHA-256:
-  1b4657a69c69bf83e054d7f8f3535e6149e93506a03b1a811347c4c5e9e4a04f
+1b4657a69c69bf83e054d7f8f3535e6149e93506a03b1a811347c4c5e9e4a04f
 
 contains:
-  source tree
-  .git
-  local branches/reflogs
-  ignored build output
+source + .git + local branches/reflogs + ignored build output
 
 snapshot HEAD:
-  agent/jv-refoundation-control-plane
-  fd4d96fdf479e0d5649e49c73f1ce0cd68f52d0c
+agent/jv-refoundation-control-plane@fd4d96fdf479e0d5649e49c73f1ce0cd68f52d0c
 ```
-
-This archive recovered local branch history and an uncommitted scan validation record not preserved identically in GitHub.
 
 ### Native JV source snapshot
 
 ```text
-uploaded filename:
-  box3d.zip
-
+box3d.zip
 SHA-256:
-  b22043332ce0cf84d787312aebf8f76dc19bd6431f9a046399dfa7c2300c48f1
+b22043332ce0cf84d787312aebf8f76dc19bd6431f9a046399dfa7c2300c48f1
 
-snapshot branch:
-  jozz-scan-terrain-f0
-snapshot HEAD:
-  241fe10a9056836332c21d9614471d32d749ce3d
+snapshot:
+jozz-scan-terrain-f0@241fe10a9056836332c21d9614471d32d749ce3d
 
-snapshot main:
-  959aefb78587ce60cf2b8eb03ff82797a4165142
+main inside snapshot:
+959aefb78587ce60cf2b8eb03ff82797a4165142
 
-snapshot recovery/jv-reconstruction:
-  b756f09134c3a9b38f99954ada8cc11d18377bf3
+recovery/jv-reconstruction inside snapshot:
+b756f09134c3a9b38f99954ada8cc11d18377bf3
 ```
 
-Use for asset/source/history recovery, not as current native-JV authority.
+Use for recovery/history, not as current native-JV authority.
 
-## 3. Scan recovery — exact lineage
+## 3. Scan recovery — exact product lineage
 
-Preserved local/GitHub product line:
+Preserved product branch:
 
 ```text
 product/jv-web-car-map-scan
 ```
 
-Important local refs recovered from archive:
+Recovered local refs:
 
 ```text
-local/jv-web-car-map-scan
-  04713ab33ba8788d3ee404f2165484366b7a717b
-
-local/jv-web-car-map-scan-2
-  84910b9c84edd33db5e1f09baf456f978f8368ca
-
-local/jv-web-car-map-scan-3
-  106312083875b5aa94cf1f9fc986ac3c26888aa5
-
-local/jv-web-car-map-scan-4
-  c8e0bf24748b0a790a1c0039b1be801eef266580
+04713ab33ba8788d3ee404f2165484366b7a717b
+84910b9c84edd33db5e1f09baf456f978f8368ca
+106312083875b5aa94cf1f9fc986ac3c26888aa5
+c8e0bf24748b0a790a1c0039b1be801eef266580
 ```
 
-Useful progression before the first full green:
+Useful progression:
 
 ```text
 7e191e4  shared car/map/scan product contract
@@ -120,41 +101,84 @@ cf14fd0  load authoritative JSPREV2 textured pack
 f3ed685  boot integrated product entry
 04713ab  document mobile renderer + scan spawn
 84910b9  group typed-array fix
-1063120  harden exact JSPREV2 + E2R integration gate
+1063120  hard exact JSPREV2 + E2R integration gate
 c8e0bf2  restore native scan UV and view controls
 ```
 
-Do not infer validation status from this sequence alone; use the recovered evidence record below.
+## 4. Scan evidence anchors
 
-## 4. Recovered exact scan evidence
-
-Preserved canonical summary:
+Canonical detailed summary:
 
 ```text
 docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md
 ```
 
-Key exact identities:
+### `106312...` pre-fix green anchor
 
 ```text
-accepted Web car baseline:
-  d6aa218064c2653f918cf7956d2fcd20a940caf3
+commit:
+106312083875b5aa94cf1f9fc986ac3c26888aa5
 
-first full green integrated product:
-  106312083875b5aa94cf1f9fc986ac3c26888aa5
+Node/npm:
+24.16.0 / 11.17.0
 
-later visual-fix candidate:
-  c8e0bf24748b0a790a1c0039b1be801eef266580
+foundation gate log SHA-256:
+094be78abac3dad32ed7f4de3064dc0e9be65b5673032ed773db035a3a4980c7
 
-native E2R/scan authority used historically:
-  Jozzpoly/Box3d_FunProject@959aefb78587ce60cf2b8eb03ff82797a4165142
+scan:
+7 tiles / 25 groups / 25 textures / 1,775,775 triangles
 ```
 
-`106312...` is the strongest known green desktop scan-integration anchor.
+Use when attributing regressions around the later UV/filter/view delta.
 
-`c8e0...` is code to freshly validate, not inherited PASS.
+### `c8e0bf...` strongest preserved desktop scan baseline
 
-Important historical scan source paths at `106312...`:
+```text
+commit:
+c8e0bf24748b0a790a1c0039b1be801eef266580
+
+tree:
+3e241761784edd2a2fb6ab18095c25ea0e737185
+
+Node/npm:
+24.16.0 / 11.17.0
+
+full foundation/build/portable gate:
+PASS
+
+source/package/asset gate:
+PASS
+
+foundation gate log SHA-256:
+3f2c35503fe4cbc3fb2340f93612fe2677ce3d92388eb4c107ba1decd635e68b
+
+scan:
+7 tiles / 25 groups / 25 textures / 1,775,775 triangles
+```
+
+Direct owner feedback tied to this exact run:
+
+```text
+scan displayed correctly
+pixel smoothing OFF by default and toggleable
+grid OFF by default and toggleable
+vehicle collision correct
+```
+
+Also observed:
+
+```text
+location/map-scan teleport rebuilt the whole world
+wait roughly one to several seconds
+```
+
+This is historical `OWNER OBSERVED` behavior, not current-R1 or public-R0 proof.
+
+## 5. Exact c8e0 scan code surface
+
+Start from the historical commit, not broad branch archaeology.
+
+Core paths:
 
 ```text
 src/scene/jsprev2-scan.ts
@@ -164,6 +188,8 @@ src/scene/product-scene-package.ts
 src/product-main.ts
 src/render/jv-world-renderer.ts
 src/render/jv-checked-webgl.ts
+src/render/jv-scan-webgl-policy.ts
+src/render/jv-product-view-settings.ts
 ```
 
 Tooling:
@@ -174,7 +200,7 @@ tools/product/find-jsprev2-pack.mjs
 tools/product/final-jsprev2-vite-plugin.mjs
 ```
 
-Tests:
+Focused tests include:
 
 ```text
 tests/jsprev2-scan.test.mjs
@@ -185,23 +211,16 @@ tests/product-e2r-drive.test.mjs
 tests/jv-checked-webgl.test.mjs
 ```
 
-Later `c8e0...` visual-policy additions:
+plus view/WebGL policy tests added in the c8e0 delta.
 
-```text
-src/render/jv-scan-webgl-policy.ts
-src/render/jv-product-view-settings.ts
-```
-
-plus their focused tests.
-
-## 5. Historical full scan pack identity
+## 6. Historical full runtime scan pack
 
 ```text
 pack id:
-  source-preview-aee5242a20848294
+source-preview-aee5242a20848294
 
-historical native debug path:
-  C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\JS_Photogrametry\repo\build\scan_pipeline\previews\source-preview-aee5242a20848294
+historical path:
+C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\JS_Photogrametry\repo\build\scan_pipeline\previews\source-preview-aee5242a20848294
 ```
 
 The supplied `box3d.zip` does NOT contain the full 7-tile textured pack.
@@ -212,27 +231,11 @@ Historical native document:
 docs/archive/map_scan_2026-07/PLAN_FUNDAMENT_TERENU_ZE_SKANU_2026_07_24_PL.md
 ```
 
-Native record reports:
+Native record reports `1,770,391` triangles; exact Web gates report `1,775,775`. Keep the discrepancy explicit until the actual pack is remeasured.
 
-```text
-7 tiles
-1,770,391 triangles
-```
+## 7. Cooked native scan collision cache
 
-Recovered Web exact-green record reports:
-
-```text
-7 tiles
-25 groups
-25 textures
-1,775,775 triangles
-```
-
-Keep the triangle-count discrepancy explicit until the actual pack is recovered and remeasured.
-
-## 6. Cooked native scan collision cache
-
-Present in supplied `box3d.zip`:
+Present in `box3d.zip`:
 
 ```text
 build/scan_cache/source-preview-aee5242a20848294_w1e1m0f0.b3mesh
@@ -248,107 +251,78 @@ samples/jozz_vehicle_scan_import.cpp
 samples/jozz_vehicle_scan_import.h
 ```
 
-This cache is cooked native `b3MeshData` collision state. It is not a textured scan, not the original JSPREV2 pack and not automatically usable as a Web rendering asset.
+This is cooked collision state, not the original textured Web render asset.
 
-Useful native scan commits in historical repo include:
+## 8. Separate historical private P1B pipeline lead
+
+Historical local path observed in older evidence:
 
 ```text
-53a629e...  scan contract/reader
-4977e735... scan terrain/world integration
-eea5ca21... BVH/cache loading optimization
-4fbb80c...  textured scan renderer
-64a8bf2...  scan spawns
-959aefb...  recovered E2R + scan regressions to main
+C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\Box3d_FunProject_p1b_bundle\build\scan_pipeline
 ```
 
-Resolve full SHAs from Git before using these as exact sources.
+Observed contents:
 
-## 7. Jozz vehicle body asset
+```text
+real-p1b\bundles\photogrammetry-primary-cc94c46ed4070411\COMPLETE.json
+real-p1b\p1b_owner_gate_receipt.local.json
+```
 
-Canonical source asset:
+This is a possible private-source recovery lead only. Its relation to `source-preview-aee5242a20848294` is unproven. Do not substitute one for the other without inspecting manifests/receipts.
+
+## 9. Jozz chassis/body asset
 
 ```text
 repository:
-  Jozzpoly/Box3d_FunProject
+Jozzpoly/Box3d_FunProject
 
 path:
-  assets/source/Nadwozie.gltf
+assets/source/Nadwozie.gltf
 
 SHA-256:
-  45055fee11458290d107e8442d1da0d032ed9a094bea98a069d99e1a87954ca8
+45055fee11458290d107e8442d1da0d032ed9a094bea98a069d99e1a87954ca8
 
 Git blob:
-  a25cb0ef61d342ce476c9ef26a3b24188bace047
-
-generator:
-  Blockbench 5.1.4 glTF exporter
+a25cb0ef61d342ce476c9ef26a3b24188bace047
 ```
 
-Asset is self-contained with embedded binary payload and embedded PNG texture.
+Self-contained Blockbench 5.1.4 glTF with embedded binary + PNG.
 
-Historical native integration:
+Historical integration:
 
 ```text
 a2759471d8641b9f3a3395d508f6c8116d60c81c
-Body: attach Jozz's chassis frame (Nadwozie) as a rigid skin on the chassis
 ```
 
-Later default-skin/rig commit:
+Known measured relation:
 
 ```text
-1e9a3fbcc2f5a45c4f05a73ce4a1bd2d46b608dd
+model 3.28m x 2.73m x 1.23m
+vehicle wheelbase 2.50m
+track 2.10m
+yaw -90 degrees
+chassis-local position (0, -0.60, 0)
 ```
 
-Historical measured relationship:
+Historical docs say orientation/placement were visually inspected in live motion.
+
+## 10. Jozz wheel asset
 
 ```text
-model:
-  length 3.28 m
-  width  2.73 m
-  height 1.23 m
-
-vehicle:
-  wheelbase 2.50 m
-  track     2.10 m
-
-visual mount:
-  yaw -90 degrees
-  chassis-local position (0, -0.60, 0)
-```
-
-Historical references:
-
-```text
-docs/archive/ledgers/CHECKPOINTS_2026-07_PL.md
-docs/archive/ledgers/CURRENT_STATE_LEGACY_2026-07_PL.md
-```
-
-Do not recalibrate from zero without first checking whether current Web coordinate conventions invalidate the known mount.
-
-## 8. Jozz wheel asset
-
-Canonical source:
-
-```text
-repository:
-  Jozzpoly/Box3d_FunProject
-
 path:
-  assets/source/Offroad_Big_Wheels.gltf
+assets/source/Offroad_Big_Wheels.gltf
 
 SHA-256:
-  1fe1d08dd068157d699dc5232054ee61f6aa5a14af15480be0c77aeb55b5b617
+1fe1d08dd068157d699dc5232054ee61f6aa5a14af15480be0c77aeb55b5b617
 
 Git blob:
-  c13c77a8e5552175ee8266b2da33a54691f1dae9
+c13c77a8e5552175ee8266b2da33a54691f1dae9
 
-tracked from commit:
-  6c7cb18a4a45655797bb1e24d771cad7a5d9d187
+tracked from:
+6c7cb18a4a45655797bb1e24d771cad7a5d9d187
 ```
 
-Self-contained with embedded PNG.
-
-Semantic nodes include:
+Embedded PNG and semantic nodes:
 
 ```text
 Socket_WheelMount
@@ -359,34 +333,29 @@ Marker_TireWidthLeft
 Marker_TireWidthRight
 ```
 
-The previous native asset-dimension/calibration tooling already used these markers; preserve that advantage.
-
-## 9. Other authored native assets available if needed later
+## 11. Other authored native assets — only if later needed
 
 ```text
 assets/source/One_Sided_wheel_mount.gltf
-SHA-256:
-374e54eb420f0b3e31bba0d749fdf1cf942db2389361dde1313d7a6b29e77ec2
+SHA-256 374e54eb420f0b3e31bba0d749fdf1cf942db2389361dde1313d7a6b29e77ec2
 
 assets/source/OneSided_Steering_Suspension_Rig.gltf
-SHA-256:
-57cda983f8f728bc819460540d2ee39b1b17288ecdac1f0dc8bb1a3e6f9ab750
+SHA-256 57cda983f8f728bc819460540d2ee39b1b17288ecdac1f0dc8bb1a3e6f9ab750
 
 assets/source/Cardan_shaft.gltf
-SHA-256:
-16f4eab46d526c273f434e109331586df2cd7e3ab0792a4dfbd21d7ed4ef0860
+SHA-256 16f4eab46d526c273f434e109331586df2cd7e3ab0792a4dfbd21d7ed4ef0860
 ```
 
-Do not promote these into current scope merely because they exist.
+Existence does not promote them into current scope.
 
-## 10. Owner-vehicle tooling candidate
+## 12. Owner-vehicle tooling candidate
 
 ```text
 candidate/jv-web-owner-vehicle-visual-r1
 796b050b4b90a2383803cab13f9dcd3aeca5f97f
 ```
 
-Useful tooling:
+Useful paths:
 
 ```text
 tools/owner-vehicle/blockbench-gltf-core.mjs
@@ -398,20 +367,11 @@ tools/owner-vehicle/owner-m6-visual-calibration-r1.mjs
 tools/owner-vehicle/write-owner-m6-r1.mjs
 ```
 
-Useful ideas:
+Selective salvage only. Do not wholesale merge.
 
-- strict Blockbench/glTF source inspection;
-- deterministic package generation;
-- chassis/wheel calibration;
-- embedded PNG textures;
-- `NEAREST` / `CLAMP_TO_EDGE`;
-- OPAQUE/MASK alpha handling.
+## 13. Current active Web vehicle visual paths
 
-Do not wholesale merge this candidate. Its live renderer remained procedural and its texture-producing tooling outran the active runtime draw path.
-
-## 11. Current active Web visual paths
-
-Start focused inspection from:
+Inspect first:
 
 ```text
 src/render/m6-product-renderer.ts
@@ -423,7 +383,7 @@ src/vehicle/m6/m6-visual-frame-builder.ts
 src/vehicle/m6/m6-vehicle-controller.ts
 ```
 
-Then locate current vehicle package loader/decoder/binding resolver by exact symbol search:
+Then exact symbol search:
 
 ```text
 VehicleVisualPackageV1
@@ -432,9 +392,9 @@ createRigidMeshGpuAssetV1
 resolveVehicleVisualBindingsV1
 ```
 
-Tiny fixture is a seam test only; do not confuse it with the target vehicle asset.
+Tiny fixture is a seam test, not the target asset.
 
-## 12. Current Web Box3D / drivetrain paths
+## 14. Current Web Box3D / drivetrain paths
 
 ```text
 src/physics/box3d-runtime-contract.ts
@@ -445,7 +405,7 @@ src/vehicle/m6/m6-vehicle-controller.ts
 src/vehicle/m6/legacy-split-wheel-backend.ts
 ```
 
-Current runtime identity:
+Current runtime:
 
 ```text
 box3d.js@0.0.2
@@ -453,20 +413,18 @@ binding 2617a0ff763a60c9f17cee57c6ea72aab75a5077
 engine  8441b4a06d6d09dcfb0b0f704df4d847d1437b92
 ```
 
-Current drive semantics:
+Current drive:
 
 ```text
-allWheelDrive=false -> rear 2
-allWheelDrive=true  -> all 4
+allWheelDrive=false -> RWD
+allWheelDrive=true  -> AWD
 ```
 
-No ready native FWD or shaft-lock feature was found in the inspected historical snapshot.
+No ready FWD or shaft-lock feature was found in the inspected native snapshot.
 
-## 13. Native b3Wheel resources for future Web spike
+## 15. Native b3Wheel resources for future Web spike
 
-Use current native repo, not only the old ZIP.
-
-Likely starting points:
+Use current native repo, not only the old ZIP:
 
 ```text
 src/wheel_shape.c
@@ -478,19 +436,16 @@ docs/JOZZ_CORE_PATCHES.json
 tools/jozz_wheel_bench/
 ```
 
-Goal of early spike:
+Spike goal:
+- source delta/dependencies;
+- Emscripten compile impact;
+- C API/JS/TS exports;
+- focused test surface;
+- migration/rollback practicality.
 
-- identify source delta/dependencies;
-- identify Emscripten compile impact;
-- identify C API/JS/TS exports needed;
-- identify test surface;
-- determine whether a dual legacy/true-wheel backend migration is practical.
+No new native tire R&D in this campaign.
 
-Do not do new wheel/tire physics research in this campaign.
-
-## 14. Native presets/config references useful to Web
-
-Tracked presets:
+## 16. Native preset/config semantics useful to Web
 
 ```text
 assets/vehicle_presets/uliczny.json
@@ -498,65 +453,51 @@ assets/vehicle_presets/drift.json
 assets/vehicle_presets/offroad.json
 ```
 
-Useful semantic document:
+Useful document:
 
 ```text
 docs/SUBSYSTEM_UI_PRESETS_PL.md
 ```
 
-It distinguishes:
+Use for semantic separation of vehicle preset / tuning session / local view state / world spawn. Do not port native UI literally.
 
-- last tuning session;
-- named vehicle presets;
-- local debug/view session;
-- persistent world spawns.
+## 17. Fresh-agent retrieval strategy
 
-Native panel domains such as `Zawieszenie`, `Nadwozie`, `Napęd`, `Kierownica`, `Świat`, `Mapa`, `Debug` are feature-semantic references only. Do not port the UI literally.
-
-## 15. Retrieval strategy for a fresh agent
-
-### Vehicle model
-
-Do NOT broadly search old branches first.
-
-1. fetch exact `assets/source/Nadwozie.gltf` from native repo;
-2. verify SHA-256 if bytes are materialized locally;
-3. read historical mount evidence;
-4. inspect owner-tooling candidate only for conversion/calibration primitives;
-5. inspect current live renderer bridge.
+### Vehicle
+1. fetch exact `Nadwozie.gltf` and `Offroad_Big_Wheels.gltf` from native repo;
+2. verify hashes if materialized locally;
+3. read known mount/marker evidence;
+4. inspect owner-tooling candidate only for useful conversion/calibration primitives;
+5. inspect current live renderer seam.
 
 ### Scan
-
 1. read recovered scan evidence;
-2. inspect exact `106312...` code paths;
-3. inspect only selected `c8e0...` visual-policy delta;
-4. establish where the real current pack lives;
-5. recover desktop equivalence before phone optimization.
+2. treat `c8e0bf...` as strongest preserved desktop baseline;
+3. use `106312...` only for causal comparison/fallback;
+4. locate actual current private pack;
+5. selectively reconcile c8e0 into current R1;
+6. validate new integration on desktop, then phone.
 
 ### Presets/drivetrain
-
 1. inspect current Web M6 config/controller;
 2. read native preset-state semantics;
-3. design Web config state independent of UI;
-4. add FWD/RWD/AWD only after defining clean corner selection;
-5. ask Jozz to clarify shaft-lock meaning before implementation if code/history cannot resolve it.
+3. define Web config state independent of UI;
+4. add FWD/RWD/AWD via clean driven-corner selection;
+5. clarify shaft-lock meaning before implementing.
 
 ### b3Wheel
-
-1. inspect current Web binding boundary;
+1. inspect current Web boundary;
 2. inspect current native wheel source/patch manifest;
-3. perform a bounded build/binding feasibility spike;
+3. perform bounded build/binding feasibility spike;
 4. do not modify native JV.
 
-## 16. Resources deliberately not promoted to current authority
+## 18. Resources deliberately not promoted to current authority
 
 - uploaded ZIP working trees as a whole;
 - old `agent/*` branches;
 - closed draft PRs;
 - `candidate/jv-web-owner-vehicle-visual-r1` as a whole;
-- `c8e0bf...` validation status;
 - native `jozz-scan-terrain-f0@241fe10...` as current native research state;
-- the 73 MB `.b3mesh` cache as a Web scan render asset;
-- historical plan documents as evidence of current runtime behavior.
-
-Use them only for the exact bounded facts/resources described above.
+- 73 MB `.b3mesh` as a Web scan render asset;
+- P1B bundle as the later JSPREV2 runtime pack without proof;
+- historical plan documents when raw execution evidence exists.

@@ -1,85 +1,85 @@
 # JV Web — controlled conversation handoff
 
 Date: 2026-08-08
-Status: **DRAFT V2 — CORE REBUILT FROM CURRENT REPOS + USER-SUPPLIED SOURCE ARCHIVES**
+Status: **DRAFT V2.1 — CORE REBUILT AND EVIDENCE-RECONCILED**
 Owner: Jozz
 
-This document is intentionally provisional. It is the current handoff core for review before moving the project to a fresh conversation.
+This document is intentionally provisional. Several further review passes are expected before moving the project to a fresh conversation.
 
-## 0. Purpose
+## 0. Purpose and evidence discipline
 
 The next conversation must start fresh without losing project authority, owner intent, hard evidence, recovered resources or the reasons behind current priorities.
 
-Do not treat this file as a frozen roadmap. A fresh agent must revalidate the current refs, code and owner priorities before implementation.
+This file is not a frozen roadmap. A fresh agent must revalidate current refs/code and challenge the proposed ordering before implementation.
 
-Evidence hierarchy:
+Use this evidence hierarchy when sources disagree:
 
 ```text
 1. current Git refs / current code / live runtime
-2. exact validation evidence + direct owner observation
+2. raw exact validation evidence + direct owner observation
 3. recovered source snapshots supplied by Jozz
-4. historical docs and plans
-5. current interpretation / proposed plan
+4. historical documentation / plans / agent summaries
+5. current interpretation / provisional roadmap
 ```
 
-Lower levels must not silently override higher levels.
+A later raw execution log outranks an earlier plan that said the execution was still pending. A direct owner observation tied to a named run outranks a generic historical summary.
 
 ## 1. Current campaign scope
 
-For the current campaign:
+For this campaign:
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
   = ACTIVE PRIVATE CORE / development laboratory
 
 Jozzpoly/JV-Box3D-Web-Public
-  = PUBLIC DEMONSTRATOR / GitHub Pages release surface
+  = PUBLIC FRIEND-DEMO / GitHub Pages release surface
 
 Jozzpoly/Box3d_FunProject
   = NATIVE JV / READ-ONLY SOURCE FOR THIS CAMPAIGN
 ```
 
-Native JV is maintained by another agent and intentionally frozen until the current JV-Web demonstrator campaign is sufficiently complete. This agent must not advance, reorganize or tune native JV unless Jozz explicitly changes scope.
+Native JV is maintained by another agent and intentionally frozen until the JV-Web demonstrator is sufficiently complete. This agent must not advance, reorganize or tune native JV unless Jozz explicitly changes scope.
 
-Native JV may be inspected as a source of already-existing assets, semantics and mechanisms to selectively port to Web, especially `b3Wheel`.
+Native JV may be inspected as a source of already-existing assets, configuration semantics and mechanisms to selectively port to Web, especially `b3Wheel`.
 
-JV-Web is allowed to move ahead of native JV in presentation, browser UX, camera, configuration, QoL and demo polish. The long-term aspiration remains easy future native->Web transfer, but that aspiration must not stall the current demonstrator.
+JV-Web may temporarily move ahead of native JV in presentation, browser/mobile UX, camera, configuration, QoL and demo polish. Long-term easy native->Web transfer remains desirable, but must not stall the current demonstrator.
 
-## 2. Owner intent — what this campaign is actually for
+## 2. Owner intent — why this campaign exists
 
-The immediate goal is not social-media packaging and not proof that Web equals final native JV physics.
+The immediate target is not social-media production and not proof that the current Web fixture equals final native JV physics.
 
-Jozz wants a browser version that increasingly feels like a real piece of his own game: something he wants to launch, drive, tune and show friends. The visible demonstrator is also intended to rebuild confidence and motivation before returning to the much longer native JV program.
+Jozz wants a browser version that increasingly feels like a real piece of his own game: something he wants to launch, drive, tune and show friends. The visible result is also intended to restore confidence and motivation before returning to the much longer native JV program.
 
-Before Jozz considers the JV-Web experiment complete, the public friend-demo should contain most of the following, subject to live feel and discoveries during implementation:
+Before Jozz considers this JV-Web experiment complete, the public friend-demo should contain most of the following, subject to discoveries and live feel:
 
-- Jozz's own vehicle model, integrated and polished as well as practical;
+- Jozz's own vehicle model, integrated and visually polished as well as practical;
 - a substantially better racing-game-style chase camera;
 - desktop orbit/zoom and mobile two-finger pinch zoom;
 - a simple usable JSPREV2 scan path, recovered from the already-working desktop implementation and made acceptable on phone if practical;
-- teleportation between useful fragments/locations of the world;
+- teleportation between useful world fragments/locations without unnecessary expensive world rebuilds;
 - vehicle presets;
-- a browser-native vehicle settings model/panel;
+- a browser-native vehicle settings state/model and later panel;
 - selectable FWD / RWD / AWD;
-- a mechanically meaningful drivetrain/shaft lock once its exact semantics are defined;
-- useful QoL discovered while actually playing;
+- a mechanically meaningful drivetrain/shaft lock after its exact semantics are established;
+- useful QoL discovered by actually playing;
 - UI rebuilt around the Web/mobile experience rather than the current diagnostic layout;
-- native JV's newer smooth `b3Wheel` / "prawdziwy kolider koła" ported into the Web Box3D runtime before campaign closure if the technical path is sane.
+- native JV's newer smooth `b3Wheel` / "prawdziwy kolider koła" ported to the Web Box3D runtime before campaign closure if the technical path proves sane.
 
-Order is intentionally adaptive. Jozz's actual play/feel is a legitimate scheduling signal, not noise that must be ignored in favor of a prewritten roadmap.
+Order is deliberately adaptive. Jozz's actual play/feel is a legitimate scheduling signal.
 
 Social-media readiness is a later benefit, not a current design constraint.
 
-## 3. Current hard anchors
+## 3. Hard anchors
 
-### 3.1 Active private branch
+### 3.1 Active private line
 
 ```text
-repo: Jozzpoly/JV-Box3D-Web-experiment
+repo:   Jozzpoly/JV-Box3D-Web-experiment
 branch: development/jv-web-r1
 ```
 
-A fresh agent must resolve its exact current tip before work. Do not trust the SHA embedded in this draft after time has passed.
+Always resolve its exact current tip before work. The handoff itself is being revised through docs-only commits, so embedded draft SHAs age quickly.
 
 ### 3.2 Closed public R0
 
@@ -115,9 +115,11 @@ HTTPS: enforced
 
 R0 proved deterministic Windows source/build behavior, two byte-identical public builds, exact promotion, live Pages, zero public scan requests and direct owner use on desktop + real phone. It is a regression/rollback reference, not the branch to keep editing.
 
-## 4. Current Web product/runtime facts
+## 4. Current Web runtime facts
 
-Live vehicle visuals are still procedural:
+### 4.1 Vehicle visual path
+
+Live vehicle visuals remain procedural:
 
 ```text
 M6DebugRenderer
@@ -136,11 +138,11 @@ The active source nevertheless contains a substantial dormant vehicle-visual sta
 - binding-to-world transform resolution;
 - deterministic tiny full-rig fixture.
 
-The missing product bridge is live GLB draw integration plus later production texture/material runtime.
+Missing product bridge: live GLB draw integration plus production texture/material runtime.
 
-`M6_FULL_RIG_V1` is a useful current proof topology, not sacred future ABI.
+`M6_FULL_RIG_V1` is useful current proof topology, not sacred future ABI.
 
-Current physics/runtime identity:
+### 4.2 Physics/runtime identity
 
 ```text
 runtimeBackend.id: legacy_ts_m6
@@ -158,20 +160,22 @@ engine commit:  8441b4a06d6d09dcfb0b0f704df4d847d1437b92
 variant: inline-single-threaded
 ```
 
-The active binding/boundary does not expose native JV's `b3Wheel` API. The desired true-wheel feature is therefore an engine/binding port problem, not a UI toggle.
+The active boundary does not expose native JV's `b3Wheel` API. The desired true-wheel feature is an engine/binding port problem, not a UI toggle.
 
-Current drivetrain uses `allWheelDrive: boolean`:
+### 4.3 Drivetrain
+
+Current M6 config uses `allWheelDrive: boolean`:
 
 ```text
 false -> rear two corners driven
 true  -> all four corners driven
 ```
 
-A clean FWD/RWD/AWD enum is plausible bounded work. The exact meaning of Jozz's requested "blokowanie wałów" is not yet established and must not be guessed.
+A clean FWD/RWD/AWD enum is plausible bounded work. The exact meaning of Jozz's requested "blokowanie wałów" remains unresolved and must not be guessed.
 
 ## 5. Recovered source snapshots supplied by Jozz
 
-Two ZIPs supplied during handoff preparation materially improved the project context.
+Two user-supplied ZIPs materially improved the project context.
 
 ### Old JV-Web snapshot
 
@@ -189,8 +193,6 @@ snapshot working HEAD:
   agent/jv-refoundation-control-plane
   fd4d96fdf479e0d5649e49c73f1ce0cd68f52d0c
 ```
-
-This ZIP recovered local Git refs and an important modified local scan-validation record that was not preserved in the same form on the historical GitHub branch.
 
 ### Native JV snapshot
 
@@ -213,13 +215,11 @@ recovery/jv-reconstruction inside snapshot:
   b756f09134c3a9b38f99954ada8cc11d18377bf3
 ```
 
-This is an asset/source recovery snapshot. It is not the authority for the current native-JV research line and must not cause this Web agent to resume native development.
+These archives are recovery/evidence sources. They are not automatically newer authority than current Git.
 
-## 6. Recovered scan truth — important correction to older handoff
+## 6. Recovered scan truth — reconciled evidence
 
-The old Web ZIP contains the local product-scan history that led from the accepted playable car to the integrated scan product.
-
-Key lineage:
+Historical local scan lineage recovered from old JV-Web:
 
 ```text
 04713ab33ba8788d3ee404f2165484366b7a717b
@@ -228,11 +228,9 @@ Key lineage:
 c8e0bf24748b0a790a1c0039b1be801eef266580
 ```
 
-Most important evidence boundary:
+### 6.1 `106312...` — first full green integrated checkpoint
 
-### `106312...` — first full green integrated product
-
-Recovered local record states that exact Windows validation reached:
+Raw Windows evidence establishes:
 
 ```text
 Node 24.16.0
@@ -240,68 +238,92 @@ npm 11.17.0
 TypeScript PASS
 tests 251/251 PASS
 docs/notices/portable package PASS
-private JSPREV2 exact validation PASS
+exact private JSPREV2 selection + deep validation PASS
+7 tiles / 25 groups / 25 textures / 1,775,775 triangles
 ```
 
-Recovered product metrics:
+Owner/runtime observations from that stage established working car + E2R/offroad + scan geometry/collision but also visible defects: scrambled/misaligned scan atlas appearance, LINEAR filtering, grid always on, primitive/debug vehicle.
+
+`106312...` is therefore the important pre-fix causal baseline.
+
+### 6.2 `c8e0bf...` — strongest recovered desktop scan baseline
+
+A later raw Windows execution log supersedes earlier planning notes that still described its gate as pending.
+
+Exact target:
 
 ```text
-7 tiles
-25 groups
-25 textures
-1,775,775 triangles
+c8e0bf24748b0a790a1c0039b1be801eef266580
 ```
 
-Owner/runtime observations recorded for this checkpoint:
+Exact automated evidence:
 
-- one browser world contained the accepted Web vehicle + E2R/offroad + private JSPREV2;
-- car was visible and controllable on E2R and scan;
-- rocks / bumper banks / offroad content were present;
-- scan geometry rendered;
-- Box3D scan collision worked;
-- map/scan switching worked.
+```text
+Node: 24.16.0
+npm:  11.17.0
+full repository/build/portable gate: PASS
+JV WEB FOUNDATION GATE: PASS
+JV WEB CAR + MAP + SCAN: SOURCE/PACKAGE/ASSET GATE PASS
+scan: 7 tiles / 25 groups / 25 textures / 1,775,775 triangles
+foundation gate log SHA-256:
+3f2c35503fe4cbc3fb2340f93612fe2677ce3d92388eb4c107ba1decd635e68b
+```
 
-The same green checkpoint also had visible defects:
+The integrated product was then started at localhost:5175 from that exact worktree.
 
-1. scan texture atlases were visibly scrambled;
-2. filtering was forced LINEAR;
-3. observer grid was always drawn;
-4. primitive/debug vehicle remained visible.
+Direct owner feedback tied to this run states:
 
-### `c8e0bf...` — later visual-fix candidate, not inherited PASS
+- scan displayed correctly;
+- pixel smoothing was OFF by default and could be enabled;
+- grid was OFF by default and could be enabled;
+- vehicle collision worked correctly.
 
-The later branch tip contains code/policy changes including:
+This is historical `OWNER OBSERVED` evidence for those exact behaviors on the c8e0 product line. It is not the same thing as current-R1 or public-R0 acceptance, but it is strong enough that c8e0 should no longer be described as an unvalidated visual candidate.
 
-- `UNPACK_FLIP_Y_WEBGL = 0`;
-- default NEAREST filtering;
-- live Pixels/Smoothing view controls;
-- grid OFF by default + toggle;
-- preserving view settings across map/scan.
+### 6.3 Recovered teleport UX debt
 
-But the recovered local record does **not** establish a complete exact Windows gate or owner visual acceptance for `c8e0bf...`.
+The same owner feedback identifies a concrete product problem:
 
-Therefore future scan work should:
+- map/scan teleport rebuilt the whole world;
+- each teleport could cost roughly one to several seconds;
+- owner explicitly questioned why a position change should require rebuilding the whole world.
 
-1. recover the known-green functional behavior of `106312...` into current R1;
-2. selectively reuse the `c8e0...` visual correction only with fresh validation;
-3. restore desktop behavior before designing new scan architecture;
-4. then run the real scan on phone and optimize only observed bottlenecks.
+Future teleport/location work should therefore preserve the proven location semantics while attempting to decouple repositioning from full world reconstruction when architecturally safe.
 
-The recovered historical evidence is preserved separately in:
+### 6.4 Scan recovery implication
+
+The best preserved desktop recovery source is now:
+
+```text
+product/jv-web-car-map-scan@c8e0bf24748b0a790a1c0039b1be801eef266580
+```
+
+Use `106312...` as the pre-fix causal baseline/fallback when attributing regressions, not as the default feature target.
+
+Future scan work should:
+
+1. selectively reconcile the known-good c8e0 world/render/collision/view behavior into current R1 rather than wholesale-merging the branch;
+2. keep `106312...` available to isolate whether any regression comes from the small visual-fix delta;
+3. re-establish the actual private pack location;
+4. confirm recovered desktop behavior in current R1;
+5. then test a real phone and optimize only observed bottlenecks;
+6. redesign scan architecture only if recovery/measurement demonstrates a real need.
+
+Canonical historical evidence preservation:
 
 ```text
 docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md
 ```
 
-## 7. Recovered scan asset state
+## 7. Scan asset boundary
 
-Historical full pack identity:
+Historical full runtime pack:
 
 ```text
 source-preview-aee5242a20848294
 ```
 
-Historical native debug path recorded:
+Historical runtime path:
 
 ```text
 C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\JS_Photogrametry\repo\build\scan_pipeline\previews\source-preview-aee5242a20848294
@@ -309,7 +331,7 @@ C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\JS_Photogrametry\repo\build\scan_pipe
 
 The supplied `box3d.zip` does **not** contain the full 7-tile textured JSPREV2 pack.
 
-It does contain a cooked native collision cache for that pack:
+It does contain a cooked native collision cache:
 
 ```text
 build/scan_cache/source-preview-aee5242a20848294_w1e1m0f0.b3mesh
@@ -320,11 +342,19 @@ SHA-256:
 
 This `.b3mesh` is native cooked collision-cache evidence, not a portable Web render asset and not a substitute for the missing textures/tiles.
 
-Historical native documentation reports `1,770,391` triangles while recovered Web validation reports `1,775,775`. Do not silently reconcile this discrepancy. It may be a different metric/subset; the real pack should be freshly measured if recovered.
+Historical native documentation reports `1,770,391` triangles while exact Web validation reports `1,775,775`. Preserve the discrepancy and freshly measure the real recovered pack rather than guessing which old metric should win.
 
-## 8. Recovered vehicle asset truth — important correction
+A separate historical private P1B pipeline was also observed at:
 
-The earlier handoff said the authoritative source model files had not been proven. The supplied native JV snapshot establishes that they are versioned in native JV.
+```text
+C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\Box3d_FunProject_p1b_bundle\build\scan_pipeline
+```
+
+with one bundle `photogrammetry-primary-cc94c46ed4070411` and an owner-gate receipt. This is a potentially useful recovery lead, but it is not proven to be the exact JSPREV2 runtime preview pack above. Do not conflate them.
+
+## 8. Recovered authoritative owner assets
+
+The earlier handoff uncertainty about the real model files is resolved: the source models are versioned in native JV.
 
 ### Chassis/body
 
@@ -342,16 +372,16 @@ Git blob:
   a25cb0ef61d342ce476c9ef26a3b24188bace047
 ```
 
-It is a self-contained Blockbench 5.1.4 glTF export with embedded binary data and embedded PNG texture.
+Self-contained Blockbench 5.1.4 glTF export with embedded binary data and PNG texture.
 
-Native integration commit:
+Historical native integration:
 
 ```text
 a2759471d8641b9f3a3395d508f6c8116d60c81c
 Body: attach Jozz's chassis frame (Nadwozie) as a rigid skin on the chassis
 ```
 
-Historical measured placement/relationship:
+Historical measured relationship:
 
 ```text
 model size:
@@ -368,7 +398,7 @@ visual mount:
   chassis-local position = (0, -0.60, 0)
 ```
 
-Historical records say the render was visually inspected in motion and orientation/placement were correct. Do not throw this evidence away and recalibrate from zero unless current Web integration proves a different convention requires it.
+Historical records state that orientation/placement were visually inspected in live motion. Do not throw this away and restart with eyeballed calibration unless current Web coordinate conventions prove it invalid.
 
 ### Wheel
 
@@ -381,15 +411,12 @@ SHA-256:
 
 Git blob:
   c13c77a8e5552175ee8266b2da33a54691f1dae9
+
+tracked from:
+  6c7cb18a4a45655797bb1e24d771cad7a5d9d187
 ```
 
-Tracked from commit:
-
-```text
-6c7cb18a4a45655797bb1e24d771cad7a5d9d187
-```
-
-It is also self-contained with embedded PNG and includes semantic markers such as:
+Self-contained with embedded PNG and semantic markers including:
 
 ```text
 Socket_WheelMount
@@ -400,19 +427,19 @@ Marker_TireWidthLeft
 Marker_TireWidthRight
 ```
 
-These assets are not currently present in active JV-Web. A fresh agent should fetch/copy them deliberately using the exact native repo/ref/path identity instead of asking Jozz to rediscover them or guessing from arbitrary local files.
-
-Exact resource pointers are collected in:
+Exact pointers and additional authored assets are collected in:
 
 ```text
 docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md
 ```
 
-## 9. Native JV resources worth reading — without resuming native development
+A fresh agent should fetch/copy these deliberately using exact repo/ref/path identity instead of asking Jozz to rediscover them.
 
-### Presets
+## 9. Useful native JV resources — without resuming native development
 
-Tracked native presets exist:
+### Presets/state semantics
+
+Tracked native presets:
 
 ```text
 assets/vehicle_presets/uliczny.json
@@ -420,40 +447,15 @@ assets/vehicle_presets/drift.json
 assets/vehicle_presets/offroad.json
 ```
 
-They are useful semantic references for future Web presets; they are not automatically Web preset schema.
+`docs/SUBSYSTEM_UI_PRESETS_PL.md` contains useful separation between last tuning session, named vehicle presets, local view/debug state and persistent world spawns.
 
-### State separation
-
-`docs/SUBSYSTEM_UI_PRESETS_PL.md` contains a useful conceptual separation between:
-
-- last tuning session;
-- named vehicle presets;
-- local debug/view session;
-- persistent world spawns.
-
-This can prevent future Web UI from mixing persistent vehicle configuration with camera/debug/world state.
-
-### UI semantics
-
-Native UI includes domains such as:
-
-```text
-Zawieszenie
-Nadwozie
-Napęd
-Kierownica
-Świat
-Mapa
-Debug
-```
-
-Use this only as a feature-semantic inventory. Do not port native ImGui/layout literally; the Web UI should be browser/mobile-native.
+Native UI domains such as `Zawieszenie`, `Nadwozie`, `Napęd`, `Kierownica`, `Świat`, `Mapa`, `Debug` are semantic inventory only. Do not port native ImGui/layout literally.
 
 ### b3Wheel
 
 Current Web binding does not contain `b3Wheel`.
 
-An early feasibility spike should inspect current native resources such as:
+An early bounded feasibility spike should inspect current native resources such as:
 
 ```text
 src/wheel_shape.c
@@ -465,46 +467,44 @@ docs/JOZZ_CORE_PATCHES.json
 tools/jozz_wheel_bench/
 ```
 
-The spike should answer build/binding/port-surface questions only. It must not reopen native tire R&D or modify native JV.
+The spike should answer source-delta/dependency, Emscripten, binding-export and test-surface questions only. It must not reopen native tire R&D or modify native JV.
 
-## 10. Critical re-evaluation of the previous plan
-
-The earlier handoff was materially incomplete because it lacked the source archives and therefore understated what was already known.
-
-### 10.1 Real vehicle work can start from stronger evidence
-
-Old assumption:
+## 10. Owner-vehicle candidate — salvage only
 
 ```text
-we may have tooling, but authoritative owner model assets may need to be found again
+candidate/jv-web-owner-vehicle-visual-r1
+796b050b4b90a2383803cab13f9dcd3aeca5f97f
 ```
 
-Recovered truth:
+Useful tooling includes strict Blockbench/glTF inspection, deterministic package generation, chassis/wheel calibration, embedded PNG preservation, NEAREST/CLAMP_TO_EDGE and OPAQUE/MASK rules.
 
-```text
-Nadwozie.gltf and Offroad_Big_Wheels.gltf are exact versioned source assets
-with hashes, historical integration, placement evidence and wheel markers
-```
+Do not wholesale merge this candidate. Its final live renderer remained procedural and its texture-producing tooling outran the active runtime draw path.
 
-Therefore owner-model integration should not start with generic asset discovery or eyeballed calibration. A small tiny-GLB seam test may still be useful internally, but it is not the product milestone.
+## 11. Critical re-evaluation of the previous plan
 
-### 10.2 Scan is a recovery task before it is a new architecture task
+### 11.1 Owner-model integration starts from stronger evidence than previously assumed
 
-The first target should be functional equivalence with the known-green `106312...` desktop path, not a fresh scan architecture.
+We have exact source assets, hashes, historical mount measurements and wheel markers. Do not spend the next conversation broadly searching for a model or recalibrating from zero.
 
-The later `c8e0...` visual fixes are likely useful but require fresh validation.
+A tiny/full-rig seam proof may still be a useful internal implementation step, but it is not the product milestone. The owner-visible milestone is the real chassis + real wheels behaving correctly in the running game.
 
-Only after desktop recovery should phone behavior decide whether work is needed in rendering, textures, collision, loading or memory.
+### 11.2 Scan is primarily selective recovery, not new architecture
 
-### 10.3 b3Wheel risk must be bounded early but need not block visible work
+Because c8e0 now has both exact automated PASS and direct owner-observed correct scan/filter/grid/collision behavior, it is the strongest preserved desktop scan baseline.
 
-Because current Web Box3D lacks the API, perform an early bounded Emscripten/binding feasibility spike.
+Do not force the project to recreate 106312 first. Use 106312 as attribution fallback if the c8e0 delta causes trouble.
 
-Do not make the full wheel port the first campaign milestone unless the spike reveals that delaying it would make current vehicle work disposable.
+### 11.3 Teleport is already a known QoL/performance debt
 
-### 10.4 Config semantics should precede final settings UI
+The old product solved location switching functionally, but rebuilt the whole world. The desired new location system should preserve reliable spawn/target behavior while avoiding unnecessary reconstruction.
 
-Before building a polished panel, define the product state model and update semantics such as:
+### 11.4 b3Wheel risk must be bounded early but need not block visible work
+
+Perform a bounded Web build/binding feasibility spike early. Do not automatically make the full port the first implementation milestone unless the spike proves delaying it would make current vehicle work disposable.
+
+### 11.5 Config semantics should precede polished settings UI
+
+Before building a final panel, define a Web vehicle config model and update semantics such as:
 
 ```text
 LIVE
@@ -514,59 +514,52 @@ REBUILD_WORLD
 
 Presets should be snapshots of vehicle state, not remembered button positions.
 
-### 10.5 Public releases should reflect visible value
+### 11.6 Public release cadence should follow visible value
 
-Do not recreate the R0 ceremony for every private slice.
+Do not recreate the R0 ceremony for every private slice. Exact provenance and rollback remain required, but public checkpoints should correspond to meaningful owner-visible jumps.
 
-Likely useful public checkpoints are large owner-visible jumps, for example:
+## 12. Provisional adaptive work program
 
-- real vehicle + new camera;
-- scan/teleport recovery;
-- sufficiently complete friend-demo.
+This is a decision framework, not an ordered contract.
 
-Exact release provenance/rollback remains required, but release work must stay proportional to the value being published.
-
-## 11. Provisional adaptive work program
-
-This is not an ordered contract. It is a current decision framework.
-
-### Phase A — revalidation + risk bounding
+### Phase A — fresh revalidation + bounded risk mapping
 
 Short only.
 
-- verify current refs/R0/Pages;
-- verify exact owner source assets from native repo;
-- map the minimum code surface needed to activate live GLB drawing;
-- map exact `106312...` scan recovery surface and the selected `c8e0...` visual fixes;
-- perform a bounded `b3Wheel` Web build/binding feasibility analysis;
-- define the smallest first owner-visible implementation slice.
+- verify current private/public refs and Pages;
+- verify exact owner source assets through indexed pointers;
+- inspect the minimal current code surface required for live GLB draw integration;
+- inspect `c8e0bf...` only where needed to map selective scan recovery;
+- perform bounded `b3Wheel` Web/Emscripten/binding feasibility analysis;
+- identify where the real private JSPREV2 pack is currently accessible;
+- choose the smallest first owner-visible implementation slice.
 
-If Phase A expands into another foundation campaign, stop and reduce scope.
+Do not rerun historical c8e0 gates merely to rediscover that they already passed. Fresh validation belongs to the **new integration into current R1**, not to proving old evidence again.
+
+If Phase A turns into another foundation campaign, reduce scope.
 
 ### Phase B — "this is my car"
 
 Probable internal sequence:
 
 ```text
-tiny/full-rig live draw seam proof
+minimal live GLB seam proof
 -> exact Nadwozie.gltf + Offroad_Big_Wheels.gltf integration
--> geometry/pose correction using recovered evidence
+-> pose/scale correction using recovered evidence
 -> pixel texture/material support
 -> materially better chase camera
 ```
 
-Tiny GLB is diagnostic infrastructure only. The meaningful owner gate is whether the real car + camera materially changes the experience.
-
-Camera should be developed near vehicle visuals, not deferred as polish. Desired capabilities include smooth chase, tunable distance/height/look-ahead, desktop orbit/zoom and phone pinch zoom. Exact behavior should be tuned by play, not copied blindly from one game.
+Camera belongs near vehicle visuals, not at the end as polish. Desired capabilities include smooth chase, tunable distance/height/look-ahead, desktop orbit/zoom and phone pinch zoom. Tune through actual play rather than copying one game's constants.
 
 ### Phase C — "this is my world"
 
-- recover `106312...` scan/E2R integration into current R1;
-- freshly validate selected `c8e0...` view/UV/filter fixes;
-- make map/offroad/scan locations explicit product destinations;
-- implement teleport/location switching without unnecessary full-page restart if current architecture supports it cleanly;
+- selectively recover c8e0 scan/E2R behavior into current R1;
+- preserve map/offroad/scan as explicit locations;
+- replace full-world teleport rebuild with lightweight repositioning if current ownership/lifecycle rules permit it safely;
+- run real desktop recovery evidence;
 - run real phone scan observation;
-- optimize only measured bottlenecks.
+- optimize only measured bottlenecks in loading, rendering, textures, collision or memory.
 
 ### Phase D — vehicle sandbox
 
@@ -578,32 +571,32 @@ Then incrementally add:
 - FWD / RWD / AWD;
 - exact drivetrain/shaft lock semantics after clarification;
 - selected suspension/steering/drive/brake parameters useful to Jozz;
-- local save of useful user state if justified.
+- local persistence only when useful.
 
-Use native presets/state separation as semantic reference, not as a UI port.
+Use native preset/state semantics as reference, not literal UI port.
 
 ### Phase E — true wheel
 
 If the early spike confirms a sane path:
 
 - build a controlled Web Box3D/Emscripten variant containing the selected existing `b3Wheel` delta;
-- expose the minimum JS/TS binding surface;
+- expose only required JS/TS binding surface;
 - pin engine/binding identity;
-- port the proven mechanism rather than doing new tire R&D in JV-Web;
-- keep rollback to the legacy split-wheel backend until new Web behavior is established.
+- port existing mechanism rather than perform new tire R&D in JV-Web;
+- retain legacy split-wheel rollback until the new Web backend is established.
 
 ### Phase F — UI/QoL/friend-demo closure
 
-Only after the real capability set is clearer:
+Once the real capability set is clearer:
 
 - rebuild UI around Web/mobile needs;
 - separate driving HUD/quick actions from settings;
-- provide appropriate mobile drawer/sheet behavior;
-- add QoL that actual play demonstrates is valuable;
+- use appropriate mobile drawer/sheet behavior;
+- add QoL demonstrated by actual play;
 - perform targeted desktop/phone polish;
 - publish major owner-visible checkpoints rather than every implementation step.
 
-## 12. Process constraints
+## 13. Process constraints
 
 - minimize Jozz's manual technical intervention;
 - prefer assistant-led code/repo work;
@@ -614,56 +607,54 @@ Only after the real capability set is clearer:
 - preserve public R0 as rollback/regression baseline;
 - distinguish product failure from harness/operator failure;
 - validate the stage that actually changed;
-- do not send Jozz through a gate already known to be broken;
+- do not send Jozz through a gate already known to be broken or redundant;
 - use small attributable implementation slices;
 - do not let release engineering consume product development again;
 - do not hide failed assumptions by redefining success after the fact;
-- owner visual/feel evidence matters when the question is experience, not just code correctness.
+- owner visual/feel evidence matters when the question is experience.
 
-## 13. Known unknowns that must remain explicit
+## 14. Known unknowns
 
-1. The full textured JSPREV2 pack `source-preview-aee5242a20848294` is not contained in the supplied `box3d.zip`; its present accessible location still has to be established before real scan recovery can run.
-2. The native-vs-Web scan triangle-count discrepancy (`1,770,391` vs `1,775,775`) is unresolved and should be remeasured rather than guessed.
-3. Exact mechanical semantics of "blokowanie wałów" are unresolved.
-4. FWD has not been implemented in the current M6 drivetrain.
-5. `c8e0bf...` visual fixes are not owner-accepted simply because the code exists.
-6. Exact Web build/binding cost of current native `b3Wheel` has not yet been proven.
-7. Final camera behavior and final UI hierarchy should be tuned against actual play, not frozen in this handoff.
-8. `M6_FULL_RIG_V1` may be sufficient for the current car proof but is not guaranteed to be the future general vehicle ABI.
+1. The full textured JSPREV2 runtime pack `source-preview-aee5242a20848294` is not contained in the supplied `box3d.zip`; its current accessible location still must be established before scan recovery can execute.
+2. The native-vs-Web scan triangle-count discrepancy (`1,770,391` vs `1,775,775`) is unresolved and should be freshly measured.
+3. The relation between the historical P1B private bundle `photogrammetry-primary-cc94c46ed4070411` and the later JSPREV2 runtime preview pack is not established.
+4. Exact mechanical semantics of "blokowanie wałów" remain unresolved.
+5. FWD has not been implemented in the current Web M6 drivetrain.
+6. Exact Web build/binding cost of current native `b3Wheel` remains unproven.
+7. Final camera behavior and final UI hierarchy should be tuned against actual play, not frozen here.
+8. `M6_FULL_RIG_V1` is not guaranteed future general vehicle ABI.
 
-## 14. Fresh-conversation protocol
+## 15. Fresh-conversation protocol
 
-A new agent should not begin by implementing the first item in Section 11.
+A new agent should not begin by mechanically implementing the first phase above.
 
 Recommended first session:
 
-1. resolve current Git refs for private/public repos and verify Pages;
-2. read `AGENTS.md`, `docs/PROJECT_STATE.md`, this handoff, the resource index, recovered scan evidence, R0 baseline and R1-F0 audit;
-3. inspect only the exact active code paths needed to test the handoff claims;
-4. verify the exact native source assets and historical scan commits using the resource index instead of broad repo searches;
-5. classify what is CURRENT FACT, HISTORICAL PROOF, RECOVERED EVIDENCE, HYPOTHESIS, UNKNOWN;
-6. challenge the provisional work program against current code and Jozz's current priorities;
+1. resolve current refs for private/public repos and verify Pages;
+2. read `AGENTS.md`, `docs/PROJECT_STATE.md`, this CORE, the RESOURCE INDEX, RECOVERED SCAN EVIDENCE, R0 baseline and R1-F0 audit;
+3. classify statements as CURRENT FACT / HISTORICAL EXACT PROOF / OWNER OBSERVED / RECOVERED SOURCE / HYPOTHESIS / UNKNOWN;
+4. use the resource index instead of broad repo searches for known car/scan assets and historical commits;
+5. inspect only the exact current code paths needed to test the handoff's architectural claims;
+6. challenge the provisional ordering against current code and Jozz's current feel;
 7. propose the smallest high-value implementation slice;
 8. only then implement.
 
-Do not spend the first conversation rediscovering resources already indexed here.
+Do not spend the first conversation rediscovering c8e0 validation, the owner model paths, wheel markers, or R0 publication history. Those resources are already indexed.
 
-Do not treat this handoff as an instruction to blindly preserve the previous agent's architecture.
+Do not treat this handoff as an instruction to preserve the previous agent's architecture blindly.
 
-## 15. Handoff status
+## 16. Handoff status
 
 ```text
-DRAFT V2
-core rebuilt from current repos + supplied source archives
+DRAFT V2.1
+core rebuilt from current repos + supplied source archives + recovered raw historical evidence
 NOT FINAL
 ```
 
-Further review is expected before moving to the fresh conversation.
+Further review is expected. Future passes should explicitly ask:
 
-In particular, future review should ask:
-
-- Is the handoff too prescriptive about car->scan->config->wheel order?
-- Does it preserve enough exact resource identity while still staying readable?
-- Are any historical observations being promoted above their evidence class?
-- Is any important private asset/resource still only present in the uploaded ZIPs and not indexed by stable repository identity?
-- Does the first-session protocol save context, or does it ask the new agent to repeat work that this handoff already settled?
+- Is the handoff still too prescriptive about car / scan / config / wheel ordering?
+- Are exact resources indexed sufficiently to eliminate broad rediscovery?
+- Is any historical observation accidentally promoted beyond its evidence class?
+- Is enough context duplicated across AI memory / project state / core to waste the new agent's context?
+- Can the first-session protocol be shortened further without increasing hallucination risk?
