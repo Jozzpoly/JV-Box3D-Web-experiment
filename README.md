@@ -47,6 +47,8 @@ The target is no longer merely a technical browser demonstrator. Before this cam
 
 Order is adaptive and may change after real play/feel. Social-media optimization is later and must not slow the friend-demo.
 
+The current cold-takeover hypothesis for the first main owner-visible slice is **REAL CAR V1**: integrate the exact real chassis + four real wheels and their required pixel material/texture behavior while keeping the current physics, world and camera unchanged. Camera work is intentionally separated into the following owner-feel slice so visual and camera feedback remain attributable. See the takeover brief; this is a hypothesis, not a frozen roadmap.
+
 ## Current private scan capability
 
 The private root `index.html` launches `src/product-main.ts`, which still configures the LOCAL_FULL path. If an exact local pack is selected with:
@@ -78,7 +80,7 @@ product physics authority: false
 native JV parity: NOT_PROVEN
 ```
 
-The exact owner source assets have been recovered and indexed. The next visual work should start from those known resources instead of broad asset discovery.
+The exact owner source assets have been recovered and indexed. The next visual work should start from those known resources instead of broad asset discovery. The deterministic tiny GLB fixture is a diagnostic fallback, not a required milestone.
 
 ## Controls in the current build
 
@@ -96,18 +98,24 @@ Future camera work should evolve the existing `M6WorldRenderer` camera/input pat
 
 ## Start here before changing anything
 
-1. `AGENTS.md`
-2. `AI_PROJECT_MEMORY.md`
-3. `docs/PROJECT_STATE.md`
-4. `docs/handoff/JV_WEB_HANDOFF_2026-08-08.md`
+Keep cold start small:
 
-For exact recovered resources use:
+1. resolve current private/public refs;
+2. read `AGENTS.md`;
+3. read `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`;
+4. if a handoff resource ZIP is attached, read its `00_START_HERE.md`, `02_RESOURCE_MAP.md` and `09_COLD_AGENT_TAKEOVER_CHECKLIST.md`;
+5. inspect the exact current source/evidence required to challenge the proposed first task.
+
+Use deeper documents only when the question needs them:
 
 ```text
+AI_PROJECT_MEMORY.md
+docs/PROJECT_STATE.md
+docs/handoff/JV_WEB_HANDOFF_2026-08-08.md
 docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md
 ```
 
-If a handoff resource ZIP is attached in the conversation, use its `00_START_HERE.md` after reading current repo authority docs. It physically contains the important recovered vehicle assets, scan closure/evidence and `b3Wheel` source surface so the next agent does not need broad archaeology.
+The resource pack physically contains the important recovered vehicle assets, scan closure/evidence and `b3Wheel` source surface so the next agent does not need broad archaeology.
 
 ## Development workflow
 

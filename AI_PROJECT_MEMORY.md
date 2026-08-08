@@ -1,10 +1,10 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-08
-Status: `R0 PUBLISHED / R1 ACTIVE / HANDOFF DRAFT V3 UNDER REVIEW`
+Status: `R0 PUBLISHED / R1 ACTIVE / HANDOFF DRAFT V4 TAKEOVER LAYER UNDER REVIEW`
 Owner: Jozz
 
-This is a short navigation map. Current Git/evidence always wins. Detailed reasoning/resources live in `docs/handoff/` and the attached handoff resource pack.
+This is a short navigation memory, not the mandatory cold-start document. Current Git/evidence always wins. Fresh agents should read `AGENTS.md` and `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md` first, then use this file only when broader state is useful.
 
 ## Scope
 
@@ -57,15 +57,33 @@ rollback/main 401068f5734c841d43907b71484bc03a2396c604
 
 R0 is published and owner-accepted on desktop + real phone. Keep frozen as regression/rollback baseline.
 
-## Current visual/camera facts
+## Current first-slice hypothesis
+
+The current cold-takeover recommendation is **REAL CAR V1**, not combined `CAR + CAMERA`:
+
+```text
+exact Nadwozie.gltf
++ four exact Offroad_Big_Wheels.gltf channels
++ minimum real pixel texture/MASK runtime
++ live authored-GLB draw bridge
++ current physics/world/camera unchanged
+```
+
+Why: exact assets/calibration/tooling are available, current visual gap is bounded and immediately owner-visible, while scan is resource-blocked and b3Wheel is a deeper engine/binding risk.
+
+This is a hypothesis to revalidate against current Git, not a permanent milestone contract.
+
+The tiny full-rig fixture is a diagnostic fallback only if a direct real-asset failure cannot be localized between package/import and live draw code.
+
+## Current visual facts
 
 - live vehicle is still procedural (`M6WorldRenderer` box chassis + cylinder wheels);
 - `M6TraceFrame.visualFrame`, GLB decode/policy, GPU geometry ownership and binding transforms already exist;
 - missing core = live authored-GLB draw bridge + production pixel material/texture support;
-- tiny full-rig fixture is a seam diagnostic, not the product milestone;
-- current camera is embedded in `src/render/m6-world-renderer.ts` and already owns yaw/pitch/distance + pointer orbit/zoom.
+- current camera is embedded in `src/render/m6-world-renderer.ts` and already owns yaw/pitch/distance + pointer orbit/zoom;
+- camera should currently follow the first real-car visual checkpoint as a separate owner-feel slice so visual and camera feedback remain attributable.
 
-Exact owner assets are recovered:
+Exact owner assets:
 
 ```text
 Nadwozie.gltf
@@ -77,7 +95,14 @@ SHA-256 1fe1d08dd068157d699dc5232054ee61f6aa5a14af15480be0c77aeb55b5b617
 contains mount/spin/radius/width markers
 ```
 
-Do not ask Jozz to rediscover them before using indexed resources.
+Frozen owner tooling candidate:
+
+```text
+candidate/jv-web-owner-vehicle-visual-r1
+796b050b4b90a2383803cab13f9dcd3aeca5f97f
+```
+
+Selective salvage only.
 
 ## Current scan truth
 
@@ -136,6 +161,8 @@ FWD is not implemented. Exact requested shaft-lock semantics remain unresolved.
 
 Current Web Box3D is pinned `box3d.js@0.0.2` and exposes no native `b3Wheel` API. The handoff resource pack contains exact recovered source surfaces for `B3X-WHEEL-001` + `B3X-WHEEL-SOFT-002`; compare with the then-current read-only native state before a real port.
 
+Treat b3Wheel as a bounded secondary feasibility spike unless evidence shows it must block the main owner-visible work.
+
 ## Validation/process
 
 Private R1 work uses focused validation by default. Jozz should be involved only when real visual/feel/device observation matters. Full reproducibility/promotion ceremony belongs to public release candidates, not every private commit.
@@ -145,7 +172,8 @@ Never force-push. Do not use custom GitHub Actions by default. Do not confuse ha
 ## Current opportunity lanes — not phases
 
 ```text
-CAR / CAMERA
+CAR VISUAL
+CAMERA / MOBILE VIEW
 WORLD / SCAN / TELEPORT
 VEHICLE CONFIG / PRESETS / DRIVETRAIN
 TRUE WHEEL feasibility/port
@@ -156,8 +184,15 @@ Choose one main owner-visible slice at a time; at most one short risk spike in p
 
 ## Read next
 
-1. `docs/PROJECT_STATE.md`
-2. `docs/handoff/JV_WEB_HANDOFF_2026-08-08.md`
-3. attached resource pack `00_START_HERE.md` if available
-4. `docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md` only for exact retrieval
-5. exact source for the first revalidated question
+Cold start:
+
+1. `AGENTS.md`
+2. `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`
+3. attached resource pack `00_START_HERE.md`, `02_RESOURCE_MAP.md`, `09_COLD_AGENT_TAKEOVER_CHECKLIST.md` if available
+4. exact source for the first revalidated question
+
+Deeper reference only when needed:
+
+- `docs/PROJECT_STATE.md`
+- `docs/handoff/JV_WEB_HANDOFF_2026-08-08.md`
+- `docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md`

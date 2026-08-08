@@ -175,22 +175,26 @@ Stop and investigate when:
 
 ## 10. Fresh-agent bootstrap order
 
-First resolve current private/public refs. Then read:
+Keep cold start small.
 
-1. `AGENTS.md`
-2. `AI_PROJECT_MEMORY.md`
-3. `docs/PROJECT_STATE.md`
-4. `docs/handoff/JV_WEB_HANDOFF_2026-08-08.md`
+1. Resolve current private/public refs and live Pages.
+2. Read `AGENTS.md`.
+3. Read `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`.
+4. If the handoff resource pack is attached, read only `00_START_HERE.md`, `02_RESOURCE_MAP.md` and `09_COLD_AGENT_TAKEOVER_CHECKLIST.md` first.
+5. Inspect the exact current source/evidence required to challenge the proposed first task.
 
-If the handoff resource pack is attached in the conversation, read next:
+Load deeper context **on demand**, not automatically:
 
-5. `00_START_HERE.md`
-6. `01_CURRENT_STATE_AND_OWNER_INTENT.md`
-7. `02_RESOURCE_MAP.md`
-8. `03_EVIDENCE_AND_UNKNOWNS.md`
-9. `08_ACTIVE_R1_ENTRY_PATHS.md`
-10. `09_COLD_AGENT_TAKEOVER_CHECKLIST.md` and `10_PUBLIC_SCAN_PUBLICATION_BOUNDARY.md` if present
+```text
+AI_PROJECT_MEMORY.md
+docs/PROJECT_STATE.md
+docs/handoff/JV_WEB_HANDOFF_2026-08-08.md
+docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md
+docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md
+docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md
+docs/r1/R1_F0_VEHICLE_FOUNDATION_AUDIT.md
+```
 
-Then use `docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md`, recovered scan evidence, R0 baseline and R1-F0 only as targeted references.
+The takeover brief contains the current first-slice hypothesis, but it is not a frozen roadmap. Revalidate it against current code/resources and Jozz's current feel before implementation.
 
-Do not begin a fresh conversation by broadly searching for resources already indexed or physically attached. Do not begin implementation until current code has been checked against the handoff claims.
+Do not begin a fresh conversation by broadly rediscovering resources already indexed or physically attached. Do not begin implementation until the exact current code seams relevant to the chosen task have been checked.

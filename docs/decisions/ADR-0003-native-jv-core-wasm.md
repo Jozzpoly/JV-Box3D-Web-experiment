@@ -1,8 +1,24 @@
 # ADR-0003 — Native JV Core and Box3D in one WebAssembly module
 
 Date: 2026-08-04
-Status: `ACCEPTED FOR REFOUNDATION`
+Status: `ACCEPTED LONG-TERM DIRECTION / FULL MIGRATION DEFERRED IN CURRENT FRIEND-DEMO CAMPAIGN`
 Decision owner: Jozz
+
+## Current campaign scope note — 2026-08-08
+
+The architectural decision below remains accepted: final product-physics authority should converge on native JV Core + Box3D in one WASM authority boundary rather than grow a second independent TypeScript mechanics product.
+
+Its **execution schedule has changed**.
+
+For the current JV-Web friend-demo campaign:
+
+- native JV is maintained by another agent and is READ-ONLY;
+- full native-core extraction, ABI program, native/WASM parity campaign and browser-backend replacement are deferred unless Jozz explicitly changes priority;
+- `legacy_ts_m6` remains a non-authoritative browser reference fixture and may support bounded Web-local demo/configuration semantics whose status is explicit;
+- rendering, real authored assets, camera/mobile UX, world/scan presentation, settings state and QoL may advance independently;
+- a bounded port of an already-existing selected native `b3Wheel` mechanism through a controlled Web Box3D/Emscripten/binding path is allowed and does **not** activate the full migration program.
+
+The historical "Immediate follow-up" list at the end is therefore preserved as deferred migration work, not the current sprint order. Current scheduling authority is `AGENTS.md` + `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`.
 
 ## Context
 
@@ -148,7 +164,7 @@ It remains valuable for:
 - known failure reproduction;
 - browser integration while the native spike is incomplete.
 
-It must not receive new product physics such as:
+It must not receive new authoritative product physics such as:
 
 - final drivetrain behavior;
 - anti-roll parity work;
@@ -156,7 +172,7 @@ It must not receive new product physics such as:
 - new suspension mechanisms;
 - silent fixes intended to imitate native behavior without a parity trace.
 
-A small correction may be made when needed to prevent a misleading demonstration, but such a correction does not restore product authority.
+A small correction or bounded friend-demo mechanism may be made when its non-authoritative status is explicit and it is needed for useful Web experimentation. Such work does not restore product authority or prove native parity.
 
 ## Parity gate
 
@@ -186,17 +202,19 @@ Comparison must include more than final direction and liveness. It must include 
 
 `legacy_m6_split_sphere_sidewall` remains a regression baseline only.
 
-The future Wheel Scope backend will enter JV Core through a replaceable native wheel/contact seam. It will not be developed as another TypeScript-only physics path.
+The future authoritative Wheel Scope backend will enter JV Core through a replaceable native wheel/contact seam. It will not be invented as another TypeScript-only physics path.
+
+The current friend-demo may nevertheless port an already-existing selected native `b3Wheel`/contact mechanism into a controlled Web Box3D build for practical demonstration, provided its provenance/build identity and non-parity status are explicit until a future parity program establishes more.
 
 ## Consequences
 
 ### Positive
 
-- one mechanics authority;
-- no repeated manual port of native algorithms;
+- one long-term mechanics authority;
+- no repeated manual port of native algorithms as the final product strategy;
 - units and semantics become explicit;
-- browser and desktop can share the same vehicle core;
-- Wheel Scope can feed one product path;
+- browser and desktop can ultimately share the same vehicle core;
+- Wheel Scope can feed one authoritative product path;
 - parity becomes measurable rather than rhetorical;
 - TypeScript host remains independently testable.
 
@@ -210,7 +228,7 @@ The future Wheel Scope backend will enter JV Core through a replaceable native w
 
 ## Rejected alternatives
 
-### Continue porting M6/M7 algorithms to TypeScript
+### Continue porting M6/M7 algorithms to TypeScript as final product authority
 
 Rejected because the first implemented drive path already demonstrated semantic drift despite correct values and green internal tests.
 
@@ -224,13 +242,17 @@ Rejected as the default architecture because the two modules would not naturally
 
 ### Freeze on the current TypeScript backend permanently
 
-Rejected because it would split JV and JV Web into two mechanics products and make future Wheel Scope adoption twice as expensive and less trustworthy.
+Rejected because it would split JV and JV Web into two authoritative mechanics products and make future Wheel Scope adoption twice as expensive and less trustworthy.
 
-## Immediate follow-up
+## Deferred migration follow-up — historical order, not current sprint
 
-1. Rename/document current backend as `legacy_ts_m6` without changing its mechanics.
-2. Add a unit-semantic regression exposing the current `maxDriveSpeed` mismatch.
-3. Define the smallest native core source set for a headless WASM spike.
-4. Define versioned ABI structs with explicit units.
-5. Produce one native/WASM settle-and-drive parity receipt.
-6. Only then begin backend replacement in the browser host.
+When the full migration program is explicitly reactivated:
+
+1. keep/document current backend as `legacy_ts_m6` without promoting its mechanics to product authority;
+2. retain unit-semantic regressions exposing known native/reference mismatches;
+3. define the smallest native core source set for a headless WASM spike;
+4. define versioned ABI structs with explicit units;
+5. produce native/WASM settle-and-drive parity receipts;
+6. only then begin authoritative backend replacement in the browser host.
+
+Do not execute this list mechanically during the current friend-demo unless Jozz explicitly reactivates the full migration program.

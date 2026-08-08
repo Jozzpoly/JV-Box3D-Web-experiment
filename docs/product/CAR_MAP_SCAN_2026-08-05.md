@@ -1,6 +1,16 @@
 # JV Web — samochód + mapa E2R + teksturowany skan
 
-Status: **IMPLEMENTATION CANDIDATE — EXACT LOCAL GATE AND OWNER BROWSER ACCEPTANCE PENDING**
+Status: **HISTORICAL PRE-c8e0 PRODUCT/GATE PLAN — STATUS CLAIMS BELOW ARE SUPERSEDED**
+
+> **Supersession note — 2026-08-08**
+>
+> This document is preserved because it records the original integrated car/E2R/JSPREV2 design, exact-pack validation model, budgets and ownership assumptions. Its old top-level state (`owner browser acceptance pending`, `DO NOT MERGE / NOT READY`) is no longer current authority.
+>
+> Later raw Windows evidence plus owner observation established `product/jv-web-car-map-scan@c8e0bf24748b0a790a1c0039b1be801eef266580` as the strongest preserved historical desktop baseline: exact gates PASS, scan rendering corrected, pixel smoothing OFF by default/toggleable, grid OFF by default/toggleable and vehicle collision observed working.
+>
+> Current R1 also still contains the LOCAL_FULL loader/product wiring and key c8e0 scan/view-policy code. Therefore current scan work starts from **current R1 + exact pack revalidation**, not from mechanically completing this old plan.
+>
+> Current authority: `AGENTS.md`, `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`, `docs/PROJECT_STATE.md` and `docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md`.
 
 ## Cel produktu
 
@@ -129,22 +139,24 @@ Ta sama kolejność obowiązuje przy rollbacku częściowo zbudowanego świata.
 - testy packa odrzucają 24/24, niejednoznaczny wybór, niepoprawny jawny wybór, ucięty payload i rozjazd metryk;
 - testy WebGL odrzucają cichy błąd uploadu.
 
-## Granice twierdzeń
+## Historyczne granice twierdzeń z chwili napisania dokumentu
 
-Bez wykonania exact lokalnej bramki nie można jeszcze stwierdzić, że:
+Poniższa lista była prawdziwa **przed** późniejszym c8e0 gate/owner run i jest zachowana jako historia tego etapu:
 
-- TypeScript 7, wszystkie testy i portable build przechodzą na Windows;
-- realny prywatny pack mieści się w powyższych budżetach;
-- wszystkie 25 tekstur dekoduje się i wygląda poprawnie w przeglądarce;
-- pierwszy start i pełny mesh mieszczą się w praktycznym budżecie czasu/pamięci;
-- jakość kontaktu na wewnętrznych krawędziach odpowiada natywnemu `identifyEdges=true`;
-- produkt przeszedł ocenę desktopową i telefoniczną właściciela.
+- TypeScript 7, wszystkie testy i portable build nie były jeszcze potwierdzone na exact Windows gate;
+- realny prywatny pack nie był jeszcze potwierdzony w powyższych budżetach;
+- wszystkie 25 tekstur nie miało jeszcze owner browser verdict;
+- pierwszy start i pełny mesh nie miały jeszcze bieżącego verdictu czasu/pamięci;
+- jakość kontaktu względem natywnego `identifyEdges=true` pozostawała nieudowodniona;
+- owner desktop/phone acceptance była wtedy pending.
+
+Późniejsze c8e0 evidence supersedes część tych punktów dla **historycznego c8e0 desktop run**, ale nie automatycznie dowodzi current-R1 ani real-phone scan performance.
 
 Przypięty `box3d.js` spawa wierzchołki podczas `b3CreateMesh`, lecz nie udostępnia jawnego natywnego `identifyEdges=true`. Native parity nie jest deklarowane.
 
-## Bramka końcowa
+## Historyczna bramka końcowa
 
-Operator wykonuje kolejno:
+Oryginalny operator zakładał kolejno:
 
 1. exact branch i SHA;
 2. czysty zewnętrzny worktree;
@@ -153,4 +165,4 @@ Operator wykonuje kolejno:
 5. log i JSON receipt poza repozytorium;
 6. Vite na porcie 5175.
 
-Dopiero potem właściciel sprawdza oddzielnie mapę i skan. Do czasu tej sekwencji kandydat pozostaje `DO NOT MERGE / NOT READY`.
+Ta sekwencja jest zachowana jako provenance historycznego kandydata. Nie jest automatycznym gate'em dla każdego current-R1 scan tasku. Obecnie należy najpierw odzyskać exact pack i zwalidować istniejący current-R1 LOCAL_FULL path z minimalnym odpowiednim dowodem.
