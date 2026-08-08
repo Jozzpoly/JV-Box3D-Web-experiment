@@ -1,8 +1,51 @@
 # JV Web — agent operating contract
 
-This file is the first operational authority for work in this repository. It is a guardrail, not a substitute for Git, executable evidence, recovered source records or owner validation.
+Updated: 2026-08-08
+Campaign: **friend-demo completion / R1**
+Owner: Jozz
 
-## Gate 0-R — remote identity
+This is the first operational authority for work in this repository. It is a guardrail, not a substitute for current Git, executable evidence, the handoff resource pack or owner observation.
+
+## 1. Campaign scope
+
+For this campaign:
+
+```text
+Jozzpoly/JV-Box3D-Web-experiment
+  = ACTIVE PRIVATE CORE / development laboratory
+
+Jozzpoly/JV-Box3D-Web-Public
+  = PUBLIC FRIEND-DEMO / GitHub Pages release surface
+
+Jozzpoly/Box3d_FunProject
+  = NATIVE JV / READ-ONLY SOURCE FOR THIS CAMPAIGN
+```
+
+Native JV is maintained by another agent and intentionally frozen while this JV-Web friend-demo is completed. Do not advance, reorganize or tune native JV unless Jozz explicitly changes scope. Reading exact native files is allowed when Web needs an already-existing asset, semantic contract or mechanism such as `b3Wheel`.
+
+JV-Web may temporarily move ahead of native JV in presentation, browser/mobile UX, camera, configuration, QoL and demo polish. Long-term easy native→Web transfer remains desirable, but it must not stall this campaign.
+
+## 2. Owner goal
+
+The immediate target is a browser build that increasingly feels like a real piece of Jozz's game and is enjoyable/motivating to launch, drive, tune and show friends.
+
+Desired friend-demo capabilities include, adaptively ordered by actual play/feel:
+
+- Jozz's real vehicle model;
+- substantially better racing-game chase camera;
+- desktop orbit/zoom + phone two-finger pinch zoom;
+- usable private JSPREV2 scan path and phone assessment;
+- fast location/teleport switching without unnecessary world rebuilds;
+- vehicle presets and a Web-native settings model;
+- FWD / RWD / AWD;
+- mechanically defined drivetrain/shaft locking;
+- useful QoL;
+- rebuilt Web/mobile UI;
+- Web port of the selected newer native `b3Wheel` if feasibility is sane.
+
+Social-media optimization is a later benefit, not a current constraint. Jozz's actual play/feel is a legitimate scheduling signal. Do not execute a stale roadmap mechanically.
+
+## 3. Gate 0-R — remote identity
 
 Before every connector/GitHub write, verify from current GitHub data:
 
@@ -16,7 +59,7 @@ intended operation
 
 Create only bounded fast-forward descendants of the verified tip. Stop on ref movement, unexpected scope, permission ambiguity or identity mismatch. Never force-push or rewrite history as routine recovery.
 
-## Gate 0-L — local execution identity
+## 4. Gate 0-L — local execution identity
 
 A local build/test/artifact claim requires a complete clean checkout and explicit verification of:
 
@@ -29,41 +72,21 @@ git rev-parse HEAD^{tree}
 git status --short --branch
 ```
 
-Do not use an unrelated local JV/Box3D folder as a substitute for the repository named by the task.
+Do not use an unrelated local JV/Box3D folder as a substitute for the repository named by the task. Prefer isolated/disposable workspaces when user-side Windows execution is genuinely required.
 
-## Current campaign scope
+## 5. Canonical published R0 baseline
 
-For the current JV-Web campaign:
-
-```text
-Jozzpoly/JV-Box3D-Web-experiment
-  = active private core / development laboratory
-
-Jozzpoly/JV-Box3D-Web-Public
-  = public friend-demo / release artifact surface
-
-Jozzpoly/Box3d_FunProject
-  = native JV maintained by another agent and frozen for this campaign
-```
-
-Do not advance, reorganize or tune native JV unless Jozz explicitly changes scope. Reading exact native files is allowed when JV-Web needs an existing asset, semantic contract or mechanism such as `b3Wheel`.
-
-## Canonical published R0 baseline
-
-The first public JV Web R0 is CLOSED and must be treated as an immutable rollback/reference point:
+R0 is CLOSED and must remain an immutable rollback/reference point.
 
 ```text
-private source repository:
-Jozzpoly/JV-Box3D-Web-experiment
-
-R0 source:
+private R0 source:
 5ba6cc406b8c1541e29cd1ae59ffed78a7509284
 tree 08314a0182a38bbcd106e984dde73e737a1a13e7
 
 validated public candidate ZIP SHA-256:
 f7585b8cd3233849ae9002814e2c245e51f6aeb53fbe32f41552b228f27796b2
 
-public repository:
+public repo:
 Jozzpoly/JV-Box3D-Web-Public
 
 release/r0:
@@ -78,14 +101,13 @@ https://jozzpoly.github.io/JV-Box3D-Web-Public/
 source release/r0 /(root)
 ```
 
-Full R0 closure/evidence boundaries:
-[`docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md`](docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md)
+Full closure: `docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md`.
 
-Do not rebuild, amend or silently replace R0 when beginning later work. A later release is a new exact artifact with its own provenance.
+Do not rebuild, amend or silently replace R0 when beginning later work. A later public release is a new artifact with its own provenance and rollback.
 
-## Evidence vocabulary
+## 6. Evidence vocabulary
 
-Keep these levels separate:
+Keep levels separate:
 
 ```text
 SOURCE-PRESENT
@@ -96,84 +118,79 @@ OWNER OBSERVED / OWNER ACCEPTED
 PUBLISHED
 ```
 
-A lower level never silently implies a higher one.
+A lower level never silently implies a higher one. Historical exact evidence remains valuable even when it is not proof of current R1.
 
-Historical exact evidence may remain valuable even when it does not describe current R1. Do not erase a proven older result merely because the active branch has moved.
-
-## Active R1 development model
-
-The active private development lane is:
+When sources disagree, prefer:
 
 ```text
-development/jv-web-r1
+1 current Git/current code/live runtime
+2 raw exact execution evidence + direct owner observation
+3 exact recovered source snapshots/resource pack
+4 historical docs/plans
+5 current interpretation/provisional scheduling
 ```
 
-Always fetch its current exact tip.
+## 7. Private scan boundary
 
-Current campaign purpose: transform the proven R0 foundation into a motivating, increasingly game-like friend-demo while preserving a usable desktop/mobile build.
+The private scan is an active capability, not forbidden R1 work.
 
-Current owner-directed capability goals include, adaptively ordered:
+Current R1 still contains the local/full scan wiring: `index.html` → `product-main.ts` → `loadLocalFullProductWorld()` → `loadLocalJsprev2Scan()`, with Vite dev serving selected private scan bytes through `JOZZ_SCAN_PREVIEW_PACK`.
 
-- real Jozz vehicle model;
-- materially better chase camera + mobile pinch zoom;
-- recovery of the proven private JSPREV2 desktop scan path and phone assessment;
-- faster world-location teleportation;
-- vehicle presets/settings and FWD/RWD/AWD;
-- correctly defined drivetrain/shaft locking;
-- selected QoL;
-- rebuilt Web/mobile UI;
-- Web port of newer native `b3Wheel` if the technical path is sane.
+Therefore do **not** describe scan work as a wholesale old-branch recovery. First locate the exact pack and revalidate the current LOCAL_FULL path; only reconcile what is actually missing.
 
-Visible presentation/UX progress is a legitimate product goal in this campaign, not only a validation aid. Social-media optimization is not yet a constraint.
+Public R0 is deliberately scan-free. The current dev Vite scan server is not a GitHub Pages publication solution. Future public scan inclusion requires an explicit packaging/hosting/size/privacy decision.
 
-Jozz's live play/feel may reorder work. Do not execute a stale roadmap mechanically.
+## 8. Validation model for R1
 
-## Private scan vs public release
+Do not recreate R0 release ceremony for ordinary private development.
 
-The private scan is an active development capability, not forbidden R1 work.
+### Tier 1 — ordinary private slice
 
-However:
+Use exact branch identity, focused tests/checks for the changed subsystem and the smallest relevant browser smoke. No user action by default.
 
-- public R0 intentionally contains no JSPREV2 bytes or requests;
-- private scan bytes must never leak into a public artifact accidentally;
-- future public scan publication requires an explicit asset/hosting/rights/size decision;
-- private scan recovery and public scan publication are separate questions.
+### Tier 2 — owner feel/visual checkpoint
 
-The strongest preserved historical desktop scan baseline is `product/jv-web-car-map-scan@c8e0bf24748...`; exact evidence details are indexed in the handoff docs.
+Use when the actual question is visual quality, camera feel, driving feel, mobile interaction or product usefulness. Give Jozz a stable exact candidate and ask only for the observation that automation cannot provide.
 
-## R0 known limitations that are NOT regressions
+### Tier 3 — public release candidate
 
-- public R0 deliberately has no JSPREV2 scan;
-- public R0 uses synthetic/proof vehicle visuals rather than Jozz's final model;
-- `legacy_ts_m6` remains a reference browser fixture, not proven native JV parity;
-- build-manifest publication fields describe build-time dormant state and were not rewritten after validation;
-- harmless host-level `/favicon.ico` 404;
-- broader hardening/default-branch normalization/performance work deferred.
+Use full reproducibility/artifact/provenance/rollback discipline and live Pages smoke. Public promotion should correspond to meaningful owner-visible value, not every internal commit.
 
-## Stop conditions
+A failing harness/operator is not automatically a failing product. Classify failures before asking for reruns.
+
+## 9. Stop conditions
 
 Stop and investigate when:
 
 - work would modify published `release/r0` bytes in place;
 - private scan bytes accidentally enter a public artifact;
-- a new release artifact is not reproducible;
-- desktop/mobile usability regresses without explicit scope and owner awareness;
 - native parity/product authority is claimed without evidence;
+- desktop/mobile usability regresses without explicit scope and owner awareness;
 - a release cannot be tied to exact source/artifact/rollback;
 - a gate failure is being confused with a product failure;
-- the process is expanding into release/foundation machinery without proportional product value.
+- a historical branch is being wholesale-merged because it contains more features;
+- a plan is being followed despite new evidence or owner feel showing a better order;
+- validation/release/foundation machinery is expanding without proportional product value;
+- Jozz is being asked to do technical work the agent can perform itself.
 
-## Fresh-agent required reading order
+## 10. Fresh-agent bootstrap order
+
+First resolve current private/public refs. Then read:
 
 1. `AGENTS.md`
 2. `AI_PROJECT_MEMORY.md`
 3. `docs/PROJECT_STATE.md`
 4. `docs/handoff/JV_WEB_HANDOFF_2026-08-08.md`
-5. `docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md`
-6. `docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md`
-7. `docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md`
-8. `docs/r1/R1_F0_VEHICLE_FOUNDATION_AUDIT.md`
-9. `docs/BRANCH_ROLES.md`
-10. only exact source/tests relevant to the first revalidated R1 question
 
-Do not begin a fresh conversation by broadly searching for resources already indexed in the handoff.
+If the handoff resource pack is attached in the conversation, read next:
+
+5. `00_START_HERE.md`
+6. `01_CURRENT_STATE_AND_OWNER_INTENT.md`
+7. `02_RESOURCE_MAP.md`
+8. `03_EVIDENCE_AND_UNKNOWNS.md`
+9. `08_ACTIVE_R1_ENTRY_PATHS.md`
+10. `09_COLD_AGENT_TAKEOVER_CHECKLIST.md` and `10_PUBLIC_SCAN_PUBLICATION_BOUNDARY.md` if present
+
+Then use `docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md`, recovered scan evidence, R0 baseline and R1-F0 only as targeted references.
+
+Do not begin a fresh conversation by broadly searching for resources already indexed or physically attached. Do not begin implementation until current code has been checked against the handoff claims.

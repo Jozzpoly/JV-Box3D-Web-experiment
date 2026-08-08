@@ -1,31 +1,26 @@
 # R1-F0 — vehicle foundation audit
 
-Updated: 2026-08-07
-Status: `COMPLETE / ARCHITECTURE DECISION RECORDED`
-Branch basis: `development/jv-web-r1@6e132a61f1ae0e81b15d954b32ed92ad1f60ec4e`
+Updated: 2026-08-08
+Status: **TECHNICAL FINDINGS PRESERVED / ORIGINAL SCHEDULING SUPERSEDED**
+Original audit basis: `development/jv-web-r1@6e132a61f1ae0e81b15d954b32ed92ad1f60ec4e`
 
-## Purpose
+## Supersession note
 
-Determine the smallest credible path from the published R0 synthetic/reference vehicle to Jozz's intended chassis + four real wheel visuals without destabilizing the proven physics, controls, world or release foundation.
+This document preserves the useful technical findings of the 2026-08-07 vehicle-foundation audit. It is **not the current roadmap**.
 
-This audit is architecture-only. It deliberately makes no runtime/code claim beyond the exact source inspected.
+Since the original audit:
 
-## 1. Baseline that must remain stable
+- R0 was published and owner-accepted;
+- exact authored `Nadwozie.gltf` and `Offroad_Big_Wheels.gltf` were recovered with provenance and historical calibration evidence;
+- the campaign scope was clarified: JV-Web is the active friend-demo core while native JV is read-only;
+- actual owner-visible progress and play/feel were made explicit scheduling inputs;
+- scan resources and `b3Wheel` became parallel opportunity/risk tracks rather than deferred non-goals.
 
-Published R0 is an immutable comparison/rollback baseline:
+Therefore the old rigid sequence `tiny GLB → owner geometry → textures` should be read only as one technically safe decomposition. Current scheduling authority is `docs/PROJECT_STATE.md` and the controlled handoff.
 
-```text
-source:       5ba6cc406b8c1541e29cd1ae59ffed78a7509284
-public:       c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
-public tree:  f1c5c9a971208d89da05143f10913891a58b3b70
-Pages:        https://jozzpoly.github.io/JV-Box3D-Web-Public/
-```
+## 1. Durable technical finding — current live renderer is procedural
 
-R1 visual work must not require changing R0 physics/input behavior merely to display a different vehicle mesh.
-
-## 2. Current live render path
-
-The live R0/R1-base runtime path is:
+Current live path remains:
 
 ```text
 src/main.ts
@@ -34,160 +29,134 @@ src/main.ts
   → M6WorldRenderer
 ```
 
-`M6DebugRenderer` is only an alias of `M6ProductRenderer`.
+`M6DebugRenderer` is an alias of `M6ProductRenderer`.
 
-`M6ProductRenderer` adds product-world subscription but no vehicle-asset renderer.
+`M6ProductRenderer` adds product-world subscription but no authored-vehicle draw path.
 
-`M6WorldRenderer` draws the vehicle procedurally:
+`M6WorldRenderer` still draws:
 
-- chassis = generated box mesh;
-- four wheels = generated cylinder meshes;
-- front marker = generated box;
-- rack/link observer geometry = generated lines;
-- transforms come from `M6TraceFrame`.
+- chassis as a generated box;
+- four wheels as generated cylinders;
+- diagnostic front/rack/link primitives;
+- world/terrain separately.
 
-Therefore the visible vehicle in R0 is not a GLB and does not exercise the dormant vehicle-visual pipeline.
+So the public R0 vehicle is not a GLB and does not exercise the authored-vehicle pipeline.
 
-## 3. Physics → visual boundary is already correctly designed
+## 2. Durable technical finding — physics→visual boundary is already useful
 
-This is the strongest R1-F0 finding.
-
-`M6TraceFrame` already contains:
+`M6TraceFrame` contains:
 
 ```text
 visualFrame: VehicleVisualFrameV1
 ```
 
-`M6VehicleController.captureTrace()` builds that frame every physics step through `buildM6VisualFrameV1()`.
+`M6VehicleController.captureTrace()` builds it through `buildM6VisualFrameV1()`.
 
-The frame covers the complete M6 visual topology:
-
-### Parts — 18
+Current proof topology contains 18 rigid part transforms plus 8 segment channels:
 
 ```text
-m6.chassis
-m6.rack
+parts:
+  chassis, rack
+  wheel/knuckle/upper-arm/lower-arm × 4
 
-for each fl/fr/rl/rr:
-  wheel
-  knuckle
-  upper-arm
-  lower-arm
+segments:
+  coilover × 4
+  steering-link × 4
 ```
 
-### Segments — 8
+This is valuable because a renderer does not need transient Box3D body/joint handles.
+
+Preferred boundary:
 
 ```text
-for each fl/fr/rl/rr:
-  coilover
-  steering-link
-```
-
-Total transform channels: 26.
-
-This means a future GLB renderer does NOT need Box3D body/joint handles. Physics remains authoritative and the renderer can remain read-only.
-
-### Architecture invariant
-
-```text
-Box3D/runtime
-  → VehicleVisualFrameV1
-  → visual bindings
+physics/runtime
+  → immutable semantic visual frame
+  → bindings/transforms
   → renderer
 ```
 
-Do not bypass this by exposing Box3D internals to rendering.
+Do not bypass this casually by exposing Box3D internals to rendering.
 
-## 4. Existing dormant GLB foundation
+`M6_FULL_RIG_V1` is a useful current proof topology. It is **not declared the permanent future native↔Web ABI**.
 
-The current R1 base already contains substantial reusable infrastructure.
+## 3. Durable technical finding — substantial dormant GLB stack already exists
 
-### Package contract
-
-`VehicleVisualPackageV1` provides:
-
-- stable package ID/display name;
-- M6 vehicle family;
-- `M6_FULL_RIG_V1` profile;
-- meter units;
-- fixed +X forward / +Y up / +Z right axes;
-- GLB URL + SHA-256 + byte length;
-- binding IDs and node names;
-- binding sources:
-  - `PART`;
-  - `SEGMENT_STRETCH`;
-  - `SEGMENT_ENDPOINT_AIM`;
-- per-binding local transform.
-
-The package validator requires complete coverage of all 18 parts + 8 segments.
-
-### Runtime loader
-
-`loadVehicleVisualRuntimeV1()` already provides:
+Current R1 includes reusable infrastructure for:
 
 ```text
-manifest fetch
-→ URL validation
-→ GLB fetch
-→ asset/hash validation
+VehicleVisualPackageV1
+→ package-relative GLB URL
+→ exact byte/hash gate
 → rigid GLB decode
-→ CPU ownership seal
-→ geometry budget validation
+→ CPU ownership/budget validation
+→ GPU geometry-buffer ownership
+→ binding-to-world transform resolution
 ```
 
-### GPU upload
+`createRigidMeshGpuAssetV1()` uploads POSITION, optional NORMAL/TEXCOORD_0 and index buffers.
 
-`createRigidMeshGpuAssetV1()` already uploads:
+`resolveVehicleVisualBindingsV1()` maps `VehicleVisualFrameV1` + bindings into world matrices for fixed parts and segment bindings.
 
-- POSITION;
-- optional NORMAL;
-- optional TEXCOORD_0;
-- Uint16 index buffers;
-- material index metadata.
-
-It owns deterministic GPU-buffer disposal.
-
-### Pose resolver
-
-`resolveVehicleVisualBindingsV1()` already maps `VehicleVisualFrameV1` + package bindings to `worldFromNode` matrices and supports fixed parts, stretched segments and endpoint-aimed segments.
-
-## 5. What is actually missing
-
-The missing core is considerably smaller than a new vehicle-rendering system.
-
-There is currently no live renderer that connects:
+The missing product bridge is primarily:
 
 ```text
 VehicleVisualRenderResourceV1
 + trace.visualFrame
-+ resolveVehicleVisualBindingsV1()
-+ decoded node→mesh mapping
-→ WebGL draw calls
++ draw-plan/bindings
++ decoded node/mesh mapping
+→ live WebGL draw calls
 ```
 
-`RigidMeshGpuAssetV1` is an upload/ownership resource, not a draw engine.
+plus production texture/material support for the real authored assets.
 
-The live `M6WorldRenderer` still draws procedural primitives and never creates a `VehicleVisualRenderResourceV1`.
+## 4. Tiny fixture — seam diagnostic, not product milestone
 
-## 6. Tiny full-rig fixture is the correct first integration target
-
-The repository already generates:
+The repository generates a deterministic full-rig fixture:
 
 ```text
 public/vehicles/tiny/vehicle.visual.json
 public/vehicles/tiny/models/m6-rig-proof.glb
 ```
 
-The fixture uses the same complete `M6_FULL_RIG_V1` contract and creates nodes/bindings for all current M6 part/segment IDs.
+It remains useful when the implementation question is specifically:
 
-This is the ideal R1-F1 integration target because it separates two questions:
+> Can the dormant GLB/binding/GPU stack drive the live renderer without mixing in owner-asset import problems?
 
-1. **Can the existing GLB pipeline drive the live renderer correctly?**
-2. **Can Jozz's authored assets be imported/rendered correctly?**
+However, after the real source assets were recovered, the tiny fixture must not become a multi-stage campaign of its own. Use it only as much as needed to isolate a renderer seam. The owner-visible target is the real chassis + real wheels in the running product.
 
-Do not combine those questions in the first implementation slice.
+## 5. Recovered owner assets strengthen the next visual work
 
-## 7. Frozen owner-vehicle candidate — salvage assessment
+Exact source assets now exist and are indexed in the handoff/resource pack.
+
+Chassis:
+
+```text
+assets/source/Nadwozie.gltf
+SHA-256 45055fee11458290d107e8442d1da0d032ed9a094bea98a069d99e1a87954ca8
+```
+
+Historical measured start point:
+
+```text
+model 3.28m × 2.73m × 1.23m
+yaw -90°
+chassis-local position (0, -0.60, 0)
+vehicle wheelbase 2.50m
+track 2.10m
+```
+
+Wheel:
+
+```text
+assets/source/Offroad_Big_Wheels.gltf
+SHA-256 1fe1d08dd068157d699dc5232054ee61f6aa5a14af15480be0c77aeb55b5b617
+```
+
+It contains semantic mount/spin/radius/width markers.
+
+A fresh implementation should start from these known assets/evidence rather than broad discovery or eyeballed calibration.
+
+## 6. Frozen owner-vehicle candidate — salvage assessment remains valid
 
 Frozen source:
 
@@ -196,160 +165,71 @@ candidate/jv-web-owner-vehicle-visual-r1
 796b050b4b90a2383803cab13f9dcd3aeca5f97f
 ```
 
-Its final commit added preservation/generation of pixel textures and alpha masks.
+Useful salvage includes:
 
-### Valuable ideas/code to consider salvaging later
-
-The candidate contains owner-vehicle tooling that is absent from current R1:
-
-- Blockbench glTF inspection/conversion;
+- strict Blockbench glTF inspection/conversion;
 - chassis calibration;
 - wheel marker calibration;
-- deterministic owner M6 GLB/package generation;
-- source-authority/hash receipts;
-- real-channel concept:
-  - `m6.chassis`;
-  - four wheel channels.
+- deterministic owner package generation;
+- source/hash receipts;
+- preserving real chassis + four wheel channels while retaining diagnostic placeholders elsewhere;
+- pixel texture/alpha-mask generation ideas.
 
-The owner generator deliberately kept the full 26-channel contract while using real geometry for only 5 channels and diagnostic geometry for the remaining 21. This is architecturally useful and avoids weakening the runtime contract.
+Do not resume/merge the branch wholesale. At its final tip the live renderer was still procedural and the texture-producing tooling was ahead of runtime decode/upload/draw support.
 
-### Why the candidate must NOT be resumed wholesale
+## 7. Textures/materials remain a separate technical problem
 
-At its final tip:
+Current R1 GLB policy/runtime is intentionally limited compared with the authored Blockbench files. Real pixel-art presentation may require support for:
 
-- `M6ProductRenderer` is byte-identical to the current procedural renderer wrapper and does not render owner GLB assets;
-- the runtime GLB decoder still exposes material `baseColorFactor` + `doubleSided`, not embedded texture/image/sampler/alpha-mask resources;
-- GPU asset code uploads UV buffers but does not allocate WebGL textures or implement texture sampling;
-- therefore the candidate's generated textured GLB data was ahead of the live runtime's decode/upload/draw capability.
+- embedded images/textures;
+- `baseColorTexture`;
+- sampler/texture GPU ownership;
+- NEAREST / CLAMP_TO_EDGE;
+- alpha mode/cutoff for MASK-like materials.
 
-The candidate is useful source material, not a completed visual pipeline.
+Do not hide this problem by flattening the final vehicle into an unrepresentative visual. But also do not require the full texture subsystem before proving a renderer seam if a smaller diagnostic step answers the immediate question.
 
-## 8. Architecture decision
+## 8. Scheduling guidance after supersession
 
-### Keep `M6_FULL_RIG_V1`
+Do not treat this as an ordered roadmap.
 
-Do NOT introduce a new reduced `CHASSIS_PLUS_4_WHEELS` runtime contract now.
-
-Reasons:
-
-- complete visual-frame data already exists every physics step;
-- full topology is stable and validated;
-- tiny fixture already exercises it;
-- diagnostic placeholders allow incremental replacement of visual channels;
-- weakening the contract creates another migration layer without solving the actual missing draw integration.
-
-### Keep physics/render isolation
-
-`trace.visualFrame` remains the sole pose authority for GLB visualization.
-
-### Do not add texture support in the first renderer integration
-
-R1-F1 should use the already-supported material `baseColorFactor` only. Textures/alpha masks are a later bounded problem.
-
-## 9. Planned implementation sequence
-
-### R1-F1 — live GLB full-rig proof
-
-Goal: prove the dormant visual stack end-to-end in the real live renderer using the deterministic tiny fixture.
-
-Minimum scope:
-
-1. create/load `VehicleVisualRenderResourceV1` from the tiny package;
-2. resolve package bindings against `trace.visualFrame` every render frame;
-3. map bound nodes to decoded mesh indices;
-4. draw GPU primitives using package/world matrices;
-5. use decoded `baseColorFactor` for simple untextured material color;
-6. keep terrain/world rendering unchanged;
-7. provide an explicit debug/procedural fallback or comparison mode rather than silently hiding GLB failures;
-8. validate destroy/rebuild generation changes, camera and desktop/mobile controls remain unchanged.
-
-No owner models and no texture implementation belong to R1-F1.
-
-### R1-F2 — owner chassis + four wheels, untextured first
-
-After R1-F1 is runtime-proven:
-
-1. selectively port the smallest trustworthy Blockbench inspection/calibration/generation pieces from the frozen candidate;
-2. revalidate source authority rather than inheriting old claims;
-3. generate a full-rig package with real chassis + four wheels and diagnostic placeholders for the other 21 channels;
-4. render using the already-proven R1-F1 path;
-5. owner visually validates scale, orientation, wheel center/radius/width and motion.
-
-Do not require pixel textures to prove geometry/pose integration.
-
-### R1-F3 — pixel textures/materials
-
-Only after owner geometry is proven:
-
-- extend GLB decoder to preserve images/textures/samplers/baseColorTexture/alpha mode/cutoff;
-- add owned WebGL texture resources;
-- implement NEAREST + CLAMP_TO_EDGE policy;
-- support OPAQUE/MASK rendering;
-- prove deterministic build/runtime behavior.
-
-Salvage candidate logic selectively where it still satisfies the current runtime contract.
-
-### Later
-
-- replace diagnostic remaining components with authored components when useful;
-- refine UI/presentation;
-- decide which diagnostics remain development-only;
-- create a new public release only after a meaningful user-facing slice is accepted.
-
-## 10. Explicit non-goals for immediate R1 work
-
-Do not combine R1-F1 with:
-
-- native-JV parity work;
-- physics refactor;
-- control refactor;
-- public scan/JSPREV2;
-- GitHub Pages/release infrastructure changes;
-- texture/material expansion;
-- full UI redesign;
-- wholesale candidate merge.
-
-## 11. Success criterion for R1-F1
-
-The first R1 implementation slice is successful when the live browser visibly renders the deterministic GLB full rig from the same `trace.visualFrame` that drives the current procedural reference, while:
+For a car-focused slice, a plausible decomposition is:
 
 ```text
-physics behavior unchanged
-input behavior unchanged
-world/terrain unchanged
-rebuild generation still works
-desktop/mobile still usable
-GLB resource lifecycle clean
-no fallback disguised as PASS
+inspect current live draw seam
+→ use tiny fixture only if needed to isolate it
+→ integrate exact Nadwozie + four wheel assets
+→ correct pose/scale from evidence + owner observation
+→ implement only the material/texture subset actually needed
+→ evolve chase camera close to this owner-visible work
 ```
 
-Only then should Jozz's authored chassis/wheel data become the next variable.
+But current owner feel, scan readiness or a blocking `b3Wheel` discovery may legitimately reorder the campaign.
 
-## 12. Final R1-F0 verdict
+## 9. Invariants to keep
 
-The project does not need a new vehicle architecture from scratch.
+- public R0 remains a comparison/rollback baseline;
+- vehicle visuals should consume read-only semantic state rather than Box3D handles;
+- real authored model data must not silently become physics authority;
+- historical branches are salvage sources, not authorities;
+- tiny fixture is a diagnostic tool, not the definition of progress;
+- owner visual/feel acceptance is required when the question is visual/experience quality;
+- ordinary private work should use focused validation rather than R0 release ceremony.
 
-It already has:
+## 10. Current verdict
+
+The original core diagnosis still stands:
 
 ```text
-physics pose authority         PRESENT
-full visual frame              PRESENT
-full-rig binding contract      PRESENT
-GLB validation/decoder         PRESENT
-GPU geometry upload            PRESENT
-binding transform resolver     PRESENT
-deterministic full-rig fixture PRESENT
-live GLB draw integration      MISSING
-owner import tooling           SALVAGE-ONLY / NOT ON R1
-runtime pixel textures         MISSING
+physics pose authority          PRESENT
+semantic visual frame           PRESENT
+GLB validation/decoder          PRESENT
+GPU geometry upload             PRESENT
+binding transform resolver      PRESENT
+live authored GLB draw bridge   MISSING
+production pixel materials      MISSING
+owner source assets             NOW RECOVERED
+owner import/calibration tools  SALVAGE-AVAILABLE
 ```
 
-The shortest safe path to Jozz's real vehicle is therefore:
-
-```text
-prove live GLB rendering first
-→ introduce real chassis + 4 wheels second
-→ add pixel textures third
-```
-
-This becomes the R1 implementation foundation.
+What no longer stands is the claim that the project must mechanically execute `R1-F1`, then `R1-F2`, then `R1-F3`. The current handoff deliberately keeps scheduling adaptive.
