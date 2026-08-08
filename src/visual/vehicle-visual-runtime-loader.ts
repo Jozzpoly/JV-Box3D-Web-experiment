@@ -3,6 +3,10 @@ import {
   decodeGlbRigidCpuAssetV1,
   type GlbRigidCpuAssetV1,
 } from "./glb-rigid-mesh-decoder.js";
+import {
+  decodeGlbRigidTextureAssetV1,
+  type GlbRigidTextureAssetV1,
+} from "./glb-rigid-texture-decoder.js";
 import { sealGlbRigidCpuAssetV1 } from "./rigid-cpu-asset-seal.js";
 import {
   validateVehicleVisualAssetV1,
@@ -42,6 +46,7 @@ export interface LoadedVehicleVisualRuntimeV1 {
   readonly ownershipReceipt: VehicleVisualCpuOwnershipReceiptV1;
   readonly budgetReceipt: VehicleVisualBudgetReceiptV1;
   readonly cpuAsset: GlbRigidCpuAssetV1;
+  readonly textureAsset: GlbRigidTextureAssetV1;
 }
 
 function absoluteHttpUrl(value: string, label: string): URL {
@@ -114,6 +119,17 @@ export async function loadVehicleVisualRuntimeV1(
       visualPackage.bindings.map((binding) => binding.nodeName),
     ),
   );
+  const textureAsset = decodeGlbRigidTextureAssetV1(bytes);
+  if (
+    textureAsset.compressedImageBytes !==
+      assetReceipt.texturePolicy.compressedImageBytes ||
+    textureAsset.decodedTextureBytes !==
+      assetReceipt.texturePolicy.decodedTextureBytes
+  ) {
+    throw new Error(
+      "Vehicle visual texture decode differs from its validated policy receipt.",
+    );
+  }
   const ownershipReceipt = assertVehicleVisualCpuOwnershipV1(
     visualPackage,
     cpuAsset,
@@ -128,5 +144,6 @@ export async function loadVehicleVisualRuntimeV1(
     ownershipReceipt,
     budgetReceipt,
     cpuAsset,
+    textureAsset,
   });
 }

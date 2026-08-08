@@ -46,6 +46,13 @@ function unitNumber(value: unknown, label: string): number {
   return value;
 }
 
+function nonNegativeInteger(value: unknown, label: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    reject(`${label} must be a non-negative integer`);
+  }
+  return value;
+}
+
 function decodeRoot(bytes: Uint8Array): JsonRecord {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const jsonLength = view.getUint32(12, true);
@@ -80,7 +87,13 @@ export function assertGlbMaterialPolicyV1(bytes: Uint8Array): void {
       const material = object(value, label);
       exactKnownKeys(
         material,
-        ["name", "pbrMetallicRoughness", "doubleSided"],
+        [
+          "name",
+          "pbrMetallicRoughness",
+          "doubleSided",
+          "alphaMode",
+          "alphaCutoff",
+        ],
         label,
       );
       if (
@@ -95,7 +108,23 @@ export function assertGlbMaterialPolicyV1(bytes: Uint8Array): void {
       ) {
         reject(`${label}.doubleSided must be boolean`);
       }
+
+      const alphaMode = material["alphaMode"] ?? "OPAQUE";
+      if (alphaMode !== "OPAQUE" && alphaMode !== "MASK") {
+        reject(`${label}.alphaMode must be OPAQUE or MASK`);
+      }
+      if (alphaMode === "MASK") {
+        if (material["alphaCutoff"] !== 0.05) {
+          reject(`${label}.alphaCutoff must be exactly 0.05 for MASK`);
+        }
+      } else if (material["alphaCutoff"] !== undefined) {
+        reject(`${label}.alphaCutoff is only supported with MASK`);
+      }
+
       if (material["pbrMetallicRoughness"] === undefined) {
+        if (alphaMode === "MASK") {
+          reject(`${label}.alphaMode MASK requires pbrMetallicRoughness`);
+        }
         return;
       }
       const pbr = object(
@@ -104,7 +133,12 @@ export function assertGlbMaterialPolicyV1(bytes: Uint8Array): void {
       );
       exactKnownKeys(
         pbr,
-        ["baseColorFactor"],
+        [
+          "baseColorFactor",
+          "baseColorTexture",
+          "metallicFactor",
+          "roughnessFactor",
+        ],
         `${label}.pbrMetallicRoughness`,
       );
       if (pbr["baseColorFactor"] !== undefined) {
@@ -121,6 +155,39 @@ export function assertGlbMaterialPolicyV1(bytes: Uint8Array): void {
             `${label}.pbrMetallicRoughness.baseColorFactor[${component}]`,
           ),
         );
+      }
+      const usesOwnerPixelSubset =
+        alphaMode === "MASK" ||
+        pbr["baseColorTexture"] !== undefined ||
+        pbr["metallicFactor"] !== undefined ||
+        pbr["roughnessFactor"] !== undefined;
+      if (usesOwnerPixelSubset && pbr["metallicFactor"] !== 0) {
+        reject(
+          `${label}.pbrMetallicRoughness.metallicFactor must be exactly 0`,
+        );
+      }
+      if (usesOwnerPixelSubset && pbr["roughnessFactor"] !== 1) {
+        reject(
+          `${label}.pbrMetallicRoughness.roughnessFactor must be exactly 1`,
+        );
+      }
+      if (pbr["baseColorTexture"] !== undefined) {
+        const texture = object(
+          pbr["baseColorTexture"],
+          `${label}.pbrMetallicRoughness.baseColorTexture`,
+        );
+        exactKnownKeys(
+          texture,
+          ["index", "texCoord"],
+          `${label}.pbrMetallicRoughness.baseColorTexture`,
+        );
+        nonNegativeInteger(
+          texture["index"],
+          `${label}.pbrMetallicRoughness.baseColorTexture.index`,
+        );
+        if (texture["texCoord"] !== undefined && texture["texCoord"] !== 0) {
+          reject(`${label}.pbrMetallicRoughness.baseColorTexture.texCoord must be 0`);
+        }
       }
     },
   );

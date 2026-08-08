@@ -7,6 +7,7 @@ import {
   buildPortableFileRecords,
   PORTABLE_MANIFEST_NAME,
 } from "./portable-build-lib.mjs";
+import { selectRuntimeAssetsForPayload } from "./runtime-asset-contract.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const dist = resolve(root, "dist");
@@ -44,6 +45,9 @@ const sourceCommitDate = git("show", "-s", "--format=%cI", "HEAD");
 const files = await buildPortableFileRecords(dist, {
   exclude: [PORTABLE_MANIFEST_NAME],
 });
+const runtimeAssets = selectRuntimeAssetsForPayload(
+  new Set(files.map((record) => record.path)),
+);
 
 const manifest = {
   schemaVersion: 1,
@@ -68,12 +72,7 @@ const manifest = {
     productPhysicsAuthority: false,
     nativeParity: "NOT_PROVEN",
   },
-  runtimeAssets: [
-    "receipts/jv_m6_factory_receipt.json",
-    "scenes/synthetic-flat-lab.scene.json",
-    "vehicles/tiny/vehicle.visual.json",
-    "vehicles/tiny/models/m6-rig-proof.glb",
-  ],
+  runtimeAssets,
   complianceFiles,
   publication: {
     mode: "DORMANT",
@@ -92,5 +91,5 @@ await writeFile(
 );
 
 console.log(
-  `Portable build manifest written: ${files.length} payload file(s), source ${sourceCommit.slice(0, 12)}.`,
+  `Portable build manifest written: ${files.length} payload file(s), ${runtimeAssets.length} runtime asset(s), source ${sourceCommit.slice(0, 12)}.`,
 );

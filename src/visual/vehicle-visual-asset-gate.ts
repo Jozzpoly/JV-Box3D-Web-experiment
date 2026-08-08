@@ -5,6 +5,10 @@ import {
 import { inspectGlbV2, type GlbInspectionV1 } from "./glb-container.js";
 import { assertGlbMaterialPolicyV1 } from "./glb-material-policy-v1.js";
 import {
+  assertGlbRigidTexturePolicyV1,
+  type GlbRigidTexturePolicyReceiptV1,
+} from "./glb-rigid-texture-decoder.js";
+import {
   assertGlbRuntimePolicyV1,
   type GlbRuntimePolicyReceiptV1,
 } from "./glb-runtime-policy-v1.js";
@@ -18,6 +22,7 @@ export interface VehicleVisualAssetReceiptV1 {
   readonly sha256: string;
   readonly glb: GlbInspectionV1;
   readonly runtimePolicy: GlbRuntimePolicyReceiptV1;
+  readonly texturePolicy: GlbRigidTexturePolicyReceiptV1;
   readonly boundNodeCount: number;
 }
 
@@ -64,11 +69,6 @@ export async function validateVehicleVisualAssetV1(
   if (glb.externalUris.length > 0) {
     reject(`external GLB resources are forbidden: ${glb.externalUris.join(", ")}`);
   }
-  if (glb.imageCount > 0 || glb.textureCount > 0) {
-    reject(
-      "images and textures are outside V1 until decode, GPU ownership and mobile-memory budgets are implemented",
-    );
-  }
   if (glb.animationCount > 0) {
     reject("animations are outside the rigid-part V1 contract");
   }
@@ -100,6 +100,13 @@ export async function validateVehicleVisualAssetV1(
 
   const runtimePolicy = assertGlbRuntimePolicyV1(bytes, boundNodeNames);
   assertGlbMaterialPolicyV1(bytes);
+  const texturePolicy = assertGlbRigidTexturePolicyV1(bytes);
+  if (
+    texturePolicy.imageCount !== glb.imageCount ||
+    texturePolicy.textureCount !== glb.textureCount
+  ) {
+    reject("texture policy counts differ from the GLB container inspection");
+  }
 
   return Object.freeze({
     packageId: visual.id,
@@ -108,6 +115,7 @@ export async function validateVehicleVisualAssetV1(
     sha256: digest,
     glb,
     runtimePolicy,
+    texturePolicy,
     boundNodeCount: visual.bindings.length,
   });
 }
