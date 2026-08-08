@@ -1,8 +1,10 @@
 # JV Web — resource index for controlled handoff
 
 Updated: 2026-08-08
-Status: **DRAFT V3 RESOURCE MAP**
+Status: **DRAFT V4 DEEP RESOURCE MAP / NOT COLD-START READING**
 Purpose: exact retrieval/navigation; do not use as a roadmap.
+
+Fresh-agent minimum authority is current refs + `AGENTS.md` + `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`. Use this index only when a specific task needs exact historical/current resources.
 
 ## 1. Current project anchors
 
@@ -10,7 +12,7 @@ Purpose: exact retrieval/navigation; do not use as a roadmap.
 private active repo:
 Jozzpoly/JV-Box3D-Web-experiment
 branch development/jv-web-r1
-(resolve current tip before use)
+(resolve current tip/tree before use)
 
 public repo:
 Jozzpoly/JV-Box3D-Web-Public
@@ -24,23 +26,51 @@ Jozzpoly/Box3d_FunProject
 READ-ONLY in this campaign
 ```
 
-## 2. Handoff authority docs
+Embedded active-private SHAs in any handoff package are provenance only. Refetch before writes.
 
-Read current versions, not historical copies:
+## 2. Document authority map
+
+### Minimum cold-start authority
 
 ```text
 AGENTS.md
-AI_PROJECT_MEMORY.md
-docs/PROJECT_STATE.md
-docs/handoff/JV_WEB_HANDOFF_2026-08-08.md
-docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md
-docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md
-docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md
+docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md
 ```
 
-`docs/r1/R1_F0_VEHICLE_FOUNDATION_AUDIT.md` is a technical reference whose old scheduling has been explicitly superseded.
+If the handoff resource pack is attached, initially add only:
 
-`docs/NATIVE_PORT_NOTES.md` is long-term reference; full native WASM work is deferred.
+```text
+00_START_HERE.md
+02_RESOURCE_MAP.md
+09_COLD_AGENT_TAKEOVER_CHECKLIST.md
+```
+
+### Deeper current references — on demand
+
+```text
+AI_PROJECT_MEMORY.md
+docs/PROJECT_STATE.md
+docs/ARCHITECTURE.md
+docs/DEVELOPMENT.md
+docs/handoff/JV_WEB_HANDOFF_2026-08-08.md
+docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md
+```
+
+### Exact historical/evidence references — targeted only
+
+```text
+docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md
+docs/repair/R0_PUBLISHED_BASELINE_2026-08-07.md
+docs/r1/R1_F0_VEHICLE_FOUNDATION_AUDIT.md
+docs/decisions/ADR-0003-native-jv-core-wasm.md
+docs/product/CAR_MAP_SCAN_2026-08-05.md
+```
+
+`R1_F0` preserves technical visual-foundation findings; its old sequence is superseded.
+
+`ADR-0003` preserves the accepted long-term native/WASM authority direction; full migration is deferred in the current friend-demo campaign.
+
+`CAR_MAP_SCAN_2026-08-05.md` is a historical pre-c8e0 plan whose old pending-status claims are superseded by later c8e0 evidence/current R1 state.
 
 ## 3. User-supplied recovery archives
 
@@ -58,7 +88,7 @@ agent/jv-refoundation-control-plane
 fd4d96fdf479e0d5649e49c73f1ce0cd68f52d0c
 ```
 
-Includes `.git`, local refs/reflogs and the historical car/map/scan lineage.
+Includes `.git`, local refs/reflogs and historical car/map/scan lineage.
 
 ### Native JV source snapshot
 
@@ -80,27 +110,37 @@ recovery ref in snapshot:
 b756f09134c3a9b38f99954ada8cc11d18377bf3
 ```
 
-Recovery archives are evidence/resource sources, not automatically current authority.
+Recovery archives are evidence/resource sources, not automatically current authority. The selective handoff pack should cover foreseeable first work; keep these large archives as fallback archaeology only.
 
 ## 4. Friend-demo handoff resource pack
 
-A separate attached resource pack was built from selected exact files instead of carrying both full source ZIPs into the next conversation.
+The selective resource pack physically includes:
 
-Its top-level documents explain provenance, resource locations, evidence boundaries and package hashes. If a later pack version is supplied, use that version's own sidecar/manifest rather than an older SHA embedded in chat history.
-
-The pack physically includes:
-
-- exact authored vehicle glTFs + audits/contracts/presets;
+- exact authored vehicle glTFs + generated audits/contracts/presets;
 - exact c8e0 scan executable closure + relevant tests/tools/evidence/diff;
 - exact recovered `b3Wheel` patch surface;
 - scan-cache metadata, not the 73 MB cache itself;
 - navigation maps for current R1.
 
-It intentionally does not contain `.git`, full repos or the missing textured JSPREV2 pack.
+It intentionally does not contain `.git`, full repositories or the missing textured JSPREV2 runtime pack.
 
-## 5. Current R1 vehicle visual entry paths
+Use the newest attached pack version's own manifest/sidecar rather than an older SHA embedded in chat history.
 
-Resolve current blobs before editing, but these paths are the expected starting surface:
+## 5. Current first-slice hypothesis and vehicle visual seam
+
+Current cold-takeover hypothesis is **REAL CAR V1**:
+
+```text
+exact Nadwozie chassis
++ four exact owner wheel visual channels
++ minimum required authored pixel materials/textures
++ live authored-GLB draw bridge
++ current physics/world/camera unchanged
+```
+
+This is a revalidatable scheduling hypothesis, not a roadmap contract.
+
+Current R1 source seam to inspect first:
 
 ```text
 src/render/m6-product-renderer.ts
@@ -120,13 +160,19 @@ src/visual/rigid-mesh-draw-plan.ts
 src/visual/vehicle-visual-package.ts
 src/visual/vehicle-visual-runtime-loader.ts
 src/visual/vehicle-visual-transform.ts
-
-src/app/f4-vehicle-host.ts
 ```
 
-Current gap: authored GLB resource/bindings are not drawn by the live `M6WorldRenderer` path.
+Known current gap:
 
-Current camera also lives in `src/render/m6-world-renderer.ts`.
+```text
+authored GLB package/decode/GPU/bindings   PRESENT
+live authored GLB draw bridge               MISSING
+production pixel texture/material runtime   MISSING
+```
+
+Current camera also lives in `src/render/m6-world-renderer.ts`, but under the current hypothesis camera remains unchanged during REAL CAR V1 and becomes a separate owner-feel slice.
+
+The deterministic tiny full-rig fixture is a **diagnostic fallback only** if direct real-owner-asset integration leaves an ambiguous package/import-vs-live-draw failure.
 
 ## 6. Exact owner-authored vehicle assets
 
@@ -155,7 +201,7 @@ a2759471d8641b9f3a3395d508f6c8116d60c81c
 Historical measured start:
 
 ```text
-model 3.28m length × 2.73m width × 1.23m height
+model approx. 3.28m length × 2.73m width × 1.23m height
 vehicle wheelbase 2.50m
 track 2.10m
 yaw -90°
@@ -186,16 +232,7 @@ Marker_TireWidthLeft
 Marker_TireWidthRight
 ```
 
-### Other authored sources — available, not automatically in scope
-
-```text
-assets/source/Asset_Dumper.gltf
-assets/source/Cardan_shaft.gltf
-assets/source/OneSided_Steering_Suspension_Rig.gltf
-assets/source/One_Sided_wheel_mount.gltf
-```
-
-Do not expand the immediate visual scope merely because these assets exist.
+The exact authored files also provide the real material/texture requirements. Do not broaden the immediate visual scope merely because other native asset files exist.
 
 ## 7. Native preset/state-semantic references
 
@@ -207,7 +244,7 @@ assets/vehicle_presets/offroad.json
 docs/SUBSYSTEM_UI_PRESETS_PL.md
 ```
 
-Use for semantics such as vehicle preset vs tuning session vs view/debug vs world spawn. Do not port native UI/layout literally.
+Use for semantics such as vehicle preset vs tuning/session state vs view/debug vs world spawn. Do not port native UI/layout literally.
 
 ## 8. Frozen owner-vehicle tooling candidate
 
@@ -244,9 +281,9 @@ tools/owner-vehicle/write-owner-m6-r1.mjs
   6a194a756b8e29af773d3c5d0fea79c1c6e7cb52
 ```
 
-Use selective salvage only. Candidate's live renderer remained procedural and its texture tooling was ahead of runtime draw/material support.
+Selective salvage only. Candidate's live renderer remained procedural; its asset/material tooling was ahead of current live draw support.
 
-## 9. Historical scan lineage and evidence
+## 9. Historical scan lineage/evidence
 
 ```text
 04713ab33ba8788d3ee404f2165484366b7a717b
@@ -255,40 +292,38 @@ Use selective salvage only. Candidate's live renderer remained procedural and it
 c8e0bf24748b0a790a1c0039b1be801eef266580
 ```
 
-### Pre-fix causal baseline
+Pre-fix causal baseline:
 
 ```text
 106312083875b5aa94cf1f9fc986ac3c26888aa5
 ```
 
-Full integrated green gate with known atlas/filter/grid visual defects.
-
-### Strongest historical desktop baseline
+Strongest preserved historical desktop baseline:
 
 ```text
 c8e0bf24748b0a790a1c0039b1be801eef266580
 tree 3e241761784edd2a2fb6ab18095c25ea0e737185
 ```
 
-Exact automated PASS plus owner-observed correct scan/filter/grid/collision.
+Exact automated PASS plus owner-observed corrected scan/filter/grid/collision.
 
-Foundation-gate log SHA-256:
+Foundation log SHA-256:
 
 ```text
 3f2c35503fe4cbc3fb2340f93612fe2677ce3d92388eb4c107ba1decd635e68b
 ```
 
-Canonical preserved evidence:
+Canonical evidence:
 
 ```text
 docs/handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md
 ```
 
-The handoff resource pack contains the c8e0 executable closure and exact `106312→c8e0` diff.
+The resource pack contains the c8e0 executable closure and exact `106312→c8e0` diff.
 
 ## 10. Current R1 scan/world entry paths
 
-Current paths to inspect before any historical salvage:
+Inspect current code before historical salvage:
 
 ```text
 index.html
@@ -314,9 +349,9 @@ current src/render/jv-product-view-settings.ts == c8e0 blob 05279c38...
 current src/render/jv-scan-webgl-policy.ts     == c8e0 blob 7f7582a7...
 ```
 
-Current `product-main.ts` still configures LOCAL_FULL and current location choices still use page links/query params.
+Current `product-main.ts` still configures LOCAL_FULL and location choices still use page links/query params.
 
-Thus first scan action is revalidation with the real pack, not wholesale recovery.
+Thus first scan action is current-R1 revalidation with the real pack, not wholesale recovery.
 
 ## 11. Full scan asset and recovery leads
 
@@ -332,14 +367,15 @@ Historical path:
 C:\Pliki_Joza\Gamo_devovo\Box3d_FunProject\JS_Photogrametry\repo\build\scan_pipeline\previews\source-preview-aee5242a20848294
 ```
 
-Not present in the supplied ZIPs as a full textured pack.
+Not present in the supplied handoff assets as a full textured pack.
 
-Native ZIP contains cooked collision cache only:
+Native recovery ZIP contains cooked collision cache only:
 
 ```text
 build/scan_cache/source-preview-aee5242a20848294_w1e1m0f0.b3mesh
 bytes 73,156,192
-SHA-256 7a862e5928414bf0ed75d63b2f3b1c1ce2da0285dd12bab515d6c0532173431c
+SHA-256:
+7a862e5928414bf0ed75d63b2f3b1c1ce2da0285dd12bab515d6c0532173431c
 ```
 
 Separate historical P1B lead:
@@ -350,7 +386,7 @@ real-p1b\bundles\photogrammetry-primary-cc94c46ed4070411\COMPLETE.json
 real-p1b\p1b_owner_gate_receipt.local.json
 ```
 
-Relation to later runtime preview pack is not proven.
+Relation to the later JSPREV2 runtime preview pack is unproven.
 
 Historical triangle discrepancy:
 
@@ -359,7 +395,7 @@ native document 1,770,391
 exact Web gate 1,775,775
 ```
 
-Remeasure actual recovered pack.
+Remeasure the actual recovered pack.
 
 ## 12. Public scan publication boundary
 
@@ -375,17 +411,17 @@ This cannot be assumed to deploy to GitHub Pages.
 
 Before a public friend-demo includes scan, decide from the actual recovered pack:
 
-- which render assets are public artifact inputs;
+- which render assets become public artifact inputs;
 - packaged vs separately hosted delivery;
 - size/cache/startup strategy;
 - phone memory/performance implications;
 - public privacy/content boundary.
 
-Do not solve this by silently changing R0 or leaking local/private paths.
+Do not solve this by changing R0 or leaking local/private paths.
 
 ## 13. `b3Wheel` / true-wheel resources
 
-The handoff resource pack includes exact source surface from native recovery ref:
+The resource pack includes exact recovered source surface from:
 
 ```text
 b756f09134c3a9b38f99954ada8cc11d18377bf3
@@ -425,15 +461,15 @@ docs/KOLA_00_INDEX_PL.md
 docs/KOLA_03_POLITYKA_BOX3D_PL.md
 ```
 
-Before actual port, compare this recovered frozen surface to then-current read-only native JV state.
-
-Current Web seam:
+Before a real port, compare this frozen surface to then-current read-only native JV. Current Web seam:
 
 ```text
 src/physics/box3d-boundary.ts
 src/physics/box3d-runtime-contract.ts
 src/vehicle/m6/legacy-split-wheel-backend.ts
 ```
+
+Treat this as a secondary bounded feasibility/port track unless evidence makes it a blocker.
 
 ## 14. Camera/mobile entry paths
 
@@ -443,7 +479,7 @@ src/input/pointer-vehicle-control-adapter.ts
 src/main.ts
 ```
 
-Current camera state and pointer orbit live in `M6WorldRenderer`; touch driving uses pointer controls. Future camera gestures must preserve multi-touch ownership with driving.
+Current camera state/pointer orbit live in `M6WorldRenderer`; touch driving uses pointer controls. Under the current hypothesis camera follows REAL CAR V1 as a separate owner-feel slice.
 
 ## 15. Drivetrain/config entry paths
 
@@ -460,13 +496,14 @@ allWheelDrive=false → RWD
 allWheelDrive=true  → AWD
 ```
 
-FWD is new work. Exact shaft-lock semantics remain an owner/mechanical clarification point.
+FWD is new bounded friend-demo work. Exact shaft-lock semantics remain unresolved until mechanically defined.
 
-## 16. Historical documents that should not override current scheduling
+## 16. Historical documents/branches that must not override current scheduling
 
 - old R0 work orders/gates: provenance only;
-- original sequence in `R1_F0_VEHICLE_FOUNDATION_AUDIT.md`: technical decomposition only, scheduling superseded;
-- full native→WASM notes: long-term reference only;
+- original sequence in `R1_F0_VEHICLE_FOUNDATION_AUDIT.md`: technical decomposition only;
+- full native→WASM migration notes/ADR follow-up: long-term direction, execution deferred;
+- `CAR_MAP_SCAN_2026-08-05.md`: historical pre-c8e0 plan;
 - frozen candidate branches: selective salvage only.
 
-When a fresh agent needs a known resource, use this index/resource pack before broad semantic search across all historical branches.
+When a known resource is needed, use this index/resource pack before broad historical search. Current Git + current takeover authority still wins.
