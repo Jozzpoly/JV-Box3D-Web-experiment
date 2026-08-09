@@ -11,24 +11,49 @@ import { assertVehicleVisualCpuOwnershipV1 } from "../.test-dist/visual/vehicle-
 import { assertVehicleVisualBudgetV1 } from "../.test-dist/visual/vehicle-visual-budget.js";
 import { transformVehicleVisualPointV1 } from "../.test-dist/visual/vehicle-visual-transform.js";
 import { buildM6OwnerRealDrawPlanV1 } from "../.test-dist/render/m6-owner-vehicle-layer.js";
+import { buildOwnerM6FullRigPackageR3 } from "../tools/owner-vehicle/owner-m6-full-rig-package-r3.mjs";
 import { M6TopologyWorld } from "../.test-dist/vehicle/m6/m6-topology-world.js";
 
-const MANIFEST = "public/vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json";
-const GLB = "public/vehicles/m6-owner-r2/models/m6-owner-full-rig-r2.glb";
 const receiptPath = new URL("../public/receipts/jv_m6_factory_receipt.json", import.meta.url);
+const sourceRoot = "assets/owner-vehicle/source";
+const contractRoot = "assets/owner-vehicle/contracts";
 const CORNERS = ["fl", "fr", "rl", "rr"];
+
+async function ownerR3Inputs() {
+  const read = (name) => readFile(`${sourceRoot}/${name}`, "utf8");
+  const contract = (name) => readFile(`${contractRoot}/${name}`, "utf8");
+  return {
+    chassisText: await read("Nadwozie.gltf"),
+    wheelText: await read("Offroad_Big_Wheels.gltf"),
+    frontSuspensionText: await read("OneSided_Steering_Suspension_Rig.gltf"),
+    rearSuspensionText: await read("One_Sided_wheel_mount.gltf"),
+    damperText: await read("Asset_Dumper.gltf"),
+    cardanText: await read("Cardan_shaft.gltf"),
+    factoryReceiptText: await readFile(receiptPath, "utf8"),
+    contractTexts: {
+      wheel: await contract("offroad_big_wheel.asset.json"),
+      frontSuspension: await contract("one_sided_steering_suspension.asset.json"),
+      rearSuspension: await contract("one_sided_wheel_mount.asset.json"),
+      damper: await contract("asset_dumper.asset.json"),
+      cardan: await contract("cardan_shaft.asset.json"),
+    },
+  };
+}
 
 const b3 = await Box3D();
 const receipt = await validatePinnedNativeFactoryReceiptText(await readFile(receiptPath, "utf8"));
-const visual = validateVehicleVisualPackageV1(JSON.parse(await readFile(MANIFEST, "utf8")));
-const bytes = new Uint8Array(await readFile(GLB));
+const generatedOwnerR3 = buildOwnerM6FullRigPackageR3(await ownerR3Inputs());
+const visual = validateVehicleVisualPackageV1(JSON.parse(generatedOwnerR3.manifestText));
+const bytes = generatedOwnerR3.glb;
+assert.equal(visual.id, "m6-owner-full-rig-r3");
+assert.equal(visual.asset.sha256, "27ca3c041ec160b3718a7840f092aabdec5d069f287a260c0b9de1ff16100540");
 const assetReceipt = await validateVehicleVisualAssetV1(visual, bytes, null);
 const cpuAsset = sealGlbRigidCpuAssetV1(
   decodeGlbRigidCpuAssetV1(bytes, visual.bindings.map((binding) => binding.nodeName)),
 );
 const runtime = {
-  packageUrl: "https://example.test/vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json",
-  assetUrl: "https://example.test/vehicles/m6-owner-r2/models/m6-owner-full-rig-r2.glb",
+  packageUrl: "https://example.test/vehicles/m6-owner-r3/m6-owner-full-rig-r3.visual.json",
+  assetUrl: "https://example.test/vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb",
   visualPackage: visual,
   assetReceipt,
   ownershipReceipt: assertVehicleVisualCpuOwnershipV1(visual, cpuAsset),
@@ -100,13 +125,13 @@ function assertLivePlan(trace, label) {
     const wheel = partMap.get(`m6.${corner}.wheel`);
     assert.ok(wheel);
     const nearWheelPrefixes = [
-      `JV_R2_Real_owner_${corner}_wheel`,
-      `JV_R2_Real_owner_${corner}_upper_arm`,
-      `JV_R2_Real_owner_${corner}_lower_arm`,
-      `JV_R2_Real_owner_${corner}_knuckle_`,
-      `JV_R2_Real_owner_${corner}_coilover_`,
-      `JV_R2_Real_owner_${corner}_steering_link`,
-      `JV_R2_Real_owner_${corner}_cardan_`,
+      `JV_R3_Real_owner_${corner}_wheel`,
+      `JV_R3_Real_owner_${corner}_upper_arm`,
+      `JV_R3_Real_owner_${corner}_lower_arm`,
+      `JV_R3_Real_owner_${corner}_knuckle_`,
+      `JV_R3_Real_owner_${corner}_coilover_`,
+      `JV_R3_Real_owner_${corner}_steering_link`,
+      `JV_R3_Real_owner_${corner}_cardan_`,
     ];
     const cornerCommands = plan.filter((command) =>
       nearWheelPrefixes.some((prefix) => command.nodeName?.startsWith(prefix)),
@@ -129,7 +154,7 @@ function matrixDelta(a, b) {
   return Math.sqrt(sum);
 }
 
-test("owner full-rig R2 stays attached to a real live M6 before and after steering/drive", () => {
+test("owner full-rig R3 stays attached to a real live M6 before and after steering/drive", () => {
   const world = new M6TopologyWorld(b3, receipt);
   try {
     const vehicle = world.createVehicle({ x: 0, y: 1.2, z: 0 }, 41);
@@ -148,13 +173,13 @@ test("owner full-rig R2 stays attached to a real live M6 before and after steeri
     const beforeByName = new Map(beforePlan.map((command) => [command.nodeName, command]));
     const afterByName = new Map(afterPlan.map((command) => [command.nodeName, command]));
     for (const nodeName of [
-      "JV_R2_Real_owner_fl_knuckle_socket_chassismount_b",
-      "JV_R2_Real_owner_fl_upper_arm",
-      "JV_R2_Real_owner_fl_lower_arm",
-      "JV_R2_Real_owner_fl_coilover_stretch",
-      "JV_R2_Real_owner_fl_steering_link",
-      "JV_R2_Real_owner_fl_cardan_mid",
-      "JV_R2_Real_owner_rl_cardan_mid",
+      "JV_R3_Real_owner_fl_knuckle_socket_chassismount_b",
+      "JV_R3_Real_owner_fl_upper_arm",
+      "JV_R3_Real_owner_fl_lower_arm",
+      "JV_R3_Real_owner_fl_coilover_stretch",
+      "JV_R3_Real_owner_fl_steering_link",
+      "JV_R3_Real_owner_fl_cardan_mid",
+      "JV_R3_Real_owner_rl_cardan_mid",
     ]) {
       const beforeCommand = beforeByName.get(nodeName);
       const afterCommand = afterByName.get(nodeName);

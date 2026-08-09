@@ -8,20 +8,20 @@ import { assertVehicleVisualBudgetV1 } from "../.test-dist/visual/vehicle-visual
 import { assertVehicleVisualCpuOwnershipV1 } from "../.test-dist/visual/vehicle-visual-cpu-gate.js";
 import { validateVehicleVisualPackageV1 } from "../.test-dist/visual/vehicle-visual-package.js";
 
-const EXPECTED_OWNER_ID = "m6-owner-full-rig-r2";
+const EXPECTED_OWNER_ID = "m6-owner-full-rig-r3";
 const EXPECTED_OWNER_SHA256 =
-  "5b6421cb9991adff4a467b559ec2b69e25ea1667bd7cfee1e189d3d94cd116b3";
-const EXPECTED_OWNER_BYTES = 829076;
+  "27ca3c041ec160b3718a7840f092aabdec5d069f287a260c0b9de1ff16100540";
+const EXPECTED_OWNER_BYTES = 829088;
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const dist = resolve(root, "dist");
 const packagePath = resolve(
   dist,
-  "vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json",
+  "vehicles/m6-owner-r3/m6-owner-full-rig-r3.visual.json",
 );
 const packageJson = JSON.parse(await readFile(packagePath, "utf8"));
 const visual = validateVehicleVisualPackageV1(packageJson);
-const glbPath = resolve(dist, "vehicles/m6-owner-r2", visual.asset.url);
+const glbPath = resolve(dist, "vehicles/m6-owner-r3", visual.asset.url);
 const glb = new Uint8Array(await readFile(glbPath));
 const receipt = await validateVehicleVisualAssetV1(visual, glb, null);
 const cpu = sealGlbRigidCpuAssetV1(

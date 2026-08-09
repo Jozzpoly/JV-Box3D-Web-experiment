@@ -13,22 +13,37 @@ import {
 } from "./vehicle-visual-render-resource.js";
 
 export const M6_OWNER_R2_REAL_NODE_PREFIX = "JV_R2_Real_" as const;
-export const M6_OWNER_R2_REAL_NODE_COUNT = 53 as const;
+export const M6_OWNER_R3_REAL_NODE_PREFIX = "JV_R3_Real_" as const;
+export const M6_OWNER_REAL_NODE_COUNT = 53 as const;
+export const M6_OWNER_R2_REAL_NODE_COUNT = M6_OWNER_REAL_NODE_COUNT;
+
+const M6_OWNER_FULL_RIG_PROFILES = Object.freeze({
+  "m6-owner-full-rig-r2": Object.freeze({
+    realNodePrefix: M6_OWNER_R2_REAL_NODE_PREFIX,
+  }),
+  "m6-owner-full-rig-r3": Object.freeze({
+    realNodePrefix: M6_OWNER_R3_REAL_NODE_PREFIX,
+  }),
+});
 
 function realNodeNames(resource: VehicleVisualRenderResourceV1): ReadonlySet<string> {
-  if (resource.runtime.visualPackage.id !== "m6-owner-full-rig-r2") {
+  const profile =
+    M6_OWNER_FULL_RIG_PROFILES[
+      resource.runtime.visualPackage.id as keyof typeof M6_OWNER_FULL_RIG_PROFILES
+    ];
+  if (profile === undefined) {
     throw new Error(
-      `Owner full-rig layer requires m6-owner-full-rig-r2; received ${resource.runtime.visualPackage.id}.`,
+      `Owner full-rig layer does not support ${resource.runtime.visualPackage.id}.`,
     );
   }
   const names = new Set(
     resource.runtime.visualPackage.bindings
-      .filter((binding) => binding.nodeName.startsWith(M6_OWNER_R2_REAL_NODE_PREFIX))
+      .filter((binding) => binding.nodeName.startsWith(profile.realNodePrefix))
       .map((binding) => binding.nodeName),
   );
-  if (names.size !== M6_OWNER_R2_REAL_NODE_COUNT) {
+  if (names.size !== M6_OWNER_REAL_NODE_COUNT) {
     throw new Error(
-      `Owner full-rig package requires exactly ${M6_OWNER_R2_REAL_NODE_COUNT} real nodes; received ${names.size}.`,
+      `Owner full-rig package requires exactly ${M6_OWNER_REAL_NODE_COUNT} real nodes; received ${names.size}.`,
     );
   }
   return names;

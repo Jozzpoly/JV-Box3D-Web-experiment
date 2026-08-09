@@ -11,8 +11,8 @@ const REQUIRED = Object.freeze([
   "build-manifest.json",
   "receipts/jv_m6_factory_receipt.json",
   "scenes/synthetic-flat-lab.scene.json",
-  "vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json",
-  "vehicles/m6-owner-r2/models/m6-owner-full-rig-r2.glb",
+  "vehicles/m6-owner-r3/m6-owner-full-rig-r3.visual.json",
+  "vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb",
 ]);
 
 const EXPECTED_PRODUCT_MARKERS = Object.freeze([
@@ -62,17 +62,17 @@ if (manifest?.publication?.publishedByBuild !== false) {
 if (manifest?.source?.workingTreeClean !== true) {
   throw new Error("Public R1 preview requires a clean committed source tree.");
 }
-const owner = JSON.parse(await readFile(resolve(dist, "vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json"), "utf8"));
+const owner = JSON.parse(await readFile(resolve(dist, "vehicles/m6-owner-r3/m6-owner-full-rig-r3.visual.json"), "utf8"));
 if (
-  owner.id !== "m6-owner-full-rig-r2" ||
-  owner.asset?.sha256 !== "5b6421cb9991adff4a467b559ec2b69e25ea1667bd7cfee1e189d3d94cd116b3" ||
-  owner.asset?.byteLength !== 829076 ||
+  owner.id !== "m6-owner-full-rig-r3" ||
+  owner.asset?.sha256 !== "27ca3c041ec160b3718a7840f092aabdec5d069f287a260c0b9de1ff16100540" ||
+  owner.asset?.byteLength !== 829088 ||
   !Array.isArray(owner.bindings) ||
-  owner.bindings.filter((binding) => binding?.nodeName?.startsWith("JV_R2_Real_")).length !== 53
+  owner.bindings.filter((binding) => binding?.nodeName?.startsWith("JV_R3_Real_")).length !== 53
 ) {
   throw new Error("Public R1 preview owner full-rig identity drifted.");
 }
-const glb = resolve(dist, "vehicles/m6-owner-r2", owner.asset.url);
+const glb = resolve(dist, "vehicles/m6-owner-r3", owner.asset.url);
 if ((await stat(glb)).size !== owner.asset.byteLength) {
   throw new Error("Public R1 preview owner GLB byte length differs from its visual package.");
 }
