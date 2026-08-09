@@ -38,6 +38,10 @@ export function deriveFrontSuspensionReferencesR3(extracted) {
   const lowerHinge=requireMarker(extracted,'Chassis_Bottom','front suspension reference');
   const upperOutboard=requireMarker(extracted,'Socket_ChassisMount_b','front suspension reference');
   const wheelCenter=requireMarker(extracted,'Socket_WheelCenter','front suspension reference');
+  const damperMount=requireMarker(extracted,'Socket_SingleDamper_Mount','front suspension reference');
+  const damperUpper=requireMarker(extracted,'Socket_SingleDamperUpper','front suspension reference');
+  const damperLower=requireMarker(extracted,'Socket_SingleDamperLower','front suspension reference');
+  const chassisMountA=requireMarker(extracted,'Socket_ChassisMount_a','front suspension reference');
   const travelTop=requireMarker(extracted,'Axis_SuspensionTravel_Top','front suspension reference');
   const travelBottom=requireMarker(extracted,'Axis_SuspensionTravel_Bottom','front suspension reference');
   const sourceUp=norm(sub(travelTop,travelBottom),'front authored suspension travel axis');
@@ -57,6 +61,10 @@ export function deriveFrontSuspensionReferencesR3(extracted) {
     upperOutboard:Object.freeze(upperOutboard),
     lowerOutboard:Object.freeze(lowerOutboard),
     wheelCenter:Object.freeze(wheelCenter),
+    chassisMountA:Object.freeze(chassisMountA),
+    damperMount:Object.freeze(damperMount),
+    damperUpper:Object.freeze(damperUpper),
+    damperLower:Object.freeze(damperLower),
     sourceUp:Object.freeze(sourceUp),
     sourceAxial:Object.freeze(upperAxial),
     sourceSpread:Object.freeze(sourceSpread),
@@ -66,6 +74,10 @@ export function deriveFrontSuspensionReferencesR3(extracted) {
       upperOutboard:'AUTHORED_VISUAL_REFERENCE:Socket_ChassisMount_b',
       lowerOutboard:'INFERRED_PARALLEL_UPRIGHT_FROM_AUTHORED_UPPER_REFERENCE',
       wheelCenter:'AUTHORED_NODE:Socket_WheelCenter',
+      chassisMountA:'AUTHORED_NODE:Socket_ChassisMount_a',
+      damperMount:'AUTHORED_NODE:Socket_SingleDamper_Mount',
+      damperUpper:'AUTHORED_NODE:Socket_SingleDamperUpper',
+      damperLower:'AUTHORED_NODE:Socket_SingleDamperLower_CHILD_OF_Chassis_Bottom',
       sourceUp:'AUTHORED_AXIS:Axis_SuspensionTravel_Bottom->Top',
     }),
     sanity:Object.freeze({
@@ -123,6 +135,7 @@ export function calibrateFrontWishbonePieceR3(piece,references,geometry,which) {
   const targetBallLocal=sub(targetBall,targetHinge);
   return Object.freeze({
     primitives:mapPiecePrimitives(piece,point,normal,reverseWinding),
+    mapPoint:(value)=>Object.freeze(point(value)),
     report:Object.freeze({
       mode:'AUTHORED_REFERENCE_TO_PHYSICAL_HARDPOINT_R3',
       sourceHinge:Object.freeze([...sourceHinge]),
@@ -144,6 +157,80 @@ export function calibrateFrontWishbonePieceR3(piece,references,geometry,which) {
         hinge:which==='upper'?references.provenance.upperHinge:references.provenance.lowerHinge,
         outboard:which==='upper'?references.provenance.upperOutboard:references.provenance.lowerOutboard,
         physicalTarget:'M6_WISHBONE_HARDPOINT',
+      }),
+    }),
+  });
+}
+
+export function calibrateFrontChassisPieceR3(piece,references,geometry) {
+  const sourceWheelCenter=references.wheelCenter;
+  const sourceHingeMid=midpoint(references.upperHinge,references.lowerHinge);
+  const sourceRadialVector=sub(sourceHingeMid,sourceWheelCenter);
+  const sourceVerticalHalf=mul(sub(references.upperHinge,references.lowerHinge),0.5);
+  const sourceRadial=norm(sourceRadialVector,`${geometry.corner} source chassis radial`);
+  const sourceVertical=norm(sourceVerticalHalf,`${geometry.corner} source chassis vertical`);
+  const sourceLongitudinal=norm(cross(sourceRadial,sourceVertical),`${geometry.corner} source chassis longitudinal`);
+  if(Math.abs(dot(sourceRadial,sourceVertical))>1e-6)fail(`${geometry.corner} source chassis radial/vertical basis is not orthogonal`);
+  if(determinantColumns(sourceRadial,sourceVertical,sourceLongitudinal)<0.999999)fail(`${geometry.corner} source chassis basis is not right handed`);
+
+  const targetHingeMid=midpoint(geometry.upperHinge,geometry.lowerHinge);
+  const targetRadialVector=sub(targetHingeMid,geometry.wheelCenter);
+  const targetVerticalHalf=mul(sub(geometry.upperHinge,geometry.lowerHinge),0.5);
+  const targetLongitudinal=norm(sub(geometry.upperRear,geometry.upperFront),`${geometry.corner} target chassis longitudinal`);
+  const sourceRadialLength=len(sourceRadialVector);
+  const sourceVerticalHalfLength=len(sourceVerticalHalf);
+  const radialColumn=mul(targetRadialVector,1/sourceRadialLength);
+  const verticalColumn=mul(targetVerticalHalf,1/sourceVerticalHalfLength);
+  const longitudinalColumn=mul(targetLongitudinal,OWNER_M6_R3_SCALE_METERS_PER_BU);
+  const determinant=determinantColumns(radialColumn,verticalColumn,longitudinalColumn);
+  if(!(Math.abs(determinant)>EPS))fail(`${geometry.corner} chassis affine map is singular`);
+  const reverseWinding=determinant<0;
+
+  const point=(p)=>{
+    const q=sub(p,sourceWheelCenter);
+    return add(
+      add(
+        add(geometry.wheelCenter,mul(radialColumn,dot(q,sourceRadial))),
+        mul(verticalColumn,dot(q,sourceVertical)),
+      ),
+      mul(longitudinalColumn,dot(q,sourceLongitudinal)),
+    );
+  };
+  const reciprocalRadial=mul(cross(verticalColumn,longitudinalColumn),1/determinant);
+  const reciprocalVertical=mul(cross(longitudinalColumn,radialColumn),1/determinant);
+  const reciprocalLongitudinal=mul(cross(radialColumn,verticalColumn),1/determinant);
+  const normal=(n)=>add(
+    add(
+      mul(reciprocalRadial,dot(n,sourceRadial)),
+      mul(reciprocalVertical,dot(n,sourceVertical)),
+    ),
+    mul(reciprocalLongitudinal,dot(n,sourceLongitudinal)),
+  );
+
+  const mappedWheelCenter=point(sourceWheelCenter);
+  const mappedUpperHinge=point(references.upperHinge);
+  const mappedLowerHinge=point(references.lowerHinge);
+  return Object.freeze({
+    primitives:mapPiecePrimitives(piece,point,normal,reverseWinding),
+    mapPoint:(value)=>Object.freeze(point(value)),
+    report:Object.freeze({
+      mode:'AUTHORED_CHASSIS_REFERENCE_TO_PHYSICAL_WISHBONE_FRAME_R3',
+      radialScale:len(targetRadialVector)/sourceRadialLength,
+      verticalScale:len(targetVerticalHalf)/sourceVerticalHalfLength,
+      thicknessScale:OWNER_M6_R3_SCALE_METERS_PER_BU,
+      targetRadialVerticalDot:dot(norm(targetRadialVector),norm(targetVerticalHalf)),
+      determinant,
+      mirrored:reverseWinding,
+      mappedWheelCenter:Object.freeze(mappedWheelCenter),
+      mappedUpperHinge:Object.freeze(mappedUpperHinge),
+      mappedLowerHinge:Object.freeze(mappedLowerHinge),
+      wheelCenterErrorMeters:distance(mappedWheelCenter,geometry.wheelCenter),
+      upperHingeErrorMeters:distance(mappedUpperHinge,geometry.upperHinge),
+      lowerHingeErrorMeters:distance(mappedLowerHinge,geometry.lowerHinge),
+      referenceAuthority:Object.freeze({
+        sourceFrame:'AUTHORED_WHEEL_CENTER_PLUS_UPPER_LOWER_WISHBONE_HINGES',
+        physicalTarget:'M6_WHEEL_CENTER_PLUS_UPPER_LOWER_WISHBONE_HINGES',
+        longitudinal:'M6_WISHBONE_FRONT_REAR_AXIS',
       }),
     }),
   });

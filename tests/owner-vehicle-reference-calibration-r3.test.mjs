@@ -13,6 +13,7 @@ import {
   OWNER_M6_R3_SCALE_METERS_PER_BU,
   deriveFrontSuspensionReferencesR3,
   calibrateFrontWishbonePieceR3,
+  calibrateFrontChassisPieceR3,
   calibrateFrontKnucklePieceR3,
 } from '../tools/owner-vehicle/owner-m6-reference-calibration-r3.mjs';
 
@@ -128,4 +129,65 @@ test('R3 front upright solve maps authored wheel/kingpin references to physical 
   assert.ok(reports.fl.targetRadialKingpinDot > 0.12 && reports.fl.targetRadialKingpinDot < 0.13);
   assert.ok(reports.fl.determinant > 0);
   assert.ok(reports.fr.determinant < 0);
+});
+
+
+test('R3 front chassis frame preserves authored damper mechanism as a visual body-to-body constraint', async () => {
+  const { front, config, references } = await fixture();
+  const chassisPiece = requirePiece(front, 'Socket_SingleDamper_Mount', 'front chassis damper mount');
+  const lowerPiece = requirePiece(front, 'Chassis_Bottom', 'front lower wishbone');
+  const reports = {};
+  const lines = {};
+
+  for (const corner of ['fl', 'fr']) {
+    const geometry = cornerRestGeometry(config, corner);
+    const chassis = calibrateFrontChassisPieceR3(chassisPiece, references, geometry);
+    const lowerArm = calibrateFrontWishbonePieceR3(lowerPiece, references, geometry, 'lower');
+    reports[corner] = chassis.report;
+
+    close(chassis.report.wheelCenterErrorMeters, 0);
+    close(chassis.report.upperHingeErrorMeters, 0, 1e-15);
+    close(chassis.report.lowerHingeErrorMeters, 0, 1e-15);
+    assert.equal(chassis.report.mirrored, corner === 'fr');
+
+    const upperChassisLocal = chassis.mapPoint(references.damperUpper);
+    const lowerArmLocal = lowerArm.mapPoint(references.damperLower);
+    const lowerWorld = [
+      geometry.lowerHinge[0] + lowerArmLocal[0],
+      geometry.lowerHinge[1] + lowerArmLocal[1],
+      geometry.lowerHinge[2] + lowerArmLocal[2],
+    ];
+    const visualLength = Math.hypot(
+      upperChassisLocal[0] - lowerWorld[0],
+      upperChassisLocal[1] - lowerWorld[1],
+      upperChassisLocal[2] - lowerWorld[2],
+    );
+    const physicalLength = Math.hypot(
+      geometry.coiloverChassis[0] - geometry.coiloverKnuckle[0],
+      geometry.coiloverChassis[1] - geometry.coiloverKnuckle[1],
+      geometry.coiloverChassis[2] - geometry.coiloverKnuckle[2],
+    );
+    const visualUpperInboard = Math.abs(upperChassisLocal[2] - geometry.wheelCenter[2]);
+    const physicalUpperInboard = Math.abs(geometry.coiloverChassis[2] - geometry.wheelCenter[2]);
+    lines[corner] = { visualLength, physicalLength, visualUpperInboard, physicalUpperInboard };
+
+    assert.ok(
+      visualLength > physicalLength + 0.15,
+      'authored visual damper and M6 spring constraint must remain distinct authorities',
+    );
+    assert.ok(
+      visualUpperInboard > physicalUpperInboard + 0.18,
+      'authored upper damper eye should remain materially farther inboard than the physical coilover anchor',
+    );
+    assert.equal(references.provenance.damperUpper, 'AUTHORED_NODE:Socket_SingleDamperUpper');
+    assert.equal(references.provenance.damperLower, 'AUTHORED_NODE:Socket_SingleDamperLower_CHILD_OF_Chassis_Bottom');
+  }
+
+  close(reports.fl.radialScale, reports.fr.radialScale);
+  close(reports.fl.verticalScale, reports.fr.verticalScale);
+  close(reports.fl.thicknessScale, reports.fr.thicknessScale);
+  assert.ok(reports.fl.determinant > 0);
+  assert.ok(reports.fr.determinant < 0);
+  close(lines.fl.visualLength, lines.fr.visualLength);
+  close(lines.fl.visualUpperInboard, lines.fr.visualUpperInboard);
 });
