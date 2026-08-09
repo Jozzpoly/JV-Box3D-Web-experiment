@@ -256,7 +256,7 @@ test('owner package is deterministic, calibrated and covers M6', () => {
   assert.equal(first.visualPackage.bindings.length, 26);
   assert.equal(first.report.output.sha256, second.report.output.sha256);
   assert.equal(first.visualPackage.asset.byteLength, first.glb.byteLength);
-  assert.equal(first.report.output.textureRendering, 'NOT_IMPLEMENTED');
+  assert.equal(first.report.output.textureRendering, 'EMBEDDED_BASE_COLOR_MASK_V1');
   assert.equal(first.report.output.diagnosticChannelCount, 21);
   assert.equal(first.report.wheel.calibration.markerContract, 'VERIFIED');
   assert.equal(first.report.wheel.calibration.centerError, 0);
@@ -336,7 +336,7 @@ test('animations and matrix plus TRS cannot enter rigid boundary', () => {
 
 test('unsupported source material semantics fail closed', () => {
   for (const [options, pattern] of [
-    [{ materialOverrides: { alphaMode: 'BLEND' } }, /alphaMode must remain OPAQUE/],
+    [{ materialOverrides: { alphaMode: 'BLEND' } }, /alphaMode must be OPAQUE or MASK/],
     [{ materialOverrides: { emissiveFactor: [1,0,0] } }, /emissiveFactor is unsupported/],
     [{ pbrOverrides: { metallicFactor: 0.5 } }, /metallicFactor=0/],
     [{ pbrOverrides: { normalTexture: { index: 0 } } }, /normalTexture is unsupported/],
