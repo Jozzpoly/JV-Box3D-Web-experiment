@@ -3,7 +3,7 @@ import type { JvWorldData } from "../scene/jv-world-contract.js";
 import { M6WorldRenderer } from "./m6-world-renderer.js";
 
 export const M6_OWNER_VISUAL_PACKAGE_URL =
-  "vehicles/m6-owner-r1/m6-owner-rigid-r1.visual.json" as const;
+  "vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json" as const;
 
 export class M6ProductRenderer extends M6WorldRenderer {
   readonly #unsubscribeWorld: () => void;

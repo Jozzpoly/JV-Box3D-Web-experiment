@@ -23,8 +23,8 @@ test("portable runtime asset contract requires receipt, scene, tiny proof and ow
     "scenes/synthetic-flat-lab.scene.json",
     "vehicles/tiny/vehicle.visual.json",
     "vehicles/tiny/models/m6-rig-proof.glb",
-    "vehicles/m6-owner-r1/m6-owner-rigid-r1.visual.json",
-    "vehicles/m6-owner-r1/models/m6-owner-rigid-r1.glb",
+    "vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json",
+    "vehicles/m6-owner-r2/models/m6-owner-full-rig-r2.glb",
   ]);
   assert.deepEqual(validateRuntimeAssetContract(manifest()), []);
 });

@@ -12,13 +12,43 @@ import {
   type VehicleVisualRenderResourceV1,
 } from "./vehicle-visual-render-resource.js";
 
-export const M6_OWNER_REAL_PART_IDS = Object.freeze([
-  "m6.chassis",
-  "m6.fl.wheel",
-  "m6.fr.wheel",
-  "m6.rl.wheel",
-  "m6.rr.wheel",
-] as const);
+export const M6_OWNER_R2_REAL_NODE_PREFIX = "JV_R2_Real_" as const;
+export const M6_OWNER_R2_REAL_NODE_COUNT = 53 as const;
+
+function realNodeNames(resource: VehicleVisualRenderResourceV1): ReadonlySet<string> {
+  if (resource.runtime.visualPackage.id !== "m6-owner-full-rig-r2") {
+    throw new Error(
+      `Owner full-rig layer requires m6-owner-full-rig-r2; received ${resource.runtime.visualPackage.id}.`,
+    );
+  }
+  const names = new Set(
+    resource.runtime.visualPackage.bindings
+      .filter((binding) => binding.nodeName.startsWith(M6_OWNER_R2_REAL_NODE_PREFIX))
+      .map((binding) => binding.nodeName),
+  );
+  if (names.size !== M6_OWNER_R2_REAL_NODE_COUNT) {
+    throw new Error(
+      `Owner full-rig package requires exactly ${M6_OWNER_R2_REAL_NODE_COUNT} real nodes; received ${names.size}.`,
+    );
+  }
+  return names;
+}
+
+export function buildM6OwnerRealDrawPlanV1(
+  resource: VehicleVisualRenderResourceV1,
+  frame: VehicleVisualFrameV1,
+): readonly RigidMeshDrawCommandV1[] {
+  const names = realNodeNames(resource);
+  const commands = buildVehicleVisualDrawPlanV1(resource.runtime, frame).filter(
+    (command) => command.nodeName !== null && names.has(command.nodeName),
+  );
+  if (commands.length !== names.size) {
+    throw new Error(
+      `Owner full-rig draw plan expected ${names.size} real commands, received ${commands.length}.`,
+    );
+  }
+  return Object.freeze(commands);
+}
 
 const VERTEX_SHADER_SOURCE = `
 attribute vec3 aPosition;
@@ -126,40 +156,6 @@ function createProgram(gl: WebGLRenderingContext): ProgramLocations {
     useTexture,
     alphaCutoff,
   });
-}
-
-function realNodeNames(resource: VehicleVisualRenderResourceV1): ReadonlySet<string> {
-  const names = new Set<string>();
-  for (const partId of M6_OWNER_REAL_PART_IDS) {
-    const matches = resource.runtime.visualPackage.bindings.filter(
-      (binding) =>
-        binding.source.kind === "PART" && binding.source.partId === partId,
-    );
-    if (matches.length !== 1) {
-      throw new Error(`Owner vehicle requires exactly one binding for ${partId}.`);
-    }
-    names.add(matches[0]!.nodeName);
-  }
-  if (names.size !== M6_OWNER_REAL_PART_IDS.length) {
-    throw new Error("Owner vehicle real bindings must use five independent roots.");
-  }
-  return names;
-}
-
-export function buildM6OwnerRealDrawPlanV1(
-  resource: VehicleVisualRenderResourceV1,
-  frame: VehicleVisualFrameV1,
-): readonly RigidMeshDrawCommandV1[] {
-  const names = realNodeNames(resource);
-  const commands = buildVehicleVisualDrawPlanV1(resource.runtime, frame).filter(
-    (command) => command.nodeName !== null && names.has(command.nodeName),
-  );
-  if (commands.length !== M6_OWNER_REAL_PART_IDS.length) {
-    throw new Error(
-      `Owner vehicle draw plan expected ${M6_OWNER_REAL_PART_IDS.length} real commands, received ${commands.length}.`,
-    );
-  }
-  return Object.freeze(commands);
 }
 
 export class M6OwnerVehicleLayer {

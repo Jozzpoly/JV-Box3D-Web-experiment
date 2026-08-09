@@ -42,6 +42,24 @@ export type VehicleVisualBindingSourceV1 =
       segmentId: string;
       endpoint: "START" | "END";
       axis: VehicleVisualAxisV1;
+    }>
+  | Readonly<{
+      kind: "PART_PAIR_STRETCH";
+      startPartId: string;
+      startLocalPosition: readonly [number, number, number];
+      endPartId: string;
+      endLocalPosition: readonly [number, number, number];
+      axis: VehicleVisualAxisV1;
+      referenceLengthMeters: number;
+    }>
+  | Readonly<{
+      kind: "PART_PAIR_ENDPOINT_AIM";
+      startPartId: string;
+      startLocalPosition: readonly [number, number, number];
+      endPartId: string;
+      endLocalPosition: readonly [number, number, number];
+      endpoint: "START" | "END";
+      axis: VehicleVisualAxisV1;
     }>;
 
 export interface VehicleVisualBindingV1 {
@@ -251,6 +269,81 @@ function parseSource(
       axis: visualAxis(source["axis"], `${label}.axis`),
     });
   }
+  if (kind === "PART_PAIR_STRETCH") {
+    exactKeys(
+      source,
+      [
+        "axis",
+        "endLocalPosition",
+        "endPartId",
+        "kind",
+        "referenceLengthMeters",
+        "startLocalPosition",
+        "startPartId",
+      ],
+      label,
+    );
+    return Object.freeze({
+      kind,
+      startPartId: requireStableIdentifier(
+        source["startPartId"],
+        `${label}.startPartId`,
+      ),
+      startLocalPosition: Object.freeze(
+        tuple3(source["startLocalPosition"], `${label}.startLocalPosition`),
+      ),
+      endPartId: requireStableIdentifier(
+        source["endPartId"],
+        `${label}.endPartId`,
+      ),
+      endLocalPosition: Object.freeze(
+        tuple3(source["endLocalPosition"], `${label}.endLocalPosition`),
+      ),
+      axis: visualAxis(source["axis"], `${label}.axis`),
+      referenceLengthMeters: positiveFinite(
+        source["referenceLengthMeters"],
+        `${label}.referenceLengthMeters`,
+      ),
+    });
+  }
+  if (kind === "PART_PAIR_ENDPOINT_AIM") {
+    exactKeys(
+      source,
+      [
+        "axis",
+        "endLocalPosition",
+        "endPartId",
+        "endpoint",
+        "kind",
+        "startLocalPosition",
+        "startPartId",
+      ],
+      label,
+    );
+    const endpoint = source["endpoint"];
+    if (endpoint !== "START" && endpoint !== "END") {
+      reject(`${label}.endpoint must equal START or END`);
+    }
+    return Object.freeze({
+      kind,
+      startPartId: requireStableIdentifier(
+        source["startPartId"],
+        `${label}.startPartId`,
+      ),
+      startLocalPosition: Object.freeze(
+        tuple3(source["startLocalPosition"], `${label}.startLocalPosition`),
+      ),
+      endPartId: requireStableIdentifier(
+        source["endPartId"],
+        `${label}.endPartId`,
+      ),
+      endLocalPosition: Object.freeze(
+        tuple3(source["endLocalPosition"], `${label}.endLocalPosition`),
+      ),
+      endpoint,
+      axis: visualAxis(source["axis"], `${label}.axis`),
+    });
+  }
   reject(`${label}.kind is unsupported: ${kind}`);
 }
 
@@ -390,6 +483,18 @@ export function assertM6FullRigVisualPackage(
         reject(`unknown M6 partId: ${binding.source.partId}`);
       }
       coveredParts.add(binding.source.partId);
+    } else if (
+      binding.source.kind === "PART_PAIR_STRETCH" ||
+      binding.source.kind === "PART_PAIR_ENDPOINT_AIM"
+    ) {
+      for (const partId of [
+        binding.source.startPartId,
+        binding.source.endPartId,
+      ]) {
+        if (!knownParts.has(partId)) {
+          reject(`unknown M6 partId: ${partId}`);
+        }
+      }
     } else {
       if (!knownSegments.has(binding.source.segmentId)) {
         reject(`unknown M6 segmentId: ${binding.source.segmentId}`);

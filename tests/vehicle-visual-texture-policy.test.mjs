@@ -4,8 +4,8 @@ import { readFile } from "node:fs/promises";
 import { validateVehicleVisualAssetV1 } from "../.test-dist/visual/vehicle-visual-asset-gate.js";
 import { validateVehicleVisualPackageV1 } from "../.test-dist/visual/vehicle-visual-package.js";
 
-const MANIFEST = "public/vehicles/m6-owner-r1/m6-owner-rigid-r1.visual.json";
-const GLB = "public/vehicles/m6-owner-r1/models/m6-owner-rigid-r1.glb";
+const MANIFEST = "public/vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json";
+const GLB = "public/vehicles/m6-owner-r2/models/m6-owner-full-rig-r2.glb";
 
 function mutateGlbJson(bytes, mutate) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);

@@ -284,3 +284,76 @@ test("missing runtime sources fail before any partial binding result is returned
     /missing part m6\.chassis/,
   );
 });
+
+test("PART_PAIR_STRETCH follows endpoints owned by two moving rigid parts", () => {
+  const visualFrame = frame();
+  const chassis = visualFrame.parts.find((part) => part.partId === "m6.chassis");
+  const knuckle = visualFrame.parts.find((part) => part.partId === "m6.fl.knuckle");
+  chassis.transform = {
+    position: { x: 10, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0, w: 1 },
+  };
+  knuckle.transform = {
+    position: { x: 10, y: 0, z: 4 },
+    rotation: { x: 0, y: 0, z: 0, w: 1 },
+  };
+  const base = packageWith();
+  const input = structuredClone(base);
+  input.bindings.push({
+    bindingId: "bind.cardan.mid",
+    nodeName: "JV_CardanMid",
+    source: {
+      kind: "PART_PAIR_STRETCH",
+      startPartId: "m6.chassis",
+      startLocalPosition: [0, 0, 1],
+      endPartId: "m6.fl.knuckle",
+      endLocalPosition: [0, 0, -1],
+      axis: "+Y",
+      referenceLengthMeters: 1,
+    },
+    localFromSource: identityTransform,
+  });
+  const visual = validateVehicleVisualPackageV1(input);
+  const resolved = binding(resolveVehicleVisualBindingsV1(visual, visualFrame), "bind.cardan.mid");
+  closePoint(
+    transformVehicleVisualPointV1(resolved.worldFromNode, { x: 0, y: -0.5, z: 0 }),
+    { x: 10, y: 0, z: 1 },
+  );
+  closePoint(
+    transformVehicleVisualPointV1(resolved.worldFromNode, { x: 0, y: 0.5, z: 0 }),
+    { x: 10, y: 0, z: 3 },
+  );
+});
+
+test("PART_PAIR_ENDPOINT_AIM anchors its pivot at the selected live body endpoint", () => {
+  const visualFrame = frame();
+  const chassis = visualFrame.parts.find((part) => part.partId === "m6.chassis");
+  const knuckle = visualFrame.parts.find((part) => part.partId === "m6.fl.knuckle");
+  chassis.transform = { position: { x: 1, y: 2, z: 3 }, rotation: { x: 0, y: 0, z: 0, w: 1 } };
+  knuckle.transform = { position: { x: 5, y: 2, z: 3 }, rotation: { x: 0, y: 0, z: 0, w: 1 } };
+  const input = structuredClone(packageWith());
+  input.bindings.push({
+    bindingId: "bind.cardan.end",
+    nodeName: "JV_CardanEnd",
+    source: {
+      kind: "PART_PAIR_ENDPOINT_AIM",
+      startPartId: "m6.chassis",
+      startLocalPosition: [1, 0, 0],
+      endPartId: "m6.fl.knuckle",
+      endLocalPosition: [-1, 0, 0],
+      endpoint: "END",
+      axis: "+X",
+    },
+    localFromSource: identityTransform,
+  });
+  const visual = validateVehicleVisualPackageV1(input);
+  const resolved = binding(resolveVehicleVisualBindingsV1(visual, visualFrame), "bind.cardan.end");
+  closePoint(
+    transformVehicleVisualPointV1(resolved.worldFromNode, { x: 0, y: 0, z: 0 }),
+    { x: 4, y: 2, z: 3 },
+  );
+  closePoint(
+    transformVehicleVisualPointV1(resolved.worldFromNode, { x: 1, y: 0, z: 0 }),
+    { x: 3, y: 2, z: 3 },
+  );
+});

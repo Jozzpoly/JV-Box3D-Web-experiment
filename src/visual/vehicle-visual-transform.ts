@@ -200,6 +200,17 @@ function partTransformMatrix(
   return matrixFromTrs(position, rotation, vector(1, 1, 1));
 }
 
+function transformPointByMatrix(
+  matrix: VehicleVisualMatrixV1,
+  point: readonly [number, number, number],
+): Vec3 {
+  return vector(
+    matrix[0]! * point[0] + matrix[4]! * point[1] + matrix[8]! * point[2] + matrix[12]!,
+    matrix[1]! * point[0] + matrix[5]! * point[1] + matrix[9]! * point[2] + matrix[13]!,
+    matrix[2]! * point[0] + matrix[6]! * point[1] + matrix[10]! * point[2] + matrix[14]!,
+  );
+}
+
 function stretchScale(
   axis: VehicleVisualAxisV1,
   factor: number,
@@ -222,8 +233,12 @@ function resolveSegmentSourceMatrix(
   start: VehicleVisualVector3V1,
   end: VehicleVisualVector3V1,
 ): VehicleVisualMatrixV1 {
-  if (binding.source.kind === "PART") {
-    throw new Error("PART binding cannot resolve from a segment.");
+  if (
+    binding.source.kind === "PART" ||
+    binding.source.kind === "PART_PAIR_STRETCH" ||
+    binding.source.kind === "PART_PAIR_ENDPOINT_AIM"
+  ) {
+    throw new Error(`${binding.source.kind} binding cannot resolve from a frame segment.`);
   }
   const startVector = vector(start.x, start.y, start.z);
   const endVector = vector(end.x, end.y, end.z);
@@ -262,6 +277,46 @@ function resolveSegmentSourceMatrix(
   );
 }
 
+function resolvePartPairSourceMatrix(
+  binding: VehicleVisualBindingV1,
+  startWorld: Vec3,
+  endWorld: Vec3,
+): VehicleVisualMatrixV1 {
+  if (
+    binding.source.kind !== "PART_PAIR_STRETCH" &&
+    binding.source.kind !== "PART_PAIR_ENDPOINT_AIM"
+  ) {
+    throw new Error("Only PART_PAIR bindings can resolve from two part endpoints.");
+  }
+  const forward = subtract(endWorld, startWorld);
+  const measuredLength = length(forward);
+  if (!(measuredLength > EPSILON)) {
+    throw new Error(`${binding.bindingId} has zero part-pair visual length.`);
+  }
+  if (binding.source.kind === "PART_PAIR_STRETCH") {
+    const direction = scale(forward, 1 / measuredLength);
+    return matrixFromTrs(
+      scale(add(startWorld, endWorld), 0.5),
+      shortestArcRotation(axisVector(binding.source.axis), direction),
+      stretchScale(
+        binding.source.axis,
+        measuredLength / binding.source.referenceLengthMeters,
+      ),
+    );
+  }
+  const atStart = binding.source.endpoint === "START";
+  const origin = atStart ? startWorld : endWorld;
+  const direction = normalize(
+    atStart ? forward : scale(forward, -1),
+    `${binding.bindingId} part-pair aim direction`,
+  );
+  return matrixFromTrs(
+    origin,
+    shortestArcRotation(axisVector(binding.source.axis), direction),
+    vector(1, 1, 1),
+  );
+}
+
 export function resolveVehicleVisualBindingsV1(
   visual: VehicleVisualPackageV1,
   frame: VehicleVisualFrameV1,
@@ -280,6 +335,41 @@ export function resolveVehicleVisualBindingsV1(
         worldFromSource = partTransformMatrix(
           part.transform.position,
           part.transform.rotation,
+        );
+      } else if (
+        binding.source.kind === "PART_PAIR_STRETCH" ||
+        binding.source.kind === "PART_PAIR_ENDPOINT_AIM"
+      ) {
+        const startPart = indexed.parts.get(binding.source.startPartId);
+        const endPart = indexed.parts.get(binding.source.endPartId);
+        if (startPart === undefined) {
+          throw new Error(
+            `Vehicle visual frame is missing part ${binding.source.startPartId}.`,
+          );
+        }
+        if (endPart === undefined) {
+          throw new Error(
+            `Vehicle visual frame is missing part ${binding.source.endPartId}.`,
+          );
+        }
+        const startMatrix = partTransformMatrix(
+          startPart.transform.position,
+          startPart.transform.rotation,
+        );
+        const endMatrix = partTransformMatrix(
+          endPart.transform.position,
+          endPart.transform.rotation,
+        );
+        worldFromSource = resolvePartPairSourceMatrix(
+          binding,
+          transformPointByMatrix(
+            startMatrix,
+            binding.source.startLocalPosition,
+          ),
+          transformPointByMatrix(
+            endMatrix,
+            binding.source.endLocalPosition,
+          ),
         );
       } else {
         const segment = indexed.segments.get(binding.source.segmentId);

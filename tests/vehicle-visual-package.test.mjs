@@ -226,3 +226,42 @@ test("visual package loader validates HTTP and the strict payload", async () => 
     /HTTP 404/,
   );
 });
+
+test("part-pair visual bindings validate two live body endpoints without creating physics", () => {
+  const input = validPackage();
+  input.bindings.push(
+    {
+      bindingId: "bind.m6.fl.cardan.mid",
+      nodeName: "JV_CardanMid_FL",
+      source: {
+        kind: "PART_PAIR_STRETCH",
+        startPartId: "m6.chassis",
+        startLocalPosition: [1, 0, -0.3],
+        endPartId: "m6.fl.knuckle",
+        endLocalPosition: [0, 0, 0.1],
+        axis: "-X",
+        referenceLengthMeters: 0.5,
+      },
+      localFromSource: identityTransform,
+    },
+    {
+      bindingId: "bind.m6.fl.cardan.hub",
+      nodeName: "JV_CardanHub_FL",
+      source: {
+        kind: "PART_PAIR_ENDPOINT_AIM",
+        startPartId: "m6.chassis",
+        startLocalPosition: [1, 0, -0.3],
+        endPartId: "m6.fl.knuckle",
+        endLocalPosition: [0, 0, 0.1],
+        endpoint: "END",
+        axis: "+X",
+      },
+      localFromSource: identityTransform,
+    },
+  );
+  assert.doesNotThrow(() => validateVehicleVisualPackageV1(input));
+
+  const invalid = structuredClone(input);
+  invalid.bindings.at(-1).source.endPartId = "m6.unknown.knuckle";
+  assert.throws(() => validateVehicleVisualPackageV1(invalid), /unknown M6 partId/);
+});

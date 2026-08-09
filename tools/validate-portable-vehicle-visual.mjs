@@ -8,20 +8,20 @@ import { assertVehicleVisualBudgetV1 } from "../.test-dist/visual/vehicle-visual
 import { assertVehicleVisualCpuOwnershipV1 } from "../.test-dist/visual/vehicle-visual-cpu-gate.js";
 import { validateVehicleVisualPackageV1 } from "../.test-dist/visual/vehicle-visual-package.js";
 
-const EXPECTED_OWNER_ID = "m6-owner-rigid-r1";
+const EXPECTED_OWNER_ID = "m6-owner-full-rig-r2";
 const EXPECTED_OWNER_SHA256 =
-  "ecf537a5131045972611f6a4e8df63b766c26ed54986709d43984ae52ddefecf";
-const EXPECTED_OWNER_BYTES = 605948;
+  "5b6421cb9991adff4a467b559ec2b69e25ea1667bd7cfee1e189d3d94cd116b3";
+const EXPECTED_OWNER_BYTES = 829076;
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const dist = resolve(root, "dist");
 const packagePath = resolve(
   dist,
-  "vehicles/m6-owner-r1/m6-owner-rigid-r1.visual.json",
+  "vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json",
 );
 const packageJson = JSON.parse(await readFile(packagePath, "utf8"));
 const visual = validateVehicleVisualPackageV1(packageJson);
-const glbPath = resolve(dist, "vehicles/m6-owner-r1", visual.asset.url);
+const glbPath = resolve(dist, "vehicles/m6-owner-r2", visual.asset.url);
 const glb = new Uint8Array(await readFile(glbPath));
 const receipt = await validateVehicleVisualAssetV1(visual, glb, null);
 const cpu = sealGlbRigidCpuAssetV1(
@@ -38,11 +38,11 @@ if (
   visual.asset.sha256 !== EXPECTED_OWNER_SHA256 ||
   visual.asset.byteLength !== EXPECTED_OWNER_BYTES ||
   glb.byteLength !== EXPECTED_OWNER_BYTES ||
-  receipt.boundNodeCount !== 26 ||
-  ownership.boundRootCount !== 26 ||
-  budget.nodes !== 26 ||
-  cpu.images.length !== 2 ||
-  cpu.textures.length !== 2
+  receipt.boundNodeCount !== 54 ||
+  ownership.boundRootCount !== 54 ||
+  budget.nodes !== 54 ||
+  cpu.images.length !== 3 ||
+  cpu.textures.length !== 3
 ) {
   throw new Error(
     `Portable owner vehicle contract drifted: id=${visual.id}, bytes=${glb.byteLength}, bindings=${receipt.boundNodeCount}, ownedRoots=${ownership.boundRootCount}, nodes=${budget.nodes}, images=${cpu.images.length}, textures=${cpu.textures.length}.`,
