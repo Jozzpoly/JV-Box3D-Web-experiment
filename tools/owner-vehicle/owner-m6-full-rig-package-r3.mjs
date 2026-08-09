@@ -10,6 +10,7 @@ import { buildOwnerM6FullRigPackageR2 } from './owner-m6-full-rig-package-r2.mjs
 import {
   deriveFrontSuspensionReferencesR3,
   calibrateFrontWishbonePieceR3,
+  calibrateFrontKnucklePieceR3,
 } from './owner-m6-reference-calibration-r3.mjs';
 
 const GLB_MAGIC = 0x46546c67;
@@ -18,6 +19,10 @@ const GLB_JSON_CHUNK = 0x4e4f534a;
 const GLB_BIN_CHUNK = 0x004e4942;
 const FRONT_CORNERS = Object.freeze(['fl', 'fr']);
 const ARM_KINDS = Object.freeze(['upper', 'lower']);
+const FRONT_KNUCKLE_PIECES = Object.freeze([
+  ['Socket_ChassisMount_b', 'socket-chassismount-b'],
+  ['Socket_WheelCenter', 'socket-wheelcenter'],
+]);
 const R2_NODE_PREFIX = 'JV_R2_';
 const R3_NODE_PREFIX = 'JV_R3_';
 
@@ -170,6 +175,7 @@ export function buildOwnerM6FullRigPackageR3(input) {
   const references = deriveFrontSuspensionReferencesR3(front);
   const config = parseM6FactoryConfig(input.factoryReceiptText);
   const armReports = {};
+  const knuckleReports = {};
 
   for (const corner of FRONT_CORNERS) {
     const geometry = cornerRestGeometry(config, corner);
@@ -180,6 +186,19 @@ export function buildOwnerM6FullRigPackageR3(input) {
       const calibrated = calibrateFrontWishbonePieceR3(piece, references, geometry, which);
       replaceBindingGeometry(decoded, r2.visualPackage, `owner.${corner}.${which}-arm`, calibrated.primitives);
       armReports[corner][which] = calibrated.report;
+    }
+
+    knuckleReports[corner] = {};
+    for (const [pieceName, bindingToken] of FRONT_KNUCKLE_PIECES) {
+      const piece = requirePiece(front, pieceName, `${corner} front upright`);
+      const calibrated = calibrateFrontKnucklePieceR3(piece, references, geometry);
+      replaceBindingGeometry(
+        decoded,
+        r2.visualPackage,
+        `owner.${corner}.knuckle.${bindingToken}`,
+        calibrated.primitives,
+      );
+      knuckleReports[corner][bindingToken] = calibrated.report;
     }
   }
 
@@ -203,7 +222,11 @@ export function buildOwnerM6FullRigPackageR3(input) {
     Object.entries(r2.report.calibration.corners).map(([corner, value]) => [
       corner,
       FRONT_CORNERS.includes(corner)
-        ? Object.freeze({ ...value, arms: Object.freeze(armReports[corner]) })
+        ? Object.freeze({
+            ...value,
+            arms: Object.freeze(armReports[corner]),
+            knuckle: Object.freeze(knuckleReports[corner]),
+          })
         : value,
     ]),
   );
@@ -212,6 +235,7 @@ export function buildOwnerM6FullRigPackageR3(input) {
     schema: 'JV_WEB_OWNER_M6_FULL_RIG_R3',
     calibrationStrategy: Object.freeze({
       frontWishbones: 'R3_AUTHORED_REFERENCE_PATCH_OVER_EXACT_R2',
+      frontKnuckle: 'R3_AUTHORED_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
       rearWishbones: 'R2_BOUNDS_INHERITED',
       otherSubsystems: 'R2_BYTE_LAYOUT_INHERITED',
     }),

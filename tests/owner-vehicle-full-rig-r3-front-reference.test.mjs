@@ -10,8 +10,12 @@ const contractRoot = 'assets/owner-vehicle/contracts';
 const EXPECTED_CHANGED_BINDINGS = Object.freeze([
   'owner.fl.upper-arm',
   'owner.fl.lower-arm',
+  'owner.fl.knuckle.socket-chassismount-b',
+  'owner.fl.knuckle.socket-wheelcenter',
   'owner.fr.upper-arm',
   'owner.fr.lower-arm',
+  'owner.fr.knuckle.socket-chassismount-b',
+  'owner.fr.knuckle.socket-wheelcenter',
 ]);
 
 async function inputs() {
@@ -88,16 +92,17 @@ test('R3 front-reference package is deterministic and keeps R2 source authority'
   assert.equal(a.report.schema, 'JV_WEB_OWNER_M6_FULL_RIG_R3');
   assert.deepEqual(a.report.calibrationStrategy, {
     frontWishbones: 'R3_AUTHORED_REFERENCE_PATCH_OVER_EXACT_R2',
+    frontKnuckle: 'R3_AUTHORED_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
     rearWishbones: 'R2_BOUNDS_INHERITED',
     otherSubsystems: 'R2_BYTE_LAYOUT_INHERITED',
   });
   assert.equal(a.report.output.realBindingCount, 53);
   assert.deepEqual(a.report.output.diagnosticBindingIds, ['diagnostic.rack.coverage']);
-  assert.equal(a.glb.byteLength, 829088);
-  assert.equal(a.report.output.sha256, '27ca3c041ec160b3718a7840f092aabdec5d069f287a260c0b9de1ff16100540');
+  assert.equal(a.glb.byteLength, 829128);
+  assert.equal(a.report.output.sha256, '2a9b368a6e3a24c601cf0ee05d2739a12783e70a5147fa7d07f34e0cbe68ab8e');
 });
 
-test('R3 blast radius is exactly the four front wishbone geometry bindings', async () => {
+test('R3 blast radius is exactly the front wishbone and knuckle geometry bindings', async () => {
   const input = await inputs();
   const r2 = buildOwnerM6FullRigPackageR2(input);
   const r3 = buildOwnerM6FullRigPackageR3(input);
@@ -143,6 +148,17 @@ test('R3 front wishbones map authored references to physical hardpoints with one
   close(corners.fl.arms.lower.axialScale, corners.fr.arms.lower.axialScale);
   close(corners.fl.arms.upper.spreadScale, corners.fr.arms.upper.spreadScale);
   close(corners.fl.arms.lower.spreadScale, corners.fr.arms.lower.spreadScale);
+  for (const corner of ['fl', 'fr']) {
+    for (const token of ['socket-chassismount-b', 'socket-wheelcenter']) {
+      const knuckle = corners[corner].knuckle[token];
+      close(knuckle.wheelCenterErrorMeters, 0);
+      close(knuckle.upperBallErrorMeters, 0, 1e-15);
+      close(knuckle.lowerBallErrorMeters, 0, 1e-15);
+      assert.equal(knuckle.mirrored, corner === 'fr');
+    }
+  }
+  close(corners.fl.knuckle['socket-chassismount-b'].radialScale, corners.fr.knuckle['socket-chassismount-b'].radialScale);
+  close(corners.fl.knuckle['socket-chassismount-b'].kingpinScale, corners.fr.knuckle['socket-chassismount-b'].kingpinScale);
   assert.equal(corners.rl.arms.upper.restEndpointErrorMeters, 0);
   assert.equal(corners.rr.arms.upper.restEndpointErrorMeters, 0);
 });

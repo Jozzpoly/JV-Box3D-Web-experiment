@@ -10,8 +10,8 @@ import { validateVehicleVisualPackageV1 } from "../.test-dist/visual/vehicle-vis
 
 const EXPECTED_OWNER_ID = "m6-owner-full-rig-r3";
 const EXPECTED_OWNER_SHA256 =
-  "27ca3c041ec160b3718a7840f092aabdec5d069f287a260c0b9de1ff16100540";
-const EXPECTED_OWNER_BYTES = 829088;
+  "2a9b368a6e3a24c601cf0ee05d2739a12783e70a5147fa7d07f34e0cbe68ab8e";
+const EXPECTED_OWNER_BYTES = 829128;
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const dist = resolve(root, "dist");
