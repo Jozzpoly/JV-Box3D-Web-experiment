@@ -2,6 +2,7 @@ import type { JvWorldData } from "../scene/jv-world-contract.js";
 import type { M6TraceFrame } from "../vehicle/m6/m6-topology-world.js";
 import { JvWorldRenderer } from "./jv-world-renderer.js";
 import { getJvProductViewSettings } from "./jv-product-view-settings.js";
+import { M6OwnerVehicleLayer } from "./m6-owner-vehicle-layer.js";
 
 type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 type Rotation = Readonly<{ x: number; y: number; z: number; w: number }>;
@@ -355,6 +356,7 @@ export class M6WorldRenderer {
   readonly #box: Mesh;
   readonly #cylinder: Mesh;
   readonly #line: Mesh;
+  readonly #ownerVehicle: M6OwnerVehicleLayer;
   readonly #events = new AbortController();
   #world: JvWorldRenderer | null = null;
   #yaw = -0.78;
@@ -408,6 +410,7 @@ export class M6WorldRenderer {
     this.#box = boxMesh(gl);
     this.#cylinder = cylinderMesh(gl);
     this.#line = lineMesh(gl);
+    this.#ownerVehicle = new M6OwnerVehicleLayer(gl);
     gl.enable(gl.DEPTH_TEST);
     this.#installCameraControls();
     this.#canvas.addEventListener(
@@ -426,6 +429,13 @@ export class M6WorldRenderer {
     }
     this.#world?.dispose();
     this.#world = new JvWorldRenderer(this.#gl, world);
+  }
+
+  loadOwnerVehicle(pageBaseUrl: string, packageUrl: string): Promise<void> {
+    if (this.#disposed) {
+      return Promise.reject(new Error("M6WorldRenderer has been disposed."));
+    }
+    return this.#ownerVehicle.load(pageBaseUrl, packageUrl);
   }
 
   render(trace: M6TraceFrame): void {
@@ -483,35 +493,43 @@ export class M6WorldRenderer {
     }
 
     const half = trace.visualGeometry.chassisHalfExtents;
-    this.#draw(
-      this.#box,
+    const ownerVehicleDrawn = this.#ownerVehicle.render(
+      trace.visualFrame,
       viewProjection,
-      modelMatrix(
-        trace.chassisPosition,
-        trace.chassisRotation,
-        half,
-      ),
-      [0.22, 0.52, 0.92, 1],
     );
+    gl.useProgram(this.#program);
 
-    const frontMarker = add(
-      trace.chassisPosition,
-      rotateVector(trace.chassisRotation, {
-        x: half.x + 0.12,
-        y: 0,
-        z: 0,
-      }),
-    );
-    this.#draw(
-      this.#box,
-      viewProjection,
-      modelMatrix(
-        frontMarker,
-        trace.chassisRotation,
-        { x: 0.12, y: 0.08, z: 0.16 },
-      ),
-      [0.96, 0.32, 0.2, 1],
-    );
+    if (!ownerVehicleDrawn) {
+      this.#draw(
+        this.#box,
+        viewProjection,
+        modelMatrix(
+          trace.chassisPosition,
+          trace.chassisRotation,
+          half,
+        ),
+        [0.22, 0.52, 0.92, 1],
+      );
+
+      const frontMarker = add(
+        trace.chassisPosition,
+        rotateVector(trace.chassisRotation, {
+          x: half.x + 0.12,
+          y: 0,
+          z: 0,
+        }),
+      );
+      this.#draw(
+        this.#box,
+        viewProjection,
+        modelMatrix(
+          frontMarker,
+          trace.chassisRotation,
+          { x: 0.12, y: 0.08, z: 0.16 },
+        ),
+        [0.96, 0.32, 0.2, 1],
+      );
+    }
 
     this.#draw(
       this.#box,
@@ -528,24 +546,26 @@ export class M6WorldRenderer {
       [0.96, 0.68, 0.16, 1],
     );
 
-    trace.corners.forEach((corner, index) => {
-      this.#draw(
-        this.#cylinder,
-        viewProjection,
-        modelMatrix(
-          corner.wheelPosition,
-          corner.wheelRotation,
-          {
-            x: trace.visualGeometry.wheelRadius,
-            y: trace.visualGeometry.wheelWidth / 2,
-            z: trace.visualGeometry.wheelRadius,
-          },
-        ),
-        index < 2
-          ? [0.88, 0.92, 0.98, 1]
-          : [0.56, 0.62, 0.72, 1],
-      );
-    });
+    if (!ownerVehicleDrawn) {
+      trace.corners.forEach((corner, index) => {
+        this.#draw(
+          this.#cylinder,
+          viewProjection,
+          modelMatrix(
+            corner.wheelPosition,
+            corner.wheelRotation,
+            {
+              x: trace.visualGeometry.wheelRadius,
+              y: trace.visualGeometry.wheelWidth / 2,
+              z: trace.visualGeometry.wheelRadius,
+            },
+          ),
+          index < 2
+            ? [0.88, 0.92, 0.98, 1]
+            : [0.56, 0.62, 0.72, 1],
+        );
+      });
+    }
 
     const rackLeft = add(
       trace.rackPosition,
@@ -599,6 +619,7 @@ export class M6WorldRenderer {
     }
     this.#pointer = null;
     const gl = this.#gl;
+    this.#ownerVehicle.dispose();
     gl.deleteBuffer(this.#box.vertexBuffer);
     gl.deleteBuffer(this.#box.indexBuffer);
     gl.deleteBuffer(this.#cylinder.vertexBuffer);

@@ -46,6 +46,16 @@ export function sealGlbRigidCpuAssetV1(
     nodeIndexByName: immutableReadonlyMap(asset.nodeIndexByName),
     meshes: Object.freeze([...asset.meshes]),
     materials: Object.freeze([...asset.materials]),
+    images: Object.freeze(
+      asset.images.map((image) =>
+        Object.freeze({
+          ...image,
+          bytes: new Uint8Array(image.bytes),
+        }),
+      ),
+    ),
+    samplers: Object.freeze([...asset.samplers]),
+    textures: Object.freeze([...asset.textures]),
     primitiveCount: asset.primitiveCount,
     triangleCount: asset.triangleCount,
   });

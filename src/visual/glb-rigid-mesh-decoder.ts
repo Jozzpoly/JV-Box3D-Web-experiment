@@ -6,13 +6,43 @@ const GLB_BIN_CHUNK = 0x004e4942;
 const GLTF_FLOAT = 5126;
 const GLTF_UNSIGNED_BYTE = 5121;
 const GLTF_UNSIGNED_SHORT = 5123;
+const GLTF_NEAREST = 9728;
+const GLTF_CLAMP_TO_EDGE = 33071;
 
 type JsonRecord = Record<string, unknown>;
+
+export type GlbRigidAlphaModeV1 = "OPAQUE" | "MASK";
+
+export interface GlbRigidImageV1 {
+  readonly name: string | null;
+  readonly mimeType: "image/png";
+  readonly bytes: Uint8Array;
+  readonly width: number;
+  readonly height: number;
+  readonly decodedRgbaBytes: number;
+}
+
+export interface GlbRigidSamplerV1 {
+  readonly name: string | null;
+  readonly magFilter: typeof GLTF_NEAREST;
+  readonly minFilter: typeof GLTF_NEAREST;
+  readonly wrapS: typeof GLTF_CLAMP_TO_EDGE;
+  readonly wrapT: typeof GLTF_CLAMP_TO_EDGE;
+}
+
+export interface GlbRigidTextureV1 {
+  readonly name: string | null;
+  readonly sourceImageIndex: number;
+  readonly samplerIndex: number;
+}
 
 export interface GlbRigidMaterialV1 {
   readonly name: string | null;
   readonly baseColorFactor: readonly [number, number, number, number];
   readonly doubleSided: boolean;
+  readonly baseColorTextureIndex: number | null;
+  readonly alphaMode: GlbRigidAlphaModeV1;
+  readonly alphaCutoff: number;
 }
 
 export interface GlbRigidPrimitiveV1 {
@@ -42,6 +72,9 @@ export interface GlbRigidCpuAssetV1 {
   readonly nodeIndexByName: ReadonlyMap<string, number>;
   readonly meshes: readonly GlbRigidMeshV1[];
   readonly materials: readonly GlbRigidMaterialV1[];
+  readonly images: readonly GlbRigidImageV1[];
+  readonly samplers: readonly GlbRigidSamplerV1[];
+  readonly textures: readonly GlbRigidTextureV1[];
   readonly primitiveCount: number;
   readonly triangleCount: number;
 }
@@ -327,7 +360,131 @@ function decodeIndices(
   return result;
 }
 
-function parseMaterials(root: JsonRecord): readonly GlbRigidMaterialV1[] {
+function parsePngDimensions(bytes: Uint8Array, label: string): readonly [number, number] {
+  const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (
+    bytes.byteLength < 24 ||
+    signature.some((value, index) => bytes[index] !== value)
+  ) {
+    reject(`${label} must contain one valid PNG signature and IHDR`);
+  }
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (
+    view.getUint32(8, false) !== 13 ||
+    bytes[12] !== 0x49 ||
+    bytes[13] !== 0x48 ||
+    bytes[14] !== 0x44 ||
+    bytes[15] !== 0x52
+  ) {
+    reject(`${label} must begin with one standard PNG IHDR chunk`);
+  }
+  const width = view.getUint32(16, false);
+  const height = view.getUint32(20, false);
+  if (width === 0 || height === 0) {
+    reject(`${label} dimensions must be positive`);
+  }
+  const decodedRgbaBytes = width * height * 4;
+  if (!Number.isSafeInteger(decodedRgbaBytes)) {
+    reject(`${label} decoded RGBA byte size is unsafe`);
+  }
+  return Object.freeze([width, height]);
+}
+
+function parseImages(
+  root: JsonRecord,
+  views: readonly BufferView[],
+  binary: Uint8Array,
+): readonly GlbRigidImageV1[] {
+  return Object.freeze(
+    optionalArray(root["images"], "glTF images").map((value, index) => {
+      const label = `glTF images[${index}]`;
+      const record = object(value, label);
+      if (record["mimeType"] !== "image/png") {
+        reject(`${label}.mimeType must equal image/png`);
+      }
+      const viewIndex = integer(record["bufferView"], `${label}.bufferView`);
+      const imageView = views[viewIndex];
+      if (imageView === undefined) {
+        reject(`${label}.bufferView references missing view ${viewIndex}`);
+      }
+      if (imageView.byteStride !== null) {
+        reject(`${label}.bufferView must not use byteStride`);
+      }
+      const start = imageView.byteOffset;
+      const end = start + imageView.byteLength;
+      if (end > binary.byteLength) {
+        reject(`${label}.bufferView exceeds the embedded BIN chunk`);
+      }
+      const bytes = binary.slice(start, end);
+      const [width, height] = parsePngDimensions(bytes, label);
+      return Object.freeze({
+        name: typeof record["name"] === "string" ? record["name"] : null,
+        mimeType: "image/png" as const,
+        bytes,
+        width,
+        height,
+        decodedRgbaBytes: width * height * 4,
+      });
+    }),
+  );
+}
+
+function parseSamplers(root: JsonRecord): readonly GlbRigidSamplerV1[] {
+  return Object.freeze(
+    optionalArray(root["samplers"], "glTF samplers").map((value, index) => {
+      const label = `glTF samplers[${index}]`;
+      const record = object(value, label);
+      const magFilter = integer(record["magFilter"], `${label}.magFilter`);
+      const minFilter = integer(record["minFilter"], `${label}.minFilter`);
+      const wrapS = integer(record["wrapS"], `${label}.wrapS`);
+      const wrapT = integer(record["wrapT"], `${label}.wrapT`);
+      if (magFilter !== GLTF_NEAREST || minFilter !== GLTF_NEAREST) {
+        reject(`${label} must use NEAREST filtering`);
+      }
+      if (wrapS !== GLTF_CLAMP_TO_EDGE || wrapT !== GLTF_CLAMP_TO_EDGE) {
+        reject(`${label} must use CLAMP_TO_EDGE wrapping`);
+      }
+      return Object.freeze({
+        name: typeof record["name"] === "string" ? record["name"] : null,
+        magFilter: GLTF_NEAREST,
+        minFilter: GLTF_NEAREST,
+        wrapS: GLTF_CLAMP_TO_EDGE,
+        wrapT: GLTF_CLAMP_TO_EDGE,
+      });
+    }),
+  );
+}
+
+function parseTextures(
+  root: JsonRecord,
+  images: readonly GlbRigidImageV1[],
+  samplers: readonly GlbRigidSamplerV1[],
+): readonly GlbRigidTextureV1[] {
+  return Object.freeze(
+    optionalArray(root["textures"], "glTF textures").map((value, index) => {
+      const label = `glTF textures[${index}]`;
+      const record = object(value, label);
+      const sourceImageIndex = integer(record["source"], `${label}.source`);
+      const samplerIndex = integer(record["sampler"], `${label}.sampler`);
+      if (images[sourceImageIndex] === undefined) {
+        reject(`${label}.source references missing image ${sourceImageIndex}`);
+      }
+      if (samplers[samplerIndex] === undefined) {
+        reject(`${label}.sampler references missing sampler ${samplerIndex}`);
+      }
+      return Object.freeze({
+        name: typeof record["name"] === "string" ? record["name"] : null,
+        sourceImageIndex,
+        samplerIndex,
+      });
+    }),
+  );
+}
+
+function parseMaterials(
+  root: JsonRecord,
+  textureCount: number,
+): readonly GlbRigidMaterialV1[] {
   return Object.freeze(
     optionalArray(root["materials"], "glTF materials").map((value, index) => {
       const label = `glTF materials[${index}]`;
@@ -349,6 +506,41 @@ function parseMaterials(root: JsonRecord): readonly GlbRigidMaterialV1[] {
       if (factor.length !== 4 || factor.some((entry) => entry < 0 || entry > 1)) {
         reject(`${label}.baseColorFactor must contain four values in [0,1]`);
       }
+      let baseColorTextureIndex: number | null = null;
+      if (pbr?.["baseColorTexture"] !== undefined) {
+        const texture = object(
+          pbr["baseColorTexture"],
+          `${label}.pbrMetallicRoughness.baseColorTexture`,
+        );
+        baseColorTextureIndex = integer(
+          texture["index"],
+          `${label}.pbrMetallicRoughness.baseColorTexture.index`,
+        );
+        if (baseColorTextureIndex >= textureCount) {
+          reject(`${label}.baseColorTexture references missing texture ${baseColorTextureIndex}`);
+        }
+        if (
+          texture["texCoord"] !== undefined &&
+          integer(
+            texture["texCoord"],
+            `${label}.pbrMetallicRoughness.baseColorTexture.texCoord`,
+          ) !== 0
+        ) {
+          reject(`${label}.baseColorTexture.texCoord must equal 0`);
+        }
+      }
+      const alphaModeRaw = record["alphaMode"] ?? "OPAQUE";
+      if (alphaModeRaw !== "OPAQUE" && alphaModeRaw !== "MASK") {
+        reject(`${label}.alphaMode must be OPAQUE or MASK`);
+      }
+      const alphaMode: GlbRigidAlphaModeV1 = alphaModeRaw;
+      const alphaCutoff =
+        alphaMode === "MASK"
+          ? finite(record["alphaCutoff"] ?? 0.5, `${label}.alphaCutoff`)
+          : 0;
+      if (alphaCutoff < 0 || alphaCutoff > 1) {
+        reject(`${label}.alphaCutoff must stay inside [0,1]`);
+      }
       return Object.freeze({
         name: typeof record["name"] === "string" ? record["name"] : null,
         baseColorFactor: Object.freeze(factor) as readonly [
@@ -358,6 +550,9 @@ function parseMaterials(root: JsonRecord): readonly GlbRigidMaterialV1[] {
           number,
         ],
         doubleSided: record["doubleSided"] === true,
+        baseColorTextureIndex,
+        alphaMode,
+        alphaCutoff,
       });
     }),
   );
@@ -368,7 +563,7 @@ function parseMeshes(
   views: readonly BufferView[],
   accessors: readonly Accessor[],
   binary: Uint8Array,
-  materialCount: number,
+  materials: readonly GlbRigidMaterialV1[],
 ): readonly GlbRigidMeshV1[] {
   return Object.freeze(
     array(root["meshes"], "glTF meshes").map((value, meshIndex) => {
@@ -444,8 +639,15 @@ function parseMeshes(
           primitive["material"] === undefined
             ? null
             : integer(primitive["material"], `${primitiveLabel}.material`);
-        if (materialIndex !== null && materialIndex >= materialCount) {
+        if (materialIndex !== null && materialIndex >= materials.length) {
           reject(`${primitiveLabel}.material references missing material ${materialIndex}`);
+        }
+        if (
+          materialIndex !== null &&
+          materials[materialIndex]?.baseColorTextureIndex !== null &&
+          texcoord0 === null
+        ) {
+          reject(`${primitiveLabel} uses a baseColorTexture without TEXCOORD_0`);
         }
         return Object.freeze({
           positions,
@@ -662,13 +864,16 @@ export function decodeGlbRigidCpuAssetV1(
   const { root, binary } = decodeDocument(bytes);
   const views = parseBufferViews(root);
   const accessors = parseAccessors(root);
-  const materials = parseMaterials(root);
+  const images = parseImages(root, views, binary);
+  const samplers = parseSamplers(root);
+  const textures = parseTextures(root, images, samplers);
+  const materials = parseMaterials(root, textures.length);
   const meshes = parseMeshes(
     root,
     views,
     accessors,
     binary,
-    materials.length,
+    materials,
   );
   const nodeResult = parseNodes(root, meshes.length);
   const primitiveCount = meshes.reduce(
@@ -690,6 +895,9 @@ export function decodeGlbRigidCpuAssetV1(
     nodeIndexByName: readonlyMap(new Map(nodeResult.names)),
     meshes,
     materials,
+    images,
+    samplers,
+    textures,
     primitiveCount,
     triangleCount,
   });

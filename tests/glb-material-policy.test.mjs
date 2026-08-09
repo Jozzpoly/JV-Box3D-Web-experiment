@@ -13,7 +13,7 @@ async function rejected(material, expected) {
   );
 }
 
-test("base-colour material subset passes", async () => {
+test("base-colour legacy material subset passes", async () => {
   const bytes = buildGlb({
     materials: [
       {
@@ -31,29 +31,34 @@ test("base-colour material subset passes", async () => {
   );
 });
 
-test("emissive and alpha features cannot be silently ignored", async () => {
-  await rejected(
-    { emissiveFactor: [1, 0, 0] },
-    /unsupported keys: emissiveFactor/,
-  );
-  await rejected({ alphaMode: "BLEND" }, /unsupported keys: alphaMode/);
+test("MASK alpha is bounded while BLEND and emissive fail closed", async () => {
+  const bytes = buildGlb({
+    materials: [{
+      pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1] },
+      alphaMode: "MASK",
+      alphaCutoff: 0.05,
+      doubleSided: true,
+    }],
+  });
+  const visual = validateVehicleVisualPackageV1(packageForGlb(bytes));
+  await assert.doesNotReject(() => validateVehicleVisualAssetV1(visual, bytes, null));
+  await rejected({ emissiveFactor: [1, 0, 0] }, /unsupported keys: emissiveFactor/);
+  await rejected({ alphaMode: "BLEND" }, /alphaMode must be OPAQUE or MASK/);
 });
 
-test("unrendered PBR and texture fields fail closed", async () => {
-  for (const [key, value] of [
-    ["baseColorTexture", { index: 0 }],
-    ["metallicFactor", 0.25],
-    ["roughnessFactor", 0.75],
-  ]) {
-    await rejected(
-      {
-        pbrMetallicRoughness: {
-          [key]: value,
-        },
-      },
-      new RegExp(`unsupported keys: ${key}`),
-    );
-  }
+test("R1 PBR factors stay at the rendered fixed subset", async () => {
+  await rejected(
+    { pbrMetallicRoughness: { metallicFactor: 0.25 } },
+    /metallicFactor must equal 0/,
+  );
+  await rejected(
+    { pbrMetallicRoughness: { roughnessFactor: 0.75 } },
+    /roughnessFactor must equal 1/,
+  );
+  await rejected(
+    { pbrMetallicRoughness: { baseColorTexture: { index: 0 } } },
+    /references missing texture 0/,
+  );
 });
 
 test("baseColorFactor stays inside the rendered unit range", async () => {

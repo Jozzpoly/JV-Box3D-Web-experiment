@@ -31,6 +31,7 @@ function fakeGl({ failAt = -1 } = {}) {
     ARRAY_BUFFER: 0x8892,
     ELEMENT_ARRAY_BUFFER: 0x8893,
     STATIC_DRAW: 0x88e4,
+    TEXTURE_2D: 0x0de1,
     NO_ERROR: 0,
     createBuffer() {
       allocation += 1;
@@ -44,6 +45,8 @@ function fakeGl({ failAt = -1 } = {}) {
     deleteBuffer(buffer) {
       deleted.push(buffer.id);
     },
+    bindTexture() {},
+    deleteTexture() {},
   };
   return { gl, deleted };
 }
@@ -79,6 +82,8 @@ test("complete load publishes one disposable CPU+GPU resource", async () => {
   assert.equal(resource.runtime.ownershipReceipt.boundRootCount, 26);
   assert.equal(resource.runtime.budgetReceipt.geometryBytes, 336);
   assert.equal(resource.gpuAsset.gpuByteLength, 336);
+  assert.equal(resource.gpuTextures.gpuByteLength, 0);
+  assert.equal(resource.gpuTextures.textures.length, 0);
   assert.equal(resource.disposed, false);
   resource.dispose();
   assert.equal(resource.disposed, true);

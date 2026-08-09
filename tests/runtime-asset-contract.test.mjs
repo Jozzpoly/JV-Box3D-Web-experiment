@@ -17,12 +17,14 @@ function manifest(overrides = {}) {
   };
 }
 
-test("portable runtime asset contract requires receipt, scene and tiny vehicle package", () => {
+test("portable runtime asset contract requires receipt, scene, tiny proof and owner vehicle", () => {
   assert.deepEqual(REQUIRED_RUNTIME_ASSETS, [
     "receipts/jv_m6_factory_receipt.json",
     "scenes/synthetic-flat-lab.scene.json",
     "vehicles/tiny/vehicle.visual.json",
     "vehicles/tiny/models/m6-rig-proof.glb",
+    "vehicles/m6-owner-r1/m6-owner-rigid-r1.visual.json",
+    "vehicles/m6-owner-r1/models/m6-owner-rigid-r1.glb",
   ]);
   assert.deepEqual(validateRuntimeAssetContract(manifest()), []);
 });

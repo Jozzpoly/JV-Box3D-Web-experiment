@@ -64,11 +64,6 @@ export async function validateVehicleVisualAssetV1(
   if (glb.externalUris.length > 0) {
     reject(`external GLB resources are forbidden: ${glb.externalUris.join(", ")}`);
   }
-  if (glb.imageCount > 0 || glb.textureCount > 0) {
-    reject(
-      "images and textures are outside V1 until decode, GPU ownership and mobile-memory budgets are implemented",
-    );
-  }
   if (glb.animationCount > 0) {
     reject("animations are outside the rigid-part V1 contract");
   }

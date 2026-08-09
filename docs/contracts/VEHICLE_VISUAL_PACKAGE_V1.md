@@ -259,13 +259,30 @@ primitive mode: TRIANGLES
 indices: unsigned 8-bit or 16-bit only
 vertex attributes: POSITION, optional NORMAL, optional TEXCOORD_0
 POSITION: FLOAT VEC3 with finite min/max
-materials: baseColorFactor subset
+materials: baseColorFactor plus bounded embedded base-colour texture subset
+images: embedded PNG bufferViews only
+textures: TEXCOORD_0 base colour only
+samplers: NEAREST + CLAMP_TO_EDGE only
+alpha: OPAQUE or MASK only
 ```
+
+The implemented texture subset is deliberately narrow:
+
+- `image/png` embedded in the GLB BIN chunk;
+- `baseColorTexture` using `TEXCOORD_0`;
+- `baseColorFactor` in `[0,1]`;
+- `metallicFactor` omitted or exactly `0`;
+- `roughnessFactor` omitted or exactly `1`;
+- `alphaMode` `OPAQUE` or `MASK`;
+- `alphaCutoff` only for `MASK`;
+- `doubleSided` boolean;
+- sampler min/mag `NEAREST`;
+- wrap S/T `CLAMP_TO_EDGE`;
+- upload with `UNPACK_FLIP_Y_WEBGL = 0`.
 
 V1 currently rejects:
 
-- images and textures;
-- external URI;
+- external image or buffer URI;
 - `COLOR_0`, tangents, joints, weights or unknown attributes;
 - skins and animation clips;
 - morph targets and sparse accessors;
@@ -274,7 +291,7 @@ V1 currently rejects:
 - 32-bit indices;
 - zero/negative node scale.
 
-Images/textures are rejected—not silently ignored—until image decode, sampler/texture GPU ownership and mobile memory budgets exist.
+Normal, occlusion, emissive and metallic-roughness textures, `BLEND`, mipmaps, linear filtering, repeating wrap and alternate texture coordinates remain rejected rather than silently ignored.
 
 The 8/16-bit index rule is deliberate for WebGL1 portability. Larger geometry must be split into multiple primitives rather than depending on a device extension.
 
@@ -297,10 +314,15 @@ nodes:          512
 primitives:     512
 triangles:      300,000
 materials:      64
-geometry bytes: 64 MiB
+geometry bytes:        64 MiB
+images:                8
+textures:              8
+max texture dimension: 2048 px
+encoded texture bytes: 8 MiB
+decoded texture bytes: 32 MiB
 ```
 
-These are protective mobile limits, not a quality target. They are changed only after measured phone evidence. Texture memory will receive a separate budget when textures are implemented.
+`decoded texture bytes` counts actual GPU texture instances as RGBA8 (`width × height × 4`), so reusing one image through multiple texture objects is charged multiple times. These are protective mobile limits, not a quality target. They change only after measured phone evidence.
 
 ## Full-rig coverage
 
@@ -321,7 +343,8 @@ The inspector reports:
 - strict manifest result;
 - bound roots and owned mesh nodes;
 - decoded nodes/primitives/triangles/materials;
-- decoded geometry bytes and budget result.
+- embedded PNG dimensions and encoded/decoded texture bytes;
+- decoded geometry bytes and combined budget result.
 
 ## Deterministic proof asset
 
@@ -383,10 +406,9 @@ Doors, steering wheel, gauges, lights and cosmetic animation require a later pre
 3 transactional GPU buffer ownership
 4 tiny browser rendering beside the debug observer
 5 phone performance and disposal/rebuild proof
-6 owner-authored simple chassis + four wheels
-7 knuckles, arms, steering links and two-piece coilovers
-8 normals and material shading
-9 embedded texture pipeline with separate memory budgets
-10 full body/interior/wheel asset
-11 optional LOD/compression only from measured need
+6 owner-authored chassis + four wheels using the bounded embedded texture subset
+7 browser visual/placement review and phone memory/performance evidence
+8 knuckles, arms, steering links and two-piece coilovers only if owner-visible value justifies them
+9 normals/material-lighting expansion only from measured presentation need
+10 optional LOD/compression only from measured need
 ```
