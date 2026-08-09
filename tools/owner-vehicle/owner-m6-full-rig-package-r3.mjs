@@ -10,6 +10,7 @@ import { buildOwnerM6FullRigPackageR2 } from './owner-m6-full-rig-package-r2.mjs
 import {
   deriveFrontSuspensionReferencesR3,
   calibrateFrontWishbonePieceR3,
+  calibrateFrontChassisPieceR3,
   calibrateFrontKnucklePieceR3,
 } from './owner-m6-reference-calibration-r3.mjs';
 
@@ -22,6 +23,10 @@ const ARM_KINDS = Object.freeze(['upper', 'lower']);
 const FRONT_KNUCKLE_PIECES = Object.freeze([
   ['Socket_ChassisMount_b', 'socket-chassismount-b'],
   ['Socket_WheelCenter', 'socket-wheelcenter'],
+]);
+const FRONT_CHASSIS_PIECES = Object.freeze([
+  ['Socket_ChassisMount_a', 'socket-chassismount-a'],
+  ['Socket_SingleDamper_Mount', 'socket-singledamper-mount'],
 ]);
 const R2_NODE_PREFIX = 'JV_R2_';
 const R3_NODE_PREFIX = 'JV_R3_';
@@ -146,6 +151,53 @@ function replaceBindingGeometry(decoded, visualPackage, bindingId, primitives) {
   }
 }
 
+
+function pointDistance(a, b) {
+  return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+}
+
+function replaceFrontDamperBindingSources(bindings, damperEndpoints) {
+  const byId = new Map(bindings.map((binding) => [binding.bindingId, binding]));
+  for (const corner of FRONT_CORNERS) {
+    const endpoints = damperEndpoints[corner];
+    const pairBase = {
+      startPartId: 'm6.chassis',
+      startLocalPosition: endpoints.upperChassisLocal,
+      endPartId: `m6.${corner}.lower-arm`,
+      endLocalPosition: endpoints.lowerArmLocal,
+    };
+    const replacements = {
+      [`owner.${corner}.coilover.upper`]: {
+        kind: 'PART_PAIR_ENDPOINT_AIM',
+        ...pairBase,
+        endpoint: 'START',
+        axis: '-Y',
+      },
+      [`owner.${corner}.coilover.stretch`]: {
+        kind: 'PART_PAIR_STRETCH',
+        ...pairBase,
+        axis: '+Y',
+        referenceLengthMeters: byId.get(`owner.${corner}.coilover.stretch`)?.source.referenceLengthMeters,
+      },
+      [`owner.${corner}.coilover.lower`]: {
+        kind: 'PART_PAIR_ENDPOINT_AIM',
+        ...pairBase,
+        endpoint: 'END',
+        axis: '+Y',
+      },
+    };
+    for (const [bindingId, source] of Object.entries(replacements)) {
+      const binding = byId.get(bindingId);
+      if (!binding) throw new Error(`Owner M6 R3 base is missing damper binding ${bindingId}.`);
+      if (source.kind === 'PART_PAIR_STRETCH' && !(source.referenceLengthMeters > 0)) {
+        throw new Error(`Owner M6 R3 base is missing damper reference length for ${bindingId}.`);
+      }
+      byId.set(bindingId, { ...binding, source });
+    }
+  }
+  return bindings.map((binding) => byId.get(binding.bindingId));
+}
+
 function renameR3Nodes(json, visualPackage) {
   for (const node of json.nodes) {
     if (typeof node.name === 'string' && node.name.startsWith(R2_NODE_PREFIX)) {
@@ -176,6 +228,9 @@ export function buildOwnerM6FullRigPackageR3(input) {
   const config = parseM6FactoryConfig(input.factoryReceiptText);
   const armReports = {};
   const knuckleReports = {};
+  const chassisReports = {};
+  const damperReports = {};
+  const damperEndpoints = {};
 
   for (const corner of FRONT_CORNERS) {
     const geometry = cornerRestGeometry(config, corner);
@@ -200,9 +255,50 @@ export function buildOwnerM6FullRigPackageR3(input) {
       );
       knuckleReports[corner][bindingToken] = calibrated.report;
     }
+
+    chassisReports[corner] = {};
+    let chassisMapPoint = null;
+    for (const [pieceName, bindingToken] of FRONT_CHASSIS_PIECES) {
+      const piece = requirePiece(front, pieceName, `${corner} front chassis`);
+      const calibrated = calibrateFrontChassisPieceR3(piece, references, geometry);
+      replaceBindingGeometry(
+        decoded,
+        r2.visualPackage,
+        `owner.${corner}.chassis-bracket.${bindingToken}`,
+        calibrated.primitives,
+      );
+      chassisReports[corner][bindingToken] = calibrated.report;
+      chassisMapPoint ??= calibrated.mapPoint;
+    }
+    if (chassisMapPoint === null) throw new Error(`${corner} front chassis calibration produced no map.`);
+    const lowerPiece = requirePiece(front, 'Chassis_Bottom', `${corner} front lower wishbone damper endpoint`);
+    const lowerArm = calibrateFrontWishbonePieceR3(lowerPiece, references, geometry, 'lower');
+    const upperChassisLocal = chassisMapPoint(references.damperUpper);
+    const lowerArmLocal = lowerArm.mapPoint(references.damperLower);
+    const lowerRestWorld = [
+      geometry.lowerHinge[0] + lowerArmLocal[0],
+      geometry.lowerHinge[1] + lowerArmLocal[1],
+      geometry.lowerHinge[2] + lowerArmLocal[2],
+    ];
+    damperEndpoints[corner] = Object.freeze({ upperChassisLocal, lowerArmLocal });
+    damperReports[corner] = Object.freeze({
+      treatment: 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR',
+      upperChassisLocal,
+      lowerArmLocal,
+      restVisualLengthMeters: pointDistance(upperChassisLocal, lowerRestWorld),
+      physicalSpringLengthMeters: pointDistance(geometry.coiloverChassis, geometry.coiloverKnuckle),
+      referenceAuthority: Object.freeze({
+        upper: references.provenance.damperUpper,
+        lower: references.provenance.damperLower,
+        physicalSpring: 'M6_COILOVER_CONSTRAINT_UNCHANGED',
+      }),
+    });
   }
 
-  const bindings = renameR3Nodes(decoded.json, r2.visualPackage);
+  const bindings = replaceFrontDamperBindingSources(
+    renameR3Nodes(decoded.json, r2.visualPackage),
+    damperEndpoints,
+  );
   const glb = encodeGlb(decoded.json, decoded.binary);
   const digest = sha256(glb);
   const visualPackage = Object.freeze({
@@ -226,6 +322,8 @@ export function buildOwnerM6FullRigPackageR3(input) {
             ...value,
             arms: Object.freeze(armReports[corner]),
             knuckle: Object.freeze(knuckleReports[corner]),
+            chassis: Object.freeze(chassisReports[corner]),
+            damperVisual: damperReports[corner],
           })
         : value,
     ]),
@@ -236,6 +334,8 @@ export function buildOwnerM6FullRigPackageR3(input) {
     calibrationStrategy: Object.freeze({
       frontWishbones: 'R3_AUTHORED_REFERENCE_PATCH_OVER_EXACT_R2',
       frontKnuckle: 'R3_AUTHORED_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
+      frontChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
+      frontDamper: 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR',
       rearWishbones: 'R2_BOUNDS_INHERITED',
       otherSubsystems: 'R2_BYTE_LAYOUT_INHERITED',
     }),

@@ -12,10 +12,22 @@ const EXPECTED_CHANGED_BINDINGS = Object.freeze([
   'owner.fl.lower-arm',
   'owner.fl.knuckle.socket-chassismount-b',
   'owner.fl.knuckle.socket-wheelcenter',
+  'owner.fl.chassis-bracket.socket-chassismount-a',
+  'owner.fl.chassis-bracket.socket-singledamper-mount',
   'owner.fr.upper-arm',
   'owner.fr.lower-arm',
   'owner.fr.knuckle.socket-chassismount-b',
   'owner.fr.knuckle.socket-wheelcenter',
+  'owner.fr.chassis-bracket.socket-chassismount-a',
+  'owner.fr.chassis-bracket.socket-singledamper-mount',
+]);
+const EXPECTED_CHANGED_SOURCE_BINDINGS = Object.freeze([
+  'owner.fl.coilover.upper',
+  'owner.fl.coilover.stretch',
+  'owner.fl.coilover.lower',
+  'owner.fr.coilover.upper',
+  'owner.fr.coilover.stretch',
+  'owner.fr.coilover.lower',
 ]);
 
 async function inputs() {
@@ -93,16 +105,18 @@ test('R3 front-reference package is deterministic and keeps R2 source authority'
   assert.deepEqual(a.report.calibrationStrategy, {
     frontWishbones: 'R3_AUTHORED_REFERENCE_PATCH_OVER_EXACT_R2',
     frontKnuckle: 'R3_AUTHORED_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
+    frontChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
+    frontDamper: 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR',
     rearWishbones: 'R2_BOUNDS_INHERITED',
     otherSubsystems: 'R2_BYTE_LAYOUT_INHERITED',
   });
   assert.equal(a.report.output.realBindingCount, 53);
   assert.deepEqual(a.report.output.diagnosticBindingIds, ['diagnostic.rack.coverage']);
-  assert.equal(a.glb.byteLength, 829128);
-  assert.equal(a.report.output.sha256, '2a9b368a6e3a24c601cf0ee05d2739a12783e70a5147fa7d07f34e0cbe68ab8e');
+  assert.equal(a.glb.byteLength, 829144);
+  assert.equal(a.report.output.sha256, '38db97d09d9c315c979d167e84bffa6bf0cda0e17068534887ef008f26a400e8');
 });
 
-test('R3 blast radius is exactly the front wishbone and knuckle geometry bindings', async () => {
+test('R3 blast radius is exactly the front structural geometry bindings', async () => {
   const input = await inputs();
   const r2 = buildOwnerM6FullRigPackageR2(input);
   const r3 = buildOwnerM6FullRigPackageR3(input);
@@ -130,6 +144,29 @@ test('R3 blast radius is exactly the front wishbone and knuckle geometry binding
     }
   }
   assert.deepEqual(changed, EXPECTED_CHANGED_BINDINGS);
+
+  const changedSources = [];
+  for (const r2Binding of r2.visualPackage.bindings) {
+    const r3Binding = r3.visualPackage.bindings.find((candidate) => candidate.bindingId === r2Binding.bindingId);
+    assert.ok(r3Binding, `missing R3 binding ${r2Binding.bindingId}`);
+    if (JSON.stringify(r2Binding.source) !== JSON.stringify(r3Binding.source)) {
+      changedSources.push(r2Binding.bindingId);
+    }
+  }
+  assert.deepEqual(changedSources, EXPECTED_CHANGED_SOURCE_BINDINGS);
+  for (const corner of ['fl', 'fr']) {
+    const upper = r3.visualPackage.bindings.find((binding) => binding.bindingId === `owner.${corner}.coilover.upper`);
+    const stretch = r3.visualPackage.bindings.find((binding) => binding.bindingId === `owner.${corner}.coilover.stretch`);
+    const lower = r3.visualPackage.bindings.find((binding) => binding.bindingId === `owner.${corner}.coilover.lower`);
+    for (const binding of [upper, stretch, lower]) {
+      assert.ok(binding);
+      assert.equal(binding.source.startPartId, 'm6.chassis');
+      assert.equal(binding.source.endPartId, `m6.${corner}.lower-arm`);
+    }
+    assert.equal(upper.source.kind, 'PART_PAIR_ENDPOINT_AIM');
+    assert.equal(stretch.source.kind, 'PART_PAIR_STRETCH');
+    assert.equal(lower.source.kind, 'PART_PAIR_ENDPOINT_AIM');
+  }
 });
 
 test('R3 front wishbones map authored references to physical hardpoints with one mirrored solve', async () => {
@@ -159,6 +196,21 @@ test('R3 front wishbones map authored references to physical hardpoints with one
   }
   close(corners.fl.knuckle['socket-chassismount-b'].radialScale, corners.fr.knuckle['socket-chassismount-b'].radialScale);
   close(corners.fl.knuckle['socket-chassismount-b'].kingpinScale, corners.fr.knuckle['socket-chassismount-b'].kingpinScale);
+  for (const corner of ['fl', 'fr']) {
+    for (const token of ['socket-chassismount-a', 'socket-singledamper-mount']) {
+      const chassis = corners[corner].chassis[token];
+      close(chassis.wheelCenterErrorMeters, 0);
+      close(chassis.upperHingeErrorMeters, 0, 1e-15);
+      close(chassis.lowerHingeErrorMeters, 0, 1e-15);
+      assert.equal(chassis.mirrored, corner === 'fr');
+    }
+    const damper = corners[corner].damperVisual;
+    assert.equal(damper.treatment, 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR');
+    assert.ok(damper.restVisualLengthMeters > damper.physicalSpringLengthMeters + 0.15);
+    assert.equal(damper.referenceAuthority.physicalSpring, 'M6_COILOVER_CONSTRAINT_UNCHANGED');
+  }
+  close(corners.fl.chassis['socket-chassismount-a'].radialScale, corners.fr.chassis['socket-chassismount-a'].radialScale);
+  close(corners.fl.chassis['socket-chassismount-a'].verticalScale, corners.fr.chassis['socket-chassismount-a'].verticalScale);
   assert.equal(corners.rl.arms.upper.restEndpointErrorMeters, 0);
   assert.equal(corners.rr.arms.upper.restEndpointErrorMeters, 0);
 });
