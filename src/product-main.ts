@@ -9,6 +9,9 @@ import {
 import {
   loadLocalFullProductWorld,
 } from "./scene/local-full-product-world.js";
+import {
+  loadMapOnlyProductWorld,
+} from "./scene/map-only-product-world.js";
 import { applyProductSpawnToScene } from "./scene/product-scene-package.js";
 import {
   parseProductSpawnTarget,
@@ -58,14 +61,18 @@ function selectedGridVisible(): boolean {
   return new URL(window.location.href).searchParams.get("jvGrid") === "1";
 }
 
-configureProductWorldLoader(loadLocalFullProductWorld);
+const spawnTarget = parseProductSpawnTarget(window.location.search);
+configureProductWorldLoader(
+  spawnTarget === "scan"
+    ? loadLocalFullProductWorld
+    : loadMapOnlyProductWorld,
+);
 
 const initialSettings = {
   textureFilter: selectedTextureFilter(),
   gridVisible: selectedGridVisible(),
 } as const;
 replaceJvProductViewSettings(initialSettings);
-const spawnTarget = parseProductSpawnTarget(window.location.search);
 
 if (spawnTarget === "scan") {
   const nativeFetch = globalThis.fetch.bind(globalThis);
