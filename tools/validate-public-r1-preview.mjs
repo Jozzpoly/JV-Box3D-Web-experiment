@@ -65,8 +65,8 @@ if (manifest?.source?.workingTreeClean !== true) {
 const owner = JSON.parse(await readFile(resolve(dist, "vehicles/m6-owner-r3/m6-owner-full-rig-r3.visual.json"), "utf8"));
 if (
   owner.id !== "m6-owner-full-rig-r3" ||
-  owner.asset?.sha256 !== "38db97d09d9c315c979d167e84bffa6bf0cda0e17068534887ef008f26a400e8" ||
-  owner.asset?.byteLength !== 829144 ||
+  owner.asset?.sha256 !== "cdd48d6462ce6a2f556e8625da4008ba01b09a5e4e43ad4cdfc880f98d6eec5c" ||
+  owner.asset?.byteLength !== 829280 ||
   !Array.isArray(owner.bindings) ||
   owner.bindings.filter((binding) => binding?.nodeName?.startsWith("JV_R3_Real_")).length !== 53
 ) {

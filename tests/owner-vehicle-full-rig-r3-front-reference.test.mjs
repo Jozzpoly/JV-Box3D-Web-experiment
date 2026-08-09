@@ -20,6 +20,14 @@ const EXPECTED_CHANGED_BINDINGS = Object.freeze([
   'owner.fr.knuckle.socket-wheelcenter',
   'owner.fr.chassis-bracket.socket-chassismount-a',
   'owner.fr.chassis-bracket.socket-singledamper-mount',
+  'owner.rl.upper-arm',
+  'owner.rl.lower-arm',
+  'owner.rl.knuckle.socket-wheelcenter',
+  'owner.rl.chassis-bracket.socket-chassismount',
+  'owner.rr.upper-arm',
+  'owner.rr.lower-arm',
+  'owner.rr.knuckle.socket-wheelcenter',
+  'owner.rr.chassis-bracket.socket-chassismount',
 ]);
 const EXPECTED_CHANGED_SOURCE_BINDINGS = Object.freeze([
   'owner.fl.coilover.upper',
@@ -93,7 +101,7 @@ function close(actual, expected, tolerance = 1e-12) {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`);
 }
 
-test('R3 front-reference package is deterministic and keeps R2 source authority', async () => {
+test('R3 reference-calibrated package is deterministic and keeps R2 source authority', async () => {
   const input = await inputs();
   const a = buildOwnerM6FullRigPackageR3(input);
   const b = buildOwnerM6FullRigPackageR3(input);
@@ -107,16 +115,19 @@ test('R3 front-reference package is deterministic and keeps R2 source authority'
     frontKnuckle: 'R3_AUTHORED_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
     frontChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
     frontDamper: 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR',
-    rearWishbones: 'R2_BOUNDS_INHERITED',
+    rearWishbones: 'R3_GEOMETRY_MATING_AND_CHASSIS_FACE_REFERENCE_PATCH_OVER_EXACT_R2',
+    rearKnuckle: 'R3_GEOMETRY_MATING_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
+    rearChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
+    rearDamper: 'R2_PHYSICAL_COILOVER_SEGMENT_INHERITED_PENDING_SEMANTIC_RESOLUTION',
     otherSubsystems: 'R2_BYTE_LAYOUT_INHERITED',
   });
   assert.equal(a.report.output.realBindingCount, 53);
   assert.deepEqual(a.report.output.diagnosticBindingIds, ['diagnostic.rack.coverage']);
-  assert.equal(a.glb.byteLength, 829144);
-  assert.equal(a.report.output.sha256, '38db97d09d9c315c979d167e84bffa6bf0cda0e17068534887ef008f26a400e8');
+  assert.equal(a.glb.byteLength, 829280);
+  assert.equal(a.report.output.sha256, 'cdd48d6462ce6a2f556e8625da4008ba01b09a5e4e43ad4cdfc880f98d6eec5c');
 });
 
-test('R3 blast radius is exactly the front structural geometry bindings', async () => {
+test('R3 blast radius is exactly the accepted front and rear structural geometry bindings', async () => {
   const input = await inputs();
   const r2 = buildOwnerM6FullRigPackageR2(input);
   const r3 = buildOwnerM6FullRigPackageR3(input);
@@ -211,6 +222,27 @@ test('R3 front wishbones map authored references to physical hardpoints with one
   }
   close(corners.fl.chassis['socket-chassismount-a'].radialScale, corners.fr.chassis['socket-chassismount-a'].radialScale);
   close(corners.fl.chassis['socket-chassismount-a'].verticalScale, corners.fr.chassis['socket-chassismount-a'].verticalScale);
-  assert.equal(corners.rl.arms.upper.restEndpointErrorMeters, 0);
-  assert.equal(corners.rr.arms.upper.restEndpointErrorMeters, 0);
+  for (const corner of ['rl', 'rr']) {
+    for (const which of ['upper', 'lower']) {
+      const arm = corners[corner].arms[which];
+      assert.equal(arm.mode, 'GEOMETRY_DERIVED_REAR_REFERENCE_TO_PHYSICAL_HARDPOINT_R3');
+      close(arm.hingeErrorMeters, 0);
+      close(arm.outboardErrorMeters, 0);
+      assert.equal(arm.mirrored, corner === 'rr');
+    }
+    close(corners[corner].knuckle.wheelCenterErrorMeters, 0);
+    close(corners[corner].knuckle.upperBallErrorMeters, 0, 1e-15);
+    close(corners[corner].knuckle.lowerBallErrorMeters, 0, 1e-15);
+    close(corners[corner].chassis.wheelCenterErrorMeters, 0);
+    close(corners[corner].chassis.upperHingeErrorMeters, 0, 1e-15);
+    close(corners[corner].chassis.lowerHingeErrorMeters, 0, 1e-15);
+  }
+  close(corners.rl.arms.upper.axialScale, corners.rr.arms.upper.axialScale);
+  close(corners.rl.arms.lower.axialScale, corners.rr.arms.lower.axialScale);
+  close(corners.rl.arms.upper.spreadScale, corners.rr.arms.upper.spreadScale);
+  close(corners.rl.arms.lower.spreadScale, corners.rr.arms.lower.spreadScale);
+  close(corners.rl.knuckle.radialScale, corners.rr.knuckle.radialScale);
+  close(corners.rl.knuckle.kingpinScale, corners.rr.knuckle.kingpinScale);
+  close(corners.rl.chassis.radialScale, corners.rr.chassis.radialScale);
+  close(corners.rl.chassis.verticalScale, corners.rr.chassis.verticalScale);
 });

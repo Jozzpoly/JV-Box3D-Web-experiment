@@ -46,7 +46,7 @@ const generatedOwnerR3 = buildOwnerM6FullRigPackageR3(await ownerR3Inputs());
 const visual = validateVehicleVisualPackageV1(JSON.parse(generatedOwnerR3.manifestText));
 const bytes = generatedOwnerR3.glb;
 assert.equal(visual.id, "m6-owner-full-rig-r3");
-assert.equal(visual.asset.sha256, "38db97d09d9c315c979d167e84bffa6bf0cda0e17068534887ef008f26a400e8");
+assert.equal(visual.asset.sha256, "cdd48d6462ce6a2f556e8625da4008ba01b09a5e4e43ad4cdfc880f98d6eec5c");
 const assetReceipt = await validateVehicleVisualAssetV1(visual, bytes, null);
 const cpuAsset = sealGlbRigidCpuAssetV1(
   decodeGlbRigidCpuAssetV1(bytes, visual.bindings.map((binding) => binding.nodeName)),

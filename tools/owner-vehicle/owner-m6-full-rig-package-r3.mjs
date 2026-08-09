@@ -13,12 +13,19 @@ import {
   calibrateFrontChassisPieceR3,
   calibrateFrontKnucklePieceR3,
 } from './owner-m6-reference-calibration-r3.mjs';
+import {
+  deriveRearSuspensionReferencesR3,
+  calibrateRearWishbonePieceR3,
+  calibrateRearKnucklePieceR3,
+  calibrateRearChassisPieceR3,
+} from './owner-m6-rear-reference-calibration-r3.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const GLB_VERSION = 2;
 const GLB_JSON_CHUNK = 0x4e4f534a;
 const GLB_BIN_CHUNK = 0x004e4942;
 const FRONT_CORNERS = Object.freeze(['fl', 'fr']);
+const REAR_CORNERS = Object.freeze(['rl', 'rr']);
 const ARM_KINDS = Object.freeze(['upper', 'lower']);
 const FRONT_KNUCKLE_PIECES = Object.freeze([
   ['Socket_ChassisMount_b', 'socket-chassismount-b'],
@@ -225,12 +232,20 @@ export function buildOwnerM6FullRigPackageR3(input) {
     'OneSided_Steering_Suspension_Rig.gltf',
   );
   const references = deriveFrontSuspensionReferencesR3(front);
+  const rear = inspectBlockbenchRigidPartsV1(
+    input.rearSuspensionText,
+    'One_Sided_wheel_mount.gltf',
+  );
+  const rearReferences = deriveRearSuspensionReferencesR3(rear);
   const config = parseM6FactoryConfig(input.factoryReceiptText);
   const armReports = {};
   const knuckleReports = {};
   const chassisReports = {};
   const damperReports = {};
   const damperEndpoints = {};
+  const rearArmReports = {};
+  const rearKnuckleReports = {};
+  const rearChassisReports = {};
 
   for (const corner of FRONT_CORNERS) {
     const geometry = cornerRestGeometry(config, corner);
@@ -295,6 +310,39 @@ export function buildOwnerM6FullRigPackageR3(input) {
     });
   }
 
+
+  for (const corner of REAR_CORNERS) {
+    const geometry = cornerRestGeometry(config, corner);
+    rearArmReports[corner] = {};
+    for (const which of ARM_KINDS) {
+      const pieceName = which === 'upper' ? 'Chassis_Top' : 'Chassis_Bottom';
+      const piece = requirePiece(rear, pieceName, `${corner} rear suspension`);
+      const calibrated = calibrateRearWishbonePieceR3(piece, rearReferences, geometry, which);
+      replaceBindingGeometry(decoded, r2.visualPackage, `owner.${corner}.${which}-arm`, calibrated.primitives);
+      rearArmReports[corner][which] = calibrated.report;
+    }
+
+    const hubPiece = requirePiece(rear, 'Socket_WheelCenter', `${corner} rear hub`);
+    const hub = calibrateRearKnucklePieceR3(hubPiece, rearReferences, geometry);
+    replaceBindingGeometry(
+      decoded,
+      r2.visualPackage,
+      `owner.${corner}.knuckle.socket-wheelcenter`,
+      hub.primitives,
+    );
+    rearKnuckleReports[corner] = hub.report;
+
+    const chassisPiece = requirePiece(rear, 'Socket_ChassisMount', `${corner} rear chassis`);
+    const chassis = calibrateRearChassisPieceR3(chassisPiece, rearReferences, geometry);
+    replaceBindingGeometry(
+      decoded,
+      r2.visualPackage,
+      `owner.${corner}.chassis-bracket.socket-chassismount`,
+      chassis.primitives,
+    );
+    rearChassisReports[corner] = chassis.report;
+  }
+
   const bindings = replaceFrontDamperBindingSources(
     renameR3Nodes(decoded.json, r2.visualPackage),
     damperEndpoints,
@@ -325,7 +373,14 @@ export function buildOwnerM6FullRigPackageR3(input) {
             chassis: Object.freeze(chassisReports[corner]),
             damperVisual: damperReports[corner],
           })
-        : value,
+        : REAR_CORNERS.includes(corner)
+          ? Object.freeze({
+              ...value,
+              arms: Object.freeze(rearArmReports[corner]),
+              knuckle: rearKnuckleReports[corner],
+              chassis: rearChassisReports[corner],
+            })
+          : value,
     ]),
   );
   const report = Object.freeze({
@@ -336,7 +391,10 @@ export function buildOwnerM6FullRigPackageR3(input) {
       frontKnuckle: 'R3_AUTHORED_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
       frontChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
       frontDamper: 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR',
-      rearWishbones: 'R2_BOUNDS_INHERITED',
+      rearWishbones: 'R3_GEOMETRY_MATING_AND_CHASSIS_FACE_REFERENCE_PATCH_OVER_EXACT_R2',
+      rearKnuckle: 'R3_GEOMETRY_MATING_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
+      rearChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
+      rearDamper: 'R2_PHYSICAL_COILOVER_SEGMENT_INHERITED_PENDING_SEMANTIC_RESOLUTION',
       otherSubsystems: 'R2_BYTE_LAYOUT_INHERITED',
     }),
     calibration: Object.freeze({ corners: Object.freeze(calibrationCorners) }),
