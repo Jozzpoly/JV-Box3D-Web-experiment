@@ -47,7 +47,8 @@ test("mobile viewport and controls preserve safe areas and local gesture ownersh
   assert.match(css, /env\(safe-area-inset-right\)/);
   assert.match(css, /env\(safe-area-inset-bottom\)/);
   assert.match(css, /\.mobile-control\s*\{[^}]*touch-action:\s*none;/s);
-  assert.match(css, /height:\s*calc\(100svh\s*-\s*68px\)/);
+  assert.match(css, /\.scene-panel\s*\{[^}]*height:\s*100svh;/s);
+  assert.match(css, /\.mobile-controls\s*\{[^}]*bottom:\s*max\(14px,\s*env\(safe-area-inset-bottom\)\)/s);
 });
 
 test("narrow mobile layout retains two non-overlapping control clusters", async () => {

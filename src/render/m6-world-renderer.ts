@@ -3,10 +3,15 @@ import type { M6TraceFrame } from "../vehicle/m6/m6-topology-world.js";
 import { JvWorldRenderer } from "./jv-world-renderer.js";
 import { getJvProductViewSettings } from "./jv-product-view-settings.js";
 import { M6OwnerVehicleLayer } from "./m6-owner-vehicle-layer.js";
+import {
+  computeM6ChaseCameraPose,
+  DEFAULT_M6_CHASE_CAMERA,
+} from "./m6-chase-camera.js";
 
 type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 type Rotation = Readonly<{ x: number; y: number; z: number; w: number }>;
 type Mat4 = Float32Array;
+
 type Mesh = Readonly<{
   vertexBuffer: WebGLBuffer;
   indexBuffer: WebGLBuffer;
@@ -359,9 +364,10 @@ export class M6WorldRenderer {
   readonly #ownerVehicle: M6OwnerVehicleLayer;
   readonly #events = new AbortController();
   #world: JvWorldRenderer | null = null;
-  #yaw = -0.78;
-  #pitch = 0.46;
-  #distance = 8.5;
+  #diagnosticsVisible = false;
+  #orbitYaw: number = DEFAULT_M6_CHASE_CAMERA.orbitYaw;
+  #pitch: number = DEFAULT_M6_CHASE_CAMERA.pitch;
+  #distance: number = DEFAULT_M6_CHASE_CAMERA.distance;
   #pointer: Readonly<{
     id: number;
     x: number;
@@ -438,6 +444,22 @@ export class M6WorldRenderer {
     return this.#ownerVehicle.load(pageBaseUrl, packageUrl);
   }
 
+  resetCamera(): void {
+    if (this.#disposed) {
+      return;
+    }
+    this.#orbitYaw = DEFAULT_M6_CHASE_CAMERA.orbitYaw;
+    this.#pitch = DEFAULT_M6_CHASE_CAMERA.pitch;
+    this.#distance = DEFAULT_M6_CHASE_CAMERA.distance;
+  }
+
+  setDiagnosticsVisible(visible: boolean): void {
+    if (this.#disposed) {
+      return;
+    }
+    this.#diagnosticsVisible = visible;
+  }
+
   render(trace: M6TraceFrame): void {
     if (this.#disposed) {
       return;
@@ -456,22 +478,22 @@ export class M6WorldRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     const target = trace.chassisPosition;
-    const horizontal = Math.cos(this.#pitch) * this.#distance;
-    const eye = {
-      x: target.x + Math.cos(this.#yaw) * horizontal,
-      y:
-        target.y +
-        Math.sin(this.#pitch) * this.#distance +
-        1.1,
-      z: target.z + Math.sin(this.#yaw) * horizontal,
-    };
+    const camera = computeM6ChaseCameraPose(
+      trace.chassisPosition,
+      trace.chassisRotation,
+      {
+        orbitYaw: this.#orbitYaw,
+        pitch: this.#pitch,
+        distance: this.#distance,
+      },
+    );
     const projection = perspective(
       Math.PI / 4,
       this.#canvas.width / this.#canvas.height,
       0.05,
       1_500,
     );
-    const view = lookAt(eye, target, { x: 0, y: 1, z: 0 });
+    const view = lookAt(camera.eye, camera.target, { x: 0, y: 1, z: 0 });
     const viewProjection = multiply(projection, view);
 
     this.#world?.render(viewProjection);
@@ -479,7 +501,7 @@ export class M6WorldRenderer {
     if (getJvProductViewSettings().gridVisible) {
       this.#drawGrid(viewProjection, target);
     }
-    if (this.#origin !== null) {
+    if (this.#diagnosticsVisible && this.#origin !== null) {
       this.#draw(
         this.#box,
         viewProjection,
@@ -531,20 +553,22 @@ export class M6WorldRenderer {
       );
     }
 
-    this.#draw(
-      this.#box,
-      viewProjection,
-      modelMatrix(
-        trace.rackPosition,
-        trace.rackRotation,
-        {
-          x: 0.045,
-          y: 0.045,
-          z: trace.visualGeometry.rackHalfWidth,
-        },
-      ),
-      [0.96, 0.68, 0.16, 1],
-    );
+    if (this.#diagnosticsVisible) {
+      this.#draw(
+        this.#box,
+        viewProjection,
+        modelMatrix(
+          trace.rackPosition,
+          trace.rackRotation,
+          {
+            x: 0.045,
+            y: 0.045,
+            z: trace.visualGeometry.rackHalfWidth,
+          },
+        ),
+        [0.96, 0.68, 0.16, 1],
+      );
+    }
 
     if (!ownerVehicleDrawn) {
       trace.corners.forEach((corner, index) => {
@@ -567,39 +591,41 @@ export class M6WorldRenderer {
       });
     }
 
-    const rackLeft = add(
-      trace.rackPosition,
-      rotateVector(trace.rackRotation, {
-        x: 0,
-        y: 0,
-        z: -trace.visualGeometry.rackHalfWidth,
-      }),
-    );
-    const rackRight = add(
-      trace.rackPosition,
-      rotateVector(trace.rackRotation, {
-        x: 0,
-        y: 0,
-        z: trace.visualGeometry.rackHalfWidth,
-      }),
-    );
-    const frontLeft = trace.corners[0]?.wheelPosition;
-    const frontRight = trace.corners[1]?.wheelPosition;
-    if (frontLeft !== undefined) {
-      this.#drawLine(
-        viewProjection,
-        rackLeft,
-        frontLeft,
-        [0.96, 0.68, 0.16, 1],
+    if (this.#diagnosticsVisible) {
+      const rackLeft = add(
+        trace.rackPosition,
+        rotateVector(trace.rackRotation, {
+          x: 0,
+          y: 0,
+          z: -trace.visualGeometry.rackHalfWidth,
+        }),
       );
-    }
-    if (frontRight !== undefined) {
-      this.#drawLine(
-        viewProjection,
-        rackRight,
-        frontRight,
-        [0.96, 0.68, 0.16, 1],
+      const rackRight = add(
+        trace.rackPosition,
+        rotateVector(trace.rackRotation, {
+          x: 0,
+          y: 0,
+          z: trace.visualGeometry.rackHalfWidth,
+        }),
       );
+      const frontLeft = trace.corners[0]?.wheelPosition;
+      const frontRight = trace.corners[1]?.wheelPosition;
+      if (frontLeft !== undefined) {
+        this.#drawLine(
+          viewProjection,
+          rackLeft,
+          frontLeft,
+          [0.96, 0.68, 0.16, 1],
+        );
+      }
+      if (frontRight !== undefined) {
+        this.#drawLine(
+          viewProjection,
+          rackRight,
+          frontRight,
+          [0.96, 0.68, 0.16, 1],
+        );
+      }
     }
   }
 
@@ -749,7 +775,7 @@ export class M6WorldRenderer {
         }
         const dx = event.clientX - this.#pointer.x;
         const dy = event.clientY - this.#pointer.y;
-        this.#yaw += dx * 0.006;
+        this.#orbitYaw += dx * 0.006;
         this.#pitch = Math.max(
           -0.12,
           Math.min(1.25, this.#pitch - dy * 0.006),

@@ -5,7 +5,7 @@ import type {
   PointerVehicleControlTargets,
 } from "./input/pointer-vehicle-control-adapter.js";
 import type { SteeringCommand } from "./input/steering-command.js";
-import { M6DebugRenderer } from "./render/m6-debug-renderer.js";
+import { M6ProductRenderer } from "./render/m6-product-renderer.js";
 import {
   formatBrowserRuntimeReport,
   inspectCurrentBrowserRuntime,
@@ -31,164 +31,121 @@ function requireRoot(): HTMLElement {
 
 const app = requireRoot();
 app.innerHTML = `
-  <main class="lab-shell">
-    <section class="scene-panel" aria-label="M6 physical drive observer">
+  <main class="product-shell">
+    <section class="scene-panel" aria-label="JV Web M6 drive">
       <canvas data-scene aria-label="Live WebGL view of the Box3D M6 vehicle"></canvas>
+
       <header class="scene-header">
-        <div>
-          <p class="eyebrow">JV Box3D Web · F5 Drive Observer</p>
-          <h1>Physical steering and drive</h1>
+        <div class="brand-lockup">
+          <p class="eyebrow">JV Box3D Web · R1</p>
+          <h1>M6 Drive</h1>
         </div>
         <p class="scene-state" data-scene-state>WAITING FOR PHYSICS</p>
       </header>
+
+      <div class="product-toolbar" data-product-controls aria-label="World and view controls"></div>
+
+      <div class="scene-actions" aria-label="Drive actions">
+        <button type="button" class="scene-action" data-camera-reset title="Reset chase camera (C)">C · Kamera</button>
+        <button type="button" class="scene-action" data-restart title="Reset physical vehicle (R)">R · Reset</button>
+        <button type="button" class="scene-action" data-debug-toggle aria-expanded="false">Debug</button>
+      </div>
+
       <div class="scene-readouts" aria-live="polite">
-        <div><span>Steering</span><strong data-scene-command>RELEASE</strong></div>
-        <div><span>Drive</span><strong data-scene-drive>COAST</strong></div>
         <div><span>Speed</span><strong data-scene-speed>0.0 km/h</strong></div>
-        <div><span>Rack</span><strong data-scene-rack>0.0000 m</strong></div>
-        <div><span>Travel</span><strong data-scene-displacement>0.000 m</strong></div>
-        <div><span>Step</span><strong data-scene-step>0</strong></div>
+        <div><span>Drive</span><strong data-scene-drive>COAST</strong></div>
+        <div><span>Steering</span><strong data-scene-command>RELEASE</strong></div>
+        <div class="diagnostic-readout"><span>Rack</span><strong data-scene-rack>0.0000 m</strong></div>
+        <div class="diagnostic-readout"><span>Travel</span><strong data-scene-displacement>0.000 m</strong></div>
+        <div class="diagnostic-readout"><span>Step</span><strong data-scene-step>0</strong></div>
       </div>
-      <div class="scene-legend" aria-hidden="true">
-        <span class="legend-chassis">Chassis</span>
-        <span class="legend-front">Front wheels</span>
-        <span class="legend-rear">Rear wheels</span>
-        <span class="legend-steering">Rack / observer links</span>
-      </div>
+
       <p class="scene-help">
-        A/D steer · W/S drive · Space brakes · drag to orbit · wheel to zoom. Touch devices use the dedicated multi-touch controls.
+        <kbd>W/S</kbd> gaz / wstecz · <kbd>A/D</kbd> skręt · <kbd>Space</kbd> hamulec · <kbd>R</kbd> reset · <kbd>C</kbd> kamera · przeciągnij: orbit · kółko: zoom
       </p>
 
       <div class="mobile-controls" aria-label="Touch vehicle controls">
         <div class="mobile-control-cluster mobile-steering-controls" aria-label="Steering controls">
-          <button
-            type="button"
-            class="mobile-control mobile-control-steer"
-            data-pointer-control="STEER_LEFT"
-            aria-label="Steer left"
-            aria-pressed="false"
-          >
-            <span aria-hidden="true">◀</span>
-            <small>LEFT</small>
-          </button>
-          <button
-            type="button"
-            class="mobile-control mobile-control-steer"
-            data-pointer-control="STEER_RIGHT"
-            aria-label="Steer right"
-            aria-pressed="false"
-          >
-            <span aria-hidden="true">▶</span>
-            <small>RIGHT</small>
-          </button>
+          <button type="button" class="mobile-control mobile-control-steer" data-pointer-control="STEER_LEFT" aria-label="Steer left" aria-pressed="false"><span aria-hidden="true">◀</span><small>LEFT</small></button>
+          <button type="button" class="mobile-control mobile-control-steer" data-pointer-control="STEER_RIGHT" aria-label="Steer right" aria-pressed="false"><span aria-hidden="true">▶</span><small>RIGHT</small></button>
         </div>
-
         <div class="mobile-control-cluster mobile-drive-controls" aria-label="Drive controls">
-          <button
-            type="button"
-            class="mobile-control mobile-control-drive"
-            data-pointer-control="FORWARD"
-            aria-label="Drive forward"
-            aria-pressed="false"
-          >
-            <span aria-hidden="true">▲</span>
-            <small>DRIVE</small>
-          </button>
-          <button
-            type="button"
-            class="mobile-control mobile-control-brake"
-            data-pointer-control="BRAKE"
-            aria-label="Brake"
-            aria-pressed="false"
-          >
-            <span aria-hidden="true">●</span>
-            <small>BRAKE</small>
-          </button>
-          <button
-            type="button"
-            class="mobile-control mobile-control-drive"
-            data-pointer-control="REVERSE"
-            aria-label="Drive in reverse"
-            aria-pressed="false"
-          >
-            <span aria-hidden="true">▼</span>
-            <small>REVERSE</small>
-          </button>
+          <button type="button" class="mobile-control mobile-control-drive" data-pointer-control="FORWARD" aria-label="Drive forward" aria-pressed="false"><span aria-hidden="true">▲</span><small>DRIVE</small></button>
+          <button type="button" class="mobile-control mobile-control-brake" data-pointer-control="BRAKE" aria-label="Brake" aria-pressed="false"><span aria-hidden="true">●</span><small>BRAKE</small></button>
+          <button type="button" class="mobile-control mobile-control-drive" data-pointer-control="REVERSE" aria-label="Drive in reverse" aria-pressed="false"><span aria-hidden="true">▼</span><small>REVERSE</small></button>
         </div>
       </div>
-    </section>
 
-    <aside class="panel">
-      <div class="panel-heading">
-        <div>
-          <p class="eyebrow">Live mechanics laboratory</p>
-          <h2>RATE steering + reference drive</h2>
+      <aside class="panel" data-debug-panel aria-hidden="true">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Mechanics debug</p>
+            <h2>RATE steering + reference drive</h2>
+          </div>
+          <p class="status" data-status>Validating scene, receipt and Box3D boundary…</p>
         </div>
-        <p class="status" data-status>Validating scene, receipt and Box3D boundary…</p>
-      </div>
 
-      <label class="profile-control">
-        <span>RATE experiment profile</span>
-        <select data-rate-profile>
-          ${RATE_STEERING_PROFILES.map(
-            (profile) =>
-              `<option value="${profile.id}"${
-                profile.id === INITIAL_RATE_STEERING_PROFILE_ID
-                  ? " selected"
-                  : ""
-              }>${profile.rackRateMetersPerSecond.toFixed(2)} m/s · lead ${(
-                profile.maxTargetLeadMeters * 1000
-              ).toFixed(0)} mm</option>`,
-          ).join("")}
-        </select>
-      </label>
+        <label class="profile-control">
+          <span>RATE experiment profile</span>
+          <select data-rate-profile>
+            ${RATE_STEERING_PROFILES.map(
+              (profile) =>
+                `<option value="${profile.id}"${
+                  profile.id === INITIAL_RATE_STEERING_PROFILE_ID
+                    ? " selected"
+                    : ""
+                }>${profile.rackRateMetersPerSecond.toFixed(2)} m/s · lead ${(
+                  profile.maxTargetLeadMeters * 1000
+                ).toFixed(0)} mm</option>`,
+            ).join("")}
+          </select>
+        </label>
 
-      <button type="button" data-restart>Destroy and rebuild physical world</button>
-
-      <dl class="primary-metrics">
-        <div><dt>Steering input</dt><dd data-command>RELEASE</dd></div>
-        <div><dt>Drive input</dt><dd data-drive>COAST</dd></div>
-        <div><dt>Forward speed</dt><dd data-speed>0.000 m/s · 0.0 km/h</dd></div>
-        <div><dt>Live rack</dt><dd data-rack>0.000000 m · 0.000000 m/s</dd></div>
-        <div><dt>Travel from initial sample</dt><dd data-displacement>0.000 m</dd></div>
-        <div><dt>Contacts</dt><dd data-contacts>0</dd></div>
-        <div><dt>Steering actuator</dt><dd data-actuator>OFF</dd></div>
-        <div><dt>Mechanics gate</dt><dd data-validation>NOT STARTED</dd></div>
-      </dl>
-
-      <details>
-        <summary>Full trace and provenance</summary>
-        <dl class="telemetry-grid">
-          <div><dt>Browser runtime</dt><dd data-browser-runtime>PENDING</dd></div>
-          <div><dt>Vehicle backend</dt><dd data-runtime-backend>PENDING</dd></div>
-          <div><dt>Scene package</dt><dd data-scene-package>PENDING</dd></div>
-          <div><dt>Native source</dt><dd data-native-source>PENDING</dd></div>
-          <div><dt>Box3D</dt><dd data-box3d>PENDING</dd></div>
-          <div><dt>Topology</dt><dd data-topology>PENDING</dd></div>
-          <div><dt>Wheel backend</dt><dd data-wheel-backend>PENDING</dd></div>
-          <div><dt>Collision group</dt><dd data-group>PENDING</dd></div>
-          <div><dt>Generation</dt><dd data-generation>0</dd></div>
-          <div><dt>Fixed step</dt><dd data-step>0</dd></div>
-          <div><dt>RATE profile</dt><dd data-profile>PENDING</dd></div>
-          <div><dt>Hands-on edge this step</dt><dd data-edge>NONE</dd></div>
-          <div><dt>Commanded / live rack</dt><dd data-commanded-rack>NONE / 0.000000 m</dd></div>
-          <div><dt>Target error</dt><dd data-target-error>0.000000 m</dd></div>
-          <div><dt>Spring / requested motor / force cap</dt><dd data-spring>OFF · 0.000000 m/s · 0.00 N</dd></div>
-          <div><dt>Physical rack friction</dt><dd data-friction>40.00 + 0.00 N</dd></div>
-          <div><dt>Drive target</dt><dd data-drive-target>0.000 m/s · 0.000 rad/s · taper 1.000</dd></div>
-          <div><dt>Drive torque</dt><dd data-drive-torque>0.00 Nm/wheel · 0.00 Nm current</dd></div>
-          <div><dt>Chassis position</dt><dd data-chassis-position>0.0000, 0.0000, 0.0000 m</dd></div>
-          <div><dt>Chassis velocity</dt><dd data-chassis-velocity>0.0000, 0.0000, 0.0000 m/s</dd></div>
-          <div><dt>Contact begins</dt><dd data-begins>0</dd></div>
-          <div><dt>Four corners</dt><dd data-corners>PENDING</dd></div>
-          <div><dt>Dropped render time</dt><dd data-dropped>0.00 ms</dd></div>
+        <dl class="primary-metrics">
+          <div><dt>Steering input</dt><dd data-command>RELEASE</dd></div>
+          <div><dt>Drive input</dt><dd data-drive>COAST</dd></div>
+          <div><dt>Forward speed</dt><dd data-speed>0.000 m/s · 0.0 km/h</dd></div>
+          <div><dt>Live rack</dt><dd data-rack>0.000000 m · 0.000000 m/s</dd></div>
+          <div><dt>Travel from initial sample</dt><dd data-displacement>0.000 m</dd></div>
+          <div><dt>Contacts</dt><dd data-contacts>0</dd></div>
+          <div><dt>Steering actuator</dt><dd data-actuator>OFF</dd></div>
+          <div><dt>Mechanics gate</dt><dd data-validation>NOT STARTED</dd></div>
         </dl>
-      </details>
 
-      <p class="hint">
-        Steering RELEASE removes the rack target immediately. Keyboard and touch share the same source-aware fixed-step timelines; the renderer remains read-only.
-      </p>
-    </aside>
+        <details>
+          <summary>Full trace and provenance</summary>
+          <dl class="telemetry-grid">
+            <div><dt>Browser runtime</dt><dd data-browser-runtime>PENDING</dd></div>
+            <div><dt>Vehicle backend</dt><dd data-runtime-backend>PENDING</dd></div>
+            <div><dt>Scene package</dt><dd data-scene-package>PENDING</dd></div>
+            <div><dt>Native source</dt><dd data-native-source>PENDING</dd></div>
+            <div><dt>Box3D</dt><dd data-box3d>PENDING</dd></div>
+            <div><dt>Topology</dt><dd data-topology>PENDING</dd></div>
+            <div><dt>Wheel backend</dt><dd data-wheel-backend>PENDING</dd></div>
+            <div><dt>Collision group</dt><dd data-group>PENDING</dd></div>
+            <div><dt>Generation</dt><dd data-generation>0</dd></div>
+            <div><dt>Fixed step</dt><dd data-step>0</dd></div>
+            <div><dt>RATE profile</dt><dd data-profile>PENDING</dd></div>
+            <div><dt>Hands-on edge this step</dt><dd data-edge>NONE</dd></div>
+            <div><dt>Commanded / live rack</dt><dd data-commanded-rack>NONE / 0.000000 m</dd></div>
+            <div><dt>Target error</dt><dd data-target-error>0.000000 m</dd></div>
+            <div><dt>Spring / requested motor / force cap</dt><dd data-spring>OFF · 0.000000 m/s · 0.00 N</dd></div>
+            <div><dt>Physical rack friction</dt><dd data-friction>40.00 + 0.00 N</dd></div>
+            <div><dt>Drive target</dt><dd data-drive-target>0.000 m/s · 0.000 rad/s · taper 1.000</dd></div>
+            <div><dt>Drive torque</dt><dd data-drive-torque>0.00 Nm/wheel · 0.00 Nm current</dd></div>
+            <div><dt>Chassis position</dt><dd data-chassis-position>0.0000, 0.0000, 0.0000 m</dd></div>
+            <div><dt>Chassis velocity</dt><dd data-chassis-velocity>0.0000, 0.0000, 0.0000 m/s</dd></div>
+            <div><dt>Contact begins</dt><dd data-begins>0</dd></div>
+            <div><dt>Four corners</dt><dd data-corners>PENDING</dd></div>
+            <div><dt>Dropped render time</dt><dd data-dropped>0.00 ms</dd></div>
+          </dl>
+        </details>
+
+        <p class="hint">
+          Debug telemetry remains read-only. Product controls and camera do not own Box3D state.
+        </p>
+      </aside>
+    </section>
   </main>
 `;
 
@@ -242,6 +199,9 @@ const cornersElement = requireElement<HTMLElement>("[data-corners]");
 const droppedElement = requireElement<HTMLElement>("[data-dropped]");
 const validationElement = requireElement<HTMLElement>("[data-validation]");
 const restartButton = requireElement<HTMLButtonElement>("[data-restart]");
+const cameraResetButton = requireElement<HTMLButtonElement>("[data-camera-reset]");
+const debugToggleButton = requireElement<HTMLButtonElement>("[data-debug-toggle]");
+const debugPanel = requireElement<HTMLElement>("[data-debug-panel]");
 
 const pointerControlButtons: Record<
   PointerVehicleControlId,
@@ -289,6 +249,20 @@ function resetPointerControlStates(): void {
   }
 }
 
+function setDebugPanelOpen(open: boolean): void {
+  debugPanel.toggleAttribute("data-open", open);
+  debugPanel.setAttribute("aria-hidden", String(!open));
+  debugToggleButton.setAttribute("aria-expanded", String(open));
+  debugToggleButton.classList.toggle("is-active", open);
+  renderer?.setDiagnosticsVisible(open);
+}
+
+function interactiveKeyboardTarget(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement &&
+    (target.matches("input, select, textarea, button, a") ||
+      target.isContentEditable);
+}
+
 const browserRuntimeReport = inspectCurrentBrowserRuntime();
 browserRuntimeElement.textContent = formatBrowserRuntimeReport(
   browserRuntimeReport,
@@ -300,9 +274,9 @@ const animationFrames = {
   cancel: (handle: number) => window.cancelAnimationFrame(handle),
 };
 
-let renderer: M6DebugRenderer | null = null;
+let renderer: M6ProductRenderer | null = null;
 try {
-  renderer = new M6DebugRenderer(sceneCanvas);
+  renderer = new M6ProductRenderer(sceneCanvas);
 } catch (error: unknown) {
   sceneStateElement.textContent =
     `RENDERER UNAVAILABLE · ${formatError(error)}`;
@@ -540,7 +514,7 @@ async function startHost(): Promise<void> {
         }
         host = null;
         statusElement.textContent =
-          `F5 runtime fault — resources disposed: ${formatError(error)}`;
+          `Runtime fault — resources disposed: ${formatError(error)}`;
         sceneStateElement.textContent = "PHYSICS FAULTED";
         validationElement.textContent = "FAULTED / DISPOSED";
         restartButton.disabled = false;
@@ -588,7 +562,7 @@ async function startHost(): Promise<void> {
     if (generation !== startupGeneration) {
       return;
     }
-    statusElement.textContent = `F5 startup rejected: ${formatError(error)}`;
+    statusElement.textContent = `Startup rejected: ${formatError(error)}`;
     sceneStateElement.textContent = "PHYSICS NOT STARTED";
     validationElement.textContent = "NOT STARTED";
     console.error(error);
@@ -599,6 +573,33 @@ async function startHost(): Promise<void> {
     }
   }
 }
+
+cameraResetButton.addEventListener("click", () => {
+  renderer?.resetCamera();
+});
+
+debugToggleButton.addEventListener("click", () => {
+  setDebugPanelOpen(!debugPanel.hasAttribute("data-open"));
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.repeat || interactiveKeyboardTarget(event.target)) {
+    return;
+  }
+  if (event.code === "KeyC") {
+    event.preventDefault();
+    renderer?.resetCamera();
+    return;
+  }
+  if (event.code === "KeyR") {
+    event.preventDefault();
+    void startHost();
+    return;
+  }
+  if (event.code === "Escape" && debugPanel.hasAttribute("data-open")) {
+    setDebugPanelOpen(false);
+  }
+});
 
 restartButton.addEventListener("click", () => {
   void startHost();
@@ -619,4 +620,5 @@ window.addEventListener(
   { once: true },
 );
 
+setDebugPanelOpen(false);
 void startHost();

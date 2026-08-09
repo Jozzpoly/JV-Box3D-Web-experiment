@@ -116,7 +116,11 @@ test("scan dependency is owned only by the LOCAL_FULL provider while host and re
   assert.match(localFullProvider, /loadLocalJsprev2Scan/);
   assert.match(localFullProvider, /createProductWorld\(await loadLocalJsprev2Scan\(\)\)/);
 
-  assert.match(productMain, /configureProductWorldLoader\(loadLocalFullProductWorld\);/);
+  assert.match(
+    productMain,
+    /configureProductWorldLoader\(\s*spawnTarget === "scan"\s*\? loadLocalFullProductWorld\s*:\s*loadMapOnlyProductWorld,?\s*\);/s,
+  );
+  assert.match(productMain, /spawnTarget !== "map"/);
   assert.match(productMain, /await import\("\.\/main\.js"\)/);
 
   assert.match(main, /restartButton\.addEventListener\("click",\s*\(\) => \{\s*void startHost\(\);\s*\}\);/s);

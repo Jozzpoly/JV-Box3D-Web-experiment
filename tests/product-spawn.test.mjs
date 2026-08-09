@@ -42,8 +42,13 @@ function worldFixture(scan = scanFixture()) {
     boxes: [],
     capsules: [],
     offroad: {
-      positions: new Float32Array([0, 0, 0, 1, 0, 0, 0, 0, 1]),
-      indices: new Uint32Array([0, 1, 2]),
+      positions: new Float32Array([
+        198, 0, -200,
+        598, 0, -200,
+        598, 0, 200,
+        198, 0, 200,
+      ]),
+      indices: new Uint32Array([0, 1, 2, 0, 2, 3]),
       color: [1, 1, 1, 1],
     },
     scan,
@@ -71,7 +76,12 @@ test("map remains the default and preserves the accepted baseline spawn", () => 
   assert.equal(parseProductSpawnTarget(""), "map");
   assert.equal(parseProductSpawnTarget("?jvSpawn=unknown"), "map");
   assert.equal(parseProductSpawnTarget("?jvSpawn=scan"), "scan");
+  assert.equal(parseProductSpawnTarget("?jvSpawn=offroad"), "offroad");
   assert.equal(resolveProductSpawn(world, "map"), world.spawn);
+  const offroad = resolveProductSpawn(world, "offroad");
+  assert.ok(offroad.x > 198 && offroad.x < 220);
+  assert.ok(Number.isFinite(offroad.y));
+  assert.equal(offroad.z, 0);
 });
 
 test("scan selection fails closed when the pack or center surface is absent", () => {

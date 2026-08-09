@@ -4,7 +4,7 @@ import type {
   JvWorldData,
 } from "./jv-world-contract.js";
 
-export type JvProductSpawnTarget = "map" | "scan";
+export type JvProductSpawnTarget = "map" | "offroad" | "scan";
 
 const TRIANGLE_EPSILON = 1e-7;
 
@@ -12,7 +12,92 @@ export function parseProductSpawnTarget(
   search: string,
 ): JvProductSpawnTarget {
   const value = new URLSearchParams(search).get("jvSpawn");
-  return value === "scan" ? "scan" : "map";
+  if (value === "offroad" || value === "scan") {
+    return value;
+  }
+  return "map";
+}
+
+function surfaceHeightAt(
+  positions: Float32Array,
+  indices: Uint32Array,
+  x: number,
+  z: number,
+): number | null {
+  let highest = -Infinity;
+  for (let offset = 0; offset < indices.length; offset += 3) {
+    const indexA = indices[offset]! * 3;
+    const indexB = indices[offset + 1]! * 3;
+    const indexC = indices[offset + 2]! * 3;
+    const ax = positions[indexA]!;
+    const ay = positions[indexA + 1]!;
+    const az = positions[indexA + 2]!;
+    const bx = positions[indexB]!;
+    const by = positions[indexB + 1]!;
+    const bz = positions[indexB + 2]!;
+    const cx = positions[indexC]!;
+    const cy = positions[indexC + 1]!;
+    const cz = positions[indexC + 2]!;
+    const denominator =
+      (bz - cz) * (ax - cx) +
+      (cx - bx) * (az - cz);
+    if (Math.abs(denominator) <= TRIANGLE_EPSILON) {
+      continue;
+    }
+    const weightA =
+      ((bz - cz) * (x - cx) +
+        (cx - bx) * (z - cz)) /
+      denominator;
+    const weightB =
+      ((cz - az) * (x - cx) +
+        (ax - cx) * (z - cz)) /
+      denominator;
+    const weightC = 1 - weightA - weightB;
+    if (
+      weightA < -TRIANGLE_EPSILON ||
+      weightB < -TRIANGLE_EPSILON ||
+      weightC < -TRIANGLE_EPSILON
+    ) {
+      continue;
+    }
+    highest = Math.max(
+      highest,
+      weightA * ay + weightB * by + weightC * cy,
+    );
+  }
+  return Number.isFinite(highest) ? highest : null;
+}
+
+function offroadEntrySpawn(
+  world: JvWorldData,
+  clearanceMeters: number,
+): JvVec3 {
+  const positions = world.offroad.positions;
+  if (positions.length < 9) {
+    throw new Error("E2R offroad mesh has no drivable triangles.");
+  }
+  let minimumX = Infinity;
+  let maximumX = -Infinity;
+  let minimumZ = Infinity;
+  let maximumZ = -Infinity;
+  for (let offset = 0; offset < positions.length; offset += 3) {
+    minimumX = Math.min(minimumX, positions[offset]!);
+    maximumX = Math.max(maximumX, positions[offset]!);
+    minimumZ = Math.min(minimumZ, positions[offset + 2]!);
+    maximumZ = Math.max(maximumZ, positions[offset + 2]!);
+  }
+  const x = minimumX + Math.min(8, (maximumX - minimumX) * 0.08);
+  const z = 0.5 * (minimumZ + maximumZ);
+  const surfaceY = surfaceHeightAt(
+    positions,
+    world.offroad.indices,
+    x,
+    z,
+  );
+  if (surfaceY === null) {
+    throw new Error("E2R offroad entry has no drivable surface.");
+  }
+  return { x, y: surfaceY + clearanceMeters, z };
 }
 
 export function scanSurfaceHeightAt(
@@ -28,60 +113,13 @@ export function scanSurfaceHeightAt(
   ) {
     return null;
   }
-
-  const localX = worldX - scan.origin.x;
-  const localZ = worldZ - scan.origin.z;
-  const positions = scan.collision.positions;
-  const indices = scan.collision.indices;
-  let highest = -Infinity;
-
-  for (let offset = 0; offset < indices.length; offset += 3) {
-    const indexA = indices[offset]! * 3;
-    const indexB = indices[offset + 1]! * 3;
-    const indexC = indices[offset + 2]! * 3;
-
-    const ax = positions[indexA]!;
-    const ay = positions[indexA + 1]!;
-    const az = positions[indexA + 2]!;
-    const bx = positions[indexB]!;
-    const by = positions[indexB + 1]!;
-    const bz = positions[indexB + 2]!;
-    const cx = positions[indexC]!;
-    const cy = positions[indexC + 1]!;
-    const cz = positions[indexC + 2]!;
-
-    const denominator =
-      (bz - cz) * (ax - cx) +
-      (cx - bx) * (az - cz);
-    if (Math.abs(denominator) <= TRIANGLE_EPSILON) {
-      continue;
-    }
-
-    const weightA =
-      ((bz - cz) * (localX - cx) +
-        (cx - bx) * (localZ - cz)) /
-      denominator;
-    const weightB =
-      ((cz - az) * (localX - cx) +
-        (ax - cx) * (localZ - cz)) /
-      denominator;
-    const weightC = 1 - weightA - weightB;
-    if (
-      weightA < -TRIANGLE_EPSILON ||
-      weightB < -TRIANGLE_EPSILON ||
-      weightC < -TRIANGLE_EPSILON
-    ) {
-      continue;
-    }
-
-    const localY =
-      weightA * ay +
-      weightB * by +
-      weightC * cy;
-    highest = Math.max(highest, localY + scan.origin.y);
-  }
-
-  return Number.isFinite(highest) ? highest : null;
+  const localY = surfaceHeightAt(
+    scan.collision.positions,
+    scan.collision.indices,
+    worldX - scan.origin.x,
+    worldZ - scan.origin.z,
+  );
+  return localY === null ? null : localY + scan.origin.y;
 }
 
 export function scanCenterSpawn(
@@ -117,6 +155,9 @@ export function resolveProductSpawn(
 ): JvVec3 {
   if (target === "map") {
     return world.spawn;
+  }
+  if (target === "offroad") {
+    return offroadEntrySpawn(world, clearanceMeters);
   }
   if (world.scan === null) {
     throw new Error(

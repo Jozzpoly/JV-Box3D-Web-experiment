@@ -74,7 +74,7 @@ const initialSettings = {
 } as const;
 replaceJvProductViewSettings(initialSettings);
 
-if (spawnTarget === "scan") {
+if (spawnTarget !== "map") {
   const nativeFetch = globalThis.fetch.bind(globalThis);
   const productFetch: typeof fetch = async (input, init) => {
     const response = await nativeFetch(input, init);
@@ -106,14 +106,25 @@ installProductControls({
   capabilities: {
     locationChoices: [
       {
-        label: "Mapa E2R",
+        label: "Plac E2R",
         href: targetUrl("map"),
         active: spawnTarget === "map",
+      },
+      {
+        label: "Offroad",
+        href: targetUrl("offroad"),
+        active: spawnTarget === "offroad",
       },
       {
         label: "Skan JSPREV2",
         href: targetUrl("scan"),
         active: spawnTarget === "scan",
+        availabilityProbeUrl: new URL(
+          "__jv_scan__/index.json",
+          document.baseURI,
+        ).href,
+        unavailableMessage:
+          "Skan JSPREV2 jest niedostępny w tej publikacji. Mapa i Offroad działają niezależnie.",
       },
     ],
     textureFilter: true,

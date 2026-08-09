@@ -69,7 +69,7 @@ async function staticClosure(entryRelative) {
   };
 }
 
-test("MAP_ONLY_R0 entry excludes local scan semantics and exposes only valid controls", async () => {
+test("MAP_ONLY_R0 stays scan-free while current R1 exposes its own location controls", async () => {
   const [html, entry, controls, localEntry] = await Promise.all([
     readFile(resolve(root, "map-only-r0.html"), "utf8"),
     readFile(resolve(root, "src/map-only-r0-main.ts"), "utf8"),
@@ -87,8 +87,10 @@ test("MAP_ONLY_R0 entry excludes local scan semantics and exposes only valid con
   assert.doesNotMatch(entry, /local-full-product-world|jsprev2-scan|loadLocalJsprev2Scan|product-spawn|jvSpawn|JSPREV2|scan/i);
 
   assert.match(localEntry, /locationChoices:/);
-  assert.match(localEntry, /Mapa E2R/);
+  assert.match(localEntry, /Plac E2R/);
+  assert.match(localEntry, /Offroad/);
   assert.match(localEntry, /Skan JSPREV2/);
+  assert.match(localEntry, /targetUrl\("offroad"\)/);
   assert.match(localEntry, /targetUrl\("scan"\)/);
   assert.match(localEntry, /textureFilter: true/);
   assert.match(localEntry, /grid: true/);

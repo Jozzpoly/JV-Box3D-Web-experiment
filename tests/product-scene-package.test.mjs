@@ -28,7 +28,30 @@ function sceneFixture() {
   });
 }
 
-function worldFixture() {
+function worldFixture(scanOverride = undefined) {
+  const scan = scanOverride === null
+    ? null
+    : {
+        source: "JSPREV2",
+        packId: "fixture-scan",
+        origin: { x: 10, y: 2, z: 20 },
+        worldBounds: {
+          minimum: { x: 9, y: 3, z: 19 },
+          maximum: { x: 11, y: 4, z: 21 },
+        },
+        collision: {
+          positions: new Float32Array([
+            -1, 2, -1,
+            1, 2, -1,
+            0, 2, 1,
+          ]),
+          indices: new Uint32Array([0, 1, 2]),
+          color: [0.6, 0.6, 0.6, 1],
+        },
+        groups: [],
+        textureCount: 0,
+        triangleCount: 1,
+      };
   return {
     schema: "JV_WEB_E2R_WORLD_V1",
     nativeAuthorityCommit: "fixture",
@@ -36,32 +59,17 @@ function worldFixture() {
     boxes: [],
     capsules: [],
     offroad: {
-      positions: new Float32Array([0, 0, 0, 1, 0, 0, 0, 0, 1]),
-      indices: new Uint32Array([0, 1, 2]),
+      positions: new Float32Array([
+        198, 0, -200,
+        598, 0, -200,
+        598, 0, 200,
+        198, 0, 200,
+      ]),
+      indices: new Uint32Array([0, 1, 2, 0, 2, 3]),
       color: [1, 1, 1, 1],
     },
-    scan: {
-      source: "JSPREV2",
-      packId: "fixture-scan",
-      origin: { x: 10, y: 2, z: 20 },
-      worldBounds: {
-        minimum: { x: 9, y: 3, z: 19 },
-        maximum: { x: 11, y: 4, z: 21 },
-      },
-      collision: {
-        positions: new Float32Array([
-          -1, 2, -1,
-          1, 2, -1,
-          0, 2, 1,
-        ]),
-        indices: new Uint32Array([0, 1, 2]),
-        color: [0.6, 0.6, 0.6, 1],
-      },
-      groups: [],
-      textureCount: 0,
-      triangleCount: 1,
-    },
-    scanStatus: "LOADED",
+    scan,
+    scanStatus: scan === null ? "NOT_AVAILABLE" : "LOADED",
   };
 }
 
@@ -89,4 +97,17 @@ test("scan target changes only the frozen spawn position", () => {
   assert.equal(rewritten.render, scene.render);
   assert.equal(rewritten.collision, scene.collision);
   assert.equal(rewritten.spawn.yawRadians, 0);
+});
+
+
+test("product scene package rewrites an offroad spawn without requiring scan data", () => {
+  const scene = sceneFixture();
+  const rewritten = applyProductSpawnToScene(
+    scene,
+    worldFixture(null),
+    "offroad",
+  );
+  assert.notDeepEqual(rewritten.spawn.position, scene.spawn.position);
+  assert.ok(rewritten.spawn.position[0] > 198);
+  assert.equal(rewritten.spawn.position[2], 0);
 });
