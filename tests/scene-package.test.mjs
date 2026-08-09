@@ -151,15 +151,21 @@ test("legacy M6 rejects scene features it cannot execute yet", async () => {
 });
 
 test("application and portable manifest consume the scene contract explicitly", async () => {
-  const [mainSource, manifestWriter] = await Promise.all([
+  const [mainSource, manifestWriter, runtimeAssetContract] = await Promise.all([
     readFile(resolve(root, "src/main.ts"), "utf8"),
     readFile(resolve(root, "tools/write-portable-build-manifest.mjs"), "utf8"),
+    readFile(resolve(root, "tools/runtime-asset-contract.mjs"), "utf8"),
   ]);
   assert.match(mainSource, /loadScenePackageV1\(\)/);
   assert.match(mainSource, /scene\.spawn\.position/);
   assert.doesNotMatch(mainSource, /spawn:\s*\{\s*x:\s*0,\s*y:\s*1\.2/);
   assert.match(
     manifestWriter,
+    /import \{ REQUIRED_RUNTIME_ASSETS \} from "\.\/runtime-asset-contract\.mjs";/,
+  );
+  assert.match(manifestWriter, /runtimeAssets:\s*\[\.\.\.REQUIRED_RUNTIME_ASSETS\]/);
+  assert.match(
+    runtimeAssetContract,
     /scenes\/synthetic-flat-lab\.scene\.json/,
   );
 });

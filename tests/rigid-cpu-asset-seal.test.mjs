@@ -9,6 +9,9 @@ function sourceAsset() {
     nodeIndexByName: new Map([["JV_Chassis", 0]]),
     meshes: [],
     materials: [],
+    images: [],
+    samplers: [],
+    textures: [],
     primitiveCount: 0,
     triangleCount: 0,
   };
