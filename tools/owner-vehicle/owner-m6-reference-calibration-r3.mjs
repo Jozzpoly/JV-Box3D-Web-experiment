@@ -148,3 +148,92 @@ export function calibrateFrontWishbonePieceR3(piece,references,geometry,which) {
     }),
   });
 }
+
+export function calibrateFrontKnucklePieceR3(piece,references,geometry) {
+  const sourceWheelCenter=references.wheelCenter;
+  const sourceKingpinMid=midpoint(references.upperOutboard,references.lowerOutboard);
+  const sourceRadialVector=sub(sourceKingpinMid,sourceWheelCenter);
+  const sourceKingpinHalf=mul(sub(references.upperOutboard,references.lowerOutboard),0.5);
+  const sourceRadial=norm(sourceRadialVector,`${geometry.corner} source upright radial`);
+  const sourceKingpin=norm(sourceKingpinHalf,`${geometry.corner} source upright kingpin`);
+  const sourceLongitudinal=norm(cross(sourceRadial,sourceKingpin),`${geometry.corner} source upright longitudinal`);
+  if(Math.abs(dot(sourceRadial,sourceKingpin))>1e-6)fail(`${geometry.corner} source upright radial/kingpin basis is not orthogonal`);
+  if(determinantColumns(sourceRadial,sourceKingpin,sourceLongitudinal)<0.999999)fail(`${geometry.corner} source upright basis is not right handed`);
+
+  const targetUpper=sub(geometry.upperBall,geometry.wheelCenter);
+  const targetLower=sub(geometry.lowerBall,geometry.wheelCenter);
+  const targetRadialVector=midpoint(targetUpper,targetLower);
+  const targetKingpinHalf=mul(sub(targetUpper,targetLower),0.5);
+  const targetLongitudinal=norm(sub(geometry.upperRear,geometry.upperFront),`${geometry.corner} target upright longitudinal`);
+  const sourceRadialLength=len(sourceRadialVector);
+  const sourceKingpinHalfLength=len(sourceKingpinHalf);
+  const targetRadialLength=len(targetRadialVector);
+  const targetKingpinHalfLength=len(targetKingpinHalf);
+
+  // Columns of the source-basis -> knuckle-local affine map. Target radial and
+  // kingpin are intentionally allowed to be non-orthogonal: KPI/caster encode a
+  // real shear relative to the Blockbench prototype's orthogonal reference rig.
+  const radialColumn=mul(targetRadialVector,1/sourceRadialLength);
+  const kingpinColumn=mul(targetKingpinHalf,1/sourceKingpinHalfLength);
+  const longitudinalColumn=mul(targetLongitudinal,OWNER_M6_R3_SCALE_METERS_PER_BU);
+  const determinant=determinantColumns(radialColumn,kingpinColumn,longitudinalColumn);
+  if(!(Math.abs(determinant)>EPS))fail(`${geometry.corner} upright affine map is singular`);
+  const reverseWinding=determinant<0;
+
+  const point=(p)=>{
+    const q=sub(p,sourceWheelCenter);
+    return add(
+      add(
+        mul(radialColumn,dot(q,sourceRadial)),
+        mul(kingpinColumn,dot(q,sourceKingpin)),
+      ),
+      mul(longitudinalColumn,dot(q,sourceLongitudinal)),
+    );
+  };
+
+  // For A=[r k l], A^-T*n is a linear combination of the reciprocal basis.
+  const reciprocalRadial=mul(cross(kingpinColumn,longitudinalColumn),1/determinant);
+  const reciprocalKingpin=mul(cross(longitudinalColumn,radialColumn),1/determinant);
+  const reciprocalLongitudinal=mul(cross(radialColumn,kingpinColumn),1/determinant);
+  const normal=(n)=>add(
+    add(
+      mul(reciprocalRadial,dot(n,sourceRadial)),
+      mul(reciprocalKingpin,dot(n,sourceKingpin)),
+    ),
+    mul(reciprocalLongitudinal,dot(n,sourceLongitudinal)),
+  );
+
+  const mappedWheelCenter=point(sourceWheelCenter);
+  const mappedUpper=point(references.upperOutboard);
+  const mappedLower=point(references.lowerOutboard);
+  return Object.freeze({
+    primitives:mapPiecePrimitives(piece,point,normal,reverseWinding),
+    report:Object.freeze({
+      mode:'AUTHORED_UPRIGHT_REFERENCE_TO_PHYSICAL_KNUCKLE_R3',
+      sourceWheelCenter:Object.freeze([...sourceWheelCenter]),
+      sourceUpper:Object.freeze([...references.upperOutboard]),
+      sourceLower:Object.freeze([...references.lowerOutboard]),
+      targetUpper:Object.freeze(targetUpper),
+      targetLower:Object.freeze(targetLower),
+      radialScale:targetRadialLength/sourceRadialLength,
+      kingpinScale:targetKingpinHalfLength/sourceKingpinHalfLength,
+      thicknessScale:OWNER_M6_R3_SCALE_METERS_PER_BU,
+      targetRadialKingpinDot:dot(norm(targetRadialVector),norm(targetKingpinHalf)),
+      determinant,
+      mirrored:reverseWinding,
+      mappedWheelCenter:Object.freeze(mappedWheelCenter),
+      mappedUpper:Object.freeze(mappedUpper),
+      mappedLower:Object.freeze(mappedLower),
+      wheelCenterErrorMeters:len(mappedWheelCenter),
+      upperBallErrorMeters:distance(mappedUpper,targetUpper),
+      lowerBallErrorMeters:distance(mappedLower,targetLower),
+      referenceAuthority:Object.freeze({
+        wheelCenter:references.provenance.wheelCenter,
+        upper:references.provenance.upperOutboard,
+        lower:references.provenance.lowerOutboard,
+        physicalTarget:'M6_KNUCKLE_WHEEL_CENTER_AND_BALL_HARDPOINTS',
+        longitudinal:'M6_WISHBONE_FRONT_REAR_AXIS',
+      }),
+    }),
+  });
+}
