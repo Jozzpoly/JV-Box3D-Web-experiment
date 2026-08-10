@@ -1,8 +1,8 @@
 # JV Web — active implementer task
 
 Updated: 2026-08-10
-Task: **S1-B — front upper wishbone roll-pinned two-end visual pilot**
-Status: **READY AFTER ORCHESTRATOR HANDOFF + SOURCE ZIP**
+Task: **S1-D — FL upper longitudinal-axis authority correction**
+Status: **READY**
 
 Work branch:
 
@@ -10,204 +10,212 @@ Work branch:
 work/owner-rig-s1-attachment-authority
 ```
 
-The orchestrator handoff supplies the exact expected starting SHA. Verify the remote branch before any write.
-
-## EXECUTION MODE
+Expected starting SHA:
 
 ```text
-SOURCE_ZIP_REQUIRED
+56ce515d95766616b3f723e8195732292adba430
 ```
 
-Before broad technical work, confirm that Jozz attached a GitHub **Download ZIP of this exact work branch after the orchestrator declared the task ready**.
+Verify the remote branch before any write. If it is not exactly this SHA, STOP and report the mismatch.
 
-The remote GitHub SHA is source/write identity. The ZIP is only the local execution/read mirror and contains no `.git` identity.
+## 1. Purpose
 
-If the ZIP is missing, stop immediately after remote SHA verification and ask Jozz for it. Do not attempt private clone/`gh`/DNS/archive workarounds.
+S1-C is **OWNER REJECTED as a complete static 3D placement**, but it produced useful partial evidence:
 
-## 1. Objective
+- front view: FL upper chassis-side height/lateral projection looks approximately plausible;
+- top view: FL upper has clearly wrong longitudinal yaw/rotation;
+- owner explicitly prefers leaving the current stretched mesh/length alone for now unless correct rigging later proves geometry must change.
 
-Create the smallest technically sound **visual-only pilot** answering this question:
+S1-D must isolate the top-view failure and correct **only longitudinal attachment authority** if the evidence supports it.
 
-> Can the front upper wishbone visually span a chassis-side authored attachment and the existing physical outboard/ball endpoint while keeping a deterministic, believable roll/orientation through live motion — without changing suspension physics or existing `PART_PAIR_STRETCH` semantics?
+Do not reopen the whole chassis mate, roll-pinned transform, mesh scale, live motion, or other suspension parts.
 
-The purpose is to obtain a candidate that can later answer one owner-visible question about the upper wishbone chassis attachment. Do not fix the rest of the suspension.
+## 2. Current causal diagnosis to verify, not blindly assume
 
-## 2. Accepted S1-A input evidence
-
-Treat these as current starting evidence, not owner acceptance:
-
-- R3 intentionally maps the authored front upper wishbone chassis endpoint to the physical M6 upper hinge; the ~0.216 m authored-to-current difference is therefore policy/calibration, not a random transform failure.
-- Current measurement puts the authored whole-rig upper endpoint materially closer to rendered chassis geometry than the current physical hinge. This supports it as a **pilot visual attachment candidate**, not a final accepted threshold.
-- Current physical upper ball/outboard endpoint has not been independently disproven and remains protected in S1-B.
-- Existing Web `PART_PAIR_STRETCH` derives orientation from endpoint direction via shortest-arc and does not observe body roll about an unchanged pair axis.
-- Current native read-only evidence uses `JozzVehicleComputeArmPlacement()` / `DrawPartBetween()` and explicitly pins roll with a full frame because minimal shortest-arc produced unequal mirrored twisting.
-
-Do **not** infer from `physicsAuthority:false` that a physical point is visually wrong. That flag only limits authored asset authority over physics.
-
-## 3. S1-A diagnostic commit in the branch
-
-The starting branch contains S1-A diagnostic commit `6bc5d6334075a4e044b51593964605fe9058009d` plus the orchestrator's later task/control commit.
-
-One S1-A assertion pins the current bad ~0.216 m discrepancy. **That assertion is diagnostic, not a durable acceptance gate.** Before `REVIEW_READY`, remove or rewrite any test that would make future correction fail merely because the known-bad discrepancy changed.
-
-The roll-limitation probe is conceptually useful, but you may relocate/rewrite it into a more appropriate focused transform test if the S1-B implementation makes that clearer.
-
-## 4. Required bootstrap / context limit
-
-Read only:
-
-1. `AGENTS.md`
-2. this file
-3. source/tests directly required by S1-B
-
-Do **not** preload the orchestration protocol unless this task is ambiguous.
-
-Start technical inspection with the smallest useful set around:
-
-- `src/visual/vehicle-visual-transform.ts`
-- current visual binding/schema/types directly required by that transform
-- `tools/owner-vehicle/owner-m6-reference-calibration-r3.mjs`
-- R3 generator code that emits the selected front upper wishbone binding
-- focused transform/owner-rig tests protecting those paths
-- T0 audit only as measurement evidence, not acceptance truth
-
-Allowed native read-only evidence is limited to the current implementations of:
-
-- `samples/jozz_vehicle_visual_mesh_draw.cpp` (`JozzVehicleComputeArmPlacement` / `DrawPartBetween`)
-- `samples/jozz_vehicle_m6_rig_lab_steering_visual.cpp` only where needed to understand front wishbone endpoint/body-role intent
-
-Do not perform broad native archaeology.
-
-Do not use `personal_context`, chat/history recovery, project memory, archived branches or File Library history.
-
-## 5. Technical freedom
-
-You may choose the smallest sound visual architecture.
-
-An **additive** new visual transform/binding capability is allowed if necessary to express a roll-pinned two-end relationship. Existing `PART_PAIR_STRETCH` behavior must remain unchanged for all existing consumers.
-
-You do not have to copy native implementation literally. Native provides evidence about required semantics, not mandatory source code.
-
-A valid solution must distinguish:
-
-- authored local pair axis / authored orientation;
-- live endpoint direction;
-- a deterministic roll/up reference so mirrored/front motion does not twist arbitrarily;
-- exact mapping of the two selected visual endpoints.
-
-Do not solve orientation by a neutral-frame hardcoded quaternion that only looks correct at rest unless you can prove it remains coherent through representative live arm motion.
-
-## 6. Pilot scope
-
-Prefer the **front-left upper wishbone** as the owner-visible pilot when practical, leaving the opposite side as baseline comparison.
-
-A deterministic FL/FR mirror of the same rule is allowed only if the implementation architecture would otherwise require a one-off hack and focused evidence proves the mirror behavior. Do not expand to lower arms or rear.
-
-Selected pilot intent:
+Current exact rest data for FL:
 
 ```text
-visual chassis-side endpoint:
-  authored whole-rig front-upper chassis endpoint candidate
+S1-C start:
+  [1.0785810947418215, -0.2828125, -0.21965118050575239]
 
-visual outboard endpoint:
-  existing current physical upper ball/outboard endpoint
+physical upper hinge center:
+  [1.2342520405653337, -0.27889727457341834, -0.5478987790374772]
 
-physics:
-  unchanged
+physical upper ball:
+  [1.2342520405653337, -0.37000000000000005, -0.8878987790374773]
 ```
 
-The authored chassis endpoint is still a hypothesis to be owner-validated; do not convert its current coordinates into a permanent acceptance threshold.
+The current physical M6 geometry therefore gives:
+
+```text
+upper hinge center X == upper ball X
+```
+
+while S1-C changed the chassis-side start X to `1.078581...`, creating about `0.155671 m` of longitudinal start→outboard mismatch.
+
+This matches the owner-observed top-view error direction: the S1-C red arm is strongly diagonal in plan view while the desired yellow relationship is approximately transverse.
+
+The orchestrator's current hypothesis is therefore:
+
+> S1-C incorrectly allowed an unrestricted 3D nearest-surface solve to take authority over longitudinal X. The upper wishbone should use a split authority model: longitudinal placement from the live/physical upper hinge-axis center, while the S1-C front-projection candidate supplies only the provisional lateral/vertical relationship.
+
+This is a **hypothesis to verify from current source geometry**, not a numeric patch instruction.
+
+## 3. Required technical question
+
+Answer exactly this:
+
+> Can FL upper preserve the current S1-C Y/Z chassis-side projection while deriving only longitudinal X from the physical upper hinge-axis center, thereby removing the top-view yaw error without changing S1-B transform semantics, protected outboard, mesh geometry, or any other subsystem?
+
+A likely rest candidate, if the hypothesis is correct, is approximately:
+
+```text
+[physicalUpperHinge.x, S1C.y, S1C.z]
+≈ [1.2342520406, -0.2828125, -0.2196511805]
+```
+
+Do **not** hardcode these numbers as authority. Derive each component from its declared source.
+
+## 4. Authority model to test
+
+Prefer an explicit report/provenance model such as:
+
+```text
+LONGITUDINAL X:
+  physical upper hinge-axis center / midpoint of the physical upper front+rear hinge axis
+
+VERTICAL Y + LATERAL Z:
+  current S1-C semantic chassis-mate candidate, preserved exactly for this experiment
+
+OUTBOARD XYZ:
+  existing protected physical upper ball
+
+ORIENTATION MECHANISM:
+  existing S1-B PART_PAIR_ROLL_PINNED_STRETCH, unchanged
+```
+
+Verify that the physical hinge-axis midpoint is the correct current kinematic longitudinal reference; do not simply copy `upperHinge[0]` without checking its relation to `upperFront`, `upperRear`, and upper ball.
+
+S1-D does **not** promote the full physical upper hinge to visual authority. It tests only its longitudinal component.
+
+## 5. Important interpretation of S1-C
+
+Do not preserve the claim that the final visual start itself lies on `group5` after an X-only correction. If X is replaced, the resulting hybrid point may no longer lie on the selected S1-C triangle.
+
+Therefore:
+
+- retain S1-C nearest-`group5` result as provenance for the provisional Y/Z evidence;
+- report the final S1-D point honestly as a **constraint-composed / split-authority visual attachment**, not as a literal nearest point on `group5`;
+- keep unrestricted `Diferential_F` nearest evidence diagnostic-only;
+- do not invent a new claim of physical contact with a mesh unless independently proven.
+
+## 6. Bootstrap / context firewall
+
+The existing implementer conversation may continue.
+
+Before coding:
+
+1. verify remote SHA exactly;
+2. reread `AGENTS.md` and this file;
+3. inspect only source/tests directly needed for S1-D.
+
+Do not use `personal_context`, project memory, old chats as evidence, archived branches, broad native archaeology, or historical handoffs.
+
+No new execution ZIP is required **if your existing local S1-C workspace is byte-identical to candidate `56ce515d...` for every file you will execute/test**. Verify this. If you no longer have an exact executable S1-C workspace, stop early and ask Jozz for the smallest required exact source snapshot instead of attempting clone/DNS/gh workarounds.
 
 ## 7. Allowed change surface
 
-Allowed only as required for S1-B:
+Prefer changes limited to:
 
-- additive visual transform/binding schema/runtime support needed for the roll-pinned two-end relationship;
-- R3 owner-vehicle calibration/generator path for the selected front upper wishbone pilot;
-- focused tests for the new semantics/pilot;
-- removal/rewrite of temporary S1-A diagnostic assertions that would freeze known-bad geometry.
+- `tools/owner-vehicle/owner-m6-front-upper-chassis-mate-r3.mjs` or a comparably narrow S1-D calibration helper;
+- R3 generator/report plumbing only as necessary to consume the split-authority point;
+- focused S1-C/S1-D tests.
 
-Keep changes causal and small.
+Do not change `src/visual/vehicle-visual-transform.ts` or the `PART_PAIR_ROLL_PINNED_STRETCH` schema/algorithm unless you discover evidence that the transform itself causes the **static top-view** error. If that happens, STOP/REPLAN instead of silently broadening S1-D.
 
 ## 8. Protected scope
 
 Do not change:
 
-- `src/vehicle/m6/m6-runtime-builder.ts` or any physical hardpoint/body/joint/topology;
-- current physical upper ball/outboard target unless new independent evidence forces a stop/replan;
-- wheel center / `Socket_WheelMount` contract;
-- lower wishbone;
+- runtime suspension physics, hardpoints, bodies, joints or topology;
+- physical upper ball/outboard;
+- FL lower arm;
+- FR upper arm baseline;
 - upright/knuckle/hub;
 - dampers/springs;
 - steering rods;
 - cardans;
-- stance / ride height / track width;
-- handling, steering feel, tire/contact or drivetrain;
-- chassis/body placement;
-- source asset bytes;
+- stance/ride height/track;
+- handling/tire/drivetrain;
+- chassis placement;
+- source GLB/GLTF bytes;
+- upper-arm mesh geometry/scale as a separate cleanup;
 - native JV;
-- public repo/R0;
-- camera/UI/world/scan;
-- unrelated cleanup/refactoring.
+- public R0;
+- `main`.
 
-Do not write `main`.
+## 9. Required S1-D evidence
 
-## 9. Required evidence before REVIEW_READY
+Before `REVIEW_READY`, prove at minimum:
 
-At minimum:
+1. candidate is exactly one bounded descendant of the declared base;
+2. the physical upper hinge-axis midpoint/source of longitudinal authority is explicitly derived and reported;
+3. S1-C Y and Z are preserved exactly unless evidence forces `NO_PATCH_JUSTIFIED`;
+4. only start X changes relative to S1-C for `owner.fl.upper-arm`;
+5. candidate start X matches the selected longitudinal authority by derivation, not hardcoded pixels;
+6. protected physical outboard remains exact;
+7. rest top-plan longitudinal residual start→upper-ball is reported before/after;
+8. FR and every other binding remain baseline;
+9. `PART_PAIR_ROLL_PINNED_STRETCH` implementation/schema remains byte-unchanged;
+10. generated GLB bytes/hash remain unchanged unless the task must stop/replan;
+11. focused tests run on exact candidate bytes where environment permits;
+12. final GitHub candidate bytes match locally tested bytes.
 
-1. exact base/candidate identity and ancestry;
-2. full changed-file list;
-3. proof existing `PART_PAIR_STRETCH` semantics/consumers are unchanged;
-4. focused transform tests showing both selected endpoints map exactly;
-5. focused orientation evidence showing roll is deterministic under representative endpoint directions/motion and does not produce mirrored asymmetric twist;
-6. blast-radius evidence showing only intended upper-wishbone pilot binding(s) changed in generated owner rig;
-7. generated package/binding identity and explicit statement of which artifact bytes changed or stayed identical;
-8. typecheck/focused tests against the exact candidate bytes when the environment permits;
-9. confirmation all protected scope remained untouched.
+Do not convert owner annotations into pixel-to-meter calibration.
 
-If exact Node 24.16.0/npm 11.13.0 or pinned dependencies are unavailable in the implementer environment, use available supplemental execution only if useful and label it correctly. Do not spend long repairing the environment. The orchestrator can perform/prepare the canonical owner gate after source review.
+## 10. Decision conditions
 
-Before claiming any local test for the candidate, verify final changed files fetched from GitHub match the locally tested contents.
+Return `NO_PATCH_JUSTIFIED` or `BLOCKED` instead of broadening if:
 
-## 10. Stop / decision conditions
+- the top-view error cannot be isolated to longitudinal start authority;
+- preserving S1-C Y/Z while correcting X produces a contradiction with current source/kinematic geometry;
+- the error is actually caused by shared roll-pinned transform semantics;
+- correct static placement requires changing mesh geometry, physical hardpoints, outboard, lower arm, or another protected subsystem;
+- the local workspace cannot be proven to represent the declared base.
 
-Return `NO_PATCH_JUSTIFIED` or `BLOCKED` rather than broadening if:
+## 11. Owner gate boundary
 
-- a sound roll-pinned visual mapping requires physical hardpoint/topology changes;
-- the outboard endpoint itself becomes materially disputed;
-- correct orientation requires changing existing `PART_PAIR_STRETCH` behavior for other consumers rather than an isolated/additive path;
-- solving the upper arm necessarily opens lower arm/upright/damper/stance at the same time;
-- source semantics are too ambiguous to produce a reversible owner pilot.
+Do **not** evaluate live motion in S1-D.
 
-## 11. Eventual owner question
+The orchestrator's eventual owner gate is static and deliberately two-view:
 
-Do not classify it yourself. The orchestrator decides OWNER_READY.
+- **top view:** is FL upper now oriented approximately like the owner's yellow plan-view relationship rather than the S1-C red diagonal?
+- **front view:** did the approximately plausible S1-C height/lateral projection stay effectively unchanged?
 
-The eventual question should remain approximately:
-
-> Looking only at the selected front upper wishbone: does its chassis-side end now appear to originate/mate with the correct place on the frame, and does the arm itself keep a natural orientation as the suspension moves? Ignore lower arm, damper, upright, cardan, stance and handling.
+The stretched/lengthened mesh is explicitly not the acceptance target in this task.
 
 ## 12. Return contract
 
 ```text
-TASK: S1-B
+TASK: S1-D
 RESULT: REVIEW_READY | BLOCKED | NO_PATCH_JUSTIFIED
 BASE SHA:
 CANDIDATE SHA:
 FILES CHANGED:
-ROOT CAUSE / DESIGN DECISION:
+ROOT CAUSE / DISCRIMINATION:
+AXIS-AUTHORITY RULE:
 WHAT CHANGED AND WHY:
-EXISTING PART_PAIR_STRETCH COMPATIBILITY:
-EVIDENCE / TESTS RUN:
+S1-C Y/Z PRESERVATION:
+LONGITUDINAL BEFORE/AFTER MEASUREMENTS:
+PROTECTED OUTBOARD CHECK:
+GENERATED BINDING / ARTIFACT DELTA:
+TESTS RUN:
 LOCAL EXECUTION SOURCE / ENVIRONMENT:
 CANDIDATE-BYTES == TESTED-BYTES CHECK:
-KEY ENDPOINT / ORIENTATION MEASUREMENTS:
-GENERATED BINDING / ARTIFACT DELTA:
-ASSUMPTIONS / UNKNOWNS:
 PROTECTED SCOPE CONFIRMATION:
+ASSUMPTIONS / UNKNOWNS:
 WHAT WAS NOT TESTED:
 RECOMMENDED ORCHESTRATOR ACTION:
 ```
 
-Do not plan S1-C/S2 or later stages. Return control after this pilot question.
+Do not open live-motion validation, FR mirror, lower wishbone, or later stages. Return control after S1-D.
