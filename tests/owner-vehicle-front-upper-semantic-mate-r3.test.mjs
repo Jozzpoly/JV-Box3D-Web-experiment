@@ -44,10 +44,11 @@ function barycentricPoint(points, barycentric) {
   );
 }
 
-test('S1-C FL upper start is geometry-derived from authored suspension intent onto semantic main chassis group5', async () => {
+test('S1-C raw group5 mate remains exact provenance for S1-D Y/Z authority', async () => {
   const result = buildOwnerM6FullRigPackageR3(await inputs());
   const pilot = result.report.frontUpperPilot;
   const mate = pilot.chassisMate;
+  const split = pilot.splitAuthority;
 
   assert.equal(pilot.corner, 'fl');
   assert.equal(
@@ -56,7 +57,6 @@ test('S1-C FL upper start is geometry-derived from authored suspension intent on
   );
   assert.equal(mate.semanticPiece, 'group5');
   assert.deepEqual(mate.authoredIntentLocal, pilot.authoredChassisIntentLocal);
-  assert.deepEqual(mate.chassisLocal, pilot.chassisLocal);
   assert.equal(mate.selected.provenance.sourceAsset, 'Nadwozie.gltf');
   assert.equal(mate.selected.provenance.pieceName, 'group5');
   assert.equal(mate.selected.provenance.jointSlot, 3);
@@ -69,14 +69,56 @@ test('S1-C FL upper start is geometry-derived from authored suspension intent on
     mate.selected.provenance.trianglePointsChassisLocal,
     mate.selected.provenance.barycentric,
   );
-  for (let axis = 0; axis < 3; axis += 1) close(fromTriangle[axis], pilot.chassisLocal[axis]);
+  for (let axis = 0; axis < 3; axis += 1) close(fromTriangle[axis], mate.chassisLocal[axis]);
   close(
-    distance(pilot.authoredChassisIntentLocal, pilot.chassisLocal),
+    distance(pilot.authoredChassisIntentLocal, mate.chassisLocal),
     mate.selected.distanceMeters,
   );
+  assert.deepEqual(split.semanticChassisLocal, mate.chassisLocal);
+  assert.equal(pilot.chassisLocal[1], mate.chassisLocal[1]);
+  assert.equal(pilot.chassisLocal[2], mate.chassisLocal[2]);
+  assert.notEqual(pilot.chassisLocal[0], mate.chassisLocal[0]);
+  assert.equal(split.contactClaim, 'NONE_CONSTRAINT_COMPOSED_VISUAL_ATTACHMENT');
 });
 
-test('S1-C semantic selection rejects unrestricted differential hit and does not use physical hinge as visual query authority', async () => {
+test('S1-D longitudinal X is derived from the physical upper hinge-axis midpoint', async () => {
+  const result = buildOwnerM6FullRigPackageR3(await inputs());
+  const pilot = result.report.frontUpperPilot;
+  const split = pilot.splitAuthority;
+  const longitudinal = split.longitudinalAuthority;
+  const midpoint = [0, 1, 2].map(
+    (axis) => (longitudinal.upperFrontLocal[axis] + longitudinal.upperRearLocal[axis]) * 0.5,
+  );
+
+  assert.equal(
+    split.compositionRule,
+    'LONGITUDINAL_PHYSICAL_UPPER_HINGE_AXIS_MIDPOINT_WITH_S1C_SEMANTIC_YZ',
+  );
+  assert.equal(longitudinal.axis, 'X');
+  assert.equal(longitudinal.source, 'PHYSICAL_UPPER_HINGE_AXIS_MIDPOINT');
+  assert.deepEqual(midpoint, longitudinal.midpointLocal);
+  assert.deepEqual(longitudinal.midpointLocal, longitudinal.upperHingeLocal);
+  assert.equal(longitudinal.midpointLocal[0], longitudinal.upperBallLocal[0]);
+  assert.equal(pilot.chassisLocal[0], longitudinal.midpointLocal[0]);
+  assert.equal(pilot.chassisLocal[1], pilot.chassisMate.chassisLocal[1]);
+  assert.equal(pilot.chassisLocal[2], pilot.chassisMate.chassisLocal[2]);
+  assert.deepEqual(split.provisionalFrontProjectionAuthority.axes, ['Y', 'Z']);
+  assert.equal(
+    split.provisionalFrontProjectionAuthority.source,
+    'S1C_SEMANTIC_MAIN_CHASSIS_GROUP5_MATE',
+  );
+  assert.deepEqual(
+    split.provisionalFrontProjectionAuthority.sourcePointLocal,
+    pilot.chassisMate.chassisLocal,
+  );
+  const expectedBeforeSigned = pilot.chassisMate.chassisLocal[0] - longitudinal.upperBallLocal[0];
+  close(split.longitudinalResidualMeters.beforeSigned, expectedBeforeSigned);
+  close(split.longitudinalResidualMeters.beforeAbsolute, Math.abs(expectedBeforeSigned));
+  close(split.longitudinalResidualMeters.afterSigned, 0);
+  close(split.longitudinalResidualMeters.afterAbsolute, 0);
+});
+
+test('S1-C unrestricted differential hit remains diagnostic-only under S1-D', async () => {
   const input = await inputs();
   const result = buildOwnerM6FullRigPackageR3(input);
   const mate = result.report.frontUpperPilot.chassisMate;
@@ -103,8 +145,9 @@ test('S1-C semantic selection rejects unrestricted differential hit and does not
   assert.notDeepEqual(mate.physicalHingeComparison.result.point, mate.chassisLocal);
 });
 
-test('S1-C changes only FL upper chassis-side visual point while protected outboard and FR baseline remain intact', async () => {
+test('S1-D changes only FL upper start X while protected outboard and FR baseline remain intact', async () => {
   const result = buildOwnerM6FullRigPackageR3(await inputs());
+  const pilot = result.report.frontUpperPilot;
   const flUpper = result.visualPackage.bindings.find(
     (binding) => binding.bindingId === 'owner.fl.upper-arm',
   );
@@ -112,9 +155,16 @@ test('S1-C changes only FL upper chassis-side visual point while protected outbo
     (binding) => binding.bindingId === 'owner.fr.upper-arm',
   );
   assert.ok(flUpper && frUpper);
+  assert.equal(
+    pilot.treatment,
+    'VISUAL_ONLY_ROLL_PINNED_SPLIT_AXIS_CHASSIS_TO_PHYSICAL_OUTBOARD',
+  );
   assert.equal(flUpper.source.kind, 'PART_PAIR_ROLL_PINNED_STRETCH');
-  assert.deepEqual(flUpper.source.startLocalPosition, result.report.frontUpperPilot.chassisLocal);
-  assert.deepEqual(flUpper.source.endLocalPosition, result.report.frontUpperPilot.outboardLocal);
+  assert.deepEqual(flUpper.source.startLocalPosition, pilot.chassisLocal);
+  assert.equal(flUpper.source.startLocalPosition[1], pilot.chassisMate.chassisLocal[1]);
+  assert.equal(flUpper.source.startLocalPosition[2], pilot.chassisMate.chassisLocal[2]);
+  assert.notEqual(flUpper.source.startLocalPosition[0], pilot.chassisMate.chassisLocal[0]);
+  assert.deepEqual(flUpper.source.endLocalPosition, pilot.outboardLocal);
   assert.deepEqual(
     flUpper.source.endLocalPosition,
     result.report.calibration.corners.fl.arms.upper.targetBallLocal,

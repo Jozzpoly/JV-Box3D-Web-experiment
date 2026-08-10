@@ -214,3 +214,67 @@ export function deriveFrontUpperChassisMateR3({
     }),
   });
 }
+
+function midpoint(a, b) {
+  return [
+    (a[0] + b[0]) * 0.5,
+    (a[1] + b[1]) * 0.5,
+    (a[2] + b[2]) * 0.5,
+  ];
+}
+
+function freezePoint(point) {
+  return Object.freeze([...point]);
+}
+
+export function deriveFrontUpperSplitAuthorityR3({
+  semanticChassisLocal,
+  physicalUpperFrontLocal,
+  physicalUpperRearLocal,
+  physicalUpperHingeLocal,
+  physicalUpperBallLocal,
+}) {
+  const hingeAxisMidpointLocal = midpoint(physicalUpperFrontLocal, physicalUpperRearLocal);
+  if (distance(hingeAxisMidpointLocal, physicalUpperHingeLocal) > EPS) {
+    fail('physical upper hinge is not the midpoint of upperFront + upperRear');
+  }
+  if (Math.abs(hingeAxisMidpointLocal[0] - physicalUpperBallLocal[0]) > EPS) {
+    fail('physical upper hinge-axis midpoint X does not match physical upper ball X');
+  }
+
+  const chassisLocal = [
+    hingeAxisMidpointLocal[0],
+    semanticChassisLocal[1],
+    semanticChassisLocal[2],
+  ];
+  const beforeSignedLongitudinalResidualMeters = semanticChassisLocal[0] - physicalUpperBallLocal[0];
+  const afterSignedLongitudinalResidualMeters = chassisLocal[0] - physicalUpperBallLocal[0];
+
+  return Object.freeze({
+    compositionRule: 'LONGITUDINAL_PHYSICAL_UPPER_HINGE_AXIS_MIDPOINT_WITH_S1C_SEMANTIC_YZ',
+    chassisLocal: freezePoint(chassisLocal),
+    semanticChassisLocal: freezePoint(semanticChassisLocal),
+    longitudinalAuthority: Object.freeze({
+      axis: 'X',
+      source: 'PHYSICAL_UPPER_HINGE_AXIS_MIDPOINT',
+      upperFrontLocal: freezePoint(physicalUpperFrontLocal),
+      upperRearLocal: freezePoint(physicalUpperRearLocal),
+      midpointLocal: freezePoint(hingeAxisMidpointLocal),
+      upperHingeLocal: freezePoint(physicalUpperHingeLocal),
+      upperBallLocal: freezePoint(physicalUpperBallLocal),
+    }),
+    provisionalFrontProjectionAuthority: Object.freeze({
+      axes: Object.freeze(['Y', 'Z']),
+      source: 'S1C_SEMANTIC_MAIN_CHASSIS_GROUP5_MATE',
+      sourcePointLocal: freezePoint(semanticChassisLocal),
+    }),
+    longitudinalResidualMeters: Object.freeze({
+      beforeSigned: beforeSignedLongitudinalResidualMeters,
+      beforeAbsolute: Math.abs(beforeSignedLongitudinalResidualMeters),
+      afterSigned: afterSignedLongitudinalResidualMeters,
+      afterAbsolute: Math.abs(afterSignedLongitudinalResidualMeters),
+    }),
+    contactClaim: 'NONE_CONSTRAINT_COMPOSED_VISUAL_ATTACHMENT',
+  });
+}
+

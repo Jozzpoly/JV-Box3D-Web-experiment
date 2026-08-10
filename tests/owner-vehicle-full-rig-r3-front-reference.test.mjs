@@ -160,7 +160,7 @@ test('R3 reference-calibrated package is deterministic and keeps R2 source autho
   assert.equal(a.report.frontUpperPilot.corner, 'fl');
   assert.equal(
     a.report.frontUpperPilot.treatment,
-    'VISUAL_ONLY_ROLL_PINNED_AUTHORED_CHASSIS_TO_PHYSICAL_OUTBOARD',
+    'VISUAL_ONLY_ROLL_PINNED_SPLIT_AXIS_CHASSIS_TO_PHYSICAL_OUTBOARD',
   );
   assert.equal(a.report.frontUpperPilot.physics, 'UNCHANGED');
   assert.deepEqual(a.report.frontUpperPilot.referenceStartLocal, [0, 0, 0]);

@@ -30,7 +30,10 @@ import {
   deriveWheelMountInterfaceR3,
   wheelVisualLocalFromSourceR3,
 } from './owner-m6-wheel-interface-calibration-r3.mjs';
-import { deriveFrontUpperChassisMateR3 } from './owner-m6-front-upper-chassis-mate-r3.mjs';
+import {
+  deriveFrontUpperChassisMateR3,
+  deriveFrontUpperSplitAuthorityR3,
+} from './owner-m6-front-upper-chassis-mate-r3.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const GLB_VERSION = 2;
@@ -487,10 +490,18 @@ export function buildOwnerM6FullRigPackageR3(input) {
           authoredIntentLocal: authoredChassisIntentLocal,
           physicalUpperHingeLocal: geometry.upperHinge,
         });
+        const splitAuthority = deriveFrontUpperSplitAuthorityR3({
+          semanticChassisLocal: chassisMate.chassisLocal,
+          physicalUpperFrontLocal: geometry.upperFront,
+          physicalUpperRearLocal: geometry.upperRear,
+          physicalUpperHingeLocal: geometry.upperHinge,
+          physicalUpperBallLocal: geometry.upperBall,
+        });
         frontUpperPilot = Object.freeze({
-          chassisLocal: chassisMate.chassisLocal,
+          chassisLocal: splitAuthority.chassisLocal,
           authoredChassisIntentLocal: Object.freeze([...authoredChassisIntentLocal]),
           chassisMate,
+          splitAuthority,
           outboardLocal: Object.freeze([...calibrated.report.targetBallLocal]),
           referenceStartLocal: Object.freeze([...calibrated.report.mappedHinge]),
           referenceEndLocal: Object.freeze([...calibrated.report.mappedOutboard]),
@@ -681,10 +692,11 @@ export function buildOwnerM6FullRigPackageR3(input) {
     }),
     frontUpperPilot: Object.freeze({
       corner: 'fl',
-      treatment: 'VISUAL_ONLY_ROLL_PINNED_AUTHORED_CHASSIS_TO_PHYSICAL_OUTBOARD',
+      treatment: 'VISUAL_ONLY_ROLL_PINNED_SPLIT_AXIS_CHASSIS_TO_PHYSICAL_OUTBOARD',
       chassisLocal: frontUpperPilot.chassisLocal,
       authoredChassisIntentLocal: frontUpperPilot.authoredChassisIntentLocal,
       chassisMate: frontUpperPilot.chassisMate,
+      splitAuthority: frontUpperPilot.splitAuthority,
       outboardLocal: frontUpperPilot.outboardLocal,
       referenceStartLocal: frontUpperPilot.referenceStartLocal,
       referenceEndLocal: frontUpperPilot.referenceEndLocal,
