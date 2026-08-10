@@ -357,3 +357,114 @@ test("PART_PAIR_ENDPOINT_AIM anchors its pivot at the selected live body endpoin
     { x: 3, y: 2, z: 3 },
   );
 });
+
+test("PART_PAIR_STRETCH remains endpoint-only when an endpoint body rolls around an unchanged pair axis", () => {
+  const visualFrame = frame();
+  const upper = visualFrame.parts.find((part) => part.partId === "m6.fl.upper-arm");
+  upper.transform = {
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0, w: 1 },
+  };
+  const input = structuredClone(packageWith());
+  input.bindings.push({
+    bindingId: "bind.compat.pair-stretch",
+    nodeName: "JV_CompatPairStretch",
+    source: {
+      kind: "PART_PAIR_STRETCH",
+      startPartId: "m6.chassis",
+      startLocalPosition: [0, 0, 0],
+      endPartId: "m6.fl.upper-arm",
+      endLocalPosition: [1, 0, 0],
+      axis: "+Y",
+      referenceLengthMeters: 1,
+    },
+    localFromSource: identityTransform,
+  });
+  const visual = validateVehicleVisualPackageV1(input);
+  const before = binding(
+    resolveVehicleVisualBindingsV1(visual, visualFrame),
+    "bind.compat.pair-stretch",
+  ).worldFromNode;
+  upper.transform.rotation = {
+    x: Math.SQRT1_2,
+    y: 0,
+    z: 0,
+    w: Math.SQRT1_2,
+  };
+  const after = binding(
+    resolveVehicleVisualBindingsV1(visual, visualFrame),
+    "bind.compat.pair-stretch",
+  ).worldFromNode;
+  assert.deepEqual(Array.from(after), Array.from(before));
+});
+
+function rollPinnedProbe(end) {
+  const visualFrame = frame();
+  const upper = visualFrame.parts.find((part) => part.partId === "m6.fl.upper-arm");
+  upper.transform = {
+    position: end,
+    rotation: { x: 0, y: 0, z: 0, w: 1 },
+  };
+  const input = structuredClone(packageWith());
+  input.bindings.push({
+    bindingId: "bind.roll-pinned",
+    nodeName: "JV_RollPinned",
+    source: {
+      kind: "PART_PAIR_ROLL_PINNED_STRETCH",
+      partId: "m6.fl.upper-arm",
+      startPartId: "m6.chassis",
+      startLocalPosition: [0, 0, 0],
+      endPartId: "m6.fl.upper-arm",
+      endLocalPosition: [0, 0, 0],
+      referenceStartPosition: [1, 2, 3],
+      referenceEndPosition: [3, 2, 3],
+      referenceUpDirection: [0, 1, 0],
+      rollReferenceAxis: "+Y",
+    },
+    localFromSource: identityTransform,
+  });
+  const visual = validateVehicleVisualPackageV1(input);
+  return binding(
+    resolveVehicleVisualBindingsV1(visual, visualFrame),
+    "bind.roll-pinned",
+  ).worldFromNode;
+}
+
+test("PART_PAIR_ROLL_PINNED_STRETCH maps both reference endpoints exactly through oblique live motion", () => {
+  const end = { x: 2, y: 1, z: 4 };
+  const matrix = rollPinnedProbe(end);
+  closePoint(
+    transformVehicleVisualPointV1(matrix, { x: 1, y: 2, z: 3 }),
+    { x: 0, y: 0, z: 0 },
+  );
+  closePoint(
+    transformVehicleVisualPointV1(matrix, { x: 3, y: 2, z: 3 }),
+    end,
+  );
+});
+
+test("PART_PAIR_ROLL_PINNED_STRETCH keeps a deterministic mirrored up frame instead of shortest-arc twist", () => {
+  const left = rollPinnedProbe({ x: 2, y: 1, z: 4 });
+  const right = rollPinnedProbe({ x: 2, y: 1, z: -4 });
+  const origin = { x: 1, y: 2, z: 3 };
+  const upPoint = { x: 1, y: 3, z: 3 };
+  const leftOrigin = transformVehicleVisualPointV1(left, origin);
+  const rightOrigin = transformVehicleVisualPointV1(right, origin);
+  const leftUp = transformVehicleVisualPointV1(left, upPoint);
+  const rightUp = transformVehicleVisualPointV1(right, upPoint);
+  const leftVector = {
+    x: leftUp.x - leftOrigin.x,
+    y: leftUp.y - leftOrigin.y,
+    z: leftUp.z - leftOrigin.z,
+  };
+  const rightVector = {
+    x: rightUp.x - rightOrigin.x,
+    y: rightUp.y - rightOrigin.y,
+    z: rightUp.z - rightOrigin.z,
+  };
+  close(leftVector.x, rightVector.x);
+  close(leftVector.y, rightVector.y);
+  close(leftVector.z, -rightVector.z);
+  assert.ok(leftVector.y > 0.9);
+  assert.ok(rightVector.y > 0.9);
+});

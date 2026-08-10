@@ -4,6 +4,10 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { buildOwnerM6FullRigPackageR2 } from '../tools/owner-vehicle/owner-m6-full-rig-package-r2.mjs';
 import { buildOwnerM6FullRigPackageR3 } from '../tools/owner-vehicle/owner-m6-full-rig-package-r3.mjs';
+import {
+  resolveVehicleVisualBindingsV1,
+  transformVehicleVisualPointV1,
+} from '../.test-dist/visual/vehicle-visual-transform.js';
 
 const sourceRoot = 'assets/owner-vehicle/source';
 const contractRoot = 'assets/owner-vehicle/contracts';
@@ -30,6 +34,7 @@ const EXPECTED_CHANGED_BINDINGS = Object.freeze([
   'owner.rr.chassis-bracket.socket-chassismount',
 ]);
 const EXPECTED_CHANGED_SOURCE_BINDINGS = Object.freeze([
+  'owner.fl.upper-arm',
   'owner.fl.coilover.upper',
   'owner.fl.coilover.stretch',
   'owner.fl.coilover.lower',
@@ -152,6 +157,26 @@ test('R3 reference-calibrated package is deterministic and keeps R2 source autho
   assert.equal(a.report.output.nodeCount, 64);
   assert.equal(a.report.output.bindingCount, 64);
   assert.equal(a.report.output.physicalCoiloverCoverage, 'DIAGNOSTIC_SEGMENT_ENDPOINT_BINDINGS_NOT_RENDERED');
+  assert.equal(a.report.frontUpperPilot.corner, 'fl');
+  assert.equal(
+    a.report.frontUpperPilot.treatment,
+    'VISUAL_ONLY_ROLL_PINNED_AUTHORED_CHASSIS_TO_PHYSICAL_OUTBOARD',
+  );
+  assert.equal(a.report.frontUpperPilot.physics, 'UNCHANGED');
+  assert.deepEqual(a.report.frontUpperPilot.referenceStartLocal, [0, 0, 0]);
+  for (let axis = 0; axis < 3; axis += 1) {
+    close(
+      a.report.frontUpperPilot.referenceEndLocal[axis],
+      a.report.frontUpperPilot.outboardLocal[axis],
+    );
+  }
+  assert.ok(
+    a.report.frontUpperPilot.chassisLocal.every(Number.isFinite) &&
+      a.report.frontUpperPilot.outboardLocal.every(Number.isFinite) &&
+      a.report.frontUpperPilot.referenceUpDirection.every(Number.isFinite),
+  );
+  close(Math.hypot(...a.report.frontUpperPilot.referenceUpDirection), 1);
+  assert.ok(a.report.frontUpperPilot.referenceUpDirection[1] > 0);
   assert.equal(a.report.wheelInterface.mountOffsetMeters, 0.13124999999999998);
   assert.deepEqual(a.report.wheelInterface.mountLocalPosition, [0, 0.13124999999999998, 0]);
   assert.equal(
@@ -232,6 +257,25 @@ test('R3 blast radius is exactly the accepted front and rear structural geometry
     }
   }
   assert.deepEqual(changedLocalTransforms, ['owner.fr.wheel', 'owner.rr.wheel']);
+  const flUpper = r3.visualPackage.bindings.find(
+    (binding) => binding.bindingId === 'owner.fl.upper-arm',
+  );
+  const frUpper = r3.visualPackage.bindings.find(
+    (binding) => binding.bindingId === 'owner.fr.upper-arm',
+  );
+  assert.ok(flUpper && frUpper);
+  assert.equal(flUpper.source.kind, 'PART_PAIR_ROLL_PINNED_STRETCH');
+  assert.equal(flUpper.source.partId, 'm6.fl.upper-arm');
+  assert.equal(flUpper.source.startPartId, 'm6.chassis');
+  assert.equal(flUpper.source.endPartId, 'm6.fl.upper-arm');
+  assert.deepEqual(flUpper.source.startLocalPosition, r3.report.frontUpperPilot.chassisLocal);
+  assert.deepEqual(flUpper.source.endLocalPosition, r3.report.frontUpperPilot.outboardLocal);
+  assert.deepEqual(flUpper.source.referenceStartPosition, r3.report.frontUpperPilot.referenceStartLocal);
+  assert.deepEqual(flUpper.source.referenceEndPosition, r3.report.frontUpperPilot.referenceEndLocal);
+  assert.deepEqual(flUpper.source.referenceUpDirection, r3.report.frontUpperPilot.referenceUpDirection);
+  assert.equal(flUpper.source.rollReferenceAxis, '+Y');
+  assert.equal(frUpper.source.kind, 'PART');
+  assert.equal(frUpper.source.partId, 'm6.fr.upper-arm');
   for (const corner of ['fl', 'fr', 'rl', 'rr']) {
     const binding = r3.visualPackage.bindings.find((candidate) => candidate.bindingId === `owner.${corner}.wheel`);
     assert.ok(binding, `missing R3 wheel binding ${corner}`);
@@ -270,6 +314,61 @@ test('R3 blast radius is exactly the accepted front and rear structural geometry
     assert.equal(stretch.source.kind, 'PART_PAIR_STRETCH');
     assert.equal(lower.source.kind, 'PART_PAIR_ENDPOINT_AIM');
   }
+});
+
+test('S1-B FL upper pilot maps its selected authored chassis and physical outboard endpoints exactly', async () => {
+  const result = buildOwnerM6FullRigPackageR3(await inputs());
+  const pilot = result.visualPackage.bindings.find(
+    (binding) => binding.bindingId === 'owner.fl.upper-arm',
+  );
+  assert.ok(pilot);
+  assert.equal(pilot.source.kind, 'PART_PAIR_ROLL_PINNED_STRETCH');
+  const physical = result.report.calibration.corners.fl.physical;
+  const resolved = resolveVehicleVisualBindingsV1(
+    { bindings: [pilot] },
+    {
+      contractVersion: 1,
+      generation: 1,
+      stepIndex: 0,
+      parts: [
+        {
+          partId: 'm6.chassis',
+          transform: {
+            position: { x: 0, y: 0, z: 0 },
+            rotation: { x: 0, y: 0, z: 0, w: 1 },
+          },
+        },
+        {
+          partId: 'm6.fl.upper-arm',
+          transform: {
+            position: {
+              x: physical.upperHinge[0],
+              y: physical.upperHinge[1],
+              z: physical.upperHinge[2],
+            },
+            rotation: { x: 0, y: 0, z: 0, w: 1 },
+          },
+        },
+      ],
+      segments: [],
+    },
+  )[0];
+  const start = transformVehicleVisualPointV1(resolved.worldFromNode, {
+    x: pilot.source.referenceStartPosition[0],
+    y: pilot.source.referenceStartPosition[1],
+    z: pilot.source.referenceStartPosition[2],
+  });
+  const end = transformVehicleVisualPointV1(resolved.worldFromNode, {
+    x: pilot.source.referenceEndPosition[0],
+    y: pilot.source.referenceEndPosition[1],
+    z: pilot.source.referenceEndPosition[2],
+  });
+  close(start.x, pilot.source.startLocalPosition[0], 1e-6);
+  close(start.y, pilot.source.startLocalPosition[1], 1e-6);
+  close(start.z, pilot.source.startLocalPosition[2], 1e-6);
+  close(end.x, physical.upperBall[0], 1e-6);
+  close(end.y, physical.upperBall[1], 1e-6);
+  close(end.z, physical.upperBall[2], 1e-6);
 });
 
 test('R3 front wishbones map authored references to physical hardpoints with one mirrored solve', async () => {

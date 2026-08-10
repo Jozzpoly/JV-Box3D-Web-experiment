@@ -60,6 +60,18 @@ export type VehicleVisualBindingSourceV1 =
       endLocalPosition: readonly [number, number, number];
       endpoint: "START" | "END";
       axis: VehicleVisualAxisV1;
+    }>
+  | Readonly<{
+      kind: "PART_PAIR_ROLL_PINNED_STRETCH";
+      partId: string;
+      startPartId: string;
+      startLocalPosition: readonly [number, number, number];
+      endPartId: string;
+      endLocalPosition: readonly [number, number, number];
+      referenceStartPosition: readonly [number, number, number];
+      referenceEndPosition: readonly [number, number, number];
+      referenceUpDirection: readonly [number, number, number];
+      rollReferenceAxis: VehicleVisualAxisV1;
     }>;
 
 export interface VehicleVisualBindingV1 {
@@ -344,6 +356,89 @@ function parseSource(
       axis: visualAxis(source["axis"], `${label}.axis`),
     });
   }
+  if (kind === "PART_PAIR_ROLL_PINNED_STRETCH") {
+    exactKeys(
+      source,
+      [
+        "endLocalPosition",
+        "endPartId",
+        "kind",
+        "partId",
+        "referenceEndPosition",
+        "referenceStartPosition",
+        "referenceUpDirection",
+        "rollReferenceAxis",
+        "startLocalPosition",
+        "startPartId",
+      ],
+      label,
+    );
+    const referenceStartPosition = tuple3(
+      source["referenceStartPosition"],
+      `${label}.referenceStartPosition`,
+    );
+    const referenceEndPosition = tuple3(
+      source["referenceEndPosition"],
+      `${label}.referenceEndPosition`,
+    );
+    if (
+      Math.hypot(
+        referenceEndPosition[0] - referenceStartPosition[0],
+        referenceEndPosition[1] - referenceStartPosition[1],
+        referenceEndPosition[2] - referenceStartPosition[2],
+      ) <= 1e-8
+    ) {
+      reject(`${label} reference endpoints must be distinct`);
+    }
+    const referenceUpDirection = tuple3(
+      source["referenceUpDirection"],
+      `${label}.referenceUpDirection`,
+    );
+    if (Math.hypot(...referenceUpDirection) <= 1e-8) {
+      reject(`${label}.referenceUpDirection must have non-zero length`);
+    }
+    const referenceForward: readonly [number, number, number] = [
+      referenceEndPosition[0] - referenceStartPosition[0],
+      referenceEndPosition[1] - referenceStartPosition[1],
+      referenceEndPosition[2] - referenceStartPosition[2],
+    ];
+    const crossMagnitude = Math.hypot(
+      referenceForward[1] * referenceUpDirection[2] -
+        referenceForward[2] * referenceUpDirection[1],
+      referenceForward[2] * referenceUpDirection[0] -
+        referenceForward[0] * referenceUpDirection[2],
+      referenceForward[0] * referenceUpDirection[1] -
+        referenceForward[1] * referenceUpDirection[0],
+    );
+    if (crossMagnitude <= 1e-8) {
+      reject(`${label}.referenceUpDirection must not be parallel to the reference pair axis`);
+    }
+    return Object.freeze({
+      kind,
+      partId: requireStableIdentifier(source["partId"], `${label}.partId`),
+      startPartId: requireStableIdentifier(
+        source["startPartId"],
+        `${label}.startPartId`,
+      ),
+      startLocalPosition: Object.freeze(
+        tuple3(source["startLocalPosition"], `${label}.startLocalPosition`),
+      ),
+      endPartId: requireStableIdentifier(
+        source["endPartId"],
+        `${label}.endPartId`,
+      ),
+      endLocalPosition: Object.freeze(
+        tuple3(source["endLocalPosition"], `${label}.endLocalPosition`),
+      ),
+      referenceStartPosition: Object.freeze(referenceStartPosition),
+      referenceEndPosition: Object.freeze(referenceEndPosition),
+      referenceUpDirection: Object.freeze(referenceUpDirection),
+      rollReferenceAxis: visualAxis(
+        source["rollReferenceAxis"],
+        `${label}.rollReferenceAxis`,
+      ),
+    });
+  }
   reject(`${label}.kind is unsupported: ${kind}`);
 }
 
@@ -485,7 +580,8 @@ export function assertM6FullRigVisualPackage(
       coveredParts.add(binding.source.partId);
     } else if (
       binding.source.kind === "PART_PAIR_STRETCH" ||
-      binding.source.kind === "PART_PAIR_ENDPOINT_AIM"
+      binding.source.kind === "PART_PAIR_ENDPOINT_AIM" ||
+      binding.source.kind === "PART_PAIR_ROLL_PINNED_STRETCH"
     ) {
       for (const partId of [
         binding.source.startPartId,
@@ -494,6 +590,20 @@ export function assertM6FullRigVisualPackage(
         if (!knownParts.has(partId)) {
           reject(`unknown M6 partId: ${partId}`);
         }
+      }
+      if (binding.source.kind === "PART_PAIR_ROLL_PINNED_STRETCH") {
+        if (!knownParts.has(binding.source.partId)) {
+          reject(`unknown M6 partId: ${binding.source.partId}`);
+        }
+        if (
+          binding.source.partId !== binding.source.startPartId &&
+          binding.source.partId !== binding.source.endPartId
+        ) {
+          reject(
+            `${binding.bindingId}.partId must match one of its live endpoint parts`,
+          );
+        }
+        coveredParts.add(binding.source.partId);
       }
     } else {
       if (!knownSegments.has(binding.source.segmentId)) {
