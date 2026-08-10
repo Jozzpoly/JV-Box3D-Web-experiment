@@ -58,9 +58,11 @@ When evidence conflicts, prefer:
 6. current interpretation/hypothesis
 ```
 
-## 4. Minimal fresh-agent bootstrap
+## 4. Role-aware bootstrap / context control
 
-Do not preload the repository's history.
+Do not preload repository history.
+
+### Orchestrator or unspecialized fresh agent
 
 1. Resolve current private/public refs.
 2. Read this file.
@@ -68,6 +70,18 @@ Do not preload the repository's history.
 4. If continuing active work, read `docs/HANDOFF.md`.
 5. Inspect only source/tests directly needed to answer the active question.
 6. Load `docs/PROJECT_STATE.md`, baselines or history only on demand.
+
+### Bounded implementer
+
+If `docs/IMPLEMENTER_TASK.md` names an active task/branch, the implementer uses a smaller bootstrap:
+
+1. Resolve the named work-branch tip and compare it with the exact SHA supplied by the orchestrator handoff.
+2. Read this file.
+3. Read `docs/IMPLEMENTER_TASK.md`.
+4. Read `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`.
+5. Inspect only files explicitly named by the task or directly required by its one technical question.
+
+Do not preload `AI_PROJECT_MEMORY.md`, `docs/HANDOFF.md`, `docs/PROJECT_STATE.md`, old baselines, archived branches or old chat history unless the active implementer task explicitly requires a specific item.
 
 If a fresh agent needs old-chat archaeology to know what to do next, the handoff system has failed and should be repaired before broad implementation.
 
@@ -175,6 +189,8 @@ Do not invent/tune final native drivetrain, suspension, tire/contact or steering
 - One rolling continuation note: `docs/HANDOFF.md`.
 - One owner checkpoint ledger: `docs/OWNER_CHECKPOINTS.md`.
 - One short navigation memory: `AI_PROJECT_MEMORY.md`.
+- One active implementer contract when split execution is used: `docs/IMPLEMENTER_TASK.md`.
+- One stable orchestrator/implementer execution protocol: `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`.
 - Historical exact proof belongs in `docs/baselines/` or Git history.
 - Do not create dated handoff stacks for ordinary conversation changes.
 - Do not duplicate current-state paragraphs across several documents.
@@ -193,3 +209,19 @@ Stop and investigate when:
 - validation/foundation/documentation machinery expands without proportional product value;
 - Jozz is being asked to perform technical work the agent can do itself;
 - the active task becomes too broad to attribute owner feedback.
+
+## 14. Orchestrator / implementer split
+
+When an active `docs/IMPLEMENTER_TASK.md` exists, follow `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`.
+
+Core rules:
+
+```text
+orchestrator owns scope / truth / review / integration
+implementer owns bounded technical execution
+owner owns product intent / visual-feel acceptance
+```
+
+The implementer writes only the named work branch and never integrates `main`. During an active implementer slice, `main` is frozen for ordinary orchestrator writes so the branch can remain a clean descendant. The implementer may choose its solution freely inside the declared blast radius, but must stop instead of silently expanding into a protected subsystem.
+
+The implementer conversation is disposable. Preserve continuity in exact Git identity, the active task packet and a compact return report rather than relying on a long chat transcript.

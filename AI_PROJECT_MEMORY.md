@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-10
-Status: `R0 PUBLISHED / R1 ACTIVE / V0 OWNER BASELINE OBSERVED / VISUAL RECOVERY PREPARED / PRODUCT CORRECTION NOT STARTED`
+Status: `R0 PUBLISHED / R1 ACTIVE / V0 OWNER BASELINE OBSERVED / VISUAL RECOVERY PREPARED / ORCHESTRATOR-IMPLEMENTER SPLIT ACTIVE`
 Owner: Jozz
 
 This file is deliberately short. It is navigation/current-state memory, not a history dump. Current Git, executable evidence and direct owner observation outrank this file.
@@ -57,33 +57,41 @@ Earlier R4 visual observations remain historical evidence only.
 
 Durable execution contract: `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`.
 
-Prepared dependency order is interface-first: chassis/corner attachment authority -> corner body-role landing -> wishbones -> upright/hub/wheel -> dampers -> steering rods -> cardans -> stance -> whole-rig integration -> later handling/feel.
-
-Native JV must be checked selectively before inventing a new mapping for a mechanism. Do not wholesale port native code.
-
-Measurement-only tool is available:
+Measurement-only tool:
 
 ```text
 npm run inspect:owner-rig-interfaces
 ```
 
-It compares authored placement, current physical targets and rendered-chassis proximity and groups the 59 real bindings. It deliberately does not define current values as accepted thresholds.
+Prepared dependency order remains interface-first: chassis/corner attachment authority -> corner body-role landing -> wishbones -> upright/hub/wheel -> dampers -> steering rods -> cardans -> stance -> whole-rig integration -> later handling/feel.
+
+## Execution split
+
+Jozz intentionally separated the project into an orchestrator lane and a disposable bounded implementer lane to reduce context-overload failures.
+
+Protocol: `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`.
+
+Active implementation packet: `docs/IMPLEMENTER_TASK.md`.
+
+The orchestrator owns truth/scope/review/integration. The implementer owns only the current bounded technical task on its named work branch. Owner observations return to the orchestrator.
+
+A bounded implementer does **not** use the normal fresh-agent read order below; it follows the smaller role-aware bootstrap in `AGENTS.md` and `IMPLEMENTER_TASK.md`.
+
+During an active implementer slice, ordinary writes to `main` are frozen until review/integration/rejection closes the branch transaction.
 
 ## Current continuation
 
-No product correction has started after V0.
-
-When Jozz explicitly opens implementation, begin with one smallest S1 chassis-to-wishbone attachment question. Measure/discriminate authority first, then make the minimum product correction, produce a stable candidate and ask one focused owner question. Freeze accepted scope before opening another mechanism.
+First prepared implementer task is S1-A: discriminate front chassis-to-wishbone attachment authority and make a minimum visual/calibration correction only if the cause is sufficiently proven. If physical hardpoints themselves are implicated, stop and replan rather than changing runtime physics in the same slice.
 
 Do not begin handling/stability/steering-feel tuning during visual recovery.
 
-## Fresh-agent read order
+## Fresh orchestrator / unspecialized-agent read order
 
 1. current refs
 2. `AGENTS.md`
 3. this file
 4. `docs/HANDOFF.md`
-5. `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`
-6. exact source/tests for the one active mechanism
+5. active control/campaign docs as required
+6. exact source/tests for the one active question
 
 Use `docs/PROJECT_STATE.md` and `docs/OWNER_CHECKPOINTS.md` for deeper current evidence. Do not reconstruct historical branches by default.

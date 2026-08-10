@@ -7,7 +7,7 @@ Purpose: rolling continuation note. Replace stale content instead of appending h
 
 ```text
 Private repo: Jozzpoly/JV-Box3D-Web-experiment
-Active branch: main
+Active authority: main
 (resolve live tip before every write)
 
 Public repo: Jozzpoly/JV-Box3D-Web-Public
@@ -43,82 +43,66 @@ Fresh OWNER OBSERVED state:
 
 Earlier R4 observations are HISTORICAL OWNER OBSERVED, not current visual authority.
 
-## Preparation phase — COMPLETE
+## Recovery preparation — complete
 
-The visual recovery campaign has been decomposed and a durable execution contract now lives at:
+The durable visual-recovery execution contract is `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`.
 
-`docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`
+Work is interface-first/root-to-leaf and uses evidence layers E0-E5. A major V0 lesson is that local consistency E1 may be green while cross-asset geometry E2 and owner acceptance E4 fail.
 
-Core rule: work interface-first and root-to-leaf, one observable relationship at a time. Do not use a downstream adjustment to hide an unresolved upstream relationship.
-
-Evidence layers are separated:
+Measurement-only T0 is available:
 
 ```text
-E0 identity/reproducibility
-E1 local calibration consistency
-E2 cross-asset mating truth
-E3 runtime kinematic coherence
-E4 owner visual acceptance
-E5 owner handling/feel acceptance — later
+npm run inspect:owner-rig-interfaces
 ```
 
-A major V0 lesson is that several existing tests prove E1 while the visible result fails E2/E4.
+Representative V0 deltas include front upper hinge authored->current ~0.216 m and front lower hinge ~0.155 m. These are evidence, not accepted thresholds.
 
-## Prepared measurement tool
+Selective native prior art exists for corner landing, chassis/lower-arm/knuckle visual roles, live wishbone endpoint drawing, rack-center steering rod placement and diagnostics. Native remains read-only evidence, not automatic authority.
 
-`npm run inspect:owner-rig-interfaces`
+## Execution mode — orchestrator / implementer split
 
-The new audit is `MEASUREMENT_ONLY_NOT_ACCEPTANCE`. It regenerates the exact owner artifact, groups all 59 real bindings and compares authored whole-rig placement with current physical targets and rendered-chassis proximity.
+Jozz explicitly separated orchestration from implementation to control context overload.
 
-Representative V0 measurements:
+Stable protocol:
+
+`docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`
+
+Single active implementation contract:
+
+`docs/IMPLEMENTER_TASK.md`
+
+Roles:
 
 ```text
-front upper hinge authored->current ~0.216 m
-front lower hinge authored->current ~0.155 m
-front damper upper authored->current ~0.529 m
-rear upper hinge authored->current ~0.216 m
-rear lower hinge authored->current ~0.155 m
-rear damper upper authored->current ~0.529 m
-front authored steering socket -> current steering arm ~0.222 m
+orchestrator -> current truth, dependency order, task packet, review, owner question, integration
+implementer  -> one bounded technical task on one work branch, broad freedom inside declared scope
+Jozz         -> product intent and final focused visual/feel acceptance
 ```
 
-These numbers support investigating attachment authority first but are not acceptance thresholds.
+Important context firewall: a bounded implementer does not perform a cold takeover and does not preload this handoff/project history. It reads `AGENTS.md`, `IMPLEMENTER_TASK.md`, the execution protocol and only the task-required source.
 
-The cardan audit also shows current R3 pair endpoints equal the authored placed cardan socket points while the owner still sees a differential-side visual miss. Therefore future cardan work must validate rendered mating faces/pivots/orientation, not only endpoint coordinates.
+During an active implementer work branch, `main` is frozen for ordinary writes. This preserves clean ancestry for review/integration.
 
-## Native selective prior art
+## Active task prepared — S1-A
 
-Before inventing a mapping for a mechanism, inspect current native JV selectively.
+Task: **front chassis-to-wishbone attachment authority**.
 
-Already recovered:
+Purpose: discriminate why the front wishbone package sits too far from rendered chassis and, only if justified, make the smallest visual/calibration correction for one chassis-side attachment relationship.
 
-- Web/native share the chassis base visual transform;
-- native corner placement lands authored suspension `WheelCenter` on wheel `Socket_WheelMount` before splitting roles;
-- native visual suspension distinguishes chassis/lower-arm/knuckle roles;
-- native wishbones use live endpoint-to-endpoint drawing;
-- native steering rod uses real rack center because rack-end placement created a short stub;
-- native diagnostics visualize hardpoints, kingpin, coilover and steering/rack relationships.
+Protected during S1-A: physical suspension runtime/hardpoints, wheel mount contract, upright/knuckle pivot, dampers, steering rods, cardans, stance, handling, camera/UI/world/scan, native JV and public R0.
 
-Do not wholesale port native code or claim parity from this prior art.
+If evidence says the physical hardpoint itself must change, the implementer stops and returns the evidence; it does not rewrite physics in this slice.
 
-## Tooling road
+The orchestrator will create/use one bounded branch:
 
-T0 interface audit is implemented now. T1 visual category/corner isolation, T2 physical/reference overlay, T3 fixed validation views, T4 reusable owner-candidate launcher and T5 accepted-interface regression gates are designed in the campaign document and must be implemented lazily only when the selected slice needs them.
+```text
+work/owner-rig-s1-attachment-authority
+```
 
-V0 already proved the self-contained Windows launcher pattern; reuse/formalize it for owner checkpoints instead of asking Jozz to debug setup manually.
+No product correction is accepted merely by opening this task. The implementer must return an exact candidate/evidence report for independent orchestrator review before Jozz is asked to validate anything.
 
-## Product boundary
+## Next control step
 
-No owner-rig product correction was made during this planning/preparation phase.
+Provide the new implementer conversation with the compact orchestrator handoff containing the exact work-branch starting SHA and direct instruction to execute `docs/IMPLEMENTER_TASK.md` without reconstructing project history.
 
-Do not tune handling, suspension stability, steering feel, tires, drivetrain, scan, camera or UI while beginning visual recovery.
-
-Do not begin with `fix suspension` or `fix all wishbones`.
-
-## Next implementation gate
-
-Wait for Jozz to explicitly open implementation.
-
-Then begin under S1 with the smallest evidence-producing question: establish authority and actual spatial relationship for **one chassis-to-wishbone attachment interface**. Use the interface audit and native selective evidence to discriminate whether the issue is physical hardpoint authority, visual mapping, source placement or a combination.
-
-Only after the cause is discriminated may a product correction be created. The first owner candidate must ask one narrow visual question and leave unrelated mechanisms frozen.
+The orchestrator then waits for the implementer return report/diff. Do not independently implement S1 in the orchestrator conversation while that slice is active.
