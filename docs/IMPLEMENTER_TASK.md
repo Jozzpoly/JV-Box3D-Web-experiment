@@ -21,9 +21,14 @@ Its latest S1-D static FL upper-wishbone FRONT + TOP placement is OWNER ACCEPTED
 
 ## Reopening implementation
 
-Only the new orchestrator may replace this file with a new bounded task after controlled takeover gates O1-O3 in `docs/HANDOFF.md`.
+The controlled takeover sequence is:
 
-A future task must provide:
+1. new orchestrator passes **O1 — State Reconstruction**;
+2. new orchestrator passes **O2 — Continuation Reasoning**;
+3. only then may the new orchestrator prepare/replace this file with the first new bounded task as **O3 — First Implementer Packet**;
+4. that O3 task packet must be audited/accepted before any implementer execution starts.
+
+A future ACTIVE task must provide:
 
 ```text
 task id / status
@@ -42,6 +47,6 @@ return contract
 
 Do not store a task file's own future commit SHA as `Expected starting SHA`. The exact **CONTROL TIP** is a transaction value supplied/verified at handoff time. `EXECUTABLE PRODUCT BASE` is a separate stable concept when docs-only control commits sit above the product state.
 
-Until this file is deliberately replaced:
+Until O1 and O2 pass and this file is deliberately replaced for an audited O3 packet:
 
 **STOP — no bounded implementer work is authorized.**
