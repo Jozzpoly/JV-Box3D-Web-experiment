@@ -30,6 +30,7 @@ import {
   deriveWheelMountInterfaceR3,
   wheelVisualLocalFromSourceR3,
 } from './owner-m6-wheel-interface-calibration-r3.mjs';
+import { deriveFrontUpperChassisMateR3 } from './owner-m6-front-upper-chassis-mate-r3.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const GLB_VERSION = 2;
@@ -480,8 +481,16 @@ export function buildOwnerM6FullRigPackageR3(input) {
           corner,
           wheelInterface.mountOffsetMeters,
         );
+        const authoredChassisIntentLocal = placement.point(references.upperHinge);
+        const chassisMate = deriveFrontUpperChassisMateR3({
+          chassis,
+          authoredIntentLocal: authoredChassisIntentLocal,
+          physicalUpperHingeLocal: geometry.upperHinge,
+        });
         frontUpperPilot = Object.freeze({
-          chassisLocal: Object.freeze(placement.point(references.upperHinge)),
+          chassisLocal: chassisMate.chassisLocal,
+          authoredChassisIntentLocal: Object.freeze([...authoredChassisIntentLocal]),
+          chassisMate,
           outboardLocal: Object.freeze([...calibrated.report.targetBallLocal]),
           referenceStartLocal: Object.freeze([...calibrated.report.mappedHinge]),
           referenceEndLocal: Object.freeze([...calibrated.report.mappedOutboard]),
@@ -674,6 +683,8 @@ export function buildOwnerM6FullRigPackageR3(input) {
       corner: 'fl',
       treatment: 'VISUAL_ONLY_ROLL_PINNED_AUTHORED_CHASSIS_TO_PHYSICAL_OUTBOARD',
       chassisLocal: frontUpperPilot.chassisLocal,
+      authoredChassisIntentLocal: frontUpperPilot.authoredChassisIntentLocal,
+      chassisMate: frontUpperPilot.chassisMate,
       outboardLocal: frontUpperPilot.outboardLocal,
       referenceStartLocal: frontUpperPilot.referenceStartLocal,
       referenceEndLocal: frontUpperPilot.referenceEndLocal,
