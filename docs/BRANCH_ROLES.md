@@ -46,7 +46,7 @@ Git history + exact SHAs + baseline/checkpoint documentation are the archive. Do
 
 ## Branch budget
 
-Target private branch count: **5 or fewer**.
+Target steady-state retained branch count: **5**. Total working branch budget, including one active temporary branch: **6 or fewer**.
 
 If more than 8 branches exist, perform branch triage before creating another. The question is not "could this branch ever be interesting?" but "does it preserve unique source/evidence that current history or a named baseline does not?"
 
