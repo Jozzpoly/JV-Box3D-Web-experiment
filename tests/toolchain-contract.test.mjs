@@ -13,7 +13,7 @@ function canonicalText(value) {
   return value.replace(/\r\n?/g, "\n");
 }
 
-test("canonical package metadata pins the accepted Windows R0 toolchain", async () => {
+test("canonical package metadata pins the current repository toolchain", async () => {
   const packageJson = await json("package.json");
   assert.deepEqual(packageJson.engines, {
     node: "24.16.0",
@@ -39,7 +39,7 @@ test("devEngines fails closed on runtime or package-manager drift", async () => 
   });
 });
 
-test("canonical pin does not rewrite the accepted dependency lock", async () => {
+test("canonical pin preserves the accepted dependency lock", async () => {
   const text = canonicalText(
     await readFile(new URL("package-lock.json", root), "utf8"),
   );

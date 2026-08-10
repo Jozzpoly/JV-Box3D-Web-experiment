@@ -28,7 +28,6 @@
     "prebuild:bundle": "npm run generate:vehicle-fixture && npm run generate:owner-full-rig",
     "build:bundle": "vite build",
     "build:portable": "npm run check:third-party && npm run build:bundle && node tools/write-portable-build-manifest.mjs && npm run check:portable",
-    "build:public-r0": "npm run check:third-party && npm run generate:vehicle-fixture && vite build --config vite.public-r0.config.ts && node tools/finalize-public-r0-build.mjs && node tools/write-portable-build-manifest.mjs && npm run check:portable",
     "build": "npm run check && npm run build:portable",
     "preview": "vite preview",
     "check:public-r1-preview": "node tools/validate-public-r1-preview.mjs",
