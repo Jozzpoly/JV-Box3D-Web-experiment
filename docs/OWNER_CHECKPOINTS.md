@@ -2,13 +2,13 @@
 
 Updated: 2026-08-10
 
-This ledger records owner-visible decisions that future agents must preserve. It is not a generic test log.
+This ledger records owner-visible decisions future agents must preserve. It is not a test log or chronological chat summary.
 
 ## Evidence rule
 
-For each meaningful owner-visible checkpoint keep exact source/artifact identity when available, the changed or observed scope, the owner verdict, what becomes protected, and what remains open.
+For each meaningful checkpoint record exact source/artifact identity when available, owner verdict, protected meaning and what remains open.
 
-Do not treat a green automated test as owner acceptance. Do not treat a session nickname as a reproducible preset unless its parameters are committed.
+A green automated test is not owner acceptance. A historical/session label is not reproducible authority unless its parameters were committed.
 
 ## P0 — playable owner vehicle foundation
 
@@ -17,114 +17,135 @@ source: 81c9677e12a331953101eb2531ca8ab013a985f9
 classification: OWNER ACCEPTED
 ```
 
-Observed working foundation included real owner chassis + four wheels, Box3D/M6 drive/steer/brake/reset, chase camera, orbit/zoom, Map/Offroad teleports and separated debug behavior.
+Proved browser integration of real owner chassis/wheels, M6 drive/steer/brake/reset, chase/orbit camera, Map/Offroad and debug behavior.
 
-Durable meaning: browser owner-vehicle integration is proven playable history.
+Durable meaning: browser owner-vehicle integration has playable accepted history.
 
-## R2 — full owner rig first package
+## R2 — first full owner rig package
 
 ```text
 source: 5d508485ba5c24e6552e324cfbbcb5ec19399fec
 classification: OWNER REJECTED VISUALLY / TECHNICAL EVIDENCE ONLY
 ```
 
-Owner observation found major calibration defects: suspension too wide/inside wheels, dampers misplaced and cardans wrong. Do not resurrect R2 placement merely because its tests are green.
+Major calibration defects included suspension packaging, dampers and cardans. Do not resurrect R2 placement because tests are green.
 
 ## R4 — historical partial observation
 
 ```text
 source lineage baseline: 9a49982cc428bf6fb18f4e1b98ea1b073eaa8a5f
-product tree before documentation maintenance: e28515182d3a447374044d9ffc70943fb888328d
-package id: m6-owner-full-rig-r3
+product tree: e28515182d3a447374044d9ffc70943fb888328d
+package: m6-owner-full-rig-r3
 real bindings: 59
 GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
 classification: HISTORICAL OWNER PARTIAL OBSERVATION
 ```
 
-Historical session observation said wheel placement was excellent, suspension packaging almost excellent, stance a little too wide/low, steering rods too short and front steering/upright pivot wrong.
+Historical session feedback said wheels excellent, suspension almost excellent, stance slightly wide/low, steering rods short and front steering/upright pivot wrong.
 
-This is **no longer the current protected visual baseline** after V0 below. `owner_r4` and `Tire=0` were session-level settings/labels and were never persisted as an exact reproducible preset. The discrepancy between R4 and V0 must remain explicit rather than being explained away without evidence.
+This is **not current visual authority**. `owner_r4` and `Tire=0` were not persisted as an exact reproducible preset.
 
-## V0 — exact current owner-rig revalidation
+## V0 — exact current baseline revalidation
 
 ```text
 date: 2026-08-10
-product lineage: unchanged R4/R3 owner-rig product tree
-package id: m6-owner-full-rig-r3
+package: m6-owner-full-rig-r3
 real bindings: 59
 GLB bytes: 829944
 GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
-classification: OWNER OBSERVED / CURRENT VISUAL BASELINE REJECTED AS FINAL GEOMETRY
+classification: OWNER OBSERVED / CURRENT BASELINE REJECTED AS FINAL GEOMETRY
 ```
 
-### Canonical execution evidence
+Canonical Windows validation used Node 24.16.0 / npm 11.13.0, pinned install, typecheck, deterministic generation, 13/13 focused tests and production build.
 
-Windows validation launcher completed with:
+Owner-visible baseline:
 
-- Node 24.16.0;
-- npm 11.13.0;
-- pinned dependency install;
-- TypeScript typecheck;
-- exact deterministic owner-rig generation and identity verification;
-- 13/13 focused owner-rig/steering tests PASS;
-- Vite 8.1.5 production build PASS;
-- artifact identity reverified after build;
-- browser validation session launched and closed normally.
+- chassis/body roughly acceptable;
+- wishbones/suspension too far from frame;
+- dampers/springs wrong and entering wheel region;
+- cardans visibly miss correct differential mating;
+- upright/hub/suspension package buried in wheels;
+- wheel placement not globally judgeable while surrounding geometry is incoherent;
+- final ride height likely slightly higher.
 
-This proves that the observed rig is reproducible and that the current implementation satisfies its focused automated contracts. It does not make the visual geometry correct.
+Dynamic state:
 
-### OWNER OBSERVED visual state
+`OWNER OBSERVED HIGH-SEVERITY DYNAMIC REGRESSION / DEFERRED BY OWNER`.
 
-Jozz reported and screenshots show:
+Do not tune handling/stability/steering feel until visual recovery closes.
 
-- chassis/body is roughly in the right place and is currently the least problematic large element;
-- suspension/wishbones are too far away from the frame;
-- damper/spring rig is wrong: spring/segments move oddly and substantial damper geometry intersects or sits inside wheels;
-- cardans reach the hub/wheel region but do not meet the differential at the correct visible location;
-- suspension/upright/hub geometry between the wheel and wishbones is buried inside wheels;
-- wheel placement cannot currently be accepted or rejected confidently because surrounding bad geometry hides the relevant interfaces;
-- the general car/wishbone attitude is not disastrous, but the car should ultimately sit slightly higher.
+Protected V0 meaning: exact reproducible comparison baseline, chassis/body as rough reference, wheel-center vs `Socket_WheelMount` semantic distinction, and deferred dynamics decision. Most visual rig placement is not accepted.
 
-### OWNER OBSERVED dynamic state — deferred
-
-Driving feel, suspension stability and steering/controllability are strongly regressed relative to earlier playable experience.
-
-Classification: **OWNER OBSERVED HIGH-SEVERITY DYNAMIC REGRESSION / DEFERRED BY OWNER**.
-
-Do not tune this now. Visual rig correction comes first; handling/stability/steering feel is reopened only after the visual mechanical package is coherent.
-
-### Incidental current observation
-
-The scan unexpectedly loaded successfully in the V0 browser candidate. Record this as OWNER OBSERVED only. Do not divert the current car campaign into scan work.
-
-### Protected meaning after V0
-
-What is protected now is the **exact reproducible V0 starting artifact and its evidence**, not the visual placement of most rig parts.
-
-Do not claim current wishbone, damper, cardan, hub/upright or wheel placement is owner accepted.
-
-Do preserve:
-
-- exact starting artifact identity for A/B comparison;
-- current chassis/body as a roughly acceptable reference unless a selected slice proves a causal need to move it;
-- the wheel-center vs `Socket_WheelMount` semantic distinction unless new evidence explicitly overturns it;
-- the owner's decision to postpone physics/feel repair until visual rig work is closed.
-
-## Next owner-checkpoint method
-
-Future visual work uses very small dependency-driven slices. Each candidate should expose one visual question only.
-
-Potential order after source dependency inspection:
+## S1-D — FL upper wishbone static split-authority checkpoint
 
 ```text
-chassis <-> wishbone/suspension skeleton
--> hub/upright package
--> damper/spring rig
--> cardan endpoints
--> remaining local front/rear pieces
--> stance/ride height
--> whole-rig visual integration
--> later dynamic feel/stability/steering campaign
+date: 2026-08-10
+candidate: 393ef4600be5c83ef42bced4a8a451446e372c32
+tree: 92c896a8b0579a66b3c5381b777baf853a469908
+branch at validation: work/owner-rig-s1-attachment-authority
+package: m6-owner-full-rig-r3
+real bindings: 59
+GLB bytes: 829944
+GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
+classification: OWNER ACCEPTED — STATIC FRONT+TOP ONLY / PARTIAL INTERFACE CHECKPOINT
 ```
 
-This is not permission to change all of those systems. Only one selected relationship may be open at a time, and accepted scope is frozen before moving on.
+### Reviewed constraint
+
+```text
+inboard X:
+  midpoint(physical upperFront, physical upperRear).x
+
+inboard Y/Z:
+  preserved S1-C semantic-main-chassis calibration components
+
+outboard XYZ:
+  existing physical upper ball
+
+orientation:
+  PART_PAIR_ROLL_PINNED_STRETCH
+```
+
+The final inboard point is a **constraint-composed visual attachment**. It does not claim literal contact with `group5` after X substitution.
+
+Source/test evidence removed the S1-C longitudinal residual from about `-0.155671 m` to `0 m`, preserved S1-C Y/Z and protected outboard, and left GLB identity unchanged.
+
+### OWNER OBSERVED verdict
+
+Jozz inspected FRONT, TOP and wheel-side views:
+
+- FRONT: FL upper placement is good enough at current precision;
+- TOP: previous longitudinal yaw is removed; placement is good enough at current precision;
+- wheel-side: wishbone/wheel-side geometry reaches very near the tire and intermediate upright/hub/suspension geometry remains buried in the wheel;
+- visible mesh stretching/lengthening is deferred unless later correct rigging requires changing it.
+
+### Protected meaning
+
+Preserve unless new evidence explicitly reopens it:
+
+- accepted **static** FL upper inboard X relation;
+- accepted **static** FL upper inboard Y/Z relation at current precision;
+- decision not to polish mesh proportion yet.
+
+Do **not** promote to:
+
+- live-motion acceptance;
+- FR acceptance;
+- final outboard/wheel-side packaging;
+- upright/hub/wheel acceptance;
+- final mesh-scale acceptance;
+- physical suspension topology acceptance.
+
+The third owner view is downstream wheel-side evidence, not an S1-D rejection.
+
+### Integration state
+
+The candidate is frozen for controlled orchestrator handoff and **not integrated into `main`**. Acceptance attaches to the exact candidate and explicit static constraints, not to automatic branch merge.
+
+## Owner-checkpoint method
+
+Use very small dependency-driven slices.
+
+For each accepted/rejected result record the exact constraint, not merely “asset good/bad”. Preserve accepted DOFs while reopening only unresolved ones.
+
+Handling/feel remains a separate later campaign.

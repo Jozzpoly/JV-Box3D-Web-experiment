@@ -3,139 +3,131 @@
 Updated: 2026-08-10
 Status: **ACTIVE EXECUTION PROTOCOL**
 
-This document defines the split between project orchestration and bounded implementation. Its purpose is context control, not ceremony.
-
-The durable rule is:
+Purpose: reliable bounded implementation with low context load.
 
 ```text
 owner intent / observation
--> orchestrator task packet
--> bounded implementation branch
+-> orchestrator task + execution packet
+-> bounded work transaction
 -> implementer evidence + candidate
 -> orchestrator review
--> focused owner validation when needed
--> accept/revise/reject
--> integrate + record
--> next task packet
+-> focused owner validation
+-> ACCEPT / PARTIAL / REJECT / REPLAN
+-> integrate/freeze/record
+-> next task
 ```
 
 ## 1. Roles
 
 ### Owner — Jozz
 
-Owns product intent, priorities and the final visual/feel verdict. Jozz should not be asked to perform technical debugging that agents can automate.
-
-Owner observations return to the orchestrator. The orchestrator converts them into the next bounded technical question instead of asking the implementer to reinterpret the whole project.
+Owns product intent, priority and final visual/feel verdict. The owner should not perform technical debugging agents can automate.
 
 ### Orchestrator
 
-The orchestrator owns:
+Owns current truth/evidence classification, dependency order, task scope, branch lifecycle, implementer review, owner-candidate decision, integration and durable checkpoints.
 
-- current project truth and evidence classification;
-- task ordering and dependency control;
-- exact task packets and protected scope;
-- remote identity / branch lifecycle;
-- review of implementation diffs, tests and evidence;
-- deciding whether a result is ready for owner validation;
-- recording accepted/rejected lessons and checkpoints;
-- integration into `main` and preparation of the next task.
-
-The orchestrator does **not** perform ordinary product implementation while an implementer slice is active. It may prepare/maintain control documents, review evidence and perform bounded integration/branch operations.
+The orchestrator does not perform ordinary product implementation while an implementer transaction is active.
 
 ### Implementer
 
-The implementer owns the technical execution of exactly one active task packet.
+Owns technical execution of one ACTIVE task. Inside the declared blast radius it may inspect directly relevant source, choose an algorithm, add focused diagnostics/tests, revise its approach and return `NO_PATCH_JUSTIFIED`.
 
-Within its declared blast radius the implementer has broad freedom to inspect the necessary current source, choose an implementation strategy, add the smallest useful diagnostics/tests, revise its own approach and produce one or more commits.
+It does not own project priority, next-task selection, `main`, public release, native modifications, unrelated cleanup, cross-mechanism expansion or OWNER ACCEPTED classification.
 
-The implementer does **not** own:
+## 2. Context packet vs execution packet
 
-- project priority or the next task;
-- broad reinterpretation of owner intent;
-- writes to `main`;
-- public R0 / Pages publication;
-- native JV modifications;
-- unrelated cleanup/refactors/polish;
-- expansion into another mechanism because it appears nearby;
-- final OWNER ACCEPTED classification.
+`docs/IMPLEMENTER_TASK.md` is the single task context packet. It contains only the current question, accepted starting evidence, allowed/protected scope, validation requirements and return contract.
 
-## 2. Context firewall
+Normal implementer read set:
 
-The orchestrator may load broad current-state context when needed. The implementer should not.
+1. remote work-branch identity;
+2. `AGENTS.md`;
+3. `docs/IMPLEMENTER_TASK.md`;
+4. directly required source/tests.
 
-Normal implementer bootstrap:
+Do not reconstruct project history from memory files, handoffs, archived branches or chat history unless one exact historical item is explicitly authorized.
 
-1. Resolve the exact current tip of the named work branch and compare it with the SHA supplied in the handoff message.
-2. Read `AGENTS.md`.
-3. Read `docs/IMPLEMENTER_TASK.md`.
-4. Read only files named by the task or files directly required to answer its active technical question.
-5. Inspect native JV or historical source only when the task explicitly names a salvage/evidence question.
-
-Do **not** preload `AI_PROJECT_MEMORY.md`, `docs/HANDOFF.md`, `docs/PROJECT_STATE.md`, old baselines, archived branches or old chat history unless `IMPLEMENTER_TASK.md` explicitly requires a specific item.
-
-If the task packet is insufficient, the implementer reports the exact missing fact/file/question. It must not solve uncertainty by reconstructing the whole project history.
-
-The implementer conversation is disposable. A new conversation may replace it between slices, or earlier if the technical chat becomes large. Continuity must live in Git + the task packet + exact candidate report, not in chat memory.
-
-## 3. One active task packet
-
-`docs/IMPLEMENTER_TASK.md` is the single active implementation contract. It is replaced when the next bounded slice is prepared; do not create dated stacks of implementer handoffs.
-
-Each task defines:
+The task declares an execution mode:
 
 ```text
-task id / status
-one technical objective or discriminating question
-work branch
-authoritative starting point from the orchestrator handoff
-required reading
-allowed change surface
-protected scope
-technical freedom
-required evidence
-decision/stop conditions
-owner-validation question if applicable
-return contract
+CONNECTOR_ONLY_OK
+SOURCE_ZIP_REQUIRED
+CANONICAL_WINDOWS_REQUIRED
 ```
 
-The task should specify outcomes and boundaries, not dictate an implementation recipe unless prior evidence makes a method mandatory.
+If required source/environment is missing, ask for the smallest exact packet early rather than spending time on brittle workarounds.
 
-## 4. Branch transaction and main freeze
+## 3. CONTROL TIP vs EXECUTABLE PRODUCT BASE
 
-Implementation uses one bounded `work/<topic>` branch only when isolation is useful. Branches belong to tasks, not agents or conversations.
+These are separate identities.
 
-When an implementer branch is active:
+**CONTROL TIP**
+- exact current remote work-branch tip;
+- supplied/verified by orchestrator handoff;
+- transaction/write authority;
+- may include docs-only control commits.
 
-- `main` is frozen for ordinary orchestrator documentation/product writes;
-- implementer writes only to the named work branch;
-- implementer never force-pushes or rewrites shared history;
-- implementer does not create additional branches unless the orchestrator changes the task;
-- orchestrator reviews `base..candidate` before any integration;
-- owner validation uses the reviewed exact candidate commit;
-- accepted work is integrated into `main`, then the work branch is removed;
-- rejected work is revised on the same branch when the scope is unchanged, or the branch is abandoned and replaced only after the orchestrator records the durable lesson.
+**EXECUTABLE PRODUCT BASE**
+- stable product/source state from which the technical change is evaluated;
+- recorded in task packet when it differs from CONTROL TIP.
 
-Freezing `main` prevents harmless-looking parallel documentation edits from destroying simple ancestry and making accepted implementation harder to integrate safely.
+Do not store a task file's own future commit SHA as an `Expected starting SHA`; a docs commit would immediately make it stale/self-referential.
 
-Emergency/security/public-repair work may override this freeze, but the active implementation must then stop and rebase/replan explicitly; never silently continue from stale identity.
+Before every write verify the live CONTROL TIP. If it moved unexpectedly, STOP.
 
-## 5. Implementer freedom vs control
+## 4. One active task
 
-The task packet should define **what must remain true**, not micromanage how code must be written.
+`docs/IMPLEMENTER_TASK.md` is either:
 
-Inside allowed scope the implementer may:
+```text
+ACTIVE
+```
 
-- choose algorithms/data structures;
-- inspect directly related call chains;
-- add focused measurement/debug/test code;
-- make several local attempts and keep only the justified result;
-- conclude that no product patch is justified yet.
+with exactly one bounded task, or:
 
-The implementer must stop and report rather than broaden scope when evidence points to a protected subsystem. Example: a visual-mapping task that reveals the physical hardpoint itself is wrong may diagnose that fact, but may not silently rewrite suspension physics in the same task.
+```text
+INACTIVE / FROZEN
+```
 
-## 6. Evidence contract
+with no implementation authorized.
 
-Implementation claims must distinguish:
+Tasks are short-lived. Implementer **conversations may be longer-lived** across several tightly related microstages when that preserves useful local technical context.
+
+Start a fresh implementer conversation when:
+- the mechanism/topic changes;
+- context becomes noisy or archaeology-heavy;
+- stale hypotheses dominate;
+- the product/control base changes materially;
+- a fresh independent review is useful.
+
+Conversation identity never becomes source authority.
+
+## 5. Branch transaction / main freeze
+
+While an implementer transaction is ACTIVE:
+
+- `main` is frozen for ordinary writes;
+- implementer writes only the named work branch;
+- no force-push;
+- no extra branches without orchestrator direction;
+- orchestrator reviews complete diff before owner validation/integration.
+
+A work branch may contain diagnostic/revision commits. Clean integration into `main` may preserve the reviewed final result without copying noisy experimental history.
+
+`PARTIAL` owner acceptance may freeze one constraint while leaving the larger work branch unintegrated. During a controlled orchestrator handoff, a work branch may remain frozen at an exact SHA until the new orchestrator decides a safe integration/continuation boundary.
+
+## 6. Scope control
+
+The owner-visible question, not file proximity, defines scope.
+
+Inside scope the implementer may choose implementation details and conclude no patch is justified.
+
+When evidence points into a protected subsystem, stop and report rather than silently broadening.
+
+## 7. Evidence and test integrity
+
+Keep distinct:
 
 ```text
 CURRENT SOURCE FACT
@@ -148,84 +140,109 @@ HYPOTHESIS
 UNKNOWN
 ```
 
-For the current owner-vehicle campaign also preserve E0-E5 from `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`.
+Use E0-E5 from the vehicle campaign when relevant.
 
-A passing consistency test is not permission to call cross-asset geometry or owner-visible output correct.
+A test pinning a current bad value is not automatically a regression gate.
 
-## 7. Implementer return contract
+When a local/source-ZIP mirror is used:
 
-When ready for review, the implementer returns a compact report with:
+1. remote SHA is identity/write authority;
+2. local exact bytes are modified/tested;
+3. final changes are written;
+4. candidate changed bytes are re-fetched/compared;
+5. only then may local tests be claimed for candidate.
+
+Canonical and supplemental environments must be labeled separately.
+
+## 8. Implementer return contract
+
+Return compactly:
 
 ```text
 TASK
 RESULT: REVIEW_READY | BLOCKED | NO_PATCH_JUSTIFIED
-BASE SHA
+CONTROL TIP / BASE SHA
+EXECUTABLE PRODUCT BASE when relevant
 CANDIDATE SHA
 FILES CHANGED
+ROOT CAUSE / DECISION
 WHAT CHANGED AND WHY
-EVIDENCE / TESTS RUN
-KEY MEASUREMENTS OR OBSERVATIONS
-ASSUMPTIONS / REMAINING UNKNOWNS
-PROTECTED SCOPE CONFIRMATION
+EVIDENCE / TESTS
+KEY MEASUREMENTS
+CANDIDATE-BYTES == TESTED-BYTES
+ASSUMPTIONS / UNKNOWNS
+PROTECTED SCOPE
 WHAT WAS NOT TESTED
-RECOMMENDED NEXT REVIEW ACTION
+RECOMMENDED ORCHESTRATOR ACTION
 ```
 
-If a canonical environment was unavailable, say so explicitly. Supplemental execution must not be promoted to canonical evidence.
+Exact diff/evidence matters more than a long narrative.
 
-A long implementation narrative is optional. The exact diff, focused evidence and unresolved uncertainty matter more.
+## 9. Orchestrator review gate
 
-## 8. Orchestrator review gate
+Before owner validation independently check:
 
-Before asking Jozz to inspect a candidate, the orchestrator independently checks:
+1. control/base/candidate identity and ancestry;
+2. complete diff/blast radius;
+3. task question vs neighboring problems;
+4. independence/strength of evidence;
+5. candidate-bytes vs test bytes;
+6. focused/canonical validation appropriate to claim;
+7. protected scope;
+8. diagnostic assertions do not freeze known-bad state;
+9. owner gets one attributable question.
 
-1. branch/base/candidate identity;
-2. complete `base..candidate` diff and blast radius;
-3. whether the implementation answered the task rather than a neighboring problem;
-4. whether evidence is independent enough for the claim being made;
-5. tests/build/artifact identity appropriate to the slice;
-6. protected mechanisms remained unchanged;
-7. whether native/historical prior art was used as evidence rather than falsely promoted to authority;
-8. whether the candidate asks Jozz one attributable visual/feel question.
-
-Possible orchestrator verdicts:
+Verdicts:
 
 ```text
-REVISE — same task, same branch
-OWNER_READY — exact candidate is safe/useful to validate
-NO_PATCH / REPLAN — evidence changed the problem definition
-REJECT — approach is not worth continuing
+REVISE
+OWNER_READY
+NO_PATCH / REPLAN
+REJECT
 ```
 
-Only the orchestrator integrates accepted work to `main`.
+Only orchestrator integrates into `main`.
 
-## 9. Owner validation
-
-Owner validation should be narrow:
+## 10. Owner validation
 
 ```text
-launch reviewed exact candidate
--> inspect the requested state/view
+launch exact reviewed candidate
+-> inspect requested state/view
 -> answer one concrete question
 ```
 
-Do not ask Jozz to evaluate unrelated unresolved mechanisms just because they are visible.
+`ACCEPTED`: freeze the proven constraint and add a durable regression only where justified.
 
-The owner verdict returns to the orchestrator, which records ACCEPTED/PARTIAL/REJECTED and decides the next task packet.
+`PARTIAL`: preserve accepted subparts and reopen only unresolved constraints.
 
-## 10. Context-overload stop rule
+`REJECTED`: revise/replace; preserve durable negative evidence.
 
-If the implementer conversation accumulates enough debugging/history that the active question is no longer easy to state in a few paragraphs:
+Owner acceptance of one static relation does not imply live-motion, neighboring-interface or whole-branch acceptance.
 
-1. stop broadening the chat;
-2. leave the work branch in a coherent committed state if possible;
-3. return the compact implementer report;
-4. let the orchestrator decide whether to continue in a fresh implementer conversation.
+## 11. Orchestrator context migration
 
-Do not wait for context failure. Conversation continuity is expendable; exact Git/evidence continuity is not.
+When orchestrator context becomes large enough that continued implementation risks drift:
 
-## 11. Current campaign relation
+1. finish/review the current bounded task;
+2. do not open another product task;
+3. obtain final owner verdict if a reviewed candidate is already ready;
+4. freeze implementation and exact work refs;
+5. update `OWNER_CHECKPOINTS`, `PROJECT_STATE`, `HANDOFF`, and set `IMPLEMENTER_TASK` INACTIVE;
+6. compact stale hypotheses into explicit negative memory;
+7. start a fresh orchestrator.
 
-For owner-vehicle visual recovery, `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md` defines dependency order and evidence semantics. This protocol defines **who controls and executes each slice**.
+Controlled takeover gates:
 
-The implementer should receive only the campaign subset required by the active task. It is not expected to plan S2-S9 while executing S1.
+**O1 — State reconstruction:** no writes; reconstruct accepted state, frozen transaction, owner accepted/rejected/provisional/deferred truth.
+
+**O2 — Continuation reasoning:** no product write; propose the next bounded direction without reopening protected/deferred scope.
+
+**O3 — First implementer packet:** prepare the next bounded task; previous orchestrator/owner audit it before execution.
+
+Only after O1-O3 pass is orchestrator handoff complete.
+
+## 12. Current vehicle campaign relation
+
+`docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md` defines dependency/evidence semantics. This protocol defines who controls and executes each slice.
+
+The implementer receives only the subset needed for the current task and does not plan later stages unless explicitly tasked.

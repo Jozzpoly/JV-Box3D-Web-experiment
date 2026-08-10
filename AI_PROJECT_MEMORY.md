@@ -1,97 +1,78 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-10
-Status: `R0 PUBLISHED / R1 ACTIVE / V0 OWNER BASELINE OBSERVED / VISUAL RECOVERY PREPARED / ORCHESTRATOR-IMPLEMENTER SPLIT ACTIVE`
+Status: `R0 PUBLISHED / R1 ACTIVE / IMPLEMENTATION FROZEN / ORCHESTRATOR HANDOFF PREP`
 Owner: Jozz
 
-This file is deliberately short. It is navigation/current-state memory, not a history dump. Current Git, executable evidence and direct owner observation outrank this file.
+This file is a **router**, not project history. Current Git, exact execution evidence and direct owner observation outrank documentation.
 
 ## Repository roles
 
 ```text
-PRIVATE SOURCE / ACTIVE DEVELOPMENT
+PRIVATE SOURCE / ACCEPTED PRODUCT AUTHORITY
 Jozzpoly/JV-Box3D-Web-experiment
 main
 (resolve live tip before every write)
 
+FROZEN S1 EXPERIMENT / OWNER-VALIDATED EVIDENCE
+work/owner-rig-s1-attachment-authority
+frozen tip: 393ef4600be5c83ef42bced4a8a451446e372c32
+tree:       92c896a8b0579a66b3c5381b777baf853a469908
+
 PUBLIC FRIEND-DEMO
 Jozzpoly/JV-Box3D-Web-Public
-release/r0 = frozen published rollback baseline
+release/r0
+frozen published tip: c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 
 NATIVE JV
 Jozzpoly/Box3d_FunProject
 read-only reference for this campaign
 ```
 
-The frozen archive and retained salvage refs are not ordinary takeover inputs.
+`main` and the frozen work branch intentionally mean different things:
 
-## Reproducible current owner-rig artifact
+- `main` = accepted/integrated product state;
+- frozen work branch = newer experimental product/evidence that is **not integrated into main**.
+
+Do not merge or continue the frozen branch merely because it contains newer code.
+
+## Current owner checkpoint
+
+S1-D FL upper-wishbone **static FRONT + TOP geometry is OWNER ACCEPTED at the current visual precision**.
+
+Exact reviewed candidate:
 
 ```text
+commit: 393ef4600be5c83ef42bced4a8a451446e372c32
+tree:   92c896a8b0579a66b3c5381b777baf853a469908
 package: m6-owner-full-rig-r3
 real bindings: 59
 GLB bytes: 829944
 GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
 ```
 
-The physical wheel spin center and authored `Socket_WheelMount` remain intentionally distinct. Browser `legacy_ts_m6` remains a reference fixture rather than native product-physics authority.
+Acceptance is deliberately narrow. Live articulation, FR mirroring, mesh proportion/stretch and wheel-side upright/hub packaging are **not accepted**.
 
-## V0 — current owner truth
+Owner also observed from the wheel-side view that wishbone/wheel-side geometry reaches the tire region and the intermediate upright/hub package remains buried in the wheel. That is downstream evidence, not an S1-D rejection.
 
-Exact Windows V0 execution passed toolchain/typecheck/deterministic generation/13 focused tests/build, but that is not visual acceptance.
+## Implementation state
 
-Current OWNER OBSERVED state:
+**FROZEN FOR CONTROLLED ORCHESTRATOR HANDOFF.**
 
-- chassis/body roughly acceptable;
-- wishbones/suspension too far from the frame;
-- damper/spring rig wrong and intersecting wheels;
-- cardans do not visually mate correctly at the differential;
-- upright/hub/suspension geometry is buried in wheels, so wheel placement is not yet reliably judgeable;
-- ride height should eventually be slightly higher;
-- driving feel/stability/steering feel are strongly regressed and explicitly deferred until visual recovery closes;
-- scan unexpectedly works, but scan work remains outside the active lane.
+`docs/IMPLEMENTER_TASK.md` on `main` must remain INACTIVE until the new orchestrator passes takeover gates and deliberately opens a new bounded task.
 
-Earlier R4 visual observations remain historical evidence only.
+Handling/stability/steering-feel recovery remains deferred until visual recovery closes.
 
-## Recovery preparation — complete
+## Fresh orchestrator bootstrap
 
-Durable execution contract: `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`.
+1. Resolve live private/public refs.
+2. Read `AGENTS.md`.
+3. Read this file.
+4. Read `docs/HANDOFF.md`.
+5. Reconstruct accepted vs frozen transaction state before implementation.
+6. Read `docs/OWNER_CHECKPOINTS.md` and `docs/PROJECT_STATE.md` only as needed to verify the reconstruction.
+7. Load campaign/source/tests only for a named question.
 
-Measurement-only tool:
+Do not reconstruct old chats or archived branches by default.
 
-```text
-npm run inspect:owner-rig-interfaces
-```
-
-Prepared dependency order remains interface-first: chassis/corner attachment authority -> corner body-role landing -> wishbones -> upright/hub/wheel -> dampers -> steering rods -> cardans -> stance -> whole-rig integration -> later handling/feel.
-
-## Execution split
-
-Jozz intentionally separated the project into an orchestrator lane and a disposable bounded implementer lane to reduce context-overload failures.
-
-Protocol: `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`.
-
-Active implementation packet: `docs/IMPLEMENTER_TASK.md`.
-
-The orchestrator owns truth/scope/review/integration. The implementer owns only the current bounded technical task on its named work branch. Owner observations return to the orchestrator.
-
-A bounded implementer does **not** use the normal fresh-agent read order below; it follows the smaller role-aware bootstrap in `AGENTS.md` and `IMPLEMENTER_TASK.md`.
-
-During an active implementer slice, ordinary writes to `main` are frozen until review/integration/rejection closes the branch transaction.
-
-## Current continuation
-
-First prepared implementer task is S1-A: discriminate front chassis-to-wishbone attachment authority and make a minimum visual/calibration correction only if the cause is sufficiently proven. If physical hardpoints themselves are implicated, stop and replan rather than changing runtime physics in the same slice.
-
-Do not begin handling/stability/steering-feel tuning during visual recovery.
-
-## Fresh orchestrator / unspecialized-agent read order
-
-1. current refs
-2. `AGENTS.md`
-3. this file
-4. `docs/HANDOFF.md`
-5. active control/campaign docs as required
-6. exact source/tests for the one active question
-
-Use `docs/PROJECT_STATE.md` and `docs/OWNER_CHECKPOINTS.md` for deeper current evidence. Do not reconstruct historical branches by default.
+The first new-orchestrator operation is **state reconstruction only**, not implementation.

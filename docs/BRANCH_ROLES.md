@@ -2,17 +2,15 @@
 
 Updated: 2026-08-10
 
-Branch names are workflow pointers, not project memory. Exact commits, current source and baseline documents carry durable history.
+Branch names are workflow pointers, not project memory. Exact commits, owner checkpoints and current-state documents carry durable meaning.
 
 ## Long-lived authority
 
 ### `main`
 
-**ACTIVE PRIVATE SOURCE AUTHORITY AND DEFAULT BRANCH.**
+**ACCEPTED / INTEGRATED PRIVATE PRODUCT AUTHORITY AND DEFAULT BRANCH.**
 
-The 2026-08-10 cleanup joins the accepted R1 development lineage into `main` without rewriting history. Fresh agents and ordinary product work start here.
-
-Do not maintain a second permanent development branch merely to separate "real work" from the default branch. Temporary isolation is allowed only when a bounded task actually needs it.
+Fresh agents resolve its live tip before writes. Do not maintain another permanent development branch merely to separate “real work” from the default branch.
 
 ## Frozen archive ref
 
@@ -25,58 +23,68 @@ commit: ee77c4760a08a739a712fec5418e3489746ad63d
 tree:   37fe95af17cb21836cadc552830d55e6889048c1
 ```
 
-Its tree is intentionally identical to `main@80a10fb50f9ac8f973139bfa6ccb3dbc24a443e0`. Its extra parents preserve the unique histories of the remote refs removed during cleanup.
+Open only for a named historical/salvage question that current source/baselines cannot answer.
 
-Do not inspect this branch during normal takeover or implementation. Open it only when a concrete historical/salvage question cannot be answered from current `main`, a named baseline or an exact commit SHA. Do not create another archive ref merely to preserve branch names.
+## Preserved historical evidence/salvage refs
 
-## Preserved historical evidence/salvage branches
-
-Keep these only because they retain unique historical lineages that are not ordinary current work:
-
-- `product/jv-web-car-map-scan` — strongest preserved c8e0 scan behavior/evidence lineage;
+- `product/jv-web-car-map-scan` — retained c8e0 scan evidence lineage;
 - `repair/jv-web-release-r0` — closed private R0 repair/release lineage;
-- `candidate/jv-web-owner-vehicle-visual-r1` — frozen/broken early owner-vehicle tooling source; selective salvage only;
-- `candidate/jv-web-render-host-r1` — frozen render-host experiment; selective salvage only.
+- `candidate/jv-web-owner-vehicle-visual-r1` — frozen early owner-vehicle tooling salvage;
+- `candidate/jv-web-render-host-r1` — frozen render-host experiment salvage.
 
-Do not inspect these by default. A current question must name the reason to load them. When their remaining salvage value is fully absorbed into current source/baselines, they may be removed too.
+Do not inspect by default.
 
-## Temporary branches
+## Frozen handoff transaction
 
-Allowed prefixes when isolation is justified:
+### `work/owner-rig-s1-attachment-authority`
+
+Current handoff freeze:
+
+```text
+tip:  393ef4600be5c83ef42bced4a8a451446e372c32
+tree: 92c896a8b0579a66b3c5381b777baf853a469908
+state: FROZEN — NO WRITES DURING ORCHESTRATOR HANDOFF
+```
+
+Purpose: preserve exact S1-A..D experimental evidence and the owner-accepted **static FL upper-wishbone constraint** while the project is handed to a fresh orchestrator.
+
+This branch is **not a second source authority** and is **not automatically mergeable**. The latest owner acceptance is narrower than the entire experimental branch.
+
+The new orchestrator must first complete takeover gates in `docs/HANDOFF.md`. Afterward it may:
+
+- integrate a clean reviewed subset/result into `main`;
+- continue the same topic only after explicitly reopening a bounded task;
+- or record evidence and abandon/delete the branch if a cleaner integration supersedes it.
+
+Do not create another S1 archive branch merely to preserve this ref.
+
+## Temporary branch rules
+
+Allowed when isolation is justified:
 
 ```text
 work/<bounded-topic>
 candidate/<owner-checkpoint-or-release-candidate>
 ```
 
-Do not create `agent/*` branches. Agent identity is irrelevant to source topology.
+No `agent/*` branches.
 
-Every temporary branch must be deleted after one of:
+Every temporary branch needs one narrow purpose, exact parent/control tip, acceptance/rejection condition and cleanup point.
 
-- fast-forward/integration into `main`;
-- explicit rejection with any durable lesson recorded elsewhere;
-- replacement by a later candidate that contains all needed current work.
-
-Git history + exact SHAs + baseline/checkpoint documentation are the normal archive. The single pre-cleanup archive ref is an explicit one-time exception created to retain otherwise unreachable histories during this cleanup.
+Git history + exact SHA + checkpoint documentation are normal archival mechanisms. Branch names are not memory.
 
 ## Branch budget
 
-Operational steady-state retained refs, excluding the frozen archive: **5**.
+Normal retained operational refs excluding the single frozen archive: **5**.
 
-```text
-main
-product/jv-web-car-map-scan
-repair/jv-web-release-r0
-candidate/jv-web-owner-vehicle-visual-r1
-candidate/jv-web-render-host-r1
-```
+The frozen S1 work transaction temporarily makes **6 operational refs + 1 archive = 7 total remote refs**.
 
-With `archive/pre-cleanup-2026-08-10`, the physical steady-state remote branch count is therefore **6**. At most one justified temporary branch should normally be active, giving a practical ceiling of **7 total refs**. More than 8 total refs requires branch triage before new branch creation.
+This is within budget and should return to steady state after handoff/integration/abandonment.
 
-## 2026-08-10 cleanup — completed
+More than 8 total remote branches requires branch triage before any new branch creation.
 
-The cleanup began with 23 remote branches. Before deleting refs, unique histories that were not already reachable from `main` were retained through the synthetic archive commit `ee77c4760a08a739a712fec5418e3489746ad63d`.
+## Durable cleanup rule
 
-After verification, 18 redundant development/candidate/work/agent refs were removed. Current remote branch count is 6.
+The 2026-08-10 cleanup reduced a 23-branch state to a controlled set.
 
-Durable rule from this event: **do not confuse retaining a branch name with retaining Git history**. New temporary branches should normally disappear after integration/rejection; future agents should not re-audit archived branches without a concrete reason.
+Do not recreate branch cemetery. Preserve facts in current documents, exact SHAs, Git ancestry and owner checkpoints; delete temporary branch names when their transactional purpose is complete.

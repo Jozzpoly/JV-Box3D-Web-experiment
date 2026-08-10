@@ -1,108 +1,205 @@
-# JV Web — current handoff
+# JV Web — current orchestrator handoff
 
 Updated: 2026-08-10
-Purpose: rolling continuation note. Replace stale content instead of appending history.
+Status: **IMPLEMENTATION FROZEN / CONTROLLED ORCHESTRATOR HANDOFF**
+Purpose: rolling semantic checkpoint. Replace stale content instead of appending chronological chat history.
 
-## Authority
-
-```text
-Private repo: Jozzpoly/JV-Box3D-Web-experiment
-Active authority: main
-(resolve live tip before every write)
-
-Public repo: Jozzpoly/JV-Box3D-Web-Public
-Frozen Pages branch: release/r0
-
-Native reference: Jozzpoly/Box3d_FunProject
-read-only for this campaign
-```
-
-Current owner-rig artifact remains reproducible:
+## 1. Exact boundary
 
 ```text
-id: m6-owner-full-rig-r3
-real bindings: 59
-GLB bytes: 829944
-GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
-```
+Private accepted product authority:
+Jozzpoly/JV-Box3D-Web-experiment
+main
+pre-handoff-doc base: 6142a5116fd8a74d3f868c4a1447d32e158607a1
+(resolve the live main tip; documentation stabilization may be newer)
 
-## V0 — current owner-visible truth
-
-Canonical Windows validation passed exact Node/npm, dependency install, typecheck, deterministic generation, 13 focused tests and Vite production build. This proves reproducibility/internal consistency, not visual correctness.
-
-Fresh OWNER OBSERVED state:
-
-- chassis/body roughly acceptable;
-- suspension/wishbones too far from the frame;
-- damper/spring rigging wrong and substantial geometry enters wheels;
-- cardans reach the hub region but do not visually mate at the correct differential location;
-- upright/hub/suspension package is buried in wheels, so wheel placement is not yet judgeable with confidence;
-- eventual stance should be slightly higher;
-- driving feel, suspension stability and steering feel are strongly regressed but deliberately deferred;
-- scan unexpectedly loads successfully, but scan work remains outside the active car lane.
-
-Earlier R4 observations are HISTORICAL OWNER OBSERVED, not current visual authority.
-
-## Recovery preparation — complete
-
-The durable visual-recovery execution contract is `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`.
-
-Work is interface-first/root-to-leaf and uses evidence layers E0-E5. A major V0 lesson is that local consistency E1 may be green while cross-asset geometry E2 and owner acceptance E4 fail.
-
-Measurement-only T0 is available:
-
-```text
-npm run inspect:owner-rig-interfaces
-```
-
-Representative V0 deltas include front upper hinge authored->current ~0.216 m and front lower hinge ~0.155 m. These are evidence, not accepted thresholds.
-
-Selective native prior art exists for corner landing, chassis/lower-arm/knuckle visual roles, live wishbone endpoint drawing, rack-center steering rod placement and diagnostics. Native remains read-only evidence, not automatic authority.
-
-## Execution mode — orchestrator / implementer split
-
-Jozz explicitly separated orchestration from implementation to control context overload.
-
-Stable protocol:
-
-`docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`
-
-Single active implementation contract:
-
-`docs/IMPLEMENTER_TASK.md`
-
-Roles:
-
-```text
-orchestrator -> current truth, dependency order, task packet, review, owner question, integration
-implementer  -> one bounded technical task on one work branch, broad freedom inside declared scope
-Jozz         -> product intent and final focused visual/feel acceptance
-```
-
-Important context firewall: a bounded implementer does not perform a cold takeover and does not preload this handoff/project history. It reads `AGENTS.md`, `IMPLEMENTER_TASK.md`, the execution protocol and only the task-required source.
-
-During an active implementer work branch, `main` is frozen for ordinary writes. This preserves clean ancestry for review/integration.
-
-## Active task prepared — S1-A
-
-Task: **front chassis-to-wishbone attachment authority**.
-
-Purpose: discriminate why the front wishbone package sits too far from rendered chassis and, only if justified, make the smallest visual/calibration correction for one chassis-side attachment relationship.
-
-Protected during S1-A: physical suspension runtime/hardpoints, wheel mount contract, upright/knuckle pivot, dampers, steering rods, cardans, stance, handling, camera/UI/world/scan, native JV and public R0.
-
-If evidence says the physical hardpoint itself must change, the implementer stops and returns the evidence; it does not rewrite physics in this slice.
-
-The orchestrator will create/use one bounded branch:
-
-```text
+Frozen S1 experiment:
 work/owner-rig-s1-attachment-authority
+tip:  393ef4600be5c83ef42bced4a8a451446e372c32
+tree: 92c896a8b0579a66b3c5381b777baf853a469908
+
+Public R0:
+Jozzpoly/JV-Box3D-Web-Public
+release/r0
+tip: c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+
+Native:
+Jozzpoly/Box3d_FunProject
+read-only reference for this campaign
 ```
 
-No product correction is accepted merely by opening this task. The implementer must return an exact candidate/evidence report for independent orchestrator review before Jozz is asked to validate anything.
+The frozen S1 code is **not integrated into `main`**. This is intentional. Static owner acceptance is narrower than full product acceptance; live articulation and downstream wheel-side packaging remain open.
 
-## Next control step
+## 2. Current owner truth
 
-Provide the new implementer conversation with the compact orchestrator handoff containing the exact work-branch starting SHA and direct instruction to execute `docs/IMPLEMENTER_TASK.md` without reconstructing project history.
+### S1-D — OWNER ACCEPTED STATIC, NARROW
 
-The orchestrator then waits for the implementer return report/diff. Do not independently implement S1 in the orchestrator conversation while that slice is active.
+Jozz inspected the exact reviewed S1-D candidate in FRONT, TOP and wheel-side views.
+
+Owner verdict:
+
+- FRONT: FL upper wishbone chassis-side placement is good enough at current precision;
+- TOP: the previous longitudinal yaw is removed; plan-view placement is good enough at current precision;
+- wheel-side: the wishbone reaches very near the tire and the intermediary upright/hub/suspension package remains buried in the wheel;
+- mesh appears stretched/lengthened, but owner explicitly defers changing that unless correct rigging later requires it.
+
+Interpretation:
+
+**S1-D solves the selected static FL upper-wishbone inboard placement question well enough to freeze that static constraint. It does not close the whole wishbone, corner or suspension stage.**
+
+Do not silently promote this to:
+
+- live-motion acceptance;
+- FR acceptance;
+- wheel/upright/hub acceptance;
+- final mesh scale/proportion;
+- final physical suspension authority.
+
+## 3. Constraint ledger — FL upper wishbone
+
+```text
+INBOARD LONGITUDINAL X
+source in S1-D:
+  midpoint(physical upperFront, physical upperRear).x
+status:
+  OWNER ACCEPTED — STATIC / CURRENT PRECISION
+
+INBOARD VERTICAL + LATERAL (Y/Z)
+source in S1-D:
+  S1-C semantic-main-chassis calibration components
+status:
+  OWNER ACCEPTED — STATIC / CURRENT PRECISION
+
+FINAL INBOARD POINT
+type:
+  constraint-composed visual attachment
+contact claim:
+  NONE — do not claim it literally lies on group5 after X substitution
+
+OUTBOARD XYZ
+source:
+  existing physical upper ball
+status:
+  PRESERVED THROUGH S1 / NOT YET FINAL WHEEL-SIDE ACCEPTANCE
+
+ORIENTATION MECHANISM
+PART_PAIR_ROLL_PINNED_STRETCH
+status:
+  STATIC RESULT SUPPORTED
+  LIVE MOTION NOT EVALUATED
+
+MESH LENGTH / SCALE
+status:
+  visibly stretched
+  DEFERRED BY OWNER unless later rigging requires change
+
+FR MIRROR
+status:
+  NOT OPEN / NOT OWNER ACCEPTED
+
+LIVE SUSPENSION MOTION
+status:
+  UNKNOWN / NOT EVALUATED
+```
+
+## 4. Durable S1 technical result
+
+S1-A through S1-D should not be replayed as a roadmap. Their durable result is:
+
+- wide wishbone visual placement needs a deterministic full-frame/two-end mechanism rather than shortest-arc roll ambiguity;
+- attachment authority may be **split by constraint/axis** rather than one source owning XYZ wholesale;
+- owner screenshots are projection evidence, not pixel-to-meter calibration:
+  - FRONT constrains Y/Z well;
+  - TOP constrains X/Z well;
+  - SIDE constrains X/Y well;
+- change the smallest independent degree of freedom when possible;
+- separate `MECHANISM`, `CALIBRATION`, `ASSET GEOMETRY`, and `LIVE BEHAVIOR`.
+
+## 5. Negative memory — do not revive without new evidence
+
+The following hypotheses/approaches were specifically disproven or insufficient during S1:
+
+1. `E1/local-consistency PASS` proves visible cross-asset correctness — false.
+2. `physicsAuthority:false` alone proves a physical point is unsuitable for visual placement — false.
+3. existing shortest-arc `PART_PAIR_STRETCH` is sufficient to control a wide wishbone's roll — insufficient.
+4. literal authored `Chassis_Top` is the final FL upper inboard attachment — owner rejected.
+5. unrestricted nearest surface across chassis pieces is a valid mating authority — false; it can select `Diferential_F`.
+6. full-XYZ `nearest(group5)` is the final attachment authority — owner rejected; it introduced ~0.156 m longitudinal mismatch/top-view yaw.
+7. owner screenshot pixels should be converted directly to world offsets — do not do this.
+
+These are negative constraints, not a ban on revisiting a question if genuinely new evidence appears.
+
+## 6. Remaining visible recovery state
+
+Still current from V0 / latest owner observation:
+
+- chassis/body is a usable visual reference;
+- wheel-side upright/hub/suspension geometry remains buried in wheels;
+- damper/spring rig remains wrong and intersects the wheel region;
+- cardans still need proper visible mating, especially differential side;
+- final stance likely needs to sit slightly higher;
+- driving feel/stability/steering feel remain strongly regressed and deliberately deferred;
+- scan work remains outside the active vehicle lane.
+
+Do not use S1 static acceptance to erase these unresolved states.
+
+## 7. Implementation freeze
+
+There is **no active implementer task**.
+
+Do not:
+- continue S1 on the frozen work branch;
+- mirror FR;
+- open live motion;
+- fix wheel/upright/hub packaging;
+- change mesh scale;
+- tune dynamics;
+- publish R1.
+
+until the new orchestrator has completed takeover validation and Jozz explicitly authorizes continuation.
+
+## 8. New orchestrator takeover gates
+
+### O1 — state reconstruction
+
+No writes.
+
+The new orchestrator must independently resolve live refs and report:
+
+1. accepted `main` state;
+2. frozen S1 work state;
+3. public R0 boundary;
+4. OWNER ACCEPTED constraints;
+5. OWNER REJECTED / negative-memory constraints;
+6. provisional/unknown/deferred items;
+7. why `393ef...` is not automatically merged;
+8. the next unresolved dependency without opening implementation.
+
+Jozz + previous orchestrator review this reconstruction.
+
+### O2 — continuation reasoning
+
+Still no product write.
+
+The new orchestrator proposes the next bounded direction from current dependency/evidence state. It must preserve S1 accepted static constraints and avoid reopening deferred dynamics.
+
+### O3 — first implementer packet
+
+Before a new implementer is started, the new orchestrator prepares the next `docs/IMPLEMENTER_TASK.md`. The previous orchestrator audits that packet for scope, identity, evidence and context hygiene.
+
+Only after O1-O3 pass is orchestrator handoff COMPLETE.
+
+## 9. Minimum read set for takeover
+
+Required:
+- `AGENTS.md`
+- `AI_PROJECT_MEMORY.md`
+- this file
+
+Then, as needed:
+- `docs/OWNER_CHECKPOINTS.md`
+- `docs/PROJECT_STATE.md`
+- `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`
+- `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`
+
+Cold evidence is Git history, exact candidate SHAs and tests. Old conversations and archived branches are not bootstrap material.
