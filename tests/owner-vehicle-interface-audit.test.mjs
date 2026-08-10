@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { resolveVehicleVisualBindingsV1 } from '../.test-dist/visual/vehicle-visual-transform.js';
 import { buildOwnerM6InterfaceAudit, OWNER_M6_INTERFACE_AUDIT_SCHEMA } from '../tools/owner-vehicle/owner-m6-interface-audit.mjs';
 
 const SOURCE='assets/owner-vehicle/source';
@@ -17,6 +18,38 @@ async function inputs(){
   };
 }
 function close(a,b,label){assert.ok(Math.abs(a-b)<1e-9,`${label}: ${a} != ${b}`);}
+
+function part(partId,position,rotation){
+  return {partId,transform:{position,rotation}};
+}
+function pairFrame(upperArmRotation){
+  return {
+    contractVersion:1,
+    generation:1,
+    stepIndex:0,
+    parts:[
+      part('m6.chassis',{x:0,y:0,z:0},{x:0,y:0,z:0,w:1}),
+      part('m6.fl.upper-arm',{x:0,y:0,z:0},upperArmRotation),
+    ],
+    segments:[],
+  };
+}
+const PAIR_STRETCH_PROBE={
+  bindings:[{
+    bindingId:'probe.fl.upper-arm',
+    nodeName:'probe_fl_upper_arm',
+    source:{
+      kind:'PART_PAIR_STRETCH',
+      startPartId:'m6.chassis',
+      startLocalPosition:[0,0,0],
+      endPartId:'m6.fl.upper-arm',
+      endLocalPosition:[1,0,0],
+      axis:'+Y',
+      referenceLengthMeters:1,
+    },
+    localFromSource:{position:[0,0,0],rotation:[0,0,0,1],scale:[1,1,1]},
+  }],
+};
 
 test('owner interface audit is deterministic measurement, not a visual acceptance gate',async()=>{
   const audit=buildOwnerM6InterfaceAudit(await inputs());
@@ -41,4 +74,36 @@ test('owner interface audit is deterministic measurement, not a visual acceptanc
   close(audit.corners.fl.interfaces.upperHinge.currentToChassisSurface.meters,audit.corners.fr.interfaces.upperHinge.currentToChassisSurface.meters,'front upper surface mirror');
   close(audit.corners.rl.interfaces.upperHinge.currentToChassisSurface.meters,audit.corners.rr.interfaces.upperHinge.currentToChassisSurface.meters,'rear upper surface mirror');
   close(audit.corners.fl.interfaces.damperUpper.currentToChassisSurface.meters,audit.corners.fr.interfaces.damperUpper.currentToChassisSurface.meters,'front damper surface mirror');
+});
+
+test('S1-A front upper authored chassis endpoint is materially displaced from the current physical hinge authority',async()=>{
+  const audit=buildOwnerM6InterfaceAudit(await inputs());
+  for(const corner of ['fl','fr']){
+    const upper=audit.corners[corner].interfaces.upperHinge;
+    assert.ok(
+      upper.authoredToCurrentMeters>0.215 && upper.authoredToCurrentMeters<0.217,
+      `${corner}: expected the current ~0.216m authored-to-physical upper hinge conflict`,
+    );
+    assert.ok(
+      upper.authoredToChassisSurface.meters<upper.currentToChassisSurface.meters,
+      `${corner}: authored whole-rig upper endpoint should be closer to the rendered chassis than the current physical hinge target`,
+    );
+  }
+});
+
+test('S1-A PART_PAIR_STRETCH probe does not encode endpoint-body roll when pair endpoints stay fixed',()=>{
+  const identity=resolveVehicleVisualBindingsV1(
+    PAIR_STRETCH_PROBE,
+    pairFrame({x:0,y:0,z:0,w:1}),
+  )[0].worldFromNode;
+  const half=Math.SQRT1_2;
+  const rolled=resolveVehicleVisualBindingsV1(
+    PAIR_STRETCH_PROBE,
+    pairFrame({x:half,y:0,z:0,w:half}),
+  )[0].worldFromNode;
+  assert.deepEqual(
+    Array.from(rolled),
+    Array.from(identity),
+    'PART_PAIR_STRETCH is endpoint-only: roll about a fixed pair axis is not observable by the binding',
+  );
 });
