@@ -1,0 +1,200 @@
+import {
+  getJvProductViewSettings,
+  setJvGridVisible,
+  setJvTextureFilter,
+  subscribeJvProductViewSettings,
+  type JvTextureFilterMode,
+} from "./render/jv-product-view-settings.js";
+
+export interface ProductLocationChoice {
+  readonly label: string;
+  readonly href: string;
+  readonly active: boolean;
+  readonly availabilityProbeUrl?: string;
+  readonly unavailableMessage?: string;
+}
+
+export interface ProductControlCapabilities {
+  readonly locationChoices?: readonly ProductLocationChoice[];
+  readonly textureFilter: boolean;
+  readonly grid: boolean;
+}
+
+export interface InstallProductControlsOptions {
+  readonly capabilities: ProductControlCapabilities;
+}
+
+function rememberTextureFilter(mode: JvTextureFilterMode): void {
+  const url = new URL(window.location.href);
+  if (mode === "nearest") {
+    url.searchParams.delete("jvTextureFilter");
+  } else {
+    url.searchParams.set("jvTextureFilter", mode);
+  }
+  window.history.replaceState(null, "", url.href);
+}
+
+function rememberGridVisible(visible: boolean): void {
+  const url = new URL(window.location.href);
+  if (visible) {
+    url.searchParams.set("jvGrid", "1");
+  } else {
+    url.searchParams.delete("jvGrid");
+  }
+  window.history.replaceState(null, "", url.href);
+}
+
+function controlGroup(label: string): HTMLDivElement {
+  const group = document.createElement("div");
+  group.className = "product-control-group";
+  const heading = document.createElement("span");
+  heading.className = "product-control-label";
+  heading.textContent = label;
+  group.append(heading);
+  return group;
+}
+
+function setChoiceActive(
+  element: HTMLAnchorElement | HTMLButtonElement,
+  active: boolean,
+): void {
+  element.classList.toggle("is-active", active);
+  element.setAttribute("aria-pressed", String(active));
+}
+
+function isAvailableScanIndex(value: unknown): boolean {
+  return typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    (value as Record<string, unknown>)["available"] === true;
+}
+
+export function installProductControls(
+  options: InstallProductControlsOptions,
+): void {
+  const mount =
+    document.querySelector<HTMLElement>("[data-product-controls]") ??
+    document.querySelector<HTMLElement>(".panel");
+  if (mount === null) {
+    throw new Error("JV product controls require a product toolbar or mechanics panel.");
+  }
+
+  const { capabilities } = options;
+  const controls = document.createElement("section");
+  controls.className = "product-controls";
+  controls.setAttribute("aria-label", "JV product view controls");
+
+  const notice = document.createElement("p");
+  notice.className = "product-control-notice";
+  notice.setAttribute("role", "status");
+  notice.hidden = true;
+
+  const locationChoices = capabilities.locationChoices ?? [];
+  if (locationChoices.length > 1) {
+    const locationGroup = controlGroup("Miejsce startu");
+    const locationContainer = document.createElement("div");
+    locationContainer.className = "product-choice-row";
+    for (const choice of locationChoices) {
+      const link = document.createElement("a");
+      link.href = choice.href;
+      link.textContent = choice.label;
+      link.className = "product-choice";
+      link.classList.toggle("is-active", choice.active);
+      if (choice.active) {
+        link.setAttribute("aria-current", "page");
+      }
+      if (!choice.active && choice.availabilityProbeUrl !== undefined) {
+        link.addEventListener("click", async (event) => {
+          event.preventDefault();
+          if (link.getAttribute("aria-busy") === "true") {
+            return;
+          }
+          link.setAttribute("aria-busy", "true");
+          notice.hidden = true;
+          try {
+            const response = await fetch(choice.availabilityProbeUrl!, {
+              cache: "no-store",
+            });
+            const contentType = response.headers.get("content-type") ?? "";
+            const available =
+              response.ok &&
+              contentType.toLowerCase().includes("application/json") &&
+              isAvailableScanIndex(await response.json());
+            if (available) {
+              window.location.assign(choice.href);
+              return;
+            }
+          } catch {
+            // Optional local capability: surface a product-level message only.
+          } finally {
+            link.removeAttribute("aria-busy");
+          }
+          notice.textContent =
+            choice.unavailableMessage ??
+            "Ta lokalizacja jest niedostępna w tym buildzie.";
+          notice.hidden = false;
+        });
+      }
+      locationContainer.append(link);
+    }
+    locationGroup.append(locationContainer);
+    controls.append(locationGroup);
+  }
+
+  const textureButtons = new Map<JvTextureFilterMode, HTMLButtonElement>();
+  if (capabilities.textureFilter) {
+    const textureGroup = controlGroup("Tekstury");
+    const textureChoices = document.createElement("div");
+    textureChoices.className = "product-choice-row";
+    const filters: readonly Readonly<{
+      id: JvTextureFilterMode;
+      label: string;
+    }>[] = [
+      { id: "nearest", label: "Pixel" },
+      { id: "linear", label: "Smooth" },
+    ];
+    for (const filter of filters) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "product-choice";
+      button.textContent = filter.label;
+      button.addEventListener("click", () => {
+        setJvTextureFilter(filter.id);
+        rememberTextureFilter(filter.id);
+      });
+      textureButtons.set(filter.id, button);
+      textureChoices.append(button);
+    }
+    textureGroup.append(textureChoices);
+    controls.append(textureGroup);
+  }
+
+  let gridButton: HTMLButtonElement | null = null;
+  if (capabilities.grid) {
+    const viewGroup = controlGroup("Widok");
+    gridButton = document.createElement("button");
+    gridButton.type = "button";
+    gridButton.className = "product-choice";
+    gridButton.addEventListener("click", () => {
+      const visible = !getJvProductViewSettings().gridVisible;
+      setJvGridVisible(visible);
+      rememberGridVisible(visible);
+    });
+    viewGroup.append(gridButton);
+    controls.append(viewGroup);
+  }
+
+  controls.append(notice);
+  mount.append(controls);
+
+  const unsubscribe = subscribeJvProductViewSettings((settings) => {
+    for (const [mode, button] of textureButtons) {
+      setChoiceActive(button, mode === settings.textureFilter);
+    }
+    if (gridButton !== null) {
+      gridButton.textContent = settings.gridVisible ? "Grid ON" : "Grid OFF";
+      setChoiceActive(gridButton, settings.gridVisible);
+    }
+  });
+  window.addEventListener("pagehide", unsubscribe, { once: true });
+}

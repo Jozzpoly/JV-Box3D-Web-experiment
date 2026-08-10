@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.test-dist/
+.local-audit/
+.local-assets/
+.local-scans/
+.private-work/
+public/vehicles/tiny/models/m6-rig-proof.glb
+public/vehicles/tiny/vehicle.visual.json
+public/vehicles/m6-owner-r3/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store

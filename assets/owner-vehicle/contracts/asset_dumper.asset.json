@@ -1,0 +1,65 @@
+{
+  "assetId": "jozz.asset_dumper.v0",
+  "assetType": "damper_visual",
+  "source": {
+    "gltf": "../source/Asset_Dumper.gltf",
+    "authoringTool": "Blockbench",
+    "contractVersion": 2
+  },
+  "units": {
+    "metersPerBlockbenchUnit": 0.35,
+    "status": "prototype_scale"
+  },
+  "orientation": {
+    "status": "authoring_orientation_not_final",
+    "authoringUp": "+Y",
+    "knownAuthoringHints": {
+      "stretchAxis": "+Y"
+    },
+    "temporaryImporterCorrection": {
+      "enabled": true,
+      "note": "Final orientation will be adjusted after native in-game visual tests."
+    }
+  },
+  "semantics": {
+    "visualParts": {
+      "upper": {
+        "role": "damper.visual.upper",
+        "roleCategory": "visual_part",
+        "nameHint": "Part_Upper",
+        "nodeIndexHint": 0,
+        "nodePathHint": "0:Part_Upper",
+        "space": "authoring_world_after_composed_transforms",
+        "required": true,
+        "physicsAuthority": false
+      },
+      "stretch": {
+        "role": "damper.visual.stretch",
+        "roleCategory": "visual_part",
+        "nameHint": "Part_Stretch",
+        "nodeIndexHint": 1,
+        "nodePathHint": "1:Part_Stretch",
+        "space": "authoring_world_after_composed_transforms",
+        "required": true,
+        "physicsAuthority": false
+      },
+      "lower": {
+        "role": "damper.visual.lower",
+        "roleCategory": "visual_part",
+        "nameHint": "Part_Lower",
+        "nodeIndexHint": 2,
+        "nodePathHint": "2:Part_Lower",
+        "space": "authoring_world_after_composed_transforms",
+        "required": true,
+        "physicsAuthority": false
+      }
+    }
+  },
+  "visualRig": {
+    "v0Treatment": "procedural_stretch_between_damper_sockets",
+    "stretchAxis": "+Y"
+  },
+  "physics": {
+    "v0Treatment": "visual_only"
+  }
+}

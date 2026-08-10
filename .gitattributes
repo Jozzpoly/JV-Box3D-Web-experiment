@@ -1,0 +1,8 @@
+# Byte-pinned native receipts must survive checkout unchanged on every OS.
+public/receipts/jv_m6_factory_receipt.json -text
+
+# Exact owner-vehicle authoring sources and generated R2 artifacts are byte-pinned.
+assets/owner-vehicle/source/*.gltf -text
+assets/owner-vehicle/contracts/*.json -text
+public/vehicles/m6-owner-r2/*.json -text
+public/vehicles/m6-owner-r2/models/*.glb -text
