@@ -14,6 +14,21 @@ The 2026-08-10 cleanup joins the accepted R1 development lineage into `main` wit
 
 Do not maintain a second permanent development branch merely to separate "real work" from the default branch. Temporary isolation is allowed only when a bounded task actually needs it.
 
+## Frozen archive ref
+
+### `archive/pre-cleanup-2026-08-10`
+
+**FROZEN HISTORY RETENTION — NEVER AN ACTIVE DEVELOPMENT BASE.**
+
+```text
+commit: ee77c4760a08a739a712fec5418e3489746ad63d
+tree:   37fe95af17cb21836cadc552830d55e6889048c1
+```
+
+Its tree is intentionally identical to `main@80a10fb50f9ac8f973139bfa6ccb3dbc24a443e0`. Its extra parents preserve the unique histories of the remote refs removed during cleanup.
+
+Do not inspect this branch during normal takeover or implementation. Open it only when a concrete historical/salvage question cannot be answered from current `main`, a named baseline or an exact commit SHA. Do not create another archive ref merely to preserve branch names.
+
 ## Preserved historical evidence/salvage branches
 
 Keep these only because they retain unique historical lineages that are not ordinary current work:
@@ -42,31 +57,26 @@ Every temporary branch must be deleted after one of:
 - explicit rejection with any durable lesson recorded elsewhere;
 - replacement by a later candidate that contains all needed current work.
 
-Git history + exact SHAs + baseline/checkpoint documentation are the archive. Do not keep branches merely as bookmarks.
+Git history + exact SHAs + baseline/checkpoint documentation are the normal archive. The single pre-cleanup archive ref is an explicit one-time exception created to retain otherwise unreachable histories during this cleanup.
 
 ## Branch budget
 
-Target steady-state retained branch count: **5**. Total working branch budget, including one active temporary branch: **6 or fewer**.
-
-If more than 8 branches exist, perform branch triage before creating another. The question is not "could this branch ever be interesting?" but "does it preserve unique source/evidence that current history or a named baseline does not?"
-
-## 2026-08-10 cleanup manifest
-
-After `main` contains the cleaned R1 lineage, remove:
+Operational steady-state retained refs, excluding the frozen archive: **5**.
 
 ```text
-development/jv-web-r1
-
-candidate/jv-web-r1-playable-foundation
-candidate/jv-web-r1-car-5ch
-candidate/jv-web-r1-full-owner-rig
-candidate/jv-web-r1-r4-owner-packaging
-candidate/jv-web-r1-r3-reference-calibration
-work/jv-web-r1-car-5ch
-
-all agent/* branches
+main
+product/jv-web-car-map-scan
+repair/jv-web-release-r0
+candidate/jv-web-owner-vehicle-visual-r1
+candidate/jv-web-render-host-r1
 ```
 
-The three historical playable recovery branch names already point to the same commit, illustrating why branch count must not be mistaken for evidence diversity.
+With `archive/pre-cleanup-2026-08-10`, the physical steady-state remote branch count is therefore **6**. At most one justified temporary branch should normally be active, giving a practical ceiling of **7 total refs**. More than 8 total refs requires branch triage before new branch creation.
 
-Before deleting refs, re-fetch their exact tips and confirm no new commits/open PRs appeared after this audit.
+## 2026-08-10 cleanup — completed
+
+The cleanup began with 23 remote branches. Before deleting refs, unique histories that were not already reachable from `main` were retained through the synthetic archive commit `ee77c4760a08a739a712fec5418e3489746ad63d`.
+
+After verification, 18 redundant development/candidate/work/agent refs were removed. Current remote branch count is 6.
+
+Durable rule from this event: **do not confuse retaining a branch name with retaining Git history**. New temporary branches should normally disappear after integration/rejection; future agents should not re-audit archived branches without a concrete reason.

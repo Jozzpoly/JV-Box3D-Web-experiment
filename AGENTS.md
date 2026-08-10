@@ -106,6 +106,8 @@ If environment/connector limits block required files or exact source, finish all
 
 `main` is the long-lived private source authority.
 
+`archive/pre-cleanup-2026-08-10` is one frozen history-retention ref created during the 2026-08-10 cleanup. It is not a development base and must not be inspected by default. Do not create additional archive refs merely to preserve branch names; Git history, exact SHAs and durable baselines are the normal archive system.
+
 Use a temporary work/candidate branch only when isolation has a concrete benefit. Do not create per-agent branches. A temporary branch must have:
 
 - one narrow purpose;
@@ -113,9 +115,9 @@ Use a temporary work/candidate branch only when isolation has a concrete benefit
 - a clear acceptance/rejection condition;
 - a cleanup point after integration or abandonment.
 
-After a slice is accepted, fast-forward/integrate it into `main` and remove redundant temporary branches. Git history, baseline docs and exact SHAs are the archive; branch names are not an archive system.
+After a slice is accepted, fast-forward/integrate it into `main` and remove redundant temporary branches.
 
-Target branch budget: **<= 6 total private branches**. More than 8 requires explicit cleanup before new branch creation.
+Operational branch budget, excluding the single frozen archive ref: **<= 6**. Current steady state is five operational retained refs plus the one frozen archive ref. One justified temporary branch may therefore raise the physical remote-ref count from 6 to 7. More than 8 total remote branches requires explicit cleanup before new branch creation.
 
 See `docs/BRANCH_ROLES.md`.
 

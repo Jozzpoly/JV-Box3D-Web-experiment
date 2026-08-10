@@ -11,6 +11,7 @@ This is the single detailed current-state document. Do not append historical wor
 ```text
 Private source: Jozzpoly/JV-Box3D-Web-experiment
 Active authority branch: main
+Frozen history-retention ref: archive/pre-cleanup-2026-08-10
 
 Public artifact repo: Jozzpoly/JV-Box3D-Web-Public
 Published baseline: release/r0
@@ -19,7 +20,7 @@ Native JV: Jozzpoly/Box3d_FunProject
 Role in this campaign: read-only reference
 ```
 
-Resolve exact tips live before every write. The 2026-08-10 cleanup merged the accepted R1 development lineage into default `main`, so fresh agents and long-running work now share one source authority.
+Resolve exact tips live before every write. The 2026-08-10 cleanup merged the accepted R1 development lineage into default `main`, so fresh agents and long-running work now share one source authority. The archive ref is not a development base and should not be inspected without a concrete historical/salvage question.
 
 ## 2. Product goal
 
@@ -153,11 +154,12 @@ I0 whole-rig integration without redesign
 
 Accepted parts become protected scope. See `docs/OWNER_CHECKPOINTS.md`.
 
-## 14. Current operational debt after documentation cleanup
+## 14. Current operational state after cleanup
 
-- branch count is still historically high until redundant remote refs are deleted;
-- exact canonical Node 24.16.0 runtime execution has not yet been demonstrated in the current takeover environment;
+- remote branch cleanup is complete: 6 refs remain, including one frozen pre-cleanup archive ref;
+- `main` is the only active source authority;
+- exact canonical Node 24.16.0 F0 runtime evidence has not yet been produced in the current takeover/implementation session;
 - `owner_r4`/`Tire=0` session state is not a persisted preset;
 - current front steering live truth probe remains outstanding.
 
-No additional broad handoff archaeology is required before F0.
+No additional broad handoff archaeology or branch archaeology is required before F0.
