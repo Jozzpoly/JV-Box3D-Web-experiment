@@ -70,4 +70,4 @@ For the current friend-demo:
 - selectively port already-existing native mechanisms through controlled boundaries when justified;
 - keep full native/WASM authority migration as a later program unless Jozz explicitly changes priority.
 
-Current scheduling authority lives in `AGENTS.md` and `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`, not in this historical narrative.
+Current scheduling authority lives in `AGENTS.md`, `AI_PROJECT_MEMORY.md` and `docs/HANDOFF.md`, not in this historical narrative.

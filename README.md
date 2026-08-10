@@ -1,131 +1,53 @@
 # JV Web
 
-JV Web is the active desktop/mobile browser version of Jozz Vehicle for the current friend-demo campaign. It combines the browser vehicle fixture, E2R/offroad terrain, desktop/mobile controls, WebGL rendering and an optional private LOCAL_FULL JSPREV2 path.
+JV Web is the private desktop/mobile browser development line for Jozz Vehicle and the current friend-demo campaign. The goal is a browser build that is useful and enjoyable to drive, tune and show to friends — not merely a technical demonstrator.
 
-The project is currently being developed as a motivating, increasingly game-like browser experience for Jozz and friends. Native JV is maintained separately and is read-only for this campaign.
+The private repository is the source/development laboratory. `Jozzpoly/JV-Box3D-Web-Public` is the publication surface. Native `Jozzpoly/Box3d_FunProject` remains a read-only reference for this campaign unless Jozz explicitly changes scope.
 
-## Current status
+## Current product state
 
-### Public R0 — closed baseline
+The current R1 line already includes:
+
+- the browser M6/Box3D reference vehicle and E2R/offroad world;
+- desktop/mobile controls and chase/orbit/zoom camera support;
+- optional private LOCAL_FULL JSPREV2 loading through the dev server;
+- Jozz's authored chassis, wheels, front/rear suspension pieces, dampers and cardans;
+- a deterministic owner-vehicle package generator;
+- live loading of the generated `m6-owner-full-rig-r3` package;
+- public-preview validation tooling for the later R1 Pages path.
+
+The current owner-vehicle package reproduces to 59 real bindings and GLB SHA-256
+`57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a` from repository sources.
+
+The current high-priority vehicle issue is the front steering/upright visual-mechanical relationship. Do not broaden that into a whole-car rewrite. Current continuation details live in `docs/HANDOFF.md`.
+
+## Public baseline
+
+Public R0 is closed and immutable:
 
 ```text
-private R0 source:
-Jozzpoly/JV-Box3D-Web-experiment
-5ba6cc406b8c1541e29cd1ae59ffed78a7509284
-
-authorized public artifact:
 Jozzpoly/JV-Box3D-Web-Public
 release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
-tree f1c5c9a971208d89da05143f10913891a58b3b70
-
-live:
 https://jozzpoly.github.io/JV-Box3D-Web-Public/
 ```
 
-R0 passed exact Windows source/artifact validation, byte-identical build comparison, public promotion verification and live GitHub Pages smoke. Jozz additionally validated the live page on desktop and a real smartphone, including driving, steering and braking.
+R0 is a rollback/evidence baseline, not a build profile that current R1 must carry forward. Exact closure lives in `docs/baselines/R0_PUBLISHED_2026-08-07.md`.
 
-R0 remains frozen as rollback/reference. New work belongs on:
+## Start here
 
-```text
-development/jv-web-r1
-```
+For a fresh agent or handoff, keep context deliberately small:
 
-## Current friend-demo direction
-
-The target is no longer merely a technical browser demonstrator. Before this campaign is considered complete, Jozz wants most of:
-
-- his real authored chassis + wheel visuals;
-- materially better racing-game chase camera;
-- desktop camera orbit/zoom and phone pinch zoom;
-- usable JSPREV2 scan + phone assessment;
-- fast location/teleport switching;
-- vehicle presets/settings;
-- FWD/RWD/AWD and a precisely defined drivetrain lock;
-- useful QoL;
-- rebuilt Web/mobile UI;
-- selected newer native `b3Wheel` port if technically sane.
-
-Order is adaptive and may change after real play/feel. Social-media optimization is later and must not slow the friend-demo.
-
-The current cold-takeover hypothesis for the first main owner-visible slice is **REAL CAR V1**: integrate the exact real chassis + four real wheels and their required pixel material/texture behavior while keeping the current physics, world and camera unchanged. Camera work is intentionally separated into the following owner-feel slice so visual and camera feedback remain attributable. See the takeover brief; this is a hypothesis, not a frozen roadmap.
-
-## Current private scan capability
-
-The private root `index.html` launches `src/product-main.ts`, which still configures the LOCAL_FULL path. If an exact local pack is selected with:
-
-```text
-JOZZ_SCAN_PREVIEW_PACK
-```
-
-the Vite development server exposes the private JSPREV2 data to the runtime.
-
-This is **not** the same thing as public Pages delivery. Public R0 remains scan-free, and a future public scan requires an explicit asset packaging/hosting decision.
-
-Strongest historical desktop scan baseline:
-
-```text
-product/jv-web-car-map-scan@c8e0bf24748b0a790a1c0039b1be801eef266580
-```
-
-It has exact Windows gate evidence plus owner-observed corrected rendering/filter/grid and working collision. Current R1 still contains much of this scan path, so future work should first revalidate current LOCAL_FULL rather than wholesale-recover the old branch.
-
-## Current vehicle/runtime boundary
-
-The public/current vehicle visual remains procedural, while current R1 already contains a substantial dormant GLB/vehicle-visual stack.
-
-```text
-runtime backend: legacy_ts_m6
-role: REFERENCE_BROWSER_FIXTURE
-product physics authority: false
-native JV parity: NOT_PROVEN
-```
-
-The exact owner source assets have been recovered and indexed. The next visual work should start from those known resources instead of broad asset discovery. The deterministic tiny GLB fixture is a diagnostic fallback, not a required milestone.
-
-## Controls in the current build
-
-```text
-A / D or Left / Right   steering
-W / Up                  forward
-S / Down                reverse
-Space                   brake
-mouse/free-area drag     orbit camera
-mouse wheel              zoom
-mobile buttons           multi-touch vehicle controls
-```
-
-Future camera work should evolve the existing `M6WorldRenderer` camera/input path and preserve touch-driving ownership.
-
-## Start here before changing anything
-
-Keep cold start small:
-
-1. resolve current private/public refs;
+1. fetch the current private/public refs;
 2. read `AGENTS.md`;
-3. read `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`;
-4. if a handoff resource ZIP is attached, read its `00_START_HERE.md`, `02_RESOURCE_MAP.md` and `09_COLD_AGENT_TAKEOVER_CHECKLIST.md`;
-5. inspect the exact current source/evidence required to challenge the proposed first task.
+3. read `AI_PROJECT_MEMORY.md`;
+4. if continuing active work, read `docs/HANDOFF.md`;
+5. inspect only the exact source/tests needed for the current question.
 
-Use deeper documents only when the question needs them:
+Use `docs/PROJECT_STATE.md` for deeper current state and `docs/OWNER_CHECKPOINTS.md` for owner-validated vehicle checkpoints. Historical evidence should be loaded only when a current question points to it.
 
-```text
-AI_PROJECT_MEMORY.md
-docs/PROJECT_STATE.md
-docs/handoff/JV_WEB_HANDOFF_2026-08-08.md
-docs/handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md
-```
+## Development
 
-The resource pack physically contains the important recovered vehicle assets, scan closure/evidence and `b3Wheel` source surface so the next agent does not need broad archaeology.
-
-## Development workflow
-
-Ordinary private R1 work uses focused validation, not the full R0 release ceremony. Jozz should be involved only when real visual/feel/device observation matters. Full reproducibility/artifact/promotion/rollback discipline returns for actual public release candidates.
-
-See `docs/DEVELOPMENT.md`.
-
-## Toolchain
-
-Canonical R0 toolchain:
+Canonical toolchain:
 
 ```text
 Node 24.16.0
@@ -134,7 +56,7 @@ TypeScript 7.0.2
 Vite 8.1.5
 ```
 
-Common commands:
+Typical private workflow:
 
 ```powershell
 npm ci
@@ -142,6 +64,8 @@ npm run check
 npm run dev -- --host 0.0.0.0
 ```
 
-`npm run build:public-r0` remains the frozen R0 public profile; do not treat it as the automatic shape of later friend-demo releases.
+The exact runtime/toolchain contract is enforced by `package.json`, `.node-version` and `.npmrc`.
+
+See `docs/DEVELOPMENT.md` for validation tiers and `docs/BRANCH_ROLES.md` for branch lifecycle.
 
 Third-party notices are in `THIRD_PARTY_NOTICES.md`. No general public reuse license is granted.

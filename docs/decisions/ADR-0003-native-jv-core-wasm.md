@@ -18,7 +18,7 @@ For the current JV-Web friend-demo campaign:
 - rendering, real authored assets, camera/mobile UX, world/scan presentation, settings state and QoL may advance independently;
 - a bounded port of an already-existing selected native `b3Wheel` mechanism through a controlled Web Box3D/Emscripten/binding path is allowed and does **not** activate the full migration program.
 
-The historical "Immediate follow-up" list at the end is therefore preserved as deferred migration work, not the current sprint order. Current scheduling authority is `AGENTS.md` + `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`.
+The historical "Immediate follow-up" list at the end is therefore preserved as deferred migration work, not the current sprint order. Current scheduling authority is `AGENTS.md` + `AI_PROJECT_MEMORY.md` + `docs/HANDOFF.md`.
 
 ## Context
 

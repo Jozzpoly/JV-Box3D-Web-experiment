@@ -1,303 +1,140 @@
-# JV Web architecture
+# JV Web — architecture map
 
-Updated: 2026-08-08
-Status: **CURRENT R1 ARCHITECTURE MAP / friend-demo campaign**
+Updated: 2026-08-10
+Status: **CURRENT R1 ARCHITECTURE**
 
-## 1. Architectural goal for the current campaign
+This document describes stable architectural boundaries, not the current task queue. Scheduling lives in `docs/HANDOFF.md`.
 
-JV-Web is the active private browser/game demonstrator. It owns browser/mobile input, fixed-step host/lifecycle, rendering, Web-facing configuration/UX, private scene presentation and public artifact production.
-
-Native JV is read-only for this campaign. It remains a source of authored assets, semantics and selected existing mechanisms such as `b3Wheel`, but full native→WASM convergence is deferred.
-
-Public R0 is a frozen map-only artifact/rollback baseline. Current R1 work happens in the private repo and may include local/private JSPREV2.
-
-## 2. Current execution path
+## 1. Product/runtime entry
 
 ```text
-keyboard + Pointer Events
-          ↓
-source-aware semantic timelines
-          ↓
-fixed-step browser host
-          ↓
-VehicleRuntimeBackend
-          ↓
-legacy_ts_m6 reference vehicle
-          ↓
-M6 trace + VehicleVisualFrameV1
-          ↓
-M6ProductRenderer / M6WorldRenderer
-          ↓
-procedural vehicle + product world
+index.html
+-> src/product-main.ts
+-> configure product world + controls
+-> M6ProductRenderer
+-> M6WorldRenderer
 ```
 
-The browser mechanics backend remains a reference fixture:
+`M6ProductRenderer` subscribes to the product world and loads the generated owner-vehicle visual package. `M6WorldRenderer` owns WebGL rendering, camera state/input and vehicle visualization.
+
+## 2. World boundary
+
+The product world combines the browser vehicle with E2R/offroad world data and optional private JSPREV2 scan data.
 
 ```text
-backend: legacy_ts_m6
+LOCAL_FULL private dev
+  -> loadLocalProductWorld
+  -> optional loadLocalJsprev2Scan
+  -> product world
+```
+
+Private scan delivery uses a dev-only Vite plugin and local filesystem pack selection. That mechanism is intentionally separate from any later public Pages asset design.
+
+## 3. Physics authority
+
+Current runtime backend:
+
+```text
+legacy_ts_m6
 role: REFERENCE_BROWSER_FIXTURE
 productPhysicsAuthority: false
 nativeParity: NOT_PROVEN
-acceptsNewProductPhysics: false
 ```
 
-It may support friend-demo features, browser lifecycle, rendering and product configuration. It must not silently become authority for new final vehicle physics.
+The browser fixture is valuable for deterministic integration and friend-demo work. It must not silently become a second authoritative native physics product.
 
-## 3. Input and fixed-step ownership
+Long-term native/WASM reasoning is documented separately in `docs/NATIVE_PORT_NOTES.md` and ADR-0003.
 
-Device adapters emit semantic commands rather than manipulating physics directly.
+## 4. M6 topology
+
+Current M6 physical topology separates:
+
+- chassis;
+- upper/lower suspension-arm bodies;
+- knuckle/upright bodies;
+- spherical arm-to-knuckle constraints;
+- rack body and rack prismatic motion;
+- rack-to-knuckle steering-link constraints;
+- wheel bodies with knuckle-to-wheel spin revolutes.
+
+This is important for steering diagnosis: a visible wrong pivot does not by itself prove that the physical topology needs a new carrier hierarchy.
+
+## 5. Physics -> visual boundary
+
+The runtime exposes vehicle visual frames/part transforms. The owner-vehicle layer maps semantic package bindings onto those physical parts.
+
+The visual package contract supports rigid part attachment and segment/part-pair deformation for components such as dampers, steering links and cardans.
+
+Keep visual calibration separate from physics authority wherever possible so source-asset corrections do not mutate vehicle mechanics accidentally.
+
+## 6. Owner vehicle source pipeline
+
+Source authority:
 
 ```text
-SteeringCommand = RELEASE | POSITION | RATE
-LongitudinalCommand = throttle + brake
+assets/owner-vehicle/source/*.gltf
+assets/owner-vehicle/contracts/*.asset.json
+public/receipts/jv_m6_factory_receipt.json
 ```
 
-Keyboard/touch sources are independently owned so one device source does not incorrectly release another. The browser host owns fixed-step scheduling, dropped-time policy, lifecycle release, rebuild and input→physics→observation ordering.
-
-Future camera gestures must coexist with touch driving ownership. One-finger orbit/two-finger pinch must not steal an active vehicle-control pointer.
-
-## 4. Vehicle observation boundary
-
-Current trace already exposes a read-only visual frame:
+Generator path:
 
 ```text
-physics/runtime
-  ↓
-VehicleVisualFrameV1
+Blockbench glTF inspection
+-> semantic reference extraction
+-> R2/R3 calibration helpers
+-> m6-owner-full-rig-r3 package
+-> generated visual JSON/report/GLB
+-> live owner vehicle loader
 ```
 
-Current proof topology contains:
+Current generated package is deterministic: 59 real bindings, GLB SHA-256 `57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a`.
 
-```text
-18 rigid part transforms
-  chassis, rack
-  wheel/knuckle/upper-arm/lower-arm × 4
+## 7. Wheel interface invariant
 
-8 segment channels
-  coilover × 4
-  steering-link × 4
-```
+The physical wheel spin center and authored `Socket_WheelMount` are different semantic points.
 
-The renderer therefore does not need transient Box3D body/joint IDs.
+`Socket_WheelMount` is the authored visual mounting-face endpoint and must not be collapsed into the physical wheel center merely because both participate in wheel placement.
 
-This isolation is a useful invariant. `M6_FULL_RIG_V1` is the current proof topology, not a declaration of the final general native↔Web ABI.
+Current R3 tests protect this distinction through steering/spin motion.
 
-## 5. Current vehicle rendering boundary
+## 8. Front suspension calibration caveat
 
-### Live path
+Front authored source currently provides an upper outboard reference but no independent lower-outboard marker used by the R3 calibration. The calibration infers lower outboard from a parallel-upright assumption.
 
-`M6WorldRenderer` still draws procedural primitives:
+Treat this as calibration provenance, not as automatically correct geometry. Live steering truth must decide whether the physical constraint axis is coherent and whether only visual mapping needs correction.
 
-- box chassis;
-- cylinder wheels;
-- diagnostic rig/front/link geometry.
+## 9. Camera/input ownership
 
-It also owns the current camera state (`yaw`, `pitch`, `distance`) and pointer camera controls.
+Camera state (yaw/pitch/distance/chase behavior) and pointer camera controls live in the renderer path. Vehicle control pointers and camera gestures must not steal ownership from each other.
 
-### Dormant authored-vehicle stack
+Camera work should normally remain a separate owner-feel slice from vehicle geometry work.
 
-Current source already contains:
+## 10. Scene/package contracts
 
-```text
-VehicleVisualPackageV1
-→ package URL/hash validation
-→ GLB container/runtime policy
-→ rigid CPU decode
-→ CPU ownership/budget checks
-→ GPU geometry buffers
-→ semantic binding/world transforms
-→ generic draw-plan support
-```
+Durable public contracts live under `docs/contracts/`:
 
-Missing product bridge:
+- scene package;
+- static scene visual package;
+- steering command contract;
+- vehicle visual package.
 
-```text
-VehicleVisualRenderResourceV1
-+ trace.visualFrame
-+ node/mesh draw plan
-→ actual live vehicle draw calls
-```
+Implementations may evolve, but contract changes should be explicit and tested.
 
-Production pixel materials/textures are also incomplete.
+## 11. Public artifact boundary
 
-The deterministic tiny vehicle fixture is useful as a seam diagnostic. It is not the product target.
+Private source and public release are separate repositories.
 
-## 6. Owner-authored vehicle assets
+Published R0 is immutable historical proof. Current R1 source should not carry R0-specific release machinery merely to preserve history; exact historical commits and the public artifact are the reproduction authority.
 
-Exact source assets are now known and indexed in the handoff/resource pack:
+Future R1 Pages publication uses a new versioned artifact and must explicitly decide what, if any, scan resources are public.
 
-```text
-Nadwozie.gltf
-Offroad_Big_Wheels.gltf
-```
+## 12. Architecture principles
 
-Their source data, historical placement and semantic wheel markers should be used as evidence when integrating visuals.
-
-Authored mesh/markers are **visual/source evidence**, not hidden physics authority. A marker may describe visual mounting or a measured hint; it must not silently rewrite mechanics unless a separate contract explicitly makes it authoritative.
-
-## 7. Product world / private scan boundary
-
-This section supersedes the older synthetic-only description.
-
-### Current private entry
-
-The root private `index.html` launches:
-
-```text
-/src/product-main.ts
-```
-
-`product-main.ts` currently configures:
-
-```text
-loadLocalFullProductWorld
-  → loadLocalJsprev2Scan()
-  → createProductWorld(scan)
-```
-
-`createProductWorld()` always provides E2R/offroad and may additionally attach a scan.
-
-### Current local scan delivery
-
-`vite.config.ts` installs `finalJsprev2VitePlugin()`.
-
-The plugin is development-server-only (`apply: "serve"`) and reads the exact local pack selected through:
-
-```text
-JOZZ_SCAN_PREVIEW_PACK
-```
-
-It exposes private runtime endpoints:
-
-```text
-/__jv_scan__/index.json
-/__jv_scan__/asset/<id>
-```
-
-If the environment variable is absent, the private product can still run car + E2R without scan.
-
-### Historical proof vs current proof
-
-The strongest preserved desktop scan evidence is:
-
-```text
-product/jv-web-car-map-scan@c8e0bf24748b0a790a1c0039b1be801eef266580
-```
-
-It has exact Windows gate evidence plus historical owner observation of corrected rendering/filter/grid and working collision.
-
-Several key c8e0 scan blobs survived byte-for-byte into current R1, including `jsprev2-scan.ts`, product view settings and WebGL scan policy. Current R1 also still contains LOCAL_FULL loader/product-main wiring.
-
-Therefore scan work should start by **revalidating the current path with the exact pack**, not by assuming the whole old branch must be recovered.
-
-### Location switching / teleport debt
-
-Current product controls represent map/scan locations as links with different `jvSpawn` query parameters. That causes page navigation and therefore a full startup/world reconstruction.
-
-Historical owner observation identified roughly one-to-several-second switching cost.
-
-Future teleport work should evolve this into in-app vehicle/location repositioning where lifecycle ownership permits, while preserving clear spawn semantics and safe vehicle state reset.
-
-## 8. Public scan boundary
-
-Public R0 deliberately excludes JSPREV2 and uses the separate `map-only-r0.html` / public build profile.
-
-Current private scan delivery is **not deployable to GitHub Pages as-is**, because the Vite plugin reads a local filesystem pack only during dev serving.
-
-A future public scan demo therefore needs an explicit delivery design after the real pack is recovered/measured. Possible implementation details must be decided from actual pack size/device behavior, but the boundary is fixed:
-
-```text
-local PRIVATE scan working
-≠
-public Pages scan artifact solved
-```
-
-Do not accidentally leak private scan bytes into a public build. Do not redesign hosting before the actual pack is available and measured.
-
-## 9. Scene and collision separation
-
-The useful existing principle remains:
-
-```text
-visual/render representation
-≠
-collision representation
-```
-
-E2R and JSPREV2 can provide their own render/collision data. Future phone optimization may choose different render/collision budgets without forcing one mesh to serve both roles.
-
-`ScenePackageV1` remains the startup contract consumed by the mechanics host. Current scan spawn selection rewrites the scene spawn at private product startup after the world/scan is loaded.
-
-## 10. Camera boundary
-
-The current camera is embedded in `M6WorldRenderer`.
-
-Before creating a new subsystem, inspect/evolve this implementation and its lifecycle. A likely future separation is:
-
-```text
-vehicle/camera target state
-+ orbit/chase input state
-+ camera tuning
-→ view transform
-```
-
-Desired product behavior includes chase following, tunable distance/height/look-ahead, desktop orbit/zoom and phone pinch zoom. Exact constants and smoothing belong to playtesting rather than this architecture document.
-
-## 11. Vehicle configuration / drivetrain boundary
-
-Current M6 uses:
-
-```text
-allWheelDrive = false → RWD
-allWheelDrive = true  → AWD
-```
-
-A Web config model should precede a polished settings panel. FWD/RWD/AWD can become a semantic enum/selection rather than UI-specific toggles.
-
-The requested drivetrain/shaft lock is not yet semantically defined. Do not implement a button with guessed physics.
-
-Native presets may inform state semantics, but native UI/layout is not the Web UI contract.
-
-## 12. Box3D / true wheel boundary
-
-Current Web runtime uses pinned `box3d.js@0.0.2` and does not expose native JV's newer `b3Wheel` API.
-
-The current campaign may perform a bounded port of an already-existing wheel mechanism if feasible:
-
-```text
-pinned native wheel delta
-→ Web/Emscripten Box3D build
-→ minimal JS/TS exports
-→ focused tests
-→ selectable/rollback-able Web wheel backend
-```
-
-This does not activate full native JV→WASM parity work and must not become new tire R&D.
-
-## 13. Public build boundary
-
-R0 public artifact remains immutable.
-
-Current repository deliberately separates:
-
-```text
-private index.html / LOCAL_FULL-capable development
-map-only-r0.html / scan-free public R0 profile
-```
-
-Later public friend-demo versions should be new versioned artifacts. They may include additional capabilities only after an explicit public-asset decision and owner acceptance.
-
-## 14. Current architectural priorities
-
-No fixed `1→2→3` roadmap is declared here.
-
-Current high-value opportunity lanes are:
-
-- authored car + live visual/material path;
-- chase camera + mobile gestures;
-- current LOCAL_FULL scan revalidation, faster location switching and phone measurement;
-- vehicle config/presets/drivetrain;
-- bounded `b3Wheel` feasibility/port;
-- final Web/mobile UI and QoL.
-
-Choose one main owner-visible slice at a time. Use small technical seam proofs only when they answer a concrete uncertainty. See `docs/PROJECT_STATE.md` and the controlled handoff for current scheduling context.
+- fixed-step/lifecycle ownership stays explicit;
+- device input does not become physics authority;
+- source asset semantics are explicit contracts, not inferred from mesh bounds when authored markers exist;
+- generated artifacts are reproducible from tracked source;
+- visual corrections should not silently retune physics;
+- old branches are salvage sources only when a current question explicitly needs them;
+- owner-visible acceptance is recorded separately from automated test success.

@@ -7,10 +7,11 @@ JV Web is an owner-directed experimental vehicle/game-technology project. Techni
 For a cold start, read:
 
 - `AGENTS.md`;
-- `docs/handoff/JV_WEB_TAKEOVER_BRIEF_2026-08-08.md`;
+- `AI_PROJECT_MEMORY.md`;
+- `docs/HANDOFF.md` when continuing active work;
 - the exact current source/test/evidence relevant to the proposed change.
 
-Use `docs/PROJECT_STATE.md`, `docs/ARCHITECTURE.md` and the full handoff CORE as deeper references when the task needs them rather than mandatory pre-reading for every change.
+Use `docs/PROJECT_STATE.md`, `docs/OWNER_CHECKPOINTS.md` and `docs/ARCHITECTURE.md` only when the task needs deeper state.
 
 Discuss substantial physics, architecture, dependency, asset or publishing changes before implementation.
 
@@ -46,13 +47,13 @@ A useful change should state:
 
 Prefer small, reversible commits. Ordinary private R1 slices use focused validation; do not recreate the full R0 release ceremony for every edit.
 
-The canonical R0 release toolchain is Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5 on Windows 11 x64. Linux is outside the R0 release guarantee, not an additional release gate. Keep dependencies pinned and update `THIRD_PARTY_NOTICES.md` when required.
+The current repository toolchain is pinned to Node 24.16.0, npm 11.13.0, TypeScript 7.0.2 and Vite 8.1.5. Historical R0 release evidence used Windows 11 x64. Keep dependencies pinned and update `THIRD_PARTY_NOTICES.md` when required.
 
 ## Assets
 
 Do not commit models, scans, photographs, textures, fonts or audio without clear ownership and redistribution rights. Private source captures and local workspaces must stay outside a public build unless a later release deliberately defines them as public artifact inputs.
 
-The exact owner vehicle assets and recovery resources used for the current handoff are indexed in the resource map/attached pack. Do not ask Jozz to rediscover known resources before checking those sources.
+The exact owner vehicle source assets and semantic contracts are tracked under `assets/owner-vehicle/`. Do not ask Jozz to rediscover tracked resources before checking the repository.
 
 ## Automation and publication
 

@@ -1,64 +1,68 @@
-# JV Web — branch roles and preserved history
+# JV Web — branch roles and lifecycle
 
-Updated: 2026-08-08
-Purpose: navigation only; always fetch exact current tips before acting.
+Updated: 2026-08-10
 
-## Active development
+Branch names are workflow pointers, not project memory. Exact commits, current source and baseline documents carry durable history.
 
-| Branch | Role |
-|---|---|
-| `development/jv-web-r1` | Active private JV-Web core / post-R0 product-development line. New product work belongs here. |
+## Long-lived branches
 
-## Closed / preserved product lines
+### `development/jv-web-r1`
 
-| Branch | Role |
-|---|---|
-| `repair/jv-web-release-r0` | Closed R0 repair/release history. Do not use as ongoing feature lane. |
-| `product/jv-web-car-map-scan` | **Strongest preserved historical desktop car+E2R+JSPREV2 baseline**, currently at `c8e0bf24748b...`: exact Windows source/build/package/asset gate PASS plus historical owner-observed correct scan, pixel-filter control, grid control and collision. Use for selective scan recovery, not wholesale merge. |
-| private `main` | Historical/navigation default branch, not active product implementation. |
+**ACTIVE PRIVATE SOURCE AUTHORITY.**
 
-`106312083875...` inside the product line remains the important pre-fix causal baseline for scan UV/filter/view attribution.
+All accepted/current R1 work should converge here. Fresh agents should start here unless an active handoff explicitly names a temporary descendant.
 
-Exact evidence and recovery pointers:
+### `main`
 
-- [`handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md`](handoff/RECOVERED_CAR_MAP_SCAN_EVIDENCE_2026-08-05.md)
-- [`handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md`](handoff/JV_WEB_RESOURCE_INDEX_2026-08-08.md)
+Historical/default repository control line. It is not current R1 implementation authority. Do not start product work from it.
 
-## Public repository
+## Preserved historical evidence branches
 
-`Jozzpoly/JV-Box3D-Web-Public` is an artifact repository, not a source-development repo.
+These may remain temporarily because they contain unique historical/salvage lineages not fully reachable from current R1:
 
-| Branch | Fixed R0 role |
-|---|---|
-| `main@401068f5734c...` | Neutral public control-plane/rollback reference. |
-| `release/r0@c3e33e3dcd34...` | Frozen first public artifact, tree `f1c5c9a97120...`, Pages source. |
+- `product/jv-web-car-map-scan` — strongest preserved c8e0 scan behavior/evidence lineage;
+- `repair/jv-web-release-r0` — closed private R0 repair/release lineage;
+- `candidate/jv-web-owner-vehicle-visual-r1` — frozen/broken early owner-vehicle tooling source; selective salvage only;
+- `candidate/jv-web-render-host-r1` — frozen render-host experiment; selective salvage only.
 
-Do not edit R0 bytes in place.
+Do not inspect these by default. A current question must name the reason to load them.
 
-## Frozen candidates
+## Temporary branches
 
-| Branch | Verified historical tip | Classification |
-|---|---:|---|
-| `candidate/jv-web-owner-vehicle-visual-r1` | `796b050b4b90...` | `FROZEN / BROKEN / SALVAGE ONLY`; useful importer/calibration/texture ideas, but live renderer remained incomplete. |
-| `candidate/jv-web-render-host-r1` | `e263e3e05ea2...` | Historical bounded render-host experiment; selective review only. |
+Allowed prefixes when isolation is justified:
 
-## Historical evidence / salvage lines
+```text
+work/<bounded-topic>
+candidate/<owner-checkpoint-or-release-candidate>
+```
 
-Existing `agent/*` refoundation, playable, render, texture and visual branches remain historical evidence or selective salvage sources. None becomes an authority merely because it contains more code.
+Do not create `agent/*` branches. Agent identity is irrelevant to source topology.
 
-## Native JV
+Every temporary branch must be deleted after one of:
 
-`Jozzpoly/Box3d_FunProject` is not an active branch family of this campaign. It is maintained by another agent and remains read-only here.
+- fast-forward/integration into `development/jv-web-r1`;
+- explicit rejection with any durable lesson recorded elsewhere;
+- replacement by a later candidate that contains all needed history.
 
-It may be consulted for exact source assets, preset semantics and existing mechanisms to port, especially `b3Wheel`.
+## Branch budget
 
-## Rules for R1
+Target private branch count: **6 or fewer**.
 
-- Start from current `development/jv-web-r1`, not an old candidate.
-- Preserve public R0 as regression/rollback reference.
-- Use `product/jv-web-car-map-scan@c8e0bf...` as a proven historical scan behavior source, not as a new branch base.
-- Salvage exact files/ideas only after restating the technical question and validating against current R1.
-- Do not wholesale merge historical branches.
-- Prefer bounded slices with visible runtime value over infrastructure-only expansion.
-- Release engineering should remain lightweight until a new public artifact is worth publishing.
-- Owner play/feel may change the order of otherwise valid tasks.
+If more than 8 branches exist, perform branch triage before creating another. The triage question is not "could this branch ever be interesting?" but "does this branch contain unique evidence/source that is not already preserved by current history or a named baseline?"
+
+## Current cleanup classification
+
+The 2026-08-10 audit found 23 private branches. The following current-line branches are ancestors/redundant once `development/jv-web-r1` is fast-forwarded to the cleaned R1 line and should be removed:
+
+```text
+candidate/jv-web-r1-playable-foundation
+candidate/jv-web-r1-car-5ch
+candidate/jv-web-r1-full-owner-rig
+candidate/jv-web-r1-r4-owner-packaging
+candidate/jv-web-r1-r3-reference-calibration
+work/jv-web-r1-car-5ch
+```
+
+All `agent/*` branches are historical working branches and are candidates for removal after the audit records any unique evidence worth preserving. Three playable recovery branches already point to the exact same commit, demonstrating why branch count itself must not be treated as evidence diversity.
+
+Before deleting any branch, re-fetch its exact tip and confirm the cleanup manifest still matches current Git.
