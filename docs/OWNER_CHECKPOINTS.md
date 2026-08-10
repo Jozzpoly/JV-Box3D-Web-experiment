@@ -74,6 +74,12 @@ Dynamic state:
 
 Do not tune handling/stability/steering feel until visual recovery closes.
 
+Incidental observation outside the active vehicle lane:
+
+- in the same V0 browser session, Jozz observed that scan loaded/worked in the browser whereas it had previously failed even to load;
+- classification: `OWNER OBSERVED INCIDENTAL / NOT SEPARATELY ISOLATED / OUT OF ACTIVE VEHICLE LANE`;
+- do not open scan work from this checkpoint; when the scan lane is deliberately reopened, revalidate exact current behavior rather than assuming either `broken` or `release-ready`.
+
 Protected V0 meaning: exact reproducible comparison baseline, chassis/body as rough reference, wheel-center vs `Socket_WheelMount` semantic distinction, and deferred dynamics decision. Most visual rig placement is not accepted.
 
 ## S1-D — FL upper wishbone static split-authority checkpoint
