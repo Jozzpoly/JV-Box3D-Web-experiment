@@ -73,15 +73,19 @@ Do not preload repository history.
 
 ### Bounded implementer
 
-If `docs/IMPLEMENTER_TASK.md` names an active task/branch, the implementer uses a smaller bootstrap:
+If `docs/IMPLEMENTER_TASK.md` names an active task/branch, use the smaller bootstrap:
 
 1. Resolve the named work-branch tip and compare it with the exact SHA supplied by the orchestrator handoff.
 2. Read this file.
 3. Read `docs/IMPLEMENTER_TASK.md`.
-4. Read `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`.
+4. Satisfy the task's `EXECUTION MODE` prerequisite **before** broad technical work.
 5. Inspect only files explicitly named by the task or directly required by its one technical question.
 
-Do not preload `AI_PROJECT_MEMORY.md`, `docs/HANDOFF.md`, `docs/PROJECT_STATE.md`, old baselines, archived branches or old chat history unless the active implementer task explicitly requires a specific item.
+`docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md` is a reference for orchestration and ambiguity; a bounded implementer does **not** need to preload it when `IMPLEMENTER_TASK.md` is complete.
+
+Do not preload `AI_PROJECT_MEMORY.md`, `docs/HANDOFF.md`, `docs/PROJECT_STATE.md`, old baselines, archived branches or old chat history unless the active task explicitly names one exact item.
+
+Do not use `personal_context`, conversation-memory recovery, `summary_reader`, broad File Library/history search or similar mechanisms to reconstruct project history during a bounded implementer task unless the task explicitly authorizes one named historical query. If accidentally exposed to such context, independently re-derive any relevant claim from allowed current evidence before using it.
 
 If a fresh agent needs old-chat archaeology to know what to do next, the handoff system has failed and should be repaired before broad implementation.
 
@@ -99,9 +103,9 @@ intended operation
 
 Writes must be bounded fast-forward descendants of the verified tip. Stop on unexpected movement or identity mismatch. Never force-push as routine recovery.
 
-## 6. Local execution identity
+## 6. Local execution identity / execution packet
 
-A canonical local build/test/artifact claim requires a complete clean checkout and explicit identity:
+A canonical local build/test/artifact claim from a real checkout requires explicit identity:
 
 ```text
 git rev-parse --show-toplevel
@@ -112,9 +116,15 @@ git rev-parse HEAD^{tree}
 git status --short --branch
 ```
 
+A bounded implementer may instead receive an owner-uploaded **exact source ZIP** as an execution mirror. A GitHub Download ZIP has no `.git`; do not pretend it proves commit identity. Remote GitHub ref/SHA remains write authority, while the ZIP exists only to make source inspection/execution practical.
+
+If `IMPLEMENTER_TASK.md` says `SOURCE_ZIP_REQUIRED` and the archive is not attached, stop early after remote identity verification and ask Jozz for the exact ZIP of the named work branch. Do not spend a long time attempting private clones, `gh` workarounds, DNS fixes or archive reconstruction.
+
+If changes are tested in a local execution mirror and then written through the GitHub connector, verify that the final candidate's changed files match the locally tested bytes/content before claiming those tests for the candidate.
+
 Do not substitute another JV/Box3D folder. Use isolated/disposable workspaces when Windows execution is genuinely required.
 
-If environment/connector limits block required files or exact source, finish all independent work first and then ask Jozz for the smallest exact file/archive needed. Do not spend long periods on brittle workarounds when a direct upload solves the problem.
+If an exact dependency/toolchain is still unavailable after the source is present, finish source-level work that remains valid and report the smallest missing environment/input. Supplemental execution must not be promoted to canonical evidence.
 
 ## 7. Branch lifecycle
 
@@ -129,7 +139,7 @@ Use a temporary work/candidate branch only when isolation has a concrete benefit
 - a clear acceptance/rejection condition;
 - a cleanup point after integration or abandonment.
 
-After a slice is accepted, fast-forward/integrate it into `main` and remove redundant temporary branches.
+After a slice is accepted, integrate the reviewed result into `main` and remove redundant temporary branches. A work branch may contain exploratory/revision commits; `main` does not need to preserve that noisy sequence if the orchestrator can prove and integrate an exact reviewed final diff/tree cleanly.
 
 Operational branch budget, excluding the single frozen archive ref: **<= 6**. Current steady state is five operational retained refs plus the one frozen archive ref. One justified temporary branch may therefore raise the physical remote-ref count from 6 to 7. More than 8 total remote branches requires explicit cleanup before new branch creation.
 
@@ -212,7 +222,7 @@ Stop and investigate when:
 
 ## 14. Orchestrator / implementer split
 
-When an active `docs/IMPLEMENTER_TASK.md` exists, follow `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`.
+When an active `docs/IMPLEMENTER_TASK.md` exists, `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md` defines the full coordination model.
 
 Core rules:
 
@@ -222,6 +232,6 @@ implementer owns bounded technical execution
 owner owns product intent / visual-feel acceptance
 ```
 
-The implementer writes only the named work branch and never integrates `main`. During an active implementer slice, `main` is frozen for ordinary orchestrator writes so the branch can remain a clean descendant. The implementer may choose its solution freely inside the declared blast radius, but must stop instead of silently expanding into a protected subsystem.
+The implementer writes only the named work branch and never integrates `main`. During an active implementer slice, `main` is frozen for ordinary orchestrator writes so the branch can remain a controlled descendant. The implementer may choose its solution freely inside the declared blast radius, but must stop instead of silently expanding into a protected subsystem.
 
-The implementer conversation is disposable. Preserve continuity in exact Git identity, the active task packet and a compact return report rather than relying on a long chat transcript.
+The implementer conversation is disposable. Preserve continuity in exact Git identity, the active task packet, execution packet when required, and a compact return report rather than relying on a long chat transcript.

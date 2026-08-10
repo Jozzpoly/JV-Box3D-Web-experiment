@@ -1,8 +1,8 @@
 # JV Web — active implementer task
 
 Updated: 2026-08-10
-Task: **S1-A — front chassis-to-wishbone attachment authority**
-Status: **READY FOR IMPLEMENTER**
+Task: **S1-B — front upper wishbone roll-pinned two-end visual pilot**
+Status: **READY AFTER ORCHESTRATOR HANDOFF + SOURCE ZIP**
 
 Work branch:
 
@@ -10,162 +10,204 @@ Work branch:
 work/owner-rig-s1-attachment-authority
 ```
 
-The orchestrator handoff message supplies the exact expected starting SHA. Before any write, resolve the branch tip and stop on mismatch.
+The orchestrator handoff supplies the exact expected starting SHA. Verify the remote branch before any write.
+
+## EXECUTION MODE
+
+```text
+SOURCE_ZIP_REQUIRED
+```
+
+Before broad technical work, confirm that Jozz attached a GitHub **Download ZIP of this exact work branch after the orchestrator declared the task ready**.
+
+The remote GitHub SHA is source/write identity. The ZIP is only the local execution/read mirror and contains no `.git` identity.
+
+If the ZIP is missing, stop immediately after remote SHA verification and ask Jozz for it. Do not attempt private clone/`gh`/DNS/archive workarounds.
 
 ## 1. Objective
 
-Answer one bounded question:
+Create the smallest technically sound **visual-only pilot** answering this question:
 
-> Why does the current front wishbone/suspension package sit too far from the rendered chassis, and what is the smallest justified correction for one chassis-side wishbone attachment relationship?
+> Can the front upper wishbone visually span a chassis-side authored attachment and the existing physical outboard/ball endpoint while keeping a deterministic, believable roll/orientation through live motion — without changing suspension physics or existing `PART_PAIR_STRETCH` semantics?
 
-Discriminate among:
+The purpose is to obtain a candidate that can later answer one owner-visible question about the upper wishbone chassis attachment. Do not fix the rest of the suspension.
 
-```text
-A. current physical hardpoint is not the correct visual attachment authority
-B. current physical hardpoint is reasonable but visual mapping/calibration is wrong
-C. authored/source placement or local pivot/reference is wrong
-D. mixed cause
-```
+## 2. Accepted S1-A input evidence
 
-A product patch is allowed only after the cause is discriminated sufficiently. `NO_PATCH_JUSTIFIED` is a valid result.
+Treat these as current starting evidence, not owner acceptance:
 
-## 2. Owner-visible starting truth
+- R3 intentionally maps the authored front upper wishbone chassis endpoint to the physical M6 upper hinge; the ~0.216 m authored-to-current difference is therefore policy/calibration, not a random transform failure.
+- Current measurement puts the authored whole-rig upper endpoint materially closer to rendered chassis geometry than the current physical hinge. This supports it as a **pilot visual attachment candidate**, not a final accepted threshold.
+- Current physical upper ball/outboard endpoint has not been independently disproven and remains protected in S1-B.
+- Existing Web `PART_PAIR_STRETCH` derives orientation from endpoint direction via shortest-arc and does not observe body roll about an unchanged pair axis.
+- Current native read-only evidence uses `JozzVehicleComputeArmPlacement()` / `DrawPartBetween()` and explicitly pins roll with a full frame because minimal shortest-arc produced unequal mirrored twisting.
 
-Current V0 artifact is reproducible but not visually accepted. Jozz observes suspension/wishbones too far from the frame. Do not reinterpret older R4 visual observations as current authority.
+Do **not** infer from `physicsAuthority:false` that a physical point is visually wrong. That flag only limits authored asset authority over physics.
 
-Representative measurement-only V0 evidence already established:
+## 3. S1-A diagnostic commit in the branch
 
-```text
-front upper hinge authored->current ~0.216 m
-front lower hinge authored->current ~0.155 m
-```
+The starting branch contains S1-A diagnostic commit `6bc5d6334075a4e044b51593964605fe9058009d` plus the orchestrator's later task/control commit.
 
-Several current chassis-side targets also sit materially farther from the rendered chassis surface than authored whole-rig placement. These measurements are clues, not acceptance thresholds.
+One S1-A assertion pins the current bad ~0.216 m discrepancy. **That assertion is diagnostic, not a durable acceptance gate.** Before `REVIEW_READY`, remove or rewrite any test that would make future correction fail merely because the known-bad discrepancy changed.
 
-## 3. Required bootstrap / context limit
+The roll-limitation probe is conceptually useful, but you may relocate/rewrite it into a more appropriate focused transform test if the S1-B implementation makes that clearer.
+
+## 4. Required bootstrap / context limit
 
 Read only:
 
 1. `AGENTS.md`
 2. this file
-3. `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md`
-4. `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md` sections 3-7 only as needed for E0-E4/S1 meaning
-5. current source/tests directly required by this task
+3. source/tests directly required by S1-B
 
-Start technical inspection with:
+Do **not** preload the orchestration protocol unless this task is ambiguous.
 
-- `tools/owner-vehicle/owner-m6-interface-audit.mjs`
+Start technical inspection with the smallest useful set around:
+
+- `src/visual/vehicle-visual-transform.ts`
+- current visual binding/schema/types directly required by that transform
 - `tools/owner-vehicle/owner-m6-reference-calibration-r3.mjs`
-- the R3/R2 owner-rig calibration/generator path directly called by that file
-- `assets/owner-vehicle/contracts/one_sided_steering_suspension.asset.json`
-- `public/receipts/jv_m6_factory_receipt.json`
-- focused owner-vehicle static/reference tests that currently protect front suspension placement
+- R3 generator code that emits the selected front upper wishbone binding
+- focused transform/owner-rig tests protecting those paths
+- T0 audit only as measurement evidence, not acceptance truth
 
-Native JV is read-only evidence. If useful, locate the current file implementing `SetupSteeringRig` / `DrawSteeringRig` and inspect only that implementation plus directly required helpers. Do not perform broad native archaeology.
+Allowed native read-only evidence is limited to the current implementations of:
 
-Do **not** preload `AI_PROJECT_MEMORY.md`, `docs/HANDOFF.md`, `docs/PROJECT_STATE.md`, archived branches or old chat history.
+- `samples/jozz_vehicle_visual_mesh_draw.cpp` (`JozzVehicleComputeArmPlacement` / `DrawPartBetween`)
+- `samples/jozz_vehicle_m6_rig_lab_steering_visual.cpp` only where needed to understand front wishbone endpoint/body-role intent
 
-## 4. Technical freedom
+Do not perform broad native archaeology.
 
-You may independently choose the best method to discriminate the cause. You may add focused measurement/tests/diagnostics when they materially improve the answer.
+Do not use `personal_context`, chat/history recovery, project memory, archived branches or File Library history.
 
-You are encouraged to compare:
+## 5. Technical freedom
 
-- actual rendered chassis geometry/surface;
-- current Web M6 physical hardpoints;
-- authored suspension placement/reference points;
-- current R3 calibration transforms;
-- relevant native placement intent.
+You may choose the smallest sound visual architecture.
 
-Do not assume any one of these is automatically authoritative.
+An **additive** new visual transform/binding capability is allowed if necessary to express a roll-pinned two-end relationship. Existing `PART_PAIR_STRETCH` behavior must remain unchanged for all existing consumers.
 
-If the evidence supports a visual/calibration correction without changing physical suspension authority, implement the smallest coherent correction and its focused evidence.
+You do not have to copy native implementation literally. Native provides evidence about required semantics, not mandatory source code.
 
-If the evidence indicates the physical hardpoint/topology itself must change, **stop before changing runtime physics** and return `NO_PATCH_JUSTIFIED` or `BLOCKED` with the evidence and exact proposed next question. Physical suspension correction requires a new orchestrator task.
+A valid solution must distinguish:
 
-## 5. Allowed change surface
+- authored local pair axis / authored orientation;
+- live endpoint direction;
+- a deterministic roll/up reference so mirrored/front motion does not twist arbitrarily;
+- exact mapping of the two selected visual endpoints.
 
-Allowed when justified by this S1-A question:
+Do not solve orientation by a neutral-frame hardcoded quaternion that only looks correct at rest unless you can prove it remains coherent through representative live arm motion.
 
-- owner-vehicle measurement/calibration/generator code directly responsible for the selected front chassis-to-wishbone visual relationship;
-- focused tests for that relationship;
-- narrowly scoped debug/measurement tooling required to distinguish the cause.
+## 6. Pilot scope
 
-A deterministic left/right mirror of the same proven visual rule is allowed only when evidence shows the relationship is genuinely symmetric and doing so does not broaden into another mechanism.
+Prefer the **front-left upper wishbone** as the owner-visible pilot when practical, leaving the opposite side as baseline comparison.
 
-## 6. Protected scope — do not change
+A deterministic FL/FR mirror of the same rule is allowed only if the implementation architecture would otherwise require a one-off hack and focused evidence proves the mirror behavior. Do not expand to lower arms or rear.
 
-Do not change in this task:
+Selected pilot intent:
 
-- `src/vehicle/m6/m6-runtime-builder.ts` or physical suspension topology/hardpoints;
+```text
+visual chassis-side endpoint:
+  authored whole-rig front-upper chassis endpoint candidate
+
+visual outboard endpoint:
+  existing current physical upper ball/outboard endpoint
+
+physics:
+  unchanged
+```
+
+The authored chassis endpoint is still a hypothesis to be owner-validated; do not convert its current coordinates into a permanent acceptance threshold.
+
+## 7. Allowed change surface
+
+Allowed only as required for S1-B:
+
+- additive visual transform/binding schema/runtime support needed for the roll-pinned two-end relationship;
+- R3 owner-vehicle calibration/generator path for the selected front upper wishbone pilot;
+- focused tests for the new semantics/pilot;
+- removal/rewrite of temporary S1-A diagnostic assertions that would freeze known-bad geometry.
+
+Keep changes causal and small.
+
+## 8. Protected scope
+
+Do not change:
+
+- `src/vehicle/m6/m6-runtime-builder.ts` or any physical hardpoint/body/joint/topology;
+- current physical upper ball/outboard target unless new independent evidence forces a stop/replan;
 - wheel center / `Socket_WheelMount` contract;
-- upright/knuckle steering-pivot correction;
+- lower wishbone;
+- upright/knuckle/hub;
 - dampers/springs;
 - steering rods;
 - cardans;
-- ride height / stance / track width;
-- handling, steering feel, tires or drivetrain;
-- camera/UI/world/scan;
-- source asset bytes unless the evidence demonstrates that the source asset itself is malformed — in that case stop and report before editing it;
+- stance / ride height / track width;
+- handling, steering feel, tire/contact or drivetrain;
+- chassis/body placement;
+- source asset bytes;
 - native JV;
-- public repo / `release/r0`;
-- unrelated cleanup/refactoring/documentation.
+- public repo/R0;
+- camera/UI/world/scan;
+- unrelated cleanup/refactoring.
 
-Do not integrate or write `main`.
+Do not write `main`.
 
-## 7. Required evidence before REVIEW_READY
+## 9. Required evidence before REVIEW_READY
 
-At minimum provide:
+At minimum:
 
-1. exact branch/base/candidate identity;
-2. a clear explanation of which authority/mapping caused the visible offset, including uncertainty if mixed;
-3. before/after measurements for the selected interface if a patch is made;
-4. focused source/test evidence showing only intended bindings/mechanisms changed;
-5. deterministic owner-rig generation identity or explicit explanation if the artifact identity is expected to change;
-6. relevant focused tests run and their environment classification;
-7. confirmation that protected mechanisms were not modified.
+1. exact base/candidate identity and ancestry;
+2. full changed-file list;
+3. proof existing `PART_PAIR_STRETCH` semantics/consumers are unchanged;
+4. focused transform tests showing both selected endpoints map exactly;
+5. focused orientation evidence showing roll is deterministic under representative endpoint directions/motion and does not produce mirrored asymmetric twist;
+6. blast-radius evidence showing only intended upper-wishbone pilot binding(s) changed in generated owner rig;
+7. generated package/binding identity and explicit statement of which artifact bytes changed or stayed identical;
+8. typecheck/focused tests against the exact candidate bytes when the environment permits;
+9. confirmation all protected scope remained untouched.
 
-Do not define a new hard acceptance threshold from the current bad geometry merely because the generator produces it.
+If exact Node 24.16.0/npm 11.13.0 or pinned dependencies are unavailable in the implementer environment, use available supplemental execution only if useful and label it correctly. Do not spend long repairing the environment. The orchestrator can perform/prepare the canonical owner gate after source review.
 
-## 8. Decision / stop conditions
+Before claiming any local test for the candidate, verify final changed files fetched from GitHub match the locally tested contents.
 
-Return `NO_PATCH_JUSTIFIED` instead of forcing a patch if:
+## 10. Stop / decision conditions
 
-- physical hardpoint authority appears to be the root problem;
-- source asset semantics are ambiguous enough that owner/authoring input is genuinely required;
-- native and Web evidence conflict in a way that changes the task definition;
-- the smallest correction would necessarily alter upright/damper/cardan/stance/physics simultaneously.
+Return `NO_PATCH_JUSTIFIED` or `BLOCKED` rather than broadening if:
 
-Return `BLOCKED` with the smallest exact missing file/environment/input if execution cannot proceed. Do not spend a long time on brittle access workarounds.
+- a sound roll-pinned visual mapping requires physical hardpoint/topology changes;
+- the outboard endpoint itself becomes materially disputed;
+- correct orientation requires changing existing `PART_PAIR_STRETCH` behavior for other consumers rather than an isolated/additive path;
+- solving the upper arm necessarily opens lower arm/upright/damper/stance at the same time;
+- source semantics are too ambiguous to produce a reversible owner pilot.
 
-## 9. Owner candidate boundary
+## 11. Eventual owner question
 
-Do not decide OWNER ACCEPTED yourself.
+Do not classify it yourself. The orchestrator decides OWNER_READY.
 
-If you produce a technically reviewable visual correction, the orchestrator will decide whether to prepare/approve an owner candidate.
+The eventual question should remain approximately:
 
-The eventual owner question for this task should remain essentially:
+> Looking only at the selected front upper wishbone: does its chassis-side end now appear to originate/mate with the correct place on the frame, and does the arm itself keep a natural orientation as the suspension moves? Ignore lower arm, damper, upright, cardan, stance and handling.
 
-> Does this selected front chassis-side wishbone attachment now appear to originate from / mate with the correct place on the chassis, without judging dampers, cardans, steering, stance or handling?
-
-## 10. Return contract
-
-When finished, return:
+## 12. Return contract
 
 ```text
-TASK: S1-A
+TASK: S1-B
 RESULT: REVIEW_READY | BLOCKED | NO_PATCH_JUSTIFIED
 BASE SHA:
 CANDIDATE SHA:
 FILES CHANGED:
-ROOT CAUSE / CURRENT BEST DISCRIMINATION:
+ROOT CAUSE / DESIGN DECISION:
 WHAT CHANGED AND WHY:
+EXISTING PART_PAIR_STRETCH COMPATIBILITY:
 EVIDENCE / TESTS RUN:
-KEY BEFORE/AFTER MEASUREMENTS:
+LOCAL EXECUTION SOURCE / ENVIRONMENT:
+CANDIDATE-BYTES == TESTED-BYTES CHECK:
+KEY ENDPOINT / ORIENTATION MEASUREMENTS:
+GENERATED BINDING / ARTIFACT DELTA:
 ASSUMPTIONS / UNKNOWNS:
 PROTECTED SCOPE CONFIRMATION:
 WHAT WAS NOT TESTED:
 RECOMMENDED ORCHESTRATOR ACTION:
 ```
 
-Do not plan S2 or later recovery stages. Finish this question and return control to the orchestrator.
+Do not plan S1-C/S2 or later stages. Return control after this pilot question.
