@@ -1,10 +1,10 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-10
-Status: `R0 PUBLISHED / R1 ACTIVE / OWNER VEHICLE INTEGRATED / OWNER REVALIDATION NEXT`
+Status: `R0 PUBLISHED / R1 ACTIVE / V0 OWNER BASELINE OBSERVED / VISUAL RIG CORRECTION NEXT`
 Owner: Jozz
 
-This file is deliberately short. It is a navigation/current-state memory, not a history dump and not a handoff transcript. Current Git, executable evidence and direct owner observation outrank this file.
+This file is deliberately short. It is a navigation/current-state memory, not a history dump. Current Git, executable evidence and direct owner observation outrank this file.
 
 ## Repository roles
 
@@ -23,56 +23,64 @@ Jozzpoly/Box3d_FunProject
 read-only reference for this campaign
 ```
 
-## Current product facts
+The frozen `archive/pre-cleanup-2026-08-10` and other retained historical/salvage refs are not ordinary takeover inputs.
 
-- Current product entry is `index.html -> src/product-main.ts`.
-- Current renderer loads the generated owner vehicle package `m6-owner-full-rig-r3`.
-- Exact source generation reproduces 59 real bindings and GLB SHA-256 `57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a`.
-- Wheel physical spin center and authored `Socket_WheelMount` are intentionally distinct and protected.
-- Current browser physics remains `legacy_ts_m6`, a reference browser fixture, not native JV product-physics authority.
-- Private LOCAL_FULL JSPREV2 wiring remains present; public R0 remains scan-free.
+## Reproducible current owner-rig artifact
 
-## Owner-observed vehicle baseline
+```text
+package: m6-owner-full-rig-r3
+real bindings: 59
+GLB bytes: 829944
+GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
+```
 
-The latest accepted session baseline is informally called **R4**. Jozz observed that wheel placement was excellent and suspension packaging was close, while the front steering/upright pivot still looked wrong and front steering rods were too short. Overall stance was still slightly wide/low.
+The physical wheel spin center and authored `Socket_WheelMount` remain intentionally distinct. Current browser physics remains `legacy_ts_m6`, a reference browser fixture rather than native JV product-physics authority.
 
-`owner_r4` and `Tire=0` were session observations/settings, not persisted source presets. Do not claim exact reproduction of those names/settings unless they are explicitly encoded later.
+## V0 — fresh owner truth
 
-See `docs/OWNER_CHECKPOINTS.md` for the evidence classification and protected baseline.
+On 2026-08-10 Jozz ran the unchanged reproducible rig through the exact Windows validation launcher. Exact Node 24.16.0 / npm 11.13.0, typecheck, deterministic generation, 13 focused tests and the Vite build completed successfully.
+
+That technical PASS does **not** mean the rig is visually correct.
+
+Fresh OWNER OBSERVED state:
+
+- chassis/body placement is roughly acceptable;
+- suspension/wishbones are too far from the frame;
+- damper/spring rigging is wrong and large portions intersect/enter the wheels;
+- cardans reach the hub/wheel region but do not meet the differential at the correct visible location;
+- much of the suspension/upright/hub package between wheel and wishbones is buried inside the wheels;
+- wheel placement cannot yet be judged confidently because other rig parts obscure it;
+- overall arm angles are not disastrous, but the vehicle should sit slightly higher;
+- driving feel, suspension stability and steering feel are strongly regressed; deliberately defer that lane until the visual rig is coherent;
+- the scan unexpectedly loaded successfully in this validation session; useful OWNER OBSERVED fact, but outside the current car lane.
+
+The earlier R4 observation remains historical evidence, not current visual authority. `owner_r4` / `Tire=0` were never persisted exact presets.
 
 ## Current continuation
 
-Do **not** begin new steering correction yet.
+Do not repair all assets at once and do not begin physics/feel tuning now.
 
 ```text
-V0 Owner Baseline Revalidation
--> run the unchanged R4/R3 owner-rig product baseline
--> Jozz observes the complete current rig in game and describes its actual state
--> no new geometry/physics correction during V0
-
-Only after V0 owner feedback
--> choose the smallest next technical slice from the observed problem
--> F0 Front Steering Truth remains a prepared diagnostic if the steering/upright pivot is still the priority
+V0 current-state observation COMPLETE
+-> treat exact V0 artifact as the comparison baseline, not as accepted geometry
+-> map dependency order for visual rig corrections
+-> change one small mechanism/relationship at a time
+-> generate a stable candidate
+-> Jozz validates that one visible question
+-> record/freeze accepted result
+-> only then open the next mechanism
 ```
 
-Do not simultaneously retune ride height, track width, rear suspension, cardans, drivetrain, camera or UI while establishing the baseline.
+The likely dependency root is chassis/wishbone/hardpoint placement, because hub/upright, damper and cardan evaluation depends on the basic chassis-to-wheel suspension skeleton. This is a planning hypothesis, not yet an implemented correction.
 
-## Handoff/read order
+Do not work on handling/stability/steering feel until Jozz explicitly reopens that lane after visual rig closure.
 
-Fresh continuation:
+## Fresh-agent read order
 
 1. current refs
 2. `AGENTS.md`
 3. this file
 4. `docs/HANDOFF.md`
-5. exact source/tests for the active question
+5. exact source/tests for the one active mechanism
 
-Deeper only when needed:
-
-- `docs/PROJECT_STATE.md`
-- `docs/OWNER_CHECKPOINTS.md`
-- `docs/ARCHITECTURE.md`
-- `docs/baselines/*`
-- `docs/HISTORY.md`
-
-Do not reconstruct old candidate branches by default. Git history is the archive; old branch names are not authority.
+Use `docs/PROJECT_STATE.md` and `docs/OWNER_CHECKPOINTS.md` for deeper current evidence. Do not reconstruct historical branches by default.
