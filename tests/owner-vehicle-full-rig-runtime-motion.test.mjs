@@ -46,7 +46,7 @@ const generatedOwnerR3 = buildOwnerM6FullRigPackageR3(await ownerR3Inputs());
 const visual = validateVehicleVisualPackageV1(JSON.parse(generatedOwnerR3.manifestText));
 const bytes = generatedOwnerR3.glb;
 assert.equal(visual.id, "m6-owner-full-rig-r3");
-assert.equal(visual.asset.sha256, "cdd48d6462ce6a2f556e8625da4008ba01b09a5e4e43ad4cdfc880f98d6eec5c");
+assert.equal(visual.asset.sha256, "57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a");
 const assetReceipt = await validateVehicleVisualAssetV1(visual, bytes, null);
 const cpuAsset = sealGlbRigidCpuAssetV1(
   decodeGlbRigidCpuAssetV1(bytes, visual.bindings.map((binding) => binding.nodeName)),
@@ -107,7 +107,7 @@ function distance(a, b) {
 
 function assertLivePlan(trace, label) {
   const plan = buildM6OwnerRealDrawPlanV1(resource, trace.visualFrame);
-  assert.equal(plan.length, 53, `${label}: all 53 real owner roots must resolve`);
+  assert.equal(plan.length, 59, `${label}: all 59 real R3 owner roots must resolve`);
   const partMap = new Map(trace.visualFrame.parts.map((part) => [part.partId, part]));
   const chassis = partMap.get("m6.chassis");
   assert.ok(chassis);
@@ -148,6 +148,65 @@ function assertLivePlan(trace, label) {
   return plan;
 }
 
+function rotateByQuaternion(rotation, vector) {
+  const qx = rotation.x;
+  const qy = rotation.y;
+  const qz = rotation.z;
+  const qw = rotation.w;
+  const tx = 2 * (qy * vector.z - qz * vector.y);
+  const ty = 2 * (qz * vector.x - qx * vector.z);
+  const tz = 2 * (qx * vector.y - qy * vector.x);
+  return {
+    x: vector.x + qw * tx + (qy * tz - qz * ty),
+    y: vector.y + qw * ty + (qz * tx - qx * tz),
+    z: vector.z + qw * tz + (qx * ty - qy * tx),
+  };
+}
+
+function dotVector(a, b) {
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+function assertWheelMountInterfaces(trace, plan, label) {
+  const partMap = new Map(trace.visualFrame.parts.map((part) => [part.partId, part]));
+  const mountLocal = generatedOwnerR3.report.wheelInterface.mountLocalPosition;
+  const expectedOffset = generatedOwnerR3.report.wheelInterface.mountOffsetMeters;
+
+  for (const corner of CORNERS) {
+    const wheelPart = partMap.get(`m6.${corner}.wheel`);
+    const command = plan.find(
+      (candidate) => candidate.nodeName === `JV_R3_Real_owner_${corner}_wheel`,
+    );
+    assert.ok(wheelPart && command, `${label}: ${corner} wheel visual must resolve`);
+    const mountWorld = transformVehicleVisualPointV1(command.worldFromNode, {
+      x: mountLocal[0],
+      y: mountLocal[1],
+      z: mountLocal[2],
+    });
+    const center = wheelPart.transform.position;
+    const mountVector = {
+      x: mountWorld.x - center.x,
+      y: mountWorld.y - center.y,
+      z: mountWorld.z - center.z,
+    };
+    assert.ok(
+      Math.abs(Math.hypot(mountVector.x, mountVector.y, mountVector.z) - expectedOffset) < 1e-6,
+      `${label}: ${corner} Socket_WheelMount must stay exactly ${expectedOffset}m from spin center`,
+    );
+    const physicalAxle = rotateByQuaternion(
+      wheelPart.transform.rotation,
+      { x: 0, y: 1, z: 0 },
+    );
+    const inboardAxle = corner === 'fl' || corner === 'rl'
+      ? physicalAxle
+      : { x: -physicalAxle.x, y: -physicalAxle.y, z: -physicalAxle.z };
+    assert.ok(
+      Math.abs(dotVector(mountVector, inboardAxle) - expectedOffset) < 1e-6,
+      `${label}: ${corner} Socket_WheelMount must stay aligned with the signed physical wheel axle while the wheel steers/spins`,
+    );
+  }
+}
+
 function matrixDelta(a, b) {
   let sum = 0;
   for (let i = 0; i < 16; i += 1) sum += (a[i] - b[i]) ** 2;
@@ -162,6 +221,7 @@ test("owner full-rig R3 stays attached to a real live M6 before and after steeri
     const before = vehicle.lastTrace;
     assert.ok(before);
     const beforePlan = assertLivePlan(before, "settled");
+    assertWheelMountInterfaces(before, beforePlan, "settled");
 
     vehicle.setSteering({ mode: "RATE", value: 1 });
     vehicle.setDrive({ throttle: 0.25, brake: 0 });
@@ -169,6 +229,7 @@ test("owner full-rig R3 stays attached to a real live M6 before and after steeri
     const after = vehicle.lastTrace;
     assert.ok(after);
     const afterPlan = assertLivePlan(after, "driving");
+    assertWheelMountInterfaces(after, afterPlan, "driving");
 
     const beforeByName = new Map(beforePlan.map((command) => [command.nodeName, command]));
     const afterByName = new Map(afterPlan.map((command) => [command.nodeName, command]));

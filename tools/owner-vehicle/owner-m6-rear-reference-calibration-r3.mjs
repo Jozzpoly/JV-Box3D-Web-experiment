@@ -69,6 +69,10 @@ export function deriveRearSuspensionReferencesR3(extracted) {
   const upperHinge=requireMarker(extracted,'Chassis_Top','rear suspension reference');
   const lowerHinge=requireMarker(extracted,'Chassis_Bottom','rear suspension reference');
   const wheelCenter=requireMarker(extracted,'Socket_WheelCenter','rear suspension reference');
+  const damperUpperR=requireMarker(extracted,'Socket_DamperUpper_R','rear suspension reference');
+  const damperUpperL=requireMarker(extracted,'Socket_DamperUpper_L','rear suspension reference');
+  const damperLowerR=requireMarker(extracted,'Socket_DamperLower_R','rear suspension reference');
+  const damperLowerL=requireMarker(extracted,'Socket_DamperLower_L','rear suspension reference');
   const travelTop=requireMarker(extracted,'Axis_SuspensionTravel_Top','rear suspension reference');
   const travelBottom=requireMarker(extracted,'Axis_SuspensionTravel_Bottom','rear suspension reference');
   const upperPiece=requirePiece(extracted,'Chassis_Top','rear upper wishbone reference');
@@ -123,6 +127,10 @@ export function deriveRearSuspensionReferencesR3(extracted) {
     upperOutboard:Object.freeze(upperOutboard),
     lowerOutboard:Object.freeze(lowerOutboard),
     wheelCenter:Object.freeze(wheelCenter),
+    damperUpperR:Object.freeze(damperUpperR),
+    damperUpperL:Object.freeze(damperUpperL),
+    damperLowerR:Object.freeze(damperLowerR),
+    damperLowerL:Object.freeze(damperLowerL),
     sourceUp:Object.freeze(sourceUp),
     sourceAxial:Object.freeze(sourceAxial),
     sourceSpread:Object.freeze(sourceSpread),
@@ -138,6 +146,10 @@ export function deriveRearSuspensionReferencesR3(extracted) {
       upperOutboard:'GEOMETRY_DERIVED_MATING_SURFACE_MIDPOINT:upper-arm<->hub',
       lowerOutboard:'GEOMETRY_DERIVED_MATING_SURFACE_MIDPOINT:lower-arm<->hub',
       wheelCenter:'AUTHORED_NODE:Socket_WheelCenter',
+      damperUpperR:'AUTHORED_NODE:Socket_DamperUpper_R',
+      damperUpperL:'AUTHORED_NODE:Socket_DamperUpper_L',
+      damperLowerR:'AUTHORED_NODE:Socket_DamperLower_R',
+      damperLowerL:'AUTHORED_NODE:Socket_DamperLower_L',
       sourceUp:'AUTHORED_AXIS:Axis_SuspensionTravel_Bottom->Top',
       upperSpread:'GEOMETRY_DERIVED_INBOARD_CHASSIS_MOUNTING_FACE:upper-arm',
       lowerSpread:'GEOMETRY_DERIVED_INBOARD_CHASSIS_MOUNTING_FACE:lower-arm',
@@ -242,6 +254,80 @@ export function calibrateRearChassisPieceR3(piece,references,geometry) {
     report:Object.freeze({
       ...calibrated.report,
       mode:'REAR_AUTHORED_CHASSIS_REFERENCE_TO_PHYSICAL_WISHBONE_FRAME_R3',
+    }),
+  });
+}
+
+
+export function calibrateRearDamperPairsR3(extracted,references,geometry) {
+  const chassisPiece=requirePiece(extracted,'Socket_ChassisMount',`${geometry.corner} rear damper chassis reference`);
+  const lowerPiece=requirePiece(extracted,'Chassis_Bottom',`${geometry.corner} rear damper lower-arm reference`);
+  const chassis=calibrateRearChassisPieceR3(chassisPiece,references,geometry);
+  const lowerArm=calibrateRearWishbonePieceR3(lowerPiece,references,geometry,'lower');
+
+  const sourcePairs=[
+    Object.freeze({sourceSuffix:'R',role:'FORE',upper:references.damperUpperR,lower:references.damperLowerR}),
+    Object.freeze({sourceSuffix:'L',role:'AFT',upper:references.damperUpperL,lower:references.damperLowerL}),
+  ];
+  const sourceLineR=sub(references.damperLowerR,references.damperUpperR);
+  const sourceLineL=sub(references.damperLowerL,references.damperUpperL);
+  if(distance(sourceLineR,sourceLineL)>1e-12)fail('rear authored R/L damper lines are not parallel/equal vectors');
+  const sourceUpperSeparation=sub(references.damperUpperL,references.damperUpperR);
+  const sourceLowerSeparation=sub(references.damperLowerL,references.damperLowerR);
+  if(distance(sourceUpperSeparation,sourceLowerSeparation)>1e-12)fail('rear authored damper upper/lower pair separations differ');
+  const spreadAlignment=Math.abs(dot(norm(sourceUpperSeparation,'rear damper source separation'),references.sourceSpread));
+  if(Math.abs(spreadAlignment-1)>1e-8)fail('rear authored damper pair is not aligned with source spread/vehicle-longitudinal axis');
+
+  const lowerRest=(local)=>add(geometry.lowerHinge,local);
+  const pairs=sourcePairs.map((pair)=>{
+    const upperChassisLocal=chassis.mapPoint(pair.upper);
+    const lowerArmLocal=lowerArm.mapPoint(pair.lower);
+    const lowerRestWorld=lowerRest(lowerArmLocal);
+    return Object.freeze({
+      sourceSuffix:pair.sourceSuffix,
+      role:pair.role,
+      upperChassisLocal,
+      lowerArmLocal,
+      lowerRestWorld:Object.freeze(lowerRestWorld),
+      restLengthMeters:distance(upperChassisLocal,lowerRestWorld),
+      lineVectorRest:Object.freeze(sub(lowerRestWorld,upperChassisLocal)),
+      referenceAuthority:Object.freeze({
+        upper:pair.sourceSuffix==='R'?references.provenance.damperUpperR:references.provenance.damperUpperL,
+        lower:pair.sourceSuffix==='R'?references.provenance.damperLowerR:references.provenance.damperLowerL,
+        upperBody:'m6.chassis',
+        lowerBody:`m6.${geometry.corner}.lower-arm`,
+      }),
+    });
+  });
+  const fore=pairs.find((pair)=>pair.role==='FORE');
+  const aft=pairs.find((pair)=>pair.role==='AFT');
+  if(!fore||!aft)fail('rear damper fore/aft role resolution failed');
+  if(!(fore.upperChassisLocal[0]>aft.upperChassisLocal[0]&&fore.lowerRestWorld[0]>aft.lowerRestWorld[0])){
+    fail('rear authored R/L damper sockets do not map to fore/aft vehicle positions as expected');
+  }
+  const crossForeUpperToAftLower=distance(fore.upperChassisLocal,aft.lowerRestWorld);
+  const crossAftUpperToForeLower=distance(aft.upperChassisLocal,fore.lowerRestWorld);
+  if(!(fore.restLengthMeters<crossForeUpperToAftLower&&aft.restLengthMeters<crossAftUpperToForeLower)){
+    fail('rear same-suffix damper pairing is not shorter than cross pairing');
+  }
+  return Object.freeze({
+    pairs:Object.freeze(pairs),
+    report:Object.freeze({
+      mode:'AUTHORED_TWIN_REAR_DAMPERS_CHASSIS_TO_LOWER_ARM_R3',
+      sourcePairing:'R_TO_R__L_TO_L',
+      sourceRRole:'FORE_AFTER_VEHICLE_ORIENTATION',
+      sourceLRole:'AFT_AFTER_VEHICLE_ORIENTATION',
+      sourceLineLengthBU:len(sourceLineR),
+      sourcePairSeparationBU:len(sourceUpperSeparation),
+      sourcePairAxisAlignment:spreadAlignment,
+      upperRestSeparationMeters:distance(fore.upperChassisLocal,aft.upperChassisLocal),
+      lowerRestSeparationMeters:distance(fore.lowerRestWorld,aft.lowerRestWorld),
+      crossPairLengthsMeters:Object.freeze({
+        foreUpperToAftLower:crossForeUpperToAftLower,
+        aftUpperToForeLower:crossAftUpperToForeLower,
+      }),
+      physicalSpringLengthMeters:distance(geometry.coiloverChassis,geometry.coiloverKnuckle),
+      physicalSpringAuthority:'M6_COILOVER_CONSTRAINT_UNCHANGED',
     }),
   });
 }

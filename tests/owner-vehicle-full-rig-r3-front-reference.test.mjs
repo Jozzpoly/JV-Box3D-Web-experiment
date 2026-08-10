@@ -36,7 +36,25 @@ const EXPECTED_CHANGED_SOURCE_BINDINGS = Object.freeze([
   'owner.fr.coilover.upper',
   'owner.fr.coilover.stretch',
   'owner.fr.coilover.lower',
-]);
+  'owner.rl.coilover.upper',
+  'owner.rl.coilover.stretch',
+  'owner.rl.coilover.lower',
+  'owner.rr.coilover.upper',
+  'owner.rr.coilover.stretch',
+  'owner.rr.coilover.lower',
+
+  'owner.fl.cardan.drive-end',
+  'owner.fl.cardan.mid',
+  'owner.fl.cardan.hub-end',
+  'owner.fr.cardan.drive-end',
+  'owner.fr.cardan.mid',
+  'owner.fr.cardan.hub-end',
+  'owner.rl.cardan.drive-end',
+  'owner.rl.cardan.mid',
+  'owner.rl.cardan.hub-end',
+  'owner.rr.cardan.drive-end',
+  'owner.rr.cardan.mid',
+  'owner.rr.cardan.hub-end',]);
 
 async function inputs() {
   const read = (name) => readFile(`${sourceRoot}/${name}`, 'utf8');
@@ -118,13 +136,30 @@ test('R3 reference-calibrated package is deterministic and keeps R2 source autho
     rearWishbones: 'R3_GEOMETRY_MATING_AND_CHASSIS_FACE_REFERENCE_PATCH_OVER_EXACT_R2',
     rearKnuckle: 'R3_GEOMETRY_MATING_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
     rearChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
-    rearDamper: 'R2_PHYSICAL_COILOVER_SEGMENT_INHERITED_PENDING_SEMANTIC_RESOLUTION',
+    rearDamper: 'R3_AUTHORED_TWIN_CHASSIS_TO_LOWER_ARM_PART_PAIRS',
+    cardan: 'R3_DIFFERENTIAL_OUTPUT_FACE_TO_AUTHORED_HUB_PART_PAIR',
+    wheelMount: 'R3_AUTHORED_SOCKET_WHEELMOUNT_HANDED_VISUAL_INTERFACE',
     otherSubsystems: 'R2_BYTE_LAYOUT_INHERITED',
   });
-  assert.equal(a.report.output.realBindingCount, 53);
-  assert.deepEqual(a.report.output.diagnosticBindingIds, ['diagnostic.rack.coverage']);
-  assert.equal(a.glb.byteLength, 829280);
-  assert.equal(a.report.output.sha256, 'cdd48d6462ce6a2f556e8625da4008ba01b09a5e4e43ad4cdfc880f98d6eec5c');
+  assert.equal(a.report.output.realBindingCount, 59);
+  assert.deepEqual(a.report.output.diagnosticBindingIds, [
+    'diagnostic.rack.coverage',
+    'diagnostic.fl.physical-coilover.coverage',
+    'diagnostic.fr.physical-coilover.coverage',
+    'diagnostic.rl.physical-coilover.coverage',
+    'diagnostic.rr.physical-coilover.coverage',
+  ]);
+  assert.equal(a.report.output.nodeCount, 64);
+  assert.equal(a.report.output.bindingCount, 64);
+  assert.equal(a.report.output.physicalCoiloverCoverage, 'DIAGNOSTIC_SEGMENT_ENDPOINT_BINDINGS_NOT_RENDERED');
+  assert.equal(a.report.wheelInterface.mountOffsetMeters, 0.13124999999999998);
+  assert.deepEqual(a.report.wheelInterface.mountLocalPosition, [0, 0.13124999999999998, 0]);
+  assert.equal(
+    a.report.wheelInterface.treatment,
+    'WHEEL_CENTER_REMAINS_PHYSICAL_SPIN_CENTER_SOCKET_WHEELMOUNT_IS_VISUAL_HUB_INTERFACE',
+  );
+  assert.equal(a.glb.byteLength, 829944);
+  assert.equal(a.report.output.sha256, '57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a');
 });
 
 test('R3 blast radius is exactly the accepted front and rear structural geometry bindings', async () => {
@@ -134,13 +169,35 @@ test('R3 blast radius is exactly the accepted front and rear structural geometry
   const d2 = decodeGlb(r2.glb);
   const d3 = decodeGlb(r3.glb);
 
-  assert.deepEqual(
-    r3.visualPackage.bindings.map((binding) => binding.bindingId),
-    r2.visualPackage.bindings.map((binding) => binding.bindingId),
-  );
+  const r2Ids = r2.visualPackage.bindings.map((binding) => binding.bindingId);
+  const r3Ids = r3.visualPackage.bindings.map((binding) => binding.bindingId);
+  assert.deepEqual(r3Ids.slice(0, r2Ids.length), r2Ids);
+  assert.deepEqual(r3Ids.slice(r2Ids.length), [
+    'owner.rl.coilover-aft.upper',
+    'owner.rl.coilover-aft.stretch',
+    'owner.rl.coilover-aft.lower',
+    'owner.rr.coilover-aft.upper',
+    'owner.rr.coilover-aft.stretch',
+    'owner.rr.coilover-aft.lower',
+    'diagnostic.fl.physical-coilover.coverage',
+    'diagnostic.fr.physical-coilover.coverage',
+    'diagnostic.rl.physical-coilover.coverage',
+    'diagnostic.rr.physical-coilover.coverage',
+  ]);
+  for (const corner of ['fl', 'fr', 'rl', 'rr']) {
+    const binding = r3.visualPackage.bindings.find(
+      (candidate) => candidate.bindingId === `diagnostic.${corner}.physical-coilover.coverage`,
+    );
+    assert.ok(binding, `missing physical coilover diagnostic coverage for ${corner}`);
+    assert.equal(binding.source.kind, 'SEGMENT_ENDPOINT_AIM');
+    assert.equal(binding.source.segmentId, `m6.${corner}.coilover`);
+    assert.equal(binding.source.endpoint, 'START');
+    assert.equal(binding.source.axis, '+Y');
+    assert.ok(binding.nodeName.startsWith('JV_R3_Diagnostic_'));
+  }
   assert.deepEqual(r3.report.sourceAuthority, r2.report.sourceAuthority);
   assert.deepEqual(imageHashes(d3), imageHashes(d2));
-  assert.equal(d3.json.nodes.length, d2.json.nodes.length);
+  assert.equal(d3.json.nodes.length, d2.json.nodes.length + 10);
   assert.equal(d3.json.meshes.length, d2.json.meshes.length);
   assert.equal(d3.json.images.length, d2.json.images.length);
   assert.equal(d3.json.textures.length, d2.json.textures.length);
@@ -164,7 +221,42 @@ test('R3 blast radius is exactly the accepted front and rear structural geometry
       changedSources.push(r2Binding.bindingId);
     }
   }
-  assert.deepEqual(changedSources, EXPECTED_CHANGED_SOURCE_BINDINGS);
+  assert.deepEqual([...changedSources].sort(), [...EXPECTED_CHANGED_SOURCE_BINDINGS].sort());
+
+  const changedLocalTransforms = [];
+  for (const r2Binding of r2.visualPackage.bindings) {
+    const r3Binding = r3.visualPackage.bindings.find((candidate) => candidate.bindingId === r2Binding.bindingId);
+    assert.ok(r3Binding, `missing R3 binding ${r2Binding.bindingId}`);
+    if (JSON.stringify(r2Binding.localFromSource) !== JSON.stringify(r3Binding.localFromSource)) {
+      changedLocalTransforms.push(r2Binding.bindingId);
+    }
+  }
+  assert.deepEqual(changedLocalTransforms, ['owner.fr.wheel', 'owner.rr.wheel']);
+  for (const corner of ['fl', 'fr', 'rl', 'rr']) {
+    const binding = r3.visualPackage.bindings.find((candidate) => candidate.bindingId === `owner.${corner}.wheel`);
+    assert.ok(binding, `missing R3 wheel binding ${corner}`);
+    assert.deepEqual(binding.localFromSource.position, [0, 0, 0]);
+    assert.deepEqual(binding.localFromSource.scale, [1, 1, 1]);
+    assert.deepEqual(
+      binding.localFromSource.rotation,
+      corner === 'fr' || corner === 'rr' ? [1, 0, 0, 0] : [0, 0, 0, 1],
+    );
+  }
+  for (const corner of ['rl', 'rr']) {
+    for (const component of ['upper', 'stretch', 'lower']) {
+      const binding = r3.visualPackage.bindings.find(
+        (candidate) => candidate.bindingId === `owner.${corner}.coilover-aft.${component}`,
+      );
+      assert.ok(binding, `missing ${corner} aft damper ${component}`);
+      assert.equal(binding.source.startPartId, 'm6.chassis');
+      assert.equal(binding.source.endPartId, `m6.${corner}.lower-arm`);
+      assert.equal(
+        binding.source.kind,
+        component === 'stretch' ? 'PART_PAIR_STRETCH' : 'PART_PAIR_ENDPOINT_AIM',
+      );
+    }
+  }
+
   for (const corner of ['fl', 'fr']) {
     const upper = r3.visualPackage.bindings.find((binding) => binding.bindingId === `owner.${corner}.coilover.upper`);
     const stretch = r3.visualPackage.bindings.find((binding) => binding.bindingId === `owner.${corner}.coilover.stretch`);
@@ -245,4 +337,25 @@ test('R3 front wishbones map authored references to physical hardpoints with one
   close(corners.rl.knuckle.kingpinScale, corners.rr.knuckle.kingpinScale);
   close(corners.rl.chassis.radialScale, corners.rr.chassis.radialScale);
   close(corners.rl.chassis.verticalScale, corners.rr.chassis.verticalScale);
+});
+
+test('R3 active consumers share one final artifact and root-count contract', async () => {
+  const [runtimeMotion, portable, publicPreview, ownerLayer] = await Promise.all([
+    readFile('tests/owner-vehicle-full-rig-runtime-motion.test.mjs', 'utf8'),
+    readFile('tools/validate-portable-vehicle-visual.mjs', 'utf8'),
+    readFile('tools/validate-public-r1-preview.mjs', 'utf8'),
+    readFile('src/render/m6-owner-vehicle-layer.ts', 'utf8'),
+  ]);
+  const sha = '57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a';
+  assert.match(runtimeMotion, new RegExp(sha));
+  assert.match(runtimeMotion, /plan\.length, 59/);
+  assert.match(portable, new RegExp(sha));
+  assert.match(portable, /EXPECTED_OWNER_BYTES = 829944/);
+  assert.match(portable, /boundNodeCount !== 64/);
+  assert.match(portable, /boundRootCount !== 64/);
+  assert.match(portable, /budget\.nodes !== 64/);
+  assert.match(publicPreview, new RegExp(sha));
+  assert.match(publicPreview, /byteLength !== 829944/);
+  assert.match(publicPreview, /length !== 59/);
+  assert.match(ownerLayer, /M6_OWNER_R3_REAL_NODE_COUNT = 59 as const/);
 });

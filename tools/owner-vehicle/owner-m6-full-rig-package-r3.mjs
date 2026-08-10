@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { align4 } from './blockbench-gltf-core.mjs';
+import { inspectBlockbenchRigidSourceV1 } from './blockbench-gltf-inspector.mjs';
 import { inspectBlockbenchRigidPartsV1 } from './blockbench-gltf-rigid-parts.mjs';
 import {
   parseM6FactoryConfig,
@@ -18,7 +19,16 @@ import {
   calibrateRearWishbonePieceR3,
   calibrateRearKnucklePieceR3,
   calibrateRearChassisPieceR3,
+  calibrateRearDamperPairsR3,
 } from './owner-m6-rear-reference-calibration-r3.mjs';
+import {
+  calibrateCardanEndpointsR3,
+  replaceCardanBindingSourcesR3,
+} from './owner-m6-cardan-reference-calibration-r3.mjs';
+import {
+  deriveWheelMountInterfaceR3,
+  wheelVisualLocalFromSourceR3,
+} from './owner-m6-wheel-interface-calibration-r3.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const GLB_VERSION = 2;
@@ -163,6 +173,25 @@ function pointDistance(a, b) {
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
+function replaceWheelBindingTransformsR3(bindings, wheelInterface) {
+  const corners = ['fl', 'fr', 'rl', 'rr'];
+  const byId = new Map(bindings.map((binding) => [binding.bindingId, binding]));
+  for (const corner of corners) {
+    const bindingId = `owner.${corner}.wheel`;
+    const binding = byId.get(bindingId);
+    if (!binding) throw new Error(`Owner M6 R3 base is missing wheel binding ${bindingId}.`);
+    if (binding.source.kind !== 'PART' || binding.source.partId !== `m6.${corner}.wheel`) {
+      throw new Error(`Owner M6 R3 wheel binding ${bindingId} has unexpected source semantics.`);
+    }
+    byId.set(bindingId, {
+      ...binding,
+      localFromSource: wheelVisualLocalFromSourceR3(corner, wheelInterface),
+    });
+  }
+  return bindings.map((binding) => byId.get(binding.bindingId));
+}
+
+
 function replaceFrontDamperBindingSources(bindings, damperEndpoints) {
   const byId = new Map(bindings.map((binding) => [binding.bindingId, binding]));
   for (const corner of FRONT_CORNERS) {
@@ -205,6 +234,115 @@ function replaceFrontDamperBindingSources(bindings, damperEndpoints) {
   return bindings.map((binding) => byId.get(binding.bindingId));
 }
 
+
+function expandRearTwinDamperBindings(json, bindings, damperPairsByCorner) {
+  const byId = new Map(bindings.map((binding) => [binding.bindingId, binding]));
+  const added = [];
+  const scene = json.scenes?.[json.scene ?? 0];
+  if (!scene || !Array.isArray(scene.nodes)) {
+    throw new Error('Owner M6 R3 rear twin dampers require an explicit root scene node list.');
+  }
+
+  const cloneNode = (sourceNodeName, newNodeName) => {
+    const sourceIndex = json.nodes.findIndex((node) => node.name === sourceNodeName);
+    if (sourceIndex < 0) throw new Error(`Owner M6 R3 rear damper source node is missing: ${sourceNodeName}.`);
+    if (json.nodes.some((node) => node.name === newNodeName)) {
+      throw new Error(`Owner M6 R3 rear damper clone node already exists: ${newNodeName}.`);
+    }
+    const cloneIndex = json.nodes.length;
+    json.nodes.push({ ...json.nodes[sourceIndex], name: newNodeName });
+    scene.nodes.push(cloneIndex);
+  };
+
+  const sourceFor = (component, pair, referenceLengthMeters = null) => {
+    const pairBase = {
+      startPartId: 'm6.chassis',
+      startLocalPosition: pair.upperChassisLocal,
+      endPartId: `m6.${pair.corner}.lower-arm`,
+      endLocalPosition: pair.lowerArmLocal,
+    };
+    if (component === 'upper') {
+      return { kind: 'PART_PAIR_ENDPOINT_AIM', ...pairBase, endpoint: 'START', axis: '-Y' };
+    }
+    if (component === 'stretch') {
+      if (!(referenceLengthMeters > 0)) throw new Error(`Owner M6 R3 rear damper ${pair.corner} reference length is invalid.`);
+      return { kind: 'PART_PAIR_STRETCH', ...pairBase, axis: '+Y', referenceLengthMeters };
+    }
+    if (component === 'lower') {
+      return { kind: 'PART_PAIR_ENDPOINT_AIM', ...pairBase, endpoint: 'END', axis: '+Y' };
+    }
+    throw new Error(`Owner M6 R3 rear damper component is unknown: ${component}.`);
+  };
+
+  for (const corner of REAR_CORNERS) {
+    const pairSet = damperPairsByCorner[corner];
+    const fore = pairSet?.pairs.find((pair) => pair.role === 'FORE');
+    const aft = pairSet?.pairs.find((pair) => pair.role === 'AFT');
+    if (!fore || !aft) throw new Error(`Owner M6 R3 rear damper pair set is incomplete for ${corner}.`);
+    const forePair = { ...fore, corner };
+    const aftPair = { ...aft, corner };
+    for (const component of ['upper', 'stretch', 'lower']) {
+      const baseId = `owner.${corner}.coilover.${component}`;
+      const base = byId.get(baseId);
+      if (!base) throw new Error(`Owner M6 R3 base is missing rear damper binding ${baseId}.`);
+      const referenceLengthMeters = component === 'stretch' ? base.source.referenceLengthMeters : null;
+      byId.set(baseId, { ...base, source: sourceFor(component, forePair, referenceLengthMeters) });
+
+      const addedId = `owner.${corner}.coilover-aft.${component}`;
+      const addedNodeName = `JV_R3_Real_owner_${corner}_coilover_aft_${component}`;
+      cloneNode(base.nodeName, addedNodeName);
+      added.push({
+        ...base,
+        bindingId: addedId,
+        nodeName: addedNodeName,
+        source: sourceFor(component, aftPair, referenceLengthMeters),
+      });
+    }
+  }
+  return Object.freeze([...bindings.map((binding) => byId.get(binding.bindingId)), ...added]);
+}
+
+function addPhysicalCoiloverCoverageBindings(json, bindings) {
+  const scene = json.scenes?.[json.scene ?? 0];
+  if (!scene || !Array.isArray(scene.nodes)) {
+    throw new Error('Owner M6 R3 physical coilover coverage requires an explicit root scene node list.');
+  }
+  const rackCoverage = bindings.find((binding) => binding.bindingId === 'diagnostic.rack.coverage');
+  if (!rackCoverage) {
+    throw new Error('Owner M6 R3 base is missing diagnostic.rack.coverage.');
+  }
+  const sourceIndex = json.nodes.findIndex((node) => node.name === rackCoverage.nodeName);
+  if (sourceIndex < 0) {
+    throw new Error(`Owner M6 R3 diagnostic source node is missing: ${rackCoverage.nodeName}.`);
+  }
+  const added = [];
+  for (const corner of ['fl', 'fr', 'rl', 'rr']) {
+    const bindingId = `diagnostic.${corner}.physical-coilover.coverage`;
+    const nodeName = `JV_R3_Diagnostic_${corner}_physical_coilover_coverage`;
+    if (bindings.some((binding) => binding.bindingId === bindingId)) {
+      throw new Error(`Owner M6 R3 physical coilover coverage binding already exists: ${bindingId}.`);
+    }
+    if (json.nodes.some((node) => node.name === nodeName)) {
+      throw new Error(`Owner M6 R3 physical coilover coverage node already exists: ${nodeName}.`);
+    }
+    const cloneIndex = json.nodes.length;
+    json.nodes.push({ ...json.nodes[sourceIndex], name: nodeName });
+    scene.nodes.push(cloneIndex);
+    added.push({
+      ...rackCoverage,
+      bindingId,
+      nodeName,
+      source: {
+        kind: 'SEGMENT_ENDPOINT_AIM',
+        segmentId: `m6.${corner}.coilover`,
+        endpoint: 'START',
+        axis: '+Y',
+      },
+    });
+  }
+  return Object.freeze([...bindings, ...added]);
+}
+
 function renameR3Nodes(json, visualPackage) {
   for (const node of json.nodes) {
     if (typeof node.name === 'string' && node.name.startsWith(R2_NODE_PREFIX)) {
@@ -227,6 +365,20 @@ export function buildOwnerM6FullRigPackageR3(input) {
     generator: 'JV Web owner M6 full rig R3 reference calibration',
   };
 
+  const config = parseM6FactoryConfig(input.factoryReceiptText);
+  const wheel = inspectBlockbenchRigidSourceV1(
+    input.wheelText,
+    'Offroad_Big_Wheels.gltf',
+  );
+  const wheelInterface = deriveWheelMountInterfaceR3(
+    wheel,
+    config.wheelRadius,
+    config.wheelWidth,
+  );
+  const chassis = inspectBlockbenchRigidPartsV1(
+    input.chassisText,
+    'Nadwozie.gltf',
+  );
   const front = inspectBlockbenchRigidPartsV1(
     input.frontSuspensionText,
     'OneSided_Steering_Suspension_Rig.gltf',
@@ -237,7 +389,6 @@ export function buildOwnerM6FullRigPackageR3(input) {
     'One_Sided_wheel_mount.gltf',
   );
   const rearReferences = deriveRearSuspensionReferencesR3(rear);
-  const config = parseM6FactoryConfig(input.factoryReceiptText);
   const armReports = {};
   const knuckleReports = {};
   const chassisReports = {};
@@ -246,6 +397,9 @@ export function buildOwnerM6FullRigPackageR3(input) {
   const rearArmReports = {};
   const rearKnuckleReports = {};
   const rearChassisReports = {};
+  const cardanReports = {};
+  const cardanEndpoints = {};
+  const rearDamperPairs = {};
 
   for (const corner of FRONT_CORNERS) {
     const geometry = cornerRestGeometry(config, corner);
@@ -341,12 +495,35 @@ export function buildOwnerM6FullRigPackageR3(input) {
       chassis.primitives,
     );
     rearChassisReports[corner] = chassis.report;
+
+    rearDamperPairs[corner] = calibrateRearDamperPairsR3(rear, rearReferences, geometry);
   }
 
-  const bindings = replaceFrontDamperBindingSources(
+  const wheelBindings = replaceWheelBindingTransformsR3(
     renameR3Nodes(decoded.json, r2.visualPackage),
+    wheelInterface,
+  );
+  const frontDamperBindings = replaceFrontDamperBindingSources(
+    wheelBindings,
     damperEndpoints,
   );
+
+  for (const corner of ['fl', 'fr', 'rl', 'rr']) {
+    const isFront = FRONT_CORNERS.includes(corner);
+    const endpoints = calibrateCardanEndpointsR3({
+      chassis,
+      suspension: isFront ? front : rear,
+      references: isFront ? references : rearReferences,
+      geometry: cornerRestGeometry(config, corner),
+      corner,
+    });
+    cardanEndpoints[corner] = endpoints;
+    cardanReports[corner] = endpoints.report;
+  }
+
+  const preCardanBindings = expandRearTwinDamperBindings(decoded.json, frontDamperBindings, rearDamperPairs);
+  const cardanBindings = replaceCardanBindingSourcesR3(preCardanBindings, cardanEndpoints);
+  const bindings = addPhysicalCoiloverCoverageBindings(decoded.json, cardanBindings);
   const glb = encodeGlb(decoded.json, decoded.binary);
   const digest = sha256(glb);
   const visualPackage = Object.freeze({
@@ -379,6 +556,7 @@ export function buildOwnerM6FullRigPackageR3(input) {
               arms: Object.freeze(rearArmReports[corner]),
               knuckle: rearKnuckleReports[corner],
               chassis: rearChassisReports[corner],
+              damperVisual: rearDamperPairs[corner].report,
             })
           : value,
     ]),
@@ -394,14 +572,30 @@ export function buildOwnerM6FullRigPackageR3(input) {
       rearWishbones: 'R3_GEOMETRY_MATING_AND_CHASSIS_FACE_REFERENCE_PATCH_OVER_EXACT_R2',
       rearKnuckle: 'R3_GEOMETRY_MATING_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
       rearChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
-      rearDamper: 'R2_PHYSICAL_COILOVER_SEGMENT_INHERITED_PENDING_SEMANTIC_RESOLUTION',
+      rearDamper: 'R3_AUTHORED_TWIN_CHASSIS_TO_LOWER_ARM_PART_PAIRS',
+      cardan: 'R3_DIFFERENTIAL_OUTPUT_FACE_TO_AUTHORED_HUB_PART_PAIR',
+      wheelMount: 'R3_AUTHORED_SOCKET_WHEELMOUNT_HANDED_VISUAL_INTERFACE',
       otherSubsystems: 'R2_BYTE_LAYOUT_INHERITED',
     }),
     calibration: Object.freeze({ corners: Object.freeze(calibrationCorners) }),
+    cardanCalibration: Object.freeze(cardanReports),
+    wheelInterface: Object.freeze({
+      mountLocalPosition: wheelInterface.mountLocalPosition,
+      mountOffsetMeters: wheelInterface.mountOffsetMeters,
+      provenance: wheelInterface.provenance,
+      treatment: 'WHEEL_CENTER_REMAINS_PHYSICAL_SPIN_CENTER_SOCKET_WHEELMOUNT_IS_VISUAL_HUB_INTERFACE',
+    }),
     output: Object.freeze({
       ...r2.report.output,
       byteLength: glb.length,
       sha256: digest,
+      nodeCount: decoded.json.nodes.length,
+      bindingCount: bindings.length,
+      realBindingCount: bindings.filter((binding) => binding.nodeName.startsWith('JV_R3_Real_')).length,
+      realBindingIds: Object.freeze(bindings.filter((binding) => binding.nodeName.startsWith('JV_R3_Real_')).map((binding) => binding.bindingId)),
+      diagnosticBindingIds: Object.freeze(bindings.filter((binding) => binding.nodeName.includes('_Diagnostic_')).map((binding) => binding.bindingId)),
+      rearDamperTreatment: 'AUTHORED_TWIN_PART_PAIR_NO_PHYSICS_CHANGE',
+      physicalCoiloverCoverage: 'DIAGNOSTIC_SEGMENT_ENDPOINT_BINDINGS_NOT_RENDERED',
     }),
   });
 

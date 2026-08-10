@@ -10,8 +10,8 @@ import { validateVehicleVisualPackageV1 } from "../.test-dist/visual/vehicle-vis
 
 const EXPECTED_OWNER_ID = "m6-owner-full-rig-r3";
 const EXPECTED_OWNER_SHA256 =
-  "cdd48d6462ce6a2f556e8625da4008ba01b09a5e4e43ad4cdfc880f98d6eec5c";
-const EXPECTED_OWNER_BYTES = 829280;
+  "57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a";
+const EXPECTED_OWNER_BYTES = 829944;
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const dist = resolve(root, "dist");
@@ -38,9 +38,9 @@ if (
   visual.asset.sha256 !== EXPECTED_OWNER_SHA256 ||
   visual.asset.byteLength !== EXPECTED_OWNER_BYTES ||
   glb.byteLength !== EXPECTED_OWNER_BYTES ||
-  receipt.boundNodeCount !== 54 ||
-  ownership.boundRootCount !== 54 ||
-  budget.nodes !== 54 ||
+  receipt.boundNodeCount !== 64 ||
+  ownership.boundRootCount !== 64 ||
+  budget.nodes !== 64 ||
   cpu.images.length !== 3 ||
   cpu.textures.length !== 3
 ) {

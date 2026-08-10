@@ -14,15 +14,17 @@ import {
 
 export const M6_OWNER_R2_REAL_NODE_PREFIX = "JV_R2_Real_" as const;
 export const M6_OWNER_R3_REAL_NODE_PREFIX = "JV_R3_Real_" as const;
-export const M6_OWNER_REAL_NODE_COUNT = 53 as const;
-export const M6_OWNER_R2_REAL_NODE_COUNT = M6_OWNER_REAL_NODE_COUNT;
+export const M6_OWNER_R2_REAL_NODE_COUNT = 53 as const;
+export const M6_OWNER_R3_REAL_NODE_COUNT = 59 as const;
 
 const M6_OWNER_FULL_RIG_PROFILES = Object.freeze({
   "m6-owner-full-rig-r2": Object.freeze({
     realNodePrefix: M6_OWNER_R2_REAL_NODE_PREFIX,
+    realNodeCount: M6_OWNER_R2_REAL_NODE_COUNT,
   }),
   "m6-owner-full-rig-r3": Object.freeze({
     realNodePrefix: M6_OWNER_R3_REAL_NODE_PREFIX,
+    realNodeCount: M6_OWNER_R3_REAL_NODE_COUNT,
   }),
 });
 
@@ -41,9 +43,9 @@ function realNodeNames(resource: VehicleVisualRenderResourceV1): ReadonlySet<str
       .filter((binding) => binding.nodeName.startsWith(profile.realNodePrefix))
       .map((binding) => binding.nodeName),
   );
-  if (names.size !== M6_OWNER_REAL_NODE_COUNT) {
+  if (names.size !== profile.realNodeCount) {
     throw new Error(
-      `Owner full-rig package requires exactly ${M6_OWNER_REAL_NODE_COUNT} real nodes; received ${names.size}.`,
+      `Owner full-rig package ${resource.runtime.visualPackage.id} requires exactly ${profile.realNodeCount} real nodes; received ${names.size}.`,
     );
   }
   return names;

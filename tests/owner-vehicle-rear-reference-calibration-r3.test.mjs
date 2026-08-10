@@ -12,6 +12,7 @@ import {
   calibrateRearWishbonePieceR3,
   calibrateRearKnucklePieceR3,
   calibrateRearChassisPieceR3,
+  calibrateRearDamperPairsR3,
 } from '../tools/owner-vehicle/owner-m6-rear-reference-calibration-r3.mjs';
 
 const REAR_SOURCE = 'assets/owner-vehicle/source/One_Sided_wheel_mount.gltf';
@@ -109,4 +110,47 @@ test('R3 rear structural solve maps mating-derived arms, hub and chassis to RL/R
 
   assert.match(reports.rl.upper.referenceAuthority.outboard, /^GEOMETRY_DERIVED_MATING_SURFACE_MIDPOINT/);
   assert.match(reports.rl.upper.referenceAuthority.spread, /^GEOMETRY_DERIVED_INBOARD_CHASSIS_MOUNTING_FACE/);
+});
+
+
+test('R3 rear authored R/L sockets resolve to two fore/aft visual dampers per corner', async () => {
+  const { rear, config, references } = await fixture();
+  assert.deepEqual(references.damperUpperR, [0.046875, 1.84375, -0.8125]);
+  assert.deepEqual(references.damperUpperL, [0.046875, 1.84375, 0.8125]);
+  assert.deepEqual(references.damperLowerR, [-0.71875, 0.03125, -0.8125]);
+  assert.deepEqual(references.damperLowerL, [-0.71875, 0.03125, 0.8125]);
+  const reports = {};
+
+  for (const corner of ['rl', 'rr']) {
+    const geometry = cornerRestGeometry(config, corner);
+    const result = calibrateRearDamperPairsR3(rear, references, geometry);
+    reports[corner] = result.report;
+    assert.equal(result.pairs.length, 2);
+    const fore = result.pairs.find((pair) => pair.role === 'FORE');
+    const aft = result.pairs.find((pair) => pair.role === 'AFT');
+    assert.ok(fore && aft);
+    assert.equal(fore.sourceSuffix, 'R');
+    assert.equal(aft.sourceSuffix, 'L');
+    assert.equal(fore.referenceAuthority.upperBody, 'm6.chassis');
+    assert.equal(fore.referenceAuthority.lowerBody, `m6.${corner}.lower-arm`);
+    assert.equal(aft.referenceAuthority.upperBody, 'm6.chassis');
+    assert.equal(aft.referenceAuthority.lowerBody, `m6.${corner}.lower-arm`);
+    assert.ok(fore.upperChassisLocal[0] > aft.upperChassisLocal[0]);
+    assert.ok(fore.lowerRestWorld[0] > aft.lowerRestWorld[0]);
+    close(fore.restLengthMeters, 0.7591940693494738);
+    close(aft.restLengthMeters, 0.7458126206270728);
+    assert.ok(result.report.crossPairLengthsMeters.foreUpperToAftLower > 0.95);
+    assert.ok(result.report.crossPairLengthsMeters.aftUpperToForeLower > 1.03);
+    close(result.report.upperRestSeparationMeters, 0.5687500000000001);
+    close(result.report.lowerRestSeparationMeters, 0.7341176470588233);
+    close(result.report.physicalSpringLengthMeters, 0.6002103076055002);
+    assert.equal(result.report.sourcePairing, 'R_TO_R__L_TO_L');
+    assert.equal(result.report.sourceRRole, 'FORE_AFTER_VEHICLE_ORIENTATION');
+    assert.equal(result.report.sourceLRole, 'AFT_AFTER_VEHICLE_ORIENTATION');
+    close(result.report.sourcePairAxisAlignment, 1);
+  }
+
+  close(reports.rl.upperRestSeparationMeters, reports.rr.upperRestSeparationMeters);
+  close(reports.rl.lowerRestSeparationMeters, reports.rr.lowerRestSeparationMeters);
+  close(reports.rl.crossPairLengthsMeters.foreUpperToAftLower, reports.rr.crossPairLengthsMeters.foreUpperToAftLower);
 });
