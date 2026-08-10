@@ -2,7 +2,7 @@
 
 Updated: 2026-08-10
 Owner: Jozz
-Status: `R0 PUBLISHED / R1 ACTIVE / REAL OWNER RIG LIVE / STEERING FOUNDATION NEXT`
+Status: `R0 PUBLISHED / R1 ACTIVE / REAL OWNER RIG LIVE / OWNER BASELINE REVALIDATION NEXT`
 
 This is the single detailed current-state document. Do not append historical work logs here.
 
@@ -82,27 +82,27 @@ Semantic contracts live in `assets/owner-vehicle/contracts/`.
 
 Critical current contract: physical wheel spin center and authored `Socket_WheelMount` are different points. The current R3 package/test surface protects this distinction.
 
-## 6. Current front steering question
+## 6. Current owner-rig decision point
 
-Current physical topology already has separate chassis, upper/lower arms, knuckle, rack, steering-link constraint and wheel spin body. There is not enough evidence to justify a wholesale new carrier hierarchy.
+Historical R4 observation says wheel placement was excellent and suspension packaging was close, while front steering/upright pivot still looked wrong, front steering rods looked too short and overall stance was slightly wide/low.
 
-Current front visual calibration derives an authored lower-outboard point by assuming a parallel upright from the authored upper reference. This is a material suspect but not yet proof of the visible bug.
+Technically, current physical topology already has separate chassis, upper/lower arms, knuckle, rack, steering-link constraint and wheel spin body. Current front visual calibration also still derives a lower-outboard point from a parallel-upright inference, and current steering tests still do not measure the decisive live anchor/kingpin/rotation-axis relationship.
 
-Existing steering tests cover rack travel/safety and asymmetry but do not measure the decisive live anchor/kingpin/rotation-axis relationship.
+Those facts prepare a useful steering investigation but do **not** authorize immediate correction. Jozz explicitly requested a fresh owner validation of the untouched current rig first, because the previous handoff sequence was interrupted and visually observed state should be re-established before planning new implementation.
 
-Next action is `F0 Front Steering Truth` as specified in `docs/HANDOFF.md`, with **no product geometry correction during the probe**.
+Next action is therefore `V0 Owner Baseline Revalidation` as specified in `docs/HANDOFF.md`: **no product geometry or physics correction before the owner report**.
 
 ## 7. Owner-observed baseline
 
-R4 is the protected current owner-visible baseline. Jozz judged wheel placement excellent and suspension packaging close, but the front steering pivot still wrong and steering rods too short. Overall stance remains slightly wide/low.
+R4 is the currently protected historical owner-visible baseline. Jozz judged wheel placement excellent and suspension packaging close, but the front steering pivot still wrong and steering rods too short. Overall stance remained slightly wide/low.
 
 Exact checkpoint classification is in `docs/OWNER_CHECKPOINTS.md`.
 
-Important limitation: `owner_r4` / `Tire=0` are not currently encoded exact source presets.
+Important limitation: `owner_r4` / `Tire=0` are not currently encoded exact source presets. V0 exists partly to replace reliance on that interrupted-session description with a fresh observation of the reproducible current product baseline.
 
 ## 8. Camera/mobile
 
-Current renderer owns chase/orbit/zoom behavior and desktop/mobile controls. Camera is not part of the steering correction slice unless a new causal issue requires it.
+Current renderer owns chase/orbit/zoom behavior and desktop/mobile controls. Camera is not part of the owner-rig correction scope unless it materially blocks rig evaluation.
 
 Future camera/mobile work should remain separately attributable so owner feedback on vehicle geometry is not mixed with camera feel.
 
@@ -141,25 +141,32 @@ Source/test proof never implies owner visual acceptance. Owner acceptance never 
 
 ## 13. Current work decomposition
 
-Vehicle work should use small checkpoints, not "fix all 59 bindings":
+First establish the current owner-visible truth. Do not start by "fixing all 59 bindings":
 
 ```text
-F0 front steering truth
-F1 upright/kingpin
-F2 steering rods
-F3+ upper/lower arm, damper, stance only if evidence says they still need work
+V0 unchanged current-rig owner revalidation
+-> owner description of actual present state
+-> record fresh checkpoint / protected and rejected observations
+
+then choose one smallest technical lane only:
+F0 front steering truth, if steering pivot remains first priority
+F1 upright/kingpin, only if F0 evidence selects it
+F2 steering rods, separately
+F3+ upper/lower arm, damper, stance only if fresh evidence says they still need work
 rear mechanisms one at a time only after front closure
 I0 whole-rig integration without redesign
 ```
 
-Accepted parts become protected scope. See `docs/OWNER_CHECKPOINTS.md`.
+The sequence after V0 is conditional, not a mandatory roadmap. Accepted parts become protected scope. See `docs/OWNER_CHECKPOINTS.md`.
 
-## 14. Current operational state after cleanup
+## 14. Current operational state
 
 - remote branch cleanup is complete: 6 refs remain, including one frozen pre-cleanup archive ref;
 - `main` is the only active source authority;
-- exact canonical Node 24.16.0 F0 runtime evidence has not yet been produced in the current takeover/implementation session;
+- the deterministic owner artifact has been regenerated in the orchestrator lab at 829944 bytes / 59 real bindings / exact SHA above;
+- a Windows owner-validation launcher has been prepared to obtain exact Node 24.16.0 / npm 11.13.0, run focused checks, build and launch the unchanged current rig;
+- canonical Windows/browser V0 execution and fresh owner observation are still pending until Jozz runs that candidate;
 - `owner_r4`/`Tire=0` session state is not a persisted preset;
-- current front steering live truth probe remains outstanding.
+- F0 live steering truth remains technically outstanding but is intentionally deferred until after V0 owner feedback.
 
-No additional broad handoff archaeology or branch archaeology is required before F0.
+No additional broad handoff archaeology or branch archaeology is required before V0.

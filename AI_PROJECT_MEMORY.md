@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-10
-Status: `R0 PUBLISHED / R1 ACTIVE / OWNER VEHICLE INTEGRATED / FRONT STEERING NEXT`
+Status: `R0 PUBLISHED / R1 ACTIVE / OWNER VEHICLE INTEGRATED / OWNER REVALIDATION NEXT`
 Owner: Jozz
 
 This file is deliberately short. It is a navigation/current-state memory, not a history dump and not a handoff transcript. Current Git, executable evidence and direct owner observation outrank this file.
@@ -42,20 +42,20 @@ See `docs/OWNER_CHECKPOINTS.md` for the evidence classification and protected ba
 
 ## Current continuation
 
-Next lane is intentionally narrow:
+Do **not** begin new steering correction yet.
 
 ```text
-F0 Front Steering Truth
--> measure live upper/lower anchor agreement, live kingpin, incremental knuckle axis,
-   wheel-center orbit and steering-link endpoints
--> no product geometry change during the probe
+V0 Owner Baseline Revalidation
+-> run the unchanged R4/R3 owner-rig product baseline
+-> Jozz observes the complete current rig in game and describes its actual state
+-> no new geometry/physics correction during V0
 
-F1 only after F0
--> smallest evidence-selected upright/kingpin correction
--> owner visual checkpoint
+Only after V0 owner feedback
+-> choose the smallest next technical slice from the observed problem
+-> F0 Front Steering Truth remains a prepared diagnostic if the steering/upright pivot is still the priority
 ```
 
-Do not simultaneously retune ride height, track width, rear suspension, cardans, drivetrain, camera or UI.
+Do not simultaneously retune ride height, track width, rear suspension, cardans, drivetrain, camera or UI while establishing the baseline.
 
 ## Handoff/read order
 
