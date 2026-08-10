@@ -2,7 +2,7 @@
 
 Updated: 2026-08-10
 Owner: Jozz
-Status: `R0 PUBLISHED / R1 ACTIVE / V0 OWNER BASELINE OBSERVED / VISUAL RIG CORRECTION PREP`
+Status: `R0 PUBLISHED / R1 ACTIVE / V0 OWNER BASELINE OBSERVED / VISUAL RECOVERY PREPARED / PRODUCT CORRECTION NOT STARTED`
 
 This is the single detailed current-state document. Do not append historical work logs here.
 
@@ -22,11 +22,13 @@ Role in this campaign: read-only reference
 
 Resolve exact tips live before every write. Historical/salvage refs are not ordinary takeover inputs.
 
-## 2. Product goal
+## 2. Current campaign
 
-Build a motivating browser friend-demo that increasingly feels like Jozz's own game. Ordering follows executable evidence + owner observation rather than stale roadmaps.
+Build a motivating browser friend-demo that increasingly feels like Jozz's own game. Current focus is narrower: recover the owner vehicle's visual/mechanical presentation through small owner-validated interfaces.
 
-Current campaign focus: make the owner vehicle visually/mechanically coherent through small owner-validated slices. Handling/stability tuning is temporarily deferred by owner decision.
+Handling/stability/steering-feel tuning is explicitly deferred until visual recovery closes.
+
+Durable recovery execution contract: `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`.
 
 ## 3. Current product/world
 
@@ -38,11 +40,9 @@ index.html
 -> optional LOCAL_FULL JSPREV2 private scan path
 ```
 
-The scan unexpectedly loaded successfully during V0. This is a useful current OWNER OBSERVED fact but not a reason to change the active car scope.
+The scan unexpectedly loaded successfully during V0. This is useful OWNER OBSERVED evidence but not a reason to open the scan lane now.
 
 ## 4. Reproducible owner-rig artifact
-
-Current renderer loads the generated owner package:
 
 ```text
 vehicles/m6-owner-r3/m6-owner-full-rig-r3.visual.json
@@ -52,127 +52,124 @@ GLB bytes: 829944
 GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
 ```
 
-The package is generated deterministically from repository-owned source glTF files, semantic contracts and the factory receipt. `public/vehicles/m6-owner-r3/` is generated/ignored.
-
-Critical semantic contract still preserved by current source/tests: physical wheel spin center and authored `Socket_WheelMount` are distinct points.
+The package is deterministic from repository-owned source glTF files, semantic contracts and factory receipt. Physical wheel spin center and authored `Socket_WheelMount` remain intentionally distinct.
 
 ## 5. V0 exact validation evidence
 
-On 2026-08-10 the unchanged current owner-rig baseline was run on Jozz's Windows machine through the prepared validation launcher.
+On 2026-08-10 the unchanged owner-rig baseline ran on Jozz's Windows machine through the prepared validation launcher.
 
-Canonical execution:
+Canonical execution: exact Node 24.16.0 / npm 11.13.0, pinned dependency install, TypeScript typecheck PASS, exact owner artifact regeneration/reverification, 13 focused tests PASS, Vite 8.1.5 production build PASS and normal local validation session.
 
-- Node 24.16.0 / npm 11.13.0;
-- pinned dependencies installed;
-- TypeScript typecheck PASS;
-- owner rig regenerated at the exact identity above;
-- 13 focused owner-rig/steering tests PASS;
-- Vite 8.1.5 production build PASS;
-- owner-rig identity reverified after build;
-- local validation candidate launched and session closed normally.
+Interpretation: E0/E1 reproducibility/internal-consistency evidence. This is not visual acceptance and not handling-quality evidence.
 
-Interpretation: reproducibility/internal contract PASS. This is not visual acceptance and is not a handling-quality gate.
+## 6. Current owner-visible state
 
-## 6. Fresh owner-visible state — current authority
-
-The current visual rig is broadly **not correct enough to polish locally around one steering bug**.
+The rig is broadly not correct enough to polish around one local steering bug.
 
 OWNER OBSERVED:
 
-- chassis/body is roughly acceptable;
-- suspension/wishbones are too far from the frame;
-- damper/spring rigging is wrong and significant damper geometry intersects/enters wheels;
-- cardans reach the hub/wheel region but miss the correct visible differential mating location;
-- much of the suspension/upright/hub package between wishbones and wheel is buried inside wheels;
-- wheel placement cannot yet be judged confidently because bad surrounding geometry obscures it;
-- general vehicle/wishbone attitude is usable as a starting point, but ride height should ultimately be slightly higher.
+- chassis/body roughly acceptable;
+- suspension/wishbones too far from frame;
+- damper/spring rigging wrong and significant geometry intersects/enters wheels;
+- cardans miss the correct visible differential mating location;
+- much suspension/upright/hub geometry is buried inside wheels;
+- wheel placement cannot yet be judged confidently because surrounding bad geometry obscures it;
+- general vehicle/wishbone attitude is a usable starting point but final ride height should be slightly higher.
 
-The historical R4 observation that wheels were excellent and suspension almost excellent remains historical evidence only. Its session configuration (`owner_r4`, `Tire=0`) was not persisted, so the conflict with V0 must remain explicit and unresolved.
+Historical R4 claims that wheels were excellent and suspension almost excellent remain historical only; exact session state was never persisted.
 
-## 7. Dynamic state — serious but intentionally deferred
+## 7. Dynamic state — deferred
 
-Jozz reports that driving feel, suspension stability and steering/controllability have strongly regressed compared with earlier playable experience.
+Jozz reports severe regression of driving feel, suspension stability and steering/controllability compared with earlier playable experience.
 
-Current focused steering tests still pass rack/constraint safety checks. Therefore automated safety consistency and owner feel are currently divergent evidence, not interchangeable verdicts.
+Focused rack/constraint tests still pass. Treat this as evidence divergence: automated safety consistency is not owner feel.
 
-Owner decision: **do not repair driving feel yet**. Finish visual rig coherence first, then reopen suspension/steering/vehicle-feel work as its own campaign.
+Owner decision: do not repair dynamics now. Reopen that as a separate campaign after visual closure.
 
-## 8. Why current green tests are insufficient for geometry acceptance
-
-Several focused tests validate that generated geometry/bindings match the current calibration model. They do not independently prove that the calibration model's target point is the correct visible mating point on the authored vehicle.
-
-Examples:
-
-- cardan endpoints can exactly match a geometry-derived differential-face calculation while still missing the visually correct differential output on the rendered chassis;
-- wishbone vertices can exactly map to current M6 hardpoints while those hardpoints/relationships are visually too far from the authored frame;
-- all 59 bindings can remain attached to live runtime parts while local axes, endpoint derivations or transforms remain visually wrong.
-
-Required evidence separation:
+## 8. Evidence model for recovery
 
 ```text
-SOURCE/CONSISTENCY PASS
-ARTIFACT REPRODUCIBLE
-RUNTIME ATTACHED
-OWNER VISUALLY CORRECT
-OWNER FEEL ACCEPTED
+E0 identity/reproducibility
+E1 local calibration consistency
+E2 cross-asset mating truth
+E3 runtime kinematic coherence
+E4 owner visual acceptance
+E5 owner handling/feel acceptance — later
 ```
 
-These are separate gates.
+Several existing tests prove E1 against the same calibration model used by the generator. V0 demonstrates why E1 cannot substitute for E2/E4.
 
-## 9. Current generator dependency facts
+## 9. Generator/dependency facts
 
-R3 is a patch over the exact R2 package rather than a clean independent re-authoring.
+R3 patches the exact R2 package rather than independently re-authoring every part. It separately handles front/rear wishbones, knuckle/hub/chassis references, dampers, cardans and wheel interface. This makes bounded mechanism-level recovery possible.
 
-Current generator separately calibrates:
+The dependency root is currently treated as chassis/corner attachment authority, not steering pivot. Downstream hub, damper and cardan judgments depend on a coherent chassis-to-wheel skeleton.
 
-- front wishbone geometry to current M6 hardpoints;
-- front knuckle/upright pieces to current wheel/kingpin geometry;
-- chassis-side front brackets;
-- front dampers as chassis-to-lower-arm part pairs;
-- rear wishbones/hub/chassis references;
-- rear twin dampers as chassis-to-lower-arm pairs;
-- cardans as chassis differential-output to knuckle/hub part pairs;
-- wheels through the authored wheel-mount interface.
+## 10. Preparation findings
 
-This separation is useful: future corrections can be bounded by mechanism instead of rewriting all 59 bindings.
-
-## 10. Prepared visual-repair methodology — no implementation yet
-
-The next work must proceed root-to-leaf because bad root relationships currently make downstream parts hard to judge.
-
-Prepared dependency hypothesis:
+A new measurement-only interface audit is now available:
 
 ```text
-A. chassis <-> suspension/wishbone attachment skeleton
-B. hub/upright package between wishbones and wheel
-C. damper/spring rig
-D. cardan visual endpoints
-E. remaining local front/rear pieces
-F. stance/ride height
-G. whole-rig visual integration
-H. later: handling/stability/steering feel
+npm run inspect:owner-rig-interfaces
 ```
 
-This is not a fixed roadmap. Before each implementation slice, inspect the exact source transform chain, define the smallest allowed blast radius, and change only one observable relationship/mechanism.
+It regenerates the exact rig, compares authored whole-rig placement with current physical targets, measures proximity to rendered chassis geometry and groups all 59 real bindings. Its classification is `MEASUREMENT_ONLY_NOT_ACCEPTANCE`; it deliberately does not freeze current bad distances.
 
-For symmetric mechanisms, prove the solve on one conceptual side/corner first when practical, then mirror deterministically rather than independently hand-tuning all four corners.
-
-Each implementation cycle:
+Representative symmetric V0 deltas:
 
 ```text
-one narrow visual question
--> exact source/current-state measurement
--> smallest correction
--> focused automated evidence
--> stable playable candidate
--> one focused Jozz verdict
--> record/freeze accepted scope
--> next question
+upper hinge authored placement -> current target ~0.216 m
+lower hinge authored placement -> current target ~0.155 m
+damper upper authored placement -> current target ~0.529 m
+front authored steering socket -> current physical steering arm ~0.222 m
 ```
 
-Do not create a broad `fix suspension` or `fix owner rig` slice.
+Nearest-surface measurements further support investigating chassis-side mount authority first, especially damper upper placement. They do not prove authored placement is final.
 
-## 11. Physics/runtime authority
+Cardan current pair endpoints equal authored placed socket points in this audit, yet V0 still shows differential-side visual mismatch. Therefore endpoint consistency alone is insufficient; rendered mating face/pivot/orientation must be checked later.
+
+## 11. Native selective prior art
+
+Current native JV has relevant read-only evidence:
+
+- native and Web share the chassis base visual transform;
+- native lands authored suspension `WheelCenter` on wheel `Socket_WheelMount` before splitting visual roles;
+- native separates chassis/lower-arm/knuckle visual ownership;
+- native wishbones draw between live endpoints;
+- native steering rod uses real rack center because rack-end placement created a short stub;
+- native diagnostics visualize live hardpoints, kingpin, coilover and rack/steering relations.
+
+This prior art should be checked mechanism-by-mechanism before inventing new mappings. It does not authorize wholesale native port or parity claims.
+
+## 12. Prepared execution order
+
+The stable execution contract defines the dependency stages:
+
+```text
+P0 preparation/measurement — complete
+S1 chassis <-> suspension attachment authority
+S2 corner landing / kinematic body roles
+S3 wishbones
+S4 upright / hub / wheel
+S5 dampers / springs
+S6 steering rods
+S7 cardans
+S8 stance
+S9 whole-rig visual integration
+D0 later handling/stability recovery
+```
+
+This is a dependency model, not a rigid roadmap. Skip stages proven correct and split stages further whenever attribution benefits.
+
+Each product slice must ask one narrow visible question, define allowed bindings/mechanisms, run focused evidence, produce a stable candidate, obtain one owner verdict and freeze accepted scope before the next mechanism.
+
+## 13. Tooling road
+
+T0 interface audit exists now. T1 visual category/corner isolation, T2 physical/reference overlay, T3 fixed validation views, T4 reusable owner-candidate launcher and T5 accepted-interface regression gates are designed but intentionally lazy: implement each only when a selected slice needs it.
+
+V0 proved the self-contained Windows launcher pattern. Future owner candidates should reuse/formalize it so Jozz validates appearance rather than technical setup.
+
+## 14. Physics/runtime authority
 
 ```text
 backend: legacy_ts_m6
@@ -181,20 +178,22 @@ productPhysicsAuthority: false
 nativeParity: NOT_PROVEN
 ```
 
-Do not use the coming visual campaign as an excuse to retune TypeScript drivetrain/suspension/tire/steering behavior.
+Do not use visual recovery to retune TypeScript drivetrain/suspension/tire/steering behavior.
 
-## 12. Public state
+## 15. Public state
 
-Public R0 remains immutable and published from `release/r0`. R1 publication resumes only after meaningful owner-visible progress is worth showing. Do not rebuild/replace R0 in place.
+Public R0 remains immutable on `release/r0`. R1 publication resumes only after meaningful owner-visible progress is worth showing. Do not rebuild/replace R0 in place.
 
-## 13. Current operational state
+## 16. Current operational state
 
-- branch cleanup complete; `main` is the only active authority;
-- exact V0 artifact and Windows/browser execution are proven;
-- fresh owner screenshots + description are the current visual authority;
-- previous R4 visual acceptance is historical, not current;
-- current visual rig requires systematic correction;
-- dynamic feel/stability/steering regression is recorded but intentionally deferred;
-- no product correction has yet been started after V0.
+- branch/documentation cleanup complete;
+- `main` only active source authority;
+- exact V0 artifact and canonical Windows/browser execution proven;
+- fresh owner screenshots/description are current visual authority;
+- recovery dependency plan and evidence taxonomy defined;
+- measurement-only interface audit implemented;
+- native selective prior art identified;
+- no owner-rig product correction started after V0;
+- dynamic feel/stability/steering regression recorded and deferred.
 
-The next conversation step may begin implementation only after selecting one smallest dependency-root visual relationship and revalidating the live `main` tip.
+Next product work begins only when Jozz explicitly opens implementation. The first step is not an asset patch: discriminate the authority/cause for one S1 chassis-to-wishbone attachment relationship, then make the minimum correction.
