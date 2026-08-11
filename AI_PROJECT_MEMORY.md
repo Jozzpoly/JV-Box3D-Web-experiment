@@ -1,10 +1,10 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-11
-Status: `S1 FL UPPER INTEGRATED / S2-R TWO-STAGE WHEEL-SIDE RECONSTRUCTION ACTIVE`
+Status: `S1 FL UPPER INTEGRATED / S2 GOLDEN CONTRACT OWNER ACCEPTED / FRESH FRONT-CORNER REBUILD NEXT`
 Owner: Jozz
 
-This is a router. Current Git, exact evidence and direct owner correction outrank documentation and agent confidence.
+This is a router. Current Git, exact authored source, exact working native behavior and direct owner correction outrank documentation and agent confidence.
 
 ## Product authority
 
@@ -13,8 +13,10 @@ Jozzpoly/JV-Box3D-Web-experiment main
 integrated product checkpoint: 67d66ed412342fee5445b2901d85a663a084bf4e
 tree: f2e1836800719cc9cc7007631568c41e45471450
 
-native/core reference for S2-R:
-Jozzpoly/Box3d_FunProject — READ ONLY
+native golden reference for front-corner rebuild:
+Jozzpoly/Box3d_FunProject
+959aefb78587ce60cf2b8eb03ff82797a4165142
+READ ONLY
 
 public R0:
 Jozzpoly/JV-Box3D-Web-Public release/r0
@@ -23,37 +25,58 @@ c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 
 ## Protected integrated truth
 
-FL upper static FRONT+TOP relationship and real neutral suspension articulation are OWNER ACCEPTED and integrated. Do not reopen without direct contradictory evidence.
+FL upper static FRONT+TOP relationship and real neutral suspension articulation are OWNER ACCEPTED and integrated.
 
-## Critical current owner correction
+Preserve the accepted FL-upper mechanism and chassis-side semantics. If the golden front-corner rebuild legitimately changes the physical wheel-side joint location, do not preserve a stale outboard coordinate merely to keep an old hardpoint; re-run focused S1 regression and show any visible change in the new owner gate.
 
-Previous S2 agents/analysis repeated a historical failure mode: the wheel-side mechanism was modeled semantically as one `knuckle/upright` member.
+## Owner-accepted golden front-corner contract
 
-OWNER REJECTED.
+The previous one-knuckle Web interpretation is rejected.
 
-Hard current truth:
+```text
+#6 Socket_ChassisMount_b
+= suspension-side / non-steering member
+= follows suspension articulation
 
-- knuckle mechanism has **two separately rigged members**;
-- suspension-side member: tied to wishbones, static relative to steering — owner marked YELLOW;
-- steerable member: separate rotating member linking onward to wheel — owner marked RED;
-- a distinct relative steering axis/DOF exists between them — owner marked its projected position/center with BLUE lines;
-- wheel spin is a separate DOF from this steering rotation;
-- native JV already contains the correct conceptual split and is mandatory read-only reference.
+#8 Socket_WheelCenter
+= separate steerable structural member
+= steers relative to #6
+= does not wheel-spin
 
-Do not infer exact mesh membership or exact 3D axis from the annotations alone. Those remain to be reconstructed from owner evidence + authored source + core JV.
+wheel
+= follows steering member
+= has separate spin DOF
+```
 
-## Active task
+The authored `Axis_SuspensionTravel_Top/Bottom` markers establish the correct source registration/steering center and `Socket_WheelCenter` lies exactly on their line and midpoint.
 
-`S2-R — reconstruct FL two-stage wheel-side steering mechanism`
+Critical nuance: **steering-axis position/center is protected; final direction is not required to remain perfectly vertical.** A physically justified tilt/caster/KPI-like direction may be used, but it must rotate about/pass through the accepted WheelCenter steering center instead of reintroducing the old displaced ~140 mm kingpin.
 
-No product writes. Implementer has broad freedom to investigate current JV-Web and native JV, use disposable analysis/prototypes and choose the best method.
+## Root cause already established
 
-Required output: native topology, authored source decomposition, 3D steering axis/joint, exact current Web mismatch, smallest future repair architecture and a clean owner-facing map/prototype.
+Working native M6 behavior and the copied Web contract diverged:
 
-No production implementation or S3 until owner validates the reconstructed semantic/topological model.
+- native working visual path: #6 non-steering arm/carrier frame, #8 steering knuckle frame;
+- stale contract: both classified as knuckle;
+- Web R2/R3 copied the stale collapse;
+- generic receipt caster/KPI/kingpin-offset geometry became de facto owner-rig authority;
+- R3 then transformed authored source toward those generated hardpoints;
+- tests certified self-consistency of the derived Web model rather than parity with the mechanism being copied.
 
-## Workflow lesson
+Do not restore this authority inversion.
 
-For this difficult mechanism, agent technical self-consistency is not owner truth. The project has repeatedly produced confident but wrong interpretations here. Use owner-facing falsification before implementation.
+## Next operation
 
-Orchestrator sets authority/protected truth/falsifiers; implementer should do the heavy technical investigation and have freedom over method. Avoid repeating full repo archaeology when exact continuity is already established.
+Start a **fresh implementer conversation**. Do not preload the old implementer chat as authority.
+
+The fresh implementer should read only current `AGENTS.md`, this router, current `docs/OWNER_CHECKPOINTS.md`, and current `docs/IMPLEMENTER_TASK.md`, then inspect exact source/native/code required by the active task.
+
+The next task is a bounded production rebuild of the **front-left golden/source mechanism**, with broad implementer freedom and a mandatory owner-visible gate before promotion.
+
+Do not mirror FR or continue to downstream geometry until FL demonstrates the accepted topology, steering center, suspension articulation and independent wheel spin in real runtime.
+
+## Workflow rule
+
+When a working native mechanism exists, port/copy its demonstrated behavior first. Any Web divergence must be explicit and justified.
+
+Secondary docs/contracts/receipts are evidence, not authority, until revalidated against owner/source/golden behavior.
