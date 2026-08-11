@@ -2,66 +2,57 @@
 
 Updated: 2026-08-11
 Status: **ACTIVE**
-Task: **S2-AXIS — audit current steering axis against authored source authority**
-Mode: **ROOT-CAUSE / OWNER-VALIDATION-FIRST / NO PRODUCT PATCH**
+Task: **S2-PARITY — recover the golden native FL front-corner rig contract**
+Mode: **PARITY / ROOT-CAUSE / OWNER-VALIDATION-FIRST / NO PRODUCT PATCH**
 
-## Why this task changed again
+## Why this task supersedes the narrow axis audit
 
-Owner clarified a critical authority mistake in the previous reconstruction.
+Owner feedback exposed a broader failure mode behind the current axis regression and likely a substantial part of the last several days of unsuccessful rig recovery.
 
-For this mechanism, the authored source asset is the geometry authority. `OneSided_Steering_Suspension_Rig.gltf` already contains the two nodes intended by the owner to define the exact steering-axis placement:
+The original practical goal was to bring the already-working native/core JV front-corner rig behavior into JV-Web. Instead, successive Web iterations increasingly reconstructed a new rig from native factory receipts, generic M6 hardpoints, copied contracts, calibration helpers and project documentation.
 
-```text
-Axis_SuspensionTravel_Top
-Axis_SuspensionTravel_Bottom
-```
+There is now direct evidence that those secondary layers can contradict the working native rig and the authored source asset.
 
-Direct inspection of the exact integrated GLTF gives local authored translations:
+Known smoking-gun example:
 
-```text
-Axis_SuspensionTravel_Top    = [-0.1875, -0.3125,  0.0625]
-Axis_SuspensionTravel_Bottom = [-0.1875, -2.3125,  0.0625]
-Socket_WheelCenter           = [-0.1875, -1.3125,  0.0625]
-```
+- native M6 rig-lab explicitly puts `Socket_ChassisMount_b` on the NON-STEERING lower-arm/carrier frame and `Socket_WheelCenter` on the steering knuckle frame;
+- the copied `one_sided_steering_suspension.asset.json` contract says BOTH `Socket_ChassisMount_b` and `Socket_WheelCenter` `ridesBody: "knuckle"`;
+- current Web R2/R3 packaging follows that collapsed interpretation and groups both as front knuckle pieces;
+- the authored source itself contains `Axis_SuspensionTravel_Top` / `Axis_SuspensionTravel_Bottom` with `Socket_WheelCenter` exactly on their line, while generic M6 hardpoints generate a different kingpin from caster/KPI values.
 
-`Socket_WheelCenter` lies exactly on the Top↔Bottom line and exactly halfway between those markers. After the authored root translation, the line also agrees with the owner's latest hand-drawn green correction.
+This means a self-consistent Web implementation can be technically green while still being a regression relative to the mechanism we were supposed to copy.
 
-The previous S2-R reconstruction instead placed the axis using inferred/physical M6 references (`upperBall↔lowerBall`, caster/KPI and an inferred lower point). Owner reports that this class of interpretation has repeatedly reintroduced a visibly wrong steering axis in past iterations.
+Do not implement another local fix until the golden native/source contract is recovered and owner-validated.
 
-This is now treated as a **probable recurring root-cause regression pattern**.
+## Authority order
 
-## Authority order for this bounded problem
+For this front-corner recovery task use:
 
-Use this hierarchy deliberately:
+1. **OWNER + exact authored source asset** — authority for intended visual geometry, authored sockets/axes and owner-corrected semantics.
+2. **Exact working native/core JV behavior** — golden implementation reference to copy where it agrees with owner/source. Identify the exact working path; do not treat every native helper/config as equally authoritative.
+3. **Current JV-Web code/runtime** — target to audit and repair, not truth.
+4. **Docs, JSON contracts, factory receipts, calibration prose/tests** — potentially stale/corrupted evidence. They must be revalidated against owner/source/golden native behavior before being trusted.
 
-1. **OWNER + exact authored source geometry** — authoritative for the intended steering-axis placement and visual mechanism.
-2. **Current integrated product code/runtime** — implementation to audit against the authored source.
-3. **Native/core JV** — read-only implementation/mechanism reference; useful for topology and engineering patterns, but it does not override the authored axis geometry for this asset.
-4. **Project docs / JSON contracts / historical calibration prose** — potentially stale or corrupted in this area. They are evidence only. If they conflict with owner + exact source, they lose.
+If a secondary contract or test contradicts owner/source/golden working behavior, classify the secondary artifact as suspect; do not average the interpretations.
 
-Do not attempt to reconcile contradictory documentation by averaging or preserving both interpretations.
+## Protected owner truth already established
 
-## Protected owner truth
-
-Treat these as hard constraints unless direct source geometry itself proves an inconsistency:
-
-- yellow and red are separate rigid visual members;
-- yellow = suspension-side/non-steering member;
-- red = steerable member rotating relative to yellow;
+- yellow suspension-side member and red steerable member are separate;
+- yellow follows suspension articulation but must not inherit steering rotation;
+- red steers relative to yellow;
 - wheel spin is a separate DOF;
-- `Axis_SuspensionTravel_Top` + `Axis_SuspensionTravel_Bottom` define the intended steering-axis placement in the authored source rig;
-- `Socket_WheelCenter` lies on that authored axis;
-- the previous one-knuckle visual interpretation is rejected;
-- the previous displaced blue axis is rejected;
-- S1 FL-upper accepted semantics remain protected unless a specific contradiction is demonstrated.
-
-The marker names contain `SuspensionTravel`, but owner intent and their source geometry are the authority for their steering-axis use here. Do not downgrade them because an old contract labels them only as `physics_hint` or `physicsAuthority:false`.
+- `Socket_ChassisMount_b` belongs to the non-steering suspension-side behavior, not the same steering frame as `Socket_WheelCenter`;
+- `Socket_WheelCenter` is steerable and does not wheel-spin as a structural reference;
+- `Axis_SuspensionTravel_Top` + `Axis_SuspensionTravel_Bottom` define the intended authored steering-axis placement for this asset;
+- `Socket_WheelCenter` lies exactly on that authored axis;
+- the previous displaced blue axis and one-knuckle interpretation are rejected;
+- integrated S1 FL-upper static/live owner acceptance remains protected unless a direct parity contradiction is demonstrated.
 
 ## One bounded question
 
-> Where and why does current JV-Web/native-derived steering geometry deviate from the authored `Axis_SuspensionTravel_Top↔Bottom` axis, and what is the smallest correct future repair that makes the yellow/red steering mechanism and wheel steering motion obey the authored axis without regressing the already accepted suspension work?
+> What exact FL front-corner rig behavior should JV-Web copy from the golden native implementation and authored source, where does current JV-Web diverge from that behavior, and what is the smallest coherent repair program that restores parity without redesigning the mechanism from secondary documentation?
 
-This is no longer a question of mapping two equal truths. The authored axis is the target; current physics/visual logic must be audited against it.
+This is a copy/parity investigation, not a fresh suspension design exercise.
 
 ## Product / write boundary
 
@@ -73,143 +64,158 @@ tree: f2e1836800719cc9cc7007631568c41e45471450
 
 Remote/product write authority: **NONE**.
 
-Do not patch product code in this task. First reconstruct the root cause and prepare an owner-verifiable repair design.
+Do not patch the product or create a work branch in this task. Disposable local probes/prototypes are allowed.
 
 ## Implementer freedom
 
-Own the technical investigation. Inspect whatever current JV-Web and native/core JV files are genuinely required. Use disposable scripts, local probes, diagrams, rendered comparisons or kinematic prototypes as useful.
+Own this investigation. The orchestrator deliberately does NOT prescribe an implementation file list or algorithm.
 
-Do not spend time re-proving repository identity already established; a light continuity check is enough.
+Inspect whichever exact native/core JV and JV-Web files are necessary. Use local scripts, source extraction, diagrams, runtime probes, side-by-side renders or disposable parity prototypes as useful.
 
-Do not wait for the orchestrator to prescribe exact implementation files or formulas. Find the real path yourself.
+Do not repeat full repository archaeology if continuity is intact. Spend the effort on the mechanism and divergence, not ceremony.
 
-## Required investigation
+## Required result
 
-### A. Prove the authored axis exactly
+### A. Establish the golden native reference
 
-From the exact source GLTF:
+Resolve the exact current native/core JV SHA and identify the code path(s) that actually express the working front-corner rig behavior the owner intended to copy.
 
-- compute the composed/world authored positions of `Axis_SuspensionTravel_Top`, `Axis_SuspensionTravel_Bottom`, `Socket_WheelCenter`, yellow member and red member;
-- prove the Top↔Bottom line and WheelCenter relationship numerically;
-- show it in the same projections used by the owner;
-- treat this as the target geometry, not a hint to be adjusted toward current physics.
+At minimum investigate the relationship between:
 
-### B. Trace every current source of steering-axis geometry
+- working M6 front-corner visual rig behavior;
+- M9 steering-rig bench where useful as semantic cross-check;
+- generic M6 physical hardpoint/steering geometry.
 
-Find all current JV-Web and relevant native-derived paths that can influence:
+Do not assume all three are equally authoritative. If the working visual rig and generic physical geometry disagree, report that explicitly.
 
-- upper/lower steering pivots / ball points;
-- kingpin direction;
-- caster;
-- KPI;
-- knuckle transform origin;
-- wheel-center steering transform;
-- steering-link outboard geometry;
-- any calibration or hardpoint generation that can move the steering axis.
-
-For each path classify:
+Extract the golden behavior in plain mechanical terms:
 
 ```text
-SOURCE-DERIVED / AUTHORED-CONSISTENT
-HISTORICAL / STALE
-PHYSICS-DERIVED BUT SOURCE-CONFLICTING
+chassis attachment
+suspension-side / non-steering member
+steerable member
+wheel center
+steering axis
+steering link
+wheel steering
+wheel spin
+suspension articulation
+```
+
+### B. Build a parity matrix: golden/source vs current Web
+
+For each important front-left role/DOF, classify current Web as:
+
+```text
+PARITY
+INTENTIONAL ADAPTATION — justify why it is required in Web
+REGRESSION
 UNKNOWN
 ```
 
-The goal is to identify the actual mechanism that repeatedly pulls the axis away from the authored placement.
+Include at least:
 
-### C. Quantify current deviation from authored authority
+- `Socket_ChassisMount_b` ownership/frame;
+- `Socket_WheelCenter` ownership/frame;
+- yellow/red member split;
+- authored Top↔Bottom steering axis;
+- upper/lower ball / kingpin generation;
+- caster/KPI influence;
+- wheel center and wheel steering transform;
+- wheel spin separation;
+- steering-link outboard reference;
+- relevant wishbone outboard/shared-joint semantics;
+- any calibration stage that shears/repositions the authored rig toward generated M6 hardpoints.
 
-Put the authored Top↔Bottom axis and the current live/product steering axis in one common frame.
+### C. Trace the regression chain
 
-Measure separately:
+Identify where the wrong interpretation entered or was reinforced.
 
-- axis-position offset;
-- angular difference;
-- WheelCenter distance from each axis;
-- which coordinates/DOFs differ;
-- whether current caster/KPI or generated physical hardpoints are the direct cause.
+Audit, as evidence rather than assumed truth:
 
-Do not preserve caster/KPI values merely because they exist in native/current code. If they conflict with the authored source, classify them as suspect implementation/calibration until proven compatible.
+- copied asset contract semantics;
+- native factory receipt / Web topology config;
+- Web `m6WishboneHardpoints` / runtime kingpin construction;
+- R2/R3 owner-rig package generation;
+- R3 front reference/knuckle calibration;
+- tests/docs that currently certify or repeat the collapsed model.
 
-### D. Audit the two-member + wheel kinematics
+Find the smallest set of stale/corrupted/secondary authorities that can explain repeated regression back to the wrong rig.
 
-With authored axis as authority, determine the correct live relationship:
+Do not merely list differences: explain the causal path by which an agent following the current repo can reasonably arrive at the wrong result.
 
-```text
-yellow suspension-side member
-    -> follows suspension articulation, no steering twist
-red steerable member
-    -> rotates relative to yellow about authored steering axis
-wheel
-    -> follows steerable member for steering and retains independent spin
-```
+### D. Determine the correct repair boundary
 
-Determine whether the current M6 physical topology can express this correctly after hardpoint/transform correction, or whether a deeper physics topology repair is truly required.
+Recommend the smallest **coherent** future production repair that copies the golden mechanism.
 
-Do not add a physics body just to mimic an authored visual split if existing physics can represent the correct DOFs.
+Decide from evidence whether the repair must change:
 
-### E. Root-cause / anti-regression design
+- visual/binding topology only;
+- physical hardpoints/steering axis;
+- both;
+- or another bounded surface you discover.
 
-Recommend the smallest future repair and, critically, how to prevent another agent from regenerating the rejected axis later.
+Do not preserve generic caster/KPI/hardpoint values simply because they are currently in code or receipts. If they contradict the authored/golden target, they are implementation candidates for replacement/correction.
 
-The repair design should prefer direct derivation from the authored markers or an explicit persisted transform whose provenance is those markers.
+Equally, do not invent extra physics bodies if the golden M6 implementation achieves the correct behavior using existing bodies/frames.
 
-Identify stale docs/contracts/calibrations/tests that would need correction or retirement so they cannot later override the source authority.
+### E. Anti-regression design
 
-Do not implement the repair yet.
+The future repair must not rely on another agent remembering this conversation.
 
-## Owner-facing gate
+Propose how to make the correct source/golden semantics executable and difficult to regress, for example through source-derived roles/axis, parity tests or retirement/correction of stale secondary artifacts.
 
-Prepare one concise falsifiable owner board/prototype.
+Tests should check parity with the intended mechanism, not merely self-consistency of generated Web data.
 
-Mandatory:
+### F. Owner-facing golden-contract gate
 
-- actual authored source geometry;
-- yellow and red members;
-- **authoritative authored Top↔Bottom axis** prominently shown;
-- WheelCenter shown on the authored axis;
-- current/rejected runtime axis shown separately only as a diagnostic comparison;
-- numeric position/angular deviation summarized without clutter;
-- orthogonal view confirming the coordinate that owner previously said was already correct.
+Prepare a concise visual/mechanical board for Jozz before implementation.
 
-If a disposable motion prototype is useful, make the red member rotate about the authored axis and show independent wheel spin. Label it `DIAGNOSTIC PROTOTYPE — NOT PRODUCT RUNTIME`.
+It should make it easy to verify:
 
-The owner is validating the authored-axis interpretation and proposed correction, not final steering feel, lower wishbone, cardan, damper or whole-car geometry.
+- yellow non-steering member;
+- red steering member;
+- authored Top↔Bottom axis;
+- WheelCenter on that axis;
+- how steering occurs relative to suspension travel;
+- wheel spin as a separate DOF;
+- where current Web differs from the golden/source target.
+
+Prefer direct source/native-vs-Web comparison over abstract diagrams alone. Label uncertainties honestly.
+
+If useful, make a disposable `GOLDEN PARITY PROTOTYPE — NOT PRODUCT` that reproduces the native/source mechanism in isolation. This is allowed and encouraged if it reduces ambiguity.
 
 ## Decision states
 
-`OWNER_GATE_READY` — authored axis is proven, current regression source is identified strongly enough, and the proposed repair architecture can be visually validated by Jozz.
+`OWNER_GATE_READY` — golden native/source contract is reconstructed, the Web regression chain is explained, and one coherent repair direction is ready for owner validation.
 
-`REPLAN` — exact source geometry reveals that the current yellow/red decomposition is still materially wrong, or more than one implementation root cause remains plausible and requires discrimination.
+`REPLAN` — native/source evidence itself contains multiple materially different plausible golden paths or a new owner-level ambiguity appears. Return the competing interpretations and best discriminator.
 
-`BLOCKED` — an exact current/native artifact required to trace the regression cannot be accessed. Ask early for that exact artifact.
+`BLOCKED` — an exact artifact required for the parity reconstruction cannot be accessed. Ask early for the specific missing file/artifact rather than spending a long cycle on workarounds.
 
-No product patch, work branch, S3 or downstream geometry task is allowed before owner verdict.
+No product patch or downstream S3 is authorized before owner verdict on this parity reconstruction.
 
 ## Return
 
-Respond compactly in Polish. Prioritize root cause and proposed repair over process narration:
+Return compactly in Polish. Prioritize discoveries and causality over process narration:
 
 ```text
-TASK: S2-AXIS
+TASK: S2-PARITY
 RESULT: OWNER_GATE_READY | REPLAN | BLOCKED
 CONTROL TIP:
 PRODUCT BYTES CHANGED: NO
 REMOTE WRITES: NONE
 
-AUTHORED AXIS AUTHORITY:
-CURRENT AXIS / DEVIATION:
-ROOT CAUSE(S):
-CASTER/KPI/HARDPOINT VERDICT:
-YELLOW/RED/WHEEL KINEMATICS:
-STALE/CORRUPTED EVIDENCE FOUND:
-SMALLEST FUTURE REPAIR:
+GOLDEN NATIVE REFERENCE:
+GOLDEN FRONT-CORNER CONTRACT:
+PARITY MATRIX:
+CURRENT WEB REGRESSIONS:
+ROOT-CAUSE CHAIN:
+STALE/CORRUPTED SECONDARY AUTHORITIES:
+CORRECT REPAIR BOUNDARY:
 ANTI-REGRESSION PLAN:
 UNCERTAINTIES / FALSIFIERS:
 OWNER MATERIAL:
 ```
 
-If `OWNER_GATE_READY`, ask only:
-
-> **Czy teraz oś jest zrozumiana poprawnie: `Axis_SuspensionTravel_Top/Bottom` wyznaczają właściwą oś source i proponowana naprawa sprawi, że czerwony człon oraz koło będą skręcały dokładnie wokół niej względem żółtego członu? Jeśli nie, wskaż co nadal jest źle.**
+If `OWNER_GATE_READY`, finish with one focused owner question that asks whether the reconstructed golden/source mechanism is now correctly understood. Do not ask for final product acceptance yet.
