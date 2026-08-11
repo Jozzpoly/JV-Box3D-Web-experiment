@@ -2,220 +2,309 @@
 
 Updated: 2026-08-11
 Status: **ACTIVE**
-Task: **S2-PARITY — recover the golden native FL front-corner rig contract**
-Mode: **PARITY / ROOT-CAUSE / OWNER-VALIDATION-FIRST / NO PRODUCT PATCH**
+Task: **S2-PORT — rebuild FL front corner from the owner-accepted golden/source contract**
+Mode: **PRODUCTION REBUILD / FRESH IMPLEMENTER / OWNER-GATED**
 
-## Why this task supersedes the narrow axis audit
+## 0. Fresh-context rule
 
-Owner feedback exposed a broader failure mode behind the current axis regression and likely a substantial part of the last several days of unsuccessful rig recovery.
+This task is intentionally designed for a **new implementer conversation**.
 
-The original practical goal was to bring the already-working native/core JV front-corner rig behavior into JV-Web. Instead, successive Web iterations increasingly reconstructed a new rig from native factory receipts, generic M6 hardpoints, copied contracts, calibration helpers and project documentation.
+Do not import the previous implementer chat as authority. It contained a long-lived, now-rejected hierarchy where stale contracts / receipts / derived M6 hardpoints repeatedly overrode the mechanism that was supposed to be copied.
 
-There is now direct evidence that those secondary layers can contradict the working native rig and the authored source asset.
+Bootstrap from current Git only:
 
-Known smoking-gun example:
+1. current `AGENTS.md`;
+2. current `AI_PROJECT_MEMORY.md`;
+3. current `docs/OWNER_CHECKPOINTS.md`;
+4. this file.
 
-- native M6 rig-lab explicitly puts `Socket_ChassisMount_b` on the NON-STEERING lower-arm/carrier frame and `Socket_WheelCenter` on the steering knuckle frame;
-- the copied `one_sided_steering_suspension.asset.json` contract says BOTH `Socket_ChassisMount_b` and `Socket_WheelCenter` `ridesBody: "knuckle"`;
-- current Web R2/R3 packaging follows that collapsed interpretation and groups both as front knuckle pieces;
-- the authored source itself contains `Axis_SuspensionTravel_Top` / `Axis_SuspensionTravel_Bottom` with `Socket_WheelCenter` exactly on their line, while generic M6 hardpoints generate a different kingpin from caster/KPI values.
+Then inspect only the exact source/native/Web files required to execute the rebuild.
 
-This means a self-consistent Web implementation can be technically green while still being a regression relative to the mechanism we were supposed to copy.
+Old chats, old S2 reports and historical docs may be used only as archaeology if a specific question requires them.
 
-Do not implement another local fix until the golden native/source contract is recovered and owner-validated.
+## 1. Authority order
 
-## Authority order
+For this transaction:
 
-For this front-corner recovery task use:
+1. **direct owner acceptance + exact authored source asset**;
+2. **exact working native/core JV behavior where it agrees with owner/source**;
+3. candidate runtime evidence;
+4. current JV-Web implementation as a repair target;
+5. docs / JSON contracts / factory receipts / historical calibration/tests as secondary evidence only.
 
-1. **OWNER + exact authored source asset** — authority for intended visual geometry, authored sockets/axes and owner-corrected semantics.
-2. **Exact working native/core JV behavior** — golden implementation reference to copy where it agrees with owner/source. Identify the exact working path; do not treat every native helper/config as equally authoritative.
-3. **Current JV-Web code/runtime** — target to audit and repair, not truth.
-4. **Docs, JSON contracts, factory receipts, calibration prose/tests** — potentially stale/corrupted evidence. They must be revalidated against owner/source/golden native behavior before being trusted.
+If a secondary artifact contradicts owner/source/golden working behavior, correct or retire the secondary artifact. Do not average the interpretations.
 
-If a secondary contract or test contradicts owner/source/golden working behavior, classify the secondary artifact as suspect; do not average the interpretations.
+## 2. Exact references
 
-## Protected owner truth already established
-
-- yellow suspension-side member and red steerable member are separate;
-- yellow follows suspension articulation but must not inherit steering rotation;
-- red steers relative to yellow;
-- wheel spin is a separate DOF;
-- `Socket_ChassisMount_b` belongs to the non-steering suspension-side behavior, not the same steering frame as `Socket_WheelCenter`;
-- `Socket_WheelCenter` is steerable and does not wheel-spin as a structural reference;
-- `Axis_SuspensionTravel_Top` + `Axis_SuspensionTravel_Bottom` define the intended authored steering-axis placement for this asset;
-- `Socket_WheelCenter` lies exactly on that authored axis;
-- the previous displaced blue axis and one-knuckle interpretation are rejected;
-- integrated S1 FL-upper static/live owner acceptance remains protected unless a direct parity contradiction is demonstrated.
-
-## One bounded question
-
-> What exact FL front-corner rig behavior should JV-Web copy from the golden native implementation and authored source, where does current JV-Web diverge from that behavior, and what is the smallest coherent repair program that restores parity without redesigning the mechanism from secondary documentation?
-
-This is a copy/parity investigation, not a fresh suspension design exercise.
-
-## Product / write boundary
+Integrated private product checkpoint carrying accepted S1:
 
 ```text
-JV-Web integrated product base:
 67d66ed412342fee5445b2901d85a663a084bf4e
 tree: f2e1836800719cc9cc7007631568c41e45471450
 ```
 
-Remote/product write authority: **NONE**.
+The orchestrator will supply the exact current docs-only CONTROL TIP and work-branch tip for this transaction.
 
-Do not patch the product or create a work branch in this task. Disposable local probes/prototypes are allowed.
-
-## Implementer freedom
-
-Own this investigation. The orchestrator deliberately does NOT prescribe an implementation file list or algorithm.
-
-Inspect whichever exact native/core JV and JV-Web files are necessary. Use local scripts, source extraction, diagrams, runtime probes, side-by-side renders or disposable parity prototypes as useful.
-
-Do not repeat full repository archaeology if continuity is intact. Spend the effort on the mechanism and divergence, not ceremony.
-
-## Required result
-
-### A. Establish the golden native reference
-
-Resolve the exact current native/core JV SHA and identify the code path(s) that actually express the working front-corner rig behavior the owner intended to copy.
-
-At minimum investigate the relationship between:
-
-- working M6 front-corner visual rig behavior;
-- M9 steering-rig bench where useful as semantic cross-check;
-- generic M6 physical hardpoint/steering geometry.
-
-Do not assume all three are equally authoritative. If the working visual rig and generic physical geometry disagree, report that explicitly.
-
-Extract the golden behavior in plain mechanical terms:
+Golden native reference:
 
 ```text
-chassis attachment
-suspension-side / non-steering member
-steerable member
-wheel center
-steering axis
-steering link
-wheel steering
-wheel spin
+Jozzpoly/Box3d_FunProject
+959aefb78587ce60cf2b8eb03ff82797a4165142
+READ ONLY
+```
+
+Working native front-corner visual behavior is stronger evidence than generic native hardpoint/config helpers when those layers disagree.
+
+## 3. Owner-accepted golden FL contract
+
+Treat this as the required behavior to implement:
+
+```text
+#6 Socket_ChassisMount_b
+= suspension-side / non-steering structural member
+= follows suspension / wishbone articulation
+= must NOT inherit steering rotation
+
+#8 Socket_WheelCenter
+= separate steerable structural member
+= steers relative to #6
+= must NOT wheel-spin
+
+wheel
+= follows the steerable member for steering
+= has a separate wheel-spin DOF
+
+#7 Socket_SteeringRod outboard
+= follows the steerable member
+```
+
+The exact authored source contains:
+
+```text
+Axis_SuspensionTravel_Top
+Axis_SuspensionTravel_Bottom
+Socket_WheelCenter
+```
+
+and WheelCenter lies exactly on the authored marker line and at its midpoint.
+
+### Steering-axis constraint
+
+The **steering center / axis position is protected owner truth**.
+
+The rebuilt steering axis must pass through the accepted source-derived WheelCenter steering center. Do not reintroduce the old displaced kingpin created from generic `kingpinOffset/caster/KPI` authority.
+
+However, the final runtime axis direction is **not required to stay perfectly vertical**. A modest physically justified tilt/caster/KPI-like direction is allowed if it improves correct wheel behavior, provided:
+
+- the line still passes through the accepted steering center;
+- the tilt is introduced about that center rather than translating the whole axis;
+- its provenance and effect are explicit;
+- it is shown in the final owner gate.
+
+Do not hardcode old `5° caster / 7° KPI / 140 mm kingpinOffset` merely because those values exist. Reuse a direction only if it is technically justified after the center is corrected.
+
+## 4. Protected S1 truth
+
+The integrated FL upper mechanism is owner accepted:
+
+- chassis-side inboard semantics from S1;
+- `PART_PAIR_ROLL_PINNED_STRETCH` mechanism;
+- static FRONT+TOP acceptance;
+- real neutral live articulation acceptance.
+
+Preserve those semantics unless the golden rebuild exposes a direct contradiction.
+
+If rebuilding the correct physical wheel-side mechanism legitimately moves the upper wheel-side joint, do **not** preserve a stale physical coordinate simply to keep an old hardpoint. Re-derive the endpoint, run focused S1 static/live regression, and include any visible change in the owner material.
+
+## 5. One objective
+
+> Build one clean FL front-corner candidate that copies the accepted source/golden mechanism instead of repairing the existing collapsed R2/R3 model piece by piece.
+
+The candidate must demonstrate the correct ordering of DOFs in real runtime:
+
+```text
 suspension articulation
+-> #6 and #8 travel with the corner
+
+steering
+-> #8 rotates relative to #6 about the accepted steering center
+
+wheel spin
+-> wheel spins independently after structural steering
 ```
 
-### B. Build a parity matrix: golden/source vs current Web
+This is a rebuild of the front-left mechanism, not another documentation audit.
 
-For each important front-left role/DOF, classify current Web as:
+## 6. Implementer freedom
+
+Own the technical design and implementation.
+
+You may change the minimum coherent FL front-corner surface required by evidence, including:
+
+- source-derived role/axis contract;
+- visual/binding topology;
+- front steering-axis / hardpoint generation;
+- runtime/reference transforms;
+- stale R2/R3 calibration paths;
+- focused tests and owner diagnostics;
+- the minimum necessary physics/reference logic if visual-only repair cannot express the golden behavior.
+
+Do **not** add a dedicated carrier physics body merely because the authored model has two visual members. Working native M6 already demonstrates that existing live frames may be sufficient. Add/change physical topology only if real evidence requires it.
+
+Prefer a clean source-derived mechanism over another layer of corrective offsets/shears on top of the stale pipeline.
+
+## 7. Required implementation properties
+
+The final candidate must make these facts executable and testable:
+
+### Roles
+
+- #6 and #8 cannot resolve to the same steering frame;
+- #6 remains non-steering through steering motion;
+- #8 follows the steering frame;
+- wheel steering follows #8;
+- wheel spin changes the wheel without rolling #8.
+
+### Axis position
+
+- source marker geometry is read directly from the exact asset;
+- accepted steering center is derived from the source marker/WheelCenter relationship;
+- live steering axis passes through that center within justified numerical tolerance;
+- no hidden ~140 mm lateral/longitudinal displaced kingpin can reappear from receipt defaults.
+
+### Axis direction
+
+- vertical source direction is an allowed baseline, not a mandatory final physics direction;
+- any non-zero tilt is explicit, justified and pivoted about the accepted center;
+- no tilt may silently translate the axis.
+
+### Native parity
+
+- preserve the working native semantic split: non-steering arm/carrier-side frame vs steering knuckle frame;
+- use real rack semantics where relevant rather than stale visual calibration if the working native path provides a clearer correct reference;
+- wheel spin remains a separate body/DOF.
+
+## 8. Stale authority cleanup
+
+The repair is incomplete if the old regression machinery remains able to reassert itself silently.
+
+Audit and correct/retire the minimum stale artifacts necessary so future agents/tests cannot re-create the rejected model, including where applicable:
+
+- stale `one_sided_steering_suspension.asset.json` role semantics;
+- R2/R3 grouping of #6 + #8 as knuckle pieces;
+- R3 use of authored Top↔Bottom only as a direction while discarding line position;
+- tests that require the old ~142 mm so-called authored kingpin offset or only certify mapping to generated hardpoints;
+- docs/comments that present generic receipt hardpoints as source-rig authority.
+
+Do not perform broad unrelated documentation cleanup.
+
+## 9. Scope boundary
+
+This transaction is **FL front corner only**.
+
+Do not:
+
+- mirror to FR;
+- polish the entire lower wishbone beyond what the correct mechanism requires;
+- solve final damper/cardans/stance;
+- tune handling/steering feel;
+- modify public R0;
+- modify native JV;
+- start a broad native/WASM parity program.
+
+If the smallest correct FL rebuild requires a wider product change than this boundary, return `REPLAN` before widening scope.
+
+## 10. Validation
+
+Use the strongest practical environment available. Canonical pinned toolchain is preferred; substitute execution must be labelled supplemental.
+
+At minimum validate:
+
+1. exact candidate lineage and changed-file audit;
+2. source role/axis invariants;
+3. negative test: #6 and #8 cannot share the steering frame;
+4. suspension-only motion: #6/#8 move coherently without steering twist;
+5. steering-only / steering-dominant motion: #8 changes orientation relative to #6 around the accepted center;
+6. wheel-spin discrimination: wheel rolls while #8 does not;
+7. live steering-axis center residual;
+8. real `M6TopologyWorld` path, not hand-edited `VehicleVisualFrame`;
+9. focused S1 upper regression if any relevant hardpoint/reference changes;
+10. candidate bytes == tested bytes.
+
+Do not turn current Web self-consistency into the acceptance oracle. Tests must challenge the candidate against owner/source/golden semantics.
+
+## 11. Owner-facing gate — mandatory
+
+Do not promote to `main` without Jozz's visual verdict.
+
+Prepare one concise, uncluttered real-runtime owner package showing FL only as needed:
+
+- suspension articulation with steering neutral;
+- steering motion clearly showing #8 rotating relative to #6;
+- wheel spin separately attributable;
+- accepted steering center/axis overlay;
+- any chosen axis tilt visible in at least two useful projections;
+- accepted FL upper present as context/control but not buried in line clutter.
+
+Prefer fixed views and ghost/hide irrelevant geometry.
+
+The owner question should ask whether the rebuilt FL mechanism now behaves correctly, especially the #6/#8 split and steering about the accepted center. Do not ask for whole-car acceptance.
+
+## 12. Write authority
+
+The orchestrator will provide one dedicated work branch created from the exact current CONTROL TIP.
+
+Writes are allowed only on that branch.
+
+Do not update `main`, frozen S1 refs, native JV or public repo.
+
+Keep commits attributable and reasonably bounded. A clean redesign may replace stale front-corner machinery; do not preserve obsolete layers merely to minimize line count.
+
+## 13. Return states
+
+### `OWNER_GATE_READY`
+
+A coherent candidate exists, focused technical validation passes, candidate bytes are fixed, and owner material is ready.
+
+### `REPLAN`
+
+The accepted contract cannot be implemented coherently inside the FL boundary, or new evidence falsifies an owner-protected assumption.
+
+### `BLOCKED`
+
+An exact artifact/dependency required for implementation or real runtime cannot be accessed. Ask early for the specific missing item rather than spending a long cycle on low-probability workarounds.
+
+## 14. Return contract
+
+Return compactly in Polish:
 
 ```text
-PARITY
-INTENTIONAL ADAPTATION — justify why it is required in Web
-REGRESSION
-UNKNOWN
-```
-
-Include at least:
-
-- `Socket_ChassisMount_b` ownership/frame;
-- `Socket_WheelCenter` ownership/frame;
-- yellow/red member split;
-- authored Top↔Bottom steering axis;
-- upper/lower ball / kingpin generation;
-- caster/KPI influence;
-- wheel center and wheel steering transform;
-- wheel spin separation;
-- steering-link outboard reference;
-- relevant wishbone outboard/shared-joint semantics;
-- any calibration stage that shears/repositions the authored rig toward generated M6 hardpoints.
-
-### C. Trace the regression chain
-
-Identify where the wrong interpretation entered or was reinforced.
-
-Audit, as evidence rather than assumed truth:
-
-- copied asset contract semantics;
-- native factory receipt / Web topology config;
-- Web `m6WishboneHardpoints` / runtime kingpin construction;
-- R2/R3 owner-rig package generation;
-- R3 front reference/knuckle calibration;
-- tests/docs that currently certify or repeat the collapsed model.
-
-Find the smallest set of stale/corrupted/secondary authorities that can explain repeated regression back to the wrong rig.
-
-Do not merely list differences: explain the causal path by which an agent following the current repo can reasonably arrive at the wrong result.
-
-### D. Determine the correct repair boundary
-
-Recommend the smallest **coherent** future production repair that copies the golden mechanism.
-
-Decide from evidence whether the repair must change:
-
-- visual/binding topology only;
-- physical hardpoints/steering axis;
-- both;
-- or another bounded surface you discover.
-
-Do not preserve generic caster/KPI/hardpoint values simply because they are currently in code or receipts. If they contradict the authored/golden target, they are implementation candidates for replacement/correction.
-
-Equally, do not invent extra physics bodies if the golden M6 implementation achieves the correct behavior using existing bodies/frames.
-
-### E. Anti-regression design
-
-The future repair must not rely on another agent remembering this conversation.
-
-Propose how to make the correct source/golden semantics executable and difficult to regress, for example through source-derived roles/axis, parity tests or retirement/correction of stale secondary artifacts.
-
-Tests should check parity with the intended mechanism, not merely self-consistency of generated Web data.
-
-### F. Owner-facing golden-contract gate
-
-Prepare a concise visual/mechanical board for Jozz before implementation.
-
-It should make it easy to verify:
-
-- yellow non-steering member;
-- red steering member;
-- authored Top↔Bottom axis;
-- WheelCenter on that axis;
-- how steering occurs relative to suspension travel;
-- wheel spin as a separate DOF;
-- where current Web differs from the golden/source target.
-
-Prefer direct source/native-vs-Web comparison over abstract diagrams alone. Label uncertainties honestly.
-
-If useful, make a disposable `GOLDEN PARITY PROTOTYPE — NOT PRODUCT` that reproduces the native/source mechanism in isolation. This is allowed and encouraged if it reduces ambiguity.
-
-## Decision states
-
-`OWNER_GATE_READY` — golden native/source contract is reconstructed, the Web regression chain is explained, and one coherent repair direction is ready for owner validation.
-
-`REPLAN` — native/source evidence itself contains multiple materially different plausible golden paths or a new owner-level ambiguity appears. Return the competing interpretations and best discriminator.
-
-`BLOCKED` — an exact artifact required for the parity reconstruction cannot be accessed. Ask early for the specific missing file/artifact rather than spending a long cycle on workarounds.
-
-No product patch or downstream S3 is authorized before owner verdict on this parity reconstruction.
-
-## Return
-
-Return compactly in Polish. Prioritize discoveries and causality over process narration:
-
-```text
-TASK: S2-PARITY
+TASK: S2-PORT — FL golden front-corner rebuild
 RESULT: OWNER_GATE_READY | REPLAN | BLOCKED
-CONTROL TIP:
-PRODUCT BYTES CHANGED: NO
-REMOTE WRITES: NONE
 
-GOLDEN NATIVE REFERENCE:
-GOLDEN FRONT-CORNER CONTRACT:
-PARITY MATRIX:
-CURRENT WEB REGRESSIONS:
-ROOT-CAUSE CHAIN:
-STALE/CORRUPTED SECONDARY AUTHORITIES:
-CORRECT REPAIR BOUNDARY:
-ANTI-REGRESSION PLAN:
-UNCERTAINTIES / FALSIFIERS:
+CONTROL TIP:
+WORK BRANCH / START TIP:
+FINAL CANDIDATE TIP / TREE:
+NATIVE GOLDEN REF:
+PRODUCT FILES CHANGED:
+STALE AUTHORITY FILES CORRECTED/RETIRED:
+
+IMPLEMENTED MECHANISM:
+#6 NON-STEERING RESULT:
+#8 STEERING RESULT:
+STEERING CENTER RESULT:
+AXIS DIRECTION / TILT RESULT:
+WHEEL-SPIN RESULT:
+STEERING-LINK RESULT:
+S1 CONTROL RESULT:
+REAL M6 RUNTIME RESULT:
+TEST SUMMARY:
+CANDIDATE BYTES == TESTED BYTES:
+
+KNOWN UNKNOWNS / DEFERRED:
+PROTECTED SCOPE CONFIRMED:
 OWNER MATERIAL:
+OWNER GATE REQUIRED: YES
 ```
 
-If `OWNER_GATE_READY`, finish with one focused owner question that asks whether the reconstructed golden/source mechanism is now correctly understood. Do not ask for final product acceptance yet.
+Do not continue into FR or downstream S3 after returning. The orchestrator reviews the exact candidate and Jozz decides the visual gate.
