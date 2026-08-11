@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-11
-Status: `S1 FL UPPER INTEGRATED / S2 GOLDEN CONTRACT OWNER ACCEPTED / FRESH FRONT-CORNER REBUILD NEXT`
+Status: `S1 FL UPPER INTEGRATED / S2 GOLDEN CONTRACT OWNER ACCEPTED / ORCHESTRATOR MIGRATION ACTIVE BEFORE S2-PORT`
 Owner: Jozz
 
 This is a router. Current Git, exact authored source, exact working native behavior and direct owner correction outrank documentation and agent confidence.
@@ -65,15 +65,32 @@ Working native M6 behavior and the copied Web contract diverged:
 
 Do not restore this authority inversion.
 
+## Current migration boundary
+
+A controlled **fresh orchestrator migration is active before S2-PORT implementation begins**.
+
+Read current `docs/HANDOFF.md` after this router. That checkpoint temporarily freezes product writes until the fresh orchestrator independently verifies the boundary and returns `HANDOFF ACCEPTED`.
+
+Prepared future implementation branch:
+
+```text
+work/front-corner-golden-rebuild-r2
+state during migration: RESERVED / NO WRITES
+```
+
+`work/front-corner-golden-rebuild-r1` is abandoned pre-handoff cleanup debt and must never be used as source/base/evidence.
+
+The existing `docs/IMPLEMENTER_TASK.md` is the prepared S2-PORT packet to review. Do not launch an implementer from it while the migration freeze is active.
+
 ## Next operation
 
-Start a **fresh implementer conversation**. Do not preload the old implementer chat as authority.
+Start a **fresh orchestrator conversation**, not a fresh implementer yet.
 
-The fresh implementer should read only current `AGENTS.md`, this router, current `docs/OWNER_CHECKPOINTS.md`, and current `docs/IMPLEMENTER_TASK.md`, then inspect exact source/native/code required by the active task.
+The fresh orchestrator should independently resolve current private refs and the golden native ref, then follow the current `AGENTS.md` fresh-orchestrator bootstrap and the active migration checkpoint in `docs/HANDOFF.md`.
 
-The next task is a bounded production rebuild of the **front-left golden/source mechanism**, with broad implementer freedom and a mandatory owner-visible gate before promotion.
+Do not preload the old orchestrator chat or previous implementer chat as authority.
 
-Do not mirror FR or continue to downstream geometry until FL demonstrates the accepted topology, steering center, suspension articulation and independent wheel spin in real runtime.
+If the handoff and prepared S2-PORT packet are coherent, the fresh orchestrator should accept the handoff without creating a takeover-only governance commit, then launch a fresh bounded implementer on the verified reserved `work/front-corner-golden-rebuild-r2` transaction.
 
 ## Workflow rule
 
