@@ -1,6 +1,6 @@
 # JV Web — owner checkpoint ledger
 
-Updated: 2026-08-10
+Updated: 2026-08-11
 
 This ledger records owner-visible decisions future agents must preserve. It is not a test log or chronological chat summary.
 
@@ -68,17 +68,9 @@ Owner-visible baseline:
 - wheel placement not globally judgeable while surrounding geometry is incoherent;
 - final ride height likely slightly higher.
 
-Dynamic state:
-
-`OWNER OBSERVED HIGH-SEVERITY DYNAMIC REGRESSION / DEFERRED BY OWNER`.
+Dynamic state: `OWNER OBSERVED HIGH-SEVERITY DYNAMIC REGRESSION / DEFERRED BY OWNER`.
 
 Do not tune handling/stability/steering feel until visual recovery closes.
-
-Incidental observation outside the active vehicle lane:
-
-- in the same V0 browser session, Jozz observed that scan loaded/worked in the browser whereas it had previously failed even to load;
-- classification: `OWNER OBSERVED INCIDENTAL / NOT SEPARATELY ISOLATED / OUT OF ACTIVE VEHICLE LANE`;
-- do not open scan work from this checkpoint; when the scan lane is deliberately reopened, revalidate exact current behavior rather than assuming either `broken` or `release-ready`.
 
 Protected V0 meaning: exact reproducible comparison baseline, chassis/body as rough reference, wheel-center vs `Socket_WheelMount` semantic distinction, and deferred dynamics decision. Most visual rig placement is not accepted.
 
@@ -129,29 +121,89 @@ Jozz inspected FRONT, TOP and wheel-side views:
 
 Preserve unless new evidence explicitly reopens it:
 
-- accepted **static** FL upper inboard X relation;
-- accepted **static** FL upper inboard Y/Z relation at current precision;
+- accepted static FL upper inboard X relation;
+- accepted static FL upper inboard Y/Z relation at current precision;
 - decision not to polish mesh proportion yet.
 
-Do **not** promote to:
+At this checkpoint live motion was still open. That limitation is superseded **only for the exact FL upper binding** by the later S1-LIVE checkpoint below.
 
-- live-motion acceptance;
-- FR acceptance;
-- final outboard/wheel-side packaging;
-- upright/hub/wheel acceptance;
-- final mesh-scale acceptance;
-- physical suspension topology acceptance.
-
-The third owner view is downstream wheel-side evidence, not an S1-D rejection.
+Still do not promote S1-D/S1-LIVE to FR acceptance, final outboard/wheel-side packaging, upright/hub/wheel acceptance, final mesh-scale acceptance or physical suspension-topology acceptance.
 
 ### Integration state
 
-The candidate is frozen for controlled orchestrator handoff and **not integrated into `main`**. Acceptance attaches to the exact candidate and explicit static constraints, not to automatic branch merge.
+The candidate remains frozen and **not integrated into `main`**. Acceptance attaches to the exact candidate and explicit constraints, not to automatic branch merge.
+
+## S1-LIVE — FL upper live-articulation checkpoint
+
+```text
+date: 2026-08-11
+candidate: 393ef4600be5c83ef42bced4a8a451446e372c32
+tree: 92c896a8b0579a66b3c5381b777baf853a469908
+branch at validation: work/owner-rig-s1-attachment-authority
+package: m6-owner-full-rig-r3
+real bindings: 59
+GLB bytes: 829944
+GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
+classification: OWNER ACCEPTED — FL UPPER LIVE ARTICULATION / NEUTRAL SUSPENSION RANGE
+```
+
+### Technical gate
+
+The exact frozen source tree was validated through the normal M6 runtime path, not synthetic endpoint injection.
+
+Focused controls:
+
+- S1-D static control: 4/4 PASS;
+- generic vehicle visual transform controls: 10/10 PASS, including roll-pinned endpoint/frame cases;
+- existing real-M6 owner full-rig runtime test: 1/1 PASS.
+
+A disposable observation harness then sampled 180 consecutive real neutral M6 frames from the standard spawn/settling sequence with steering released and zero drive.
+
+Representative motion included natural extension, compression/bump, rebound and settling/rest over about `0.1078750491 m` of observed FL coilover length range.
+
+Measured FL upper result:
+
+- maximum chassis-side endpoint residual: about `9.11e-8 m`;
+- maximum arm-side endpoint residual: about `7.00e-8 m`;
+- no observed flip, 180-degree inversion, discontinuity or frame singularity;
+- handedness remained positive;
+- worst adjacent-frame full-frame change: about `1.70058°` during faster initial suspension motion.
+
+Execution classification: **supplemental toolchain evidence** — Node 22.16.0 / TypeScript 5.8.3 with supplied `box3d.js@0.0.2`, rather than pinned Node 24.16.0 / npm 11.13.0. Do not silently upgrade this to canonical-toolchain proof.
+
+### OWNER OBSERVED verdict
+
+Jozz reviewed a focused FRONT + TOP owner-gate capture of the exact FL upper through the natural suspension sequence and answered that it is correct. He noted that the surrounding line clutter made the motion somewhat harder to read, but remained almost certain the FL upper behavior was correct.
+
+Classification: **OWNER ACCEPTED** for the bounded question.
+
+### Protected meaning
+
+S1-LIVE extends the S1-D acceptance for this exact binding from static placement to real neutral suspension articulation:
+
+- accepted mounting relationship remains intact through observed motion;
+- accepted natural FL upper placement/orientation remains intact through observed motion;
+- current roll-pinned mechanism is supported for this accepted FL upper result.
+
+This does **not** accept:
+
+- FR;
+- FL lower arm;
+- upright/hub/wheel packaging;
+- dampers;
+- mesh proportion/scale;
+- steering geometry;
+- handling/dynamics/feel;
+- the frozen S1 branch as a whole.
+
+### Integration state
+
+Still **NOT INTEGRATED INTO `main`** at this checkpoint.
+
+The next operation is clean curated integration of the minimal reviewed FL-upper semantics and required mechanism/tests onto current-main lineage. Frozen `393ef...` remains read-only technical reference until that integration is independently validated.
 
 ## Owner-checkpoint method
 
-Use very small dependency-driven slices.
-
-For each accepted/rejected result record the exact constraint, not merely “asset good/bad”. Preserve accepted DOFs while reopening only unresolved ones.
+Use very small dependency-driven slices. For each accepted/rejected result record the exact constraint, not merely “asset good/bad”. Preserve accepted DOFs while reopening only unresolved ones.
 
 Handling/feel remains a separate later campaign.
