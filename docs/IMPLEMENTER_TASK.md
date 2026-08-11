@@ -2,27 +2,21 @@
 
 Updated: 2026-08-11
 Status: **ACTIVE**
-Task: **S2-AXIS — reconcile authored steering-axis markers with live M6 kingpin**
-Mode: **RECONSTRUCTION / OWNER-VALIDATION-FIRST / NO PRODUCT PATCH**
+Task: **S2-AXIS — audit current steering axis against authored source authority**
+Mode: **ROOT-CAUSE / OWNER-VALIDATION-FIRST / NO PRODUCT PATCH**
 
-## Why this task changed
+## Why this task changed again
 
-The previous S2-R reconstruction recovered the important two-stage wheel-side split:
+Owner clarified a critical authority mistake in the previous reconstruction.
 
-- suspension-side member (owner yellow / authored `Socket_ChassisMount_b` region);
-- separate steerable member (owner red / authored `Socket_WheelCenter` region);
-- wheel spin remains a separate DOF.
-
-Owner review says this reconstruction is now **close**, but the steering-axis placement shown in the owner material is wrong in one projection.
-
-The missing authored evidence is critical: `OneSided_Steering_Suspension_Rig.gltf` already contains two required marker nodes:
+For this mechanism, the authored source asset is the geometry authority. `OneSided_Steering_Suspension_Rig.gltf` already contains the two nodes intended by the owner to define the exact steering-axis placement:
 
 ```text
 Axis_SuspensionTravel_Top
 Axis_SuspensionTravel_Bottom
 ```
 
-Direct inspection of the exact integrated source GLTF gives local authored translations:
+Direct inspection of the exact integrated GLTF gives local authored translations:
 
 ```text
 Axis_SuspensionTravel_Top    = [-0.1875, -0.3125,  0.0625]
@@ -30,134 +24,172 @@ Axis_SuspensionTravel_Bottom = [-0.1875, -2.3125,  0.0625]
 Socket_WheelCenter           = [-0.1875, -1.3125,  0.0625]
 ```
 
-After the source root translation, the axis markers lie at authored X about `-1.1875`, matching the owner's latest hand-drawn green correction. `Socket_WheelCenter` lies exactly on the Top↔Bottom line and exactly halfway between them.
+`Socket_WheelCenter` lies exactly on the Top↔Bottom line and exactly halfway between those markers. After the authored root translation, the line also agrees with the owner's latest hand-drawn green correction.
 
-The current asset contract also explicitly lists these two markers as required `suspensionTravel` axis hints. Its old role naming / `physicsAuthority:false` classification must be treated as historical contract evidence, not as a reason to ignore direct owner correction or authored geometry.
+The previous S2-R reconstruction instead placed the axis using inferred/physical M6 references (`upperBall↔lowerBall`, caster/KPI and an inferred lower point). Owner reports that this class of interpretation has repeatedly reintroduced a visibly wrong steering axis in past iterations.
+
+This is now treated as a **probable recurring root-cause regression pattern**.
+
+## Authority order for this bounded problem
+
+Use this hierarchy deliberately:
+
+1. **OWNER + exact authored source geometry** — authoritative for the intended steering-axis placement and visual mechanism.
+2. **Current integrated product code/runtime** — implementation to audit against the authored source.
+3. **Native/core JV** — read-only implementation/mechanism reference; useful for topology and engineering patterns, but it does not override the authored axis geometry for this asset.
+4. **Project docs / JSON contracts / historical calibration prose** — potentially stale or corrupted in this area. They are evidence only. If they conflict with owner + exact source, they lose.
+
+Do not attempt to reconcile contradictory documentation by averaging or preserving both interpretations.
+
+## Protected owner truth
+
+Treat these as hard constraints unless direct source geometry itself proves an inconsistency:
+
+- yellow and red are separate rigid visual members;
+- yellow = suspension-side/non-steering member;
+- red = steerable member rotating relative to yellow;
+- wheel spin is a separate DOF;
+- `Axis_SuspensionTravel_Top` + `Axis_SuspensionTravel_Bottom` define the intended steering-axis placement in the authored source rig;
+- `Socket_WheelCenter` lies on that authored axis;
+- the previous one-knuckle visual interpretation is rejected;
+- the previous displaced blue axis is rejected;
+- S1 FL-upper accepted semantics remain protected unless a specific contradiction is demonstrated.
+
+The marker names contain `SuspensionTravel`, but owner intent and their source geometry are the authority for their steering-axis use here. Do not downgrade them because an old contract labels them only as `physics_hint` or `physicsAuthority:false`.
 
 ## One bounded question
 
-> What is the correct relationship between the authored Top↔Bottom axis in `OneSided_Steering_Suspension_Rig` and the live physical M6 kingpin, and how should that relationship define the steering pivot/frame for the yellow suspension-side member versus the red steerable member?
+> Where and why does current JV-Web/native-derived steering geometry deviate from the authored `Axis_SuspensionTravel_Top↔Bottom` axis, and what is the smallest correct future repair that makes the yellow/red steering mechanism and wheel steering motion obey the authored axis without regressing the already accepted suspension work?
 
-Do **not** reduce this to “shift the previous blue line until it looks right”. Determine the actual mapping of the two coordinate truths.
+This is no longer a question of mapping two equal truths. The authored axis is the target; current physics/visual logic must be audited against it.
 
-## Authority / protected truth
-
-Product remains unchanged:
+## Product / write boundary
 
 ```text
-JV-Web integrated product:
+JV-Web integrated product base:
 67d66ed412342fee5445b2901d85a663a084bf4e
 tree: f2e1836800719cc9cc7007631568c41e45471450
 ```
 
 Remote/product write authority: **NONE**.
 
-Hard owner truth for this task:
-
-1. the wheel-side mechanism has separate suspension-side and steerable members;
-2. the previous one-knuckle visual interpretation is rejected;
-3. `Axis_SuspensionTravel_Top` + `Axis_SuspensionTravel_Bottom` are intentional authored markers that set the exact placement/reference of the axis in the source rig;
-4. the owner's latest green line is consistent with those authored markers and falsifies the previous source-board blue-axis placement;
-5. steering rotation and wheel spin remain separate DOFs;
-6. S1 FL upper acceptance remains protected.
-
-Important unresolved distinction:
-
-- authored marker line may define source registration/rest-axis geometry;
-- physical M6 upperBall↔lowerBall kingpin defines live physics steering geometry with caster/KPI;
-- whether the final visual transform maps the authored axis onto the physical kingpin, uses one only for origin/registration, or requires another relationship is **for you to determine from evidence**.
-
-Do not assume the raw authored `+Y` direction must equal the final physical 3D kingpin direction, and do not assume the physical kingpin alone is sufficient to place the authored visual member.
+Do not patch product code in this task. First reconstruct the root cause and prepare an owner-verifiable repair design.
 
 ## Implementer freedom
 
-Own the technical investigation. Inspect any current JV-Web/native JV files genuinely needed, and use disposable scripts, diagrams or local kinematic prototypes as useful.
+Own the technical investigation. Inspect whatever current JV-Web and native/core JV files are genuinely required. Use disposable scripts, local probes, diagrams, rendered comparisons or kinematic prototypes as useful.
 
-Do not redo full repository archaeology or identity reconstruction if continuity is intact. A light CONTROL TIP / product-byte check is enough.
+Do not spend time re-proving repository identity already established; a light continuity check is enough.
 
-Native/core JV remains a mandatory READ-ONLY reference, but it is not allowed to overwrite direct owner-authored source semantics merely because the physics model uses different coordinates.
+Do not wait for the orchestrator to prescribe exact implementation files or formulas. Find the real path yourself.
 
-## Required evidence
+## Required investigation
 
-Return enough evidence to resolve these points:
+### A. Prove the authored axis exactly
 
-### A. Exact authored axis
+From the exact source GLTF:
 
-- parse the exact composed transforms of `Axis_SuspensionTravel_Top`, `Axis_SuspensionTravel_Bottom`, `Socket_WheelCenter`, yellow #6 and red #8 from the source GLTF;
-- prove geometrically what Top↔Bottom defines;
-- explicitly reconcile the source node names with the owner's intended steering-axis meaning;
-- explain why the previous S2-R source axis was displaced.
+- compute the composed/world authored positions of `Axis_SuspensionTravel_Top`, `Axis_SuspensionTravel_Bottom`, `Socket_WheelCenter`, yellow member and red member;
+- prove the Top↔Bottom line and WheelCenter relationship numerically;
+- show it in the same projections used by the owner;
+- treat this as the target geometry, not a hint to be adjusted toward current physics.
 
-### B. Authored axis ↔ physical kingpin mapping
+### B. Trace every current source of steering-axis geometry
 
-Compare the authored Top↔Bottom line against the native/current M6 physical kingpin (`upperBall↔lowerBall`) in a common, clearly defined frame.
+Find all current JV-Web and relevant native-derived paths that can influence:
 
-Determine separately:
+- upper/lower steering pivots / ball points;
+- kingpin direction;
+- caster;
+- KPI;
+- knuckle transform origin;
+- wheel-center steering transform;
+- steering-link outboard geometry;
+- any calibration or hardpoint generation that can move the steering axis.
+
+For each path classify:
 
 ```text
-axis origin / lateral-longitudinal registration
-axis direction / caster-KPI orientation
-member-local pivot frame
+SOURCE-DERIVED / AUTHORED-CONSISTENT
+HISTORICAL / STALE
+PHYSICS-DERIVED BUT SOURCE-CONFLICTING
+UNKNOWN
 ```
 
-Do not conflate them.
+The goal is to identify the actual mechanism that repeatedly pulls the axis away from the authored placement.
 
-If authored markers should be transported/mapped onto the live physical kingpin, derive that transform cleanly. If not, explain the alternative and falsifier.
+### C. Quantify current deviation from authored authority
 
-### C. Two-member kinematics
+Put the authored Top↔Bottom axis and the current live/product steering axis in one common frame.
 
-Using the corrected axis interpretation, confirm or revise the current yellow/red decomposition:
+Measure separately:
 
-- yellow member must follow suspension articulation but not inherit steering twist;
-- red member must steer relative to yellow;
-- wheel spin remains independent.
+- axis-position offset;
+- angular difference;
+- WheelCenter distance from each axis;
+- which coordinates/DOFs differ;
+- whether current caster/KPI or generated physical hardpoints are the direct cause.
 
-Reclassify only what the new axis evidence actually changes. Do not reopen unrelated S2 findings without cause.
+Do not preserve caster/KPI values merely because they exist in native/current code. If they conflict with the authored source, classify them as suspect implementation/calibration until proven compatible.
 
-### D. Future repair architecture
+### D. Audit the two-member + wheel kinematics
 
-Recommend the smallest correct future product repair, but **do not implement it**.
+With authored axis as authority, determine the correct live relationship:
 
-State clearly whether the evidence supports:
+```text
+yellow suspension-side member
+    -> follows suspension articulation, no steering twist
+red steerable member
+    -> rotates relative to yellow about authored steering axis
+wheel
+    -> follows steerable member for steering and retains independent spin
+```
 
-- visual/binding-only repair on the existing M6 physics graph;
-- physics topology change;
-- or a still-unresolved choice.
+Determine whether the current M6 physical topology can express this correctly after hardpoint/transform correction, or whether a deeper physics topology repair is truly required.
 
-Prefer the smallest architecture that preserves native M6 physics truth and authored visual truth simultaneously.
+Do not add a physics body just to mimic an authored visual split if existing physics can represent the correct DOFs.
+
+### E. Root-cause / anti-regression design
+
+Recommend the smallest future repair and, critically, how to prevent another agent from regenerating the rejected axis later.
+
+The repair design should prefer direct derivation from the authored markers or an explicit persisted transform whose provenance is those markers.
+
+Identify stale docs/contracts/calibrations/tests that would need correction or retirement so they cannot later override the source authority.
+
+Do not implement the repair yet.
 
 ## Owner-facing gate
 
-Prepare a corrected, uncluttered comparison using the actual authored source geometry.
+Prepare one concise falsifiable owner board/prototype.
 
-Mandatory views:
+Mandatory:
 
-1. authored source projection corresponding to the owner's latest green-line feedback;
-2. the orthogonal view where the owner already considered the center placement correct;
-3. corrected diagnostic prototype only if it materially clarifies relative yellow↔red rotation.
+- actual authored source geometry;
+- yellow and red members;
+- **authoritative authored Top↔Bottom axis** prominently shown;
+- WheelCenter shown on the authored axis;
+- current/rejected runtime axis shown separately only as a diagnostic comparison;
+- numeric position/angular deviation summarized without clutter;
+- orthogonal view confirming the coordinate that owner previously said was already correct.
 
-Show distinctly:
+If a disposable motion prototype is useful, make the red member rotate about the authored axis and show independent wheel spin. Label it `DIAGNOSTIC PROTOTYPE — NOT PRODUCT RUNTIME`.
 
-- **authored Top↔Bottom axis**;
-- previous rejected axis if useful for comparison;
-- proposed mapped/live steering axis if it differs from the raw authored line;
-- yellow and red members.
-
-Do not visually collapse multiple different axes into one blue line without labeling what each represents.
+The owner is validating the authored-axis interpretation and proposed correction, not final steering feel, lower wishbone, cardan, damper or whole-car geometry.
 
 ## Decision states
 
-`OWNER_GATE_READY` — authored markers, physical kingpin and their mapping are reconciled strongly enough for one focused owner verdict.
+`OWNER_GATE_READY` — authored axis is proven, current regression source is identified strongly enough, and the proposed repair architecture can be visually validated by Jozz.
 
-`REPLAN` — evidence shows the previous yellow/red interpretation or assumed mapping is materially wrong, or multiple plausible mappings remain.
+`REPLAN` — exact source geometry reveals that the current yellow/red decomposition is still materially wrong, or more than one implementation root cause remains plausible and requires discrimination.
 
-`BLOCKED` — exact source/native evidence required for the reconciliation is inaccessible. Ask early for the exact missing artifact.
+`BLOCKED` — an exact current/native artifact required to trace the regression cannot be accessed. Ask early for that exact artifact.
 
-No product implementation, work branch, S3 or downstream geometry work is allowed in this task.
+No product patch, work branch, S3 or downstream geometry task is allowed before owner verdict.
 
 ## Return
 
-Respond compactly in Polish and prioritize the technical discovery over process narration:
+Respond compactly in Polish. Prioritize root cause and proposed repair over process narration:
 
 ```text
 TASK: S2-AXIS
@@ -166,16 +198,18 @@ CONTROL TIP:
 PRODUCT BYTES CHANGED: NO
 REMOTE WRITES: NONE
 
-AUTHORED TOP/BOTTOM AXIS:
-WHY PREVIOUS AXIS WAS WRONG:
-PHYSICAL M6 KINGPIN:
-AUTHORED↔PHYSICAL MAPPING:
-YELLOW/RED KINEMATIC RESULT:
-SMALLEST FUTURE REPAIR ARCHITECTURE:
+AUTHORED AXIS AUTHORITY:
+CURRENT AXIS / DEVIATION:
+ROOT CAUSE(S):
+CASTER/KPI/HARDPOINT VERDICT:
+YELLOW/RED/WHEEL KINEMATICS:
+STALE/CORRUPTED EVIDENCE FOUND:
+SMALLEST FUTURE REPAIR:
+ANTI-REGRESSION PLAN:
 UNCERTAINTIES / FALSIFIERS:
 OWNER MATERIAL:
 ```
 
 If `OWNER_GATE_READY`, ask only:
 
-> **Czy teraz poprawnie rozumiemy położenie i rolę osi: authored `Axis_SuspensionTravel_Top/Bottom` wyznaczają właściwe zakotwiczenie osi w modelu, a pokazane mapowanie na live M6 daje poprawny ruch czerwonego członu względem żółtego? Jeśli nie, wskaż proszę dokładnie co nadal jest źle.**
+> **Czy teraz oś jest zrozumiana poprawnie: `Axis_SuspensionTravel_Top/Bottom` wyznaczają właściwą oś source i proponowana naprawa sprawi, że czerwony człon oraz koło będą skręcały dokładnie wokół niej względem żółtego członu? Jeśli nie, wskaż co nadal jest źle.**
