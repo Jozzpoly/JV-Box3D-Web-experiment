@@ -5,6 +5,7 @@ import { inspectBlockbenchRigidPartsV1 } from './blockbench-gltf-rigid-parts.mjs
 import {
   parseM6FactoryConfig,
   cornerRestGeometry,
+  computeSuspensionPlacement,
   requirePiece,
 } from './owner-m6-full-rig-calibration-r2.mjs';
 import { buildOwnerM6FullRigPackageR2 } from './owner-m6-full-rig-package-r2.mjs';
@@ -29,6 +30,10 @@ import {
   deriveWheelMountInterfaceR3,
   wheelVisualLocalFromSourceR3,
 } from './owner-m6-wheel-interface-calibration-r3.mjs';
+import {
+  deriveFrontUpperChassisMateR3,
+  deriveFrontUpperSplitAuthorityR3,
+} from './owner-m6-front-upper-chassis-mate-r3.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const GLB_VERSION = 2;
@@ -171,6 +176,67 @@ function replaceBindingGeometry(decoded, visualPackage, bindingId, primitives) {
 
 function pointDistance(a, b) {
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+}
+
+function subtractPoint(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+function crossPoint(a, b) {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
+}
+
+function normalizePoint(value, label) {
+  const magnitude = Math.hypot(...value);
+  if (!(magnitude > 1e-9)) throw new Error(`${label} is degenerate.`);
+  return value.map((entry) => entry / magnitude);
+}
+
+function frontUpperReferenceUp(geometry, corner) {
+  const axial = normalizePoint(
+    subtractPoint(geometry.upperBall, geometry.upperHinge),
+    `${corner} front upper pilot axial`,
+  );
+  const spread = normalizePoint(
+    subtractPoint(geometry.upperRear, geometry.upperFront),
+    `${corner} front upper pilot spread`,
+  );
+  let up = normalizePoint(
+    crossPoint(axial, spread),
+    `${corner} front upper pilot up`,
+  );
+  if (up[1] < 0) up = up.map((entry) => -entry);
+  return up;
+}
+
+function replaceFrontUpperWishbonePilotBinding(bindings, pilot) {
+  const bindingId = 'owner.fl.upper-arm';
+  const byId = new Map(bindings.map((binding) => [binding.bindingId, binding]));
+  const binding = byId.get(bindingId);
+  if (!binding) throw new Error(`Owner M6 R3 base is missing pilot binding ${bindingId}.`);
+  if (binding.source.kind !== 'PART' || binding.source.partId !== 'm6.fl.upper-arm') {
+    throw new Error(`Owner M6 R3 pilot binding ${bindingId} has unexpected source semantics.`);
+  }
+  byId.set(bindingId, {
+    ...binding,
+    source: {
+      kind: 'PART_PAIR_ROLL_PINNED_STRETCH',
+      partId: 'm6.fl.upper-arm',
+      startPartId: 'm6.chassis',
+      startLocalPosition: pilot.chassisLocal,
+      endPartId: 'm6.fl.upper-arm',
+      endLocalPosition: pilot.outboardLocal,
+      referenceStartPosition: pilot.referenceStartLocal,
+      referenceEndPosition: pilot.referenceEndLocal,
+      referenceUpDirection: pilot.referenceUpDirection,
+      rollReferenceAxis: '+Y',
+    },
+  });
+  return bindings.map((candidate) => byId.get(candidate.bindingId));
 }
 
 function replaceWheelBindingTransformsR3(bindings, wheelInterface) {
@@ -400,6 +466,7 @@ export function buildOwnerM6FullRigPackageR3(input) {
   const cardanReports = {};
   const cardanEndpoints = {};
   const rearDamperPairs = {};
+  let frontUpperPilot = null;
 
   for (const corner of FRONT_CORNERS) {
     const geometry = cornerRestGeometry(config, corner);
@@ -410,6 +477,37 @@ export function buildOwnerM6FullRigPackageR3(input) {
       const calibrated = calibrateFrontWishbonePieceR3(piece, references, geometry, which);
       replaceBindingGeometry(decoded, r2.visualPackage, `owner.${corner}.${which}-arm`, calibrated.primitives);
       armReports[corner][which] = calibrated.report;
+      if (corner === 'fl' && which === 'upper') {
+        const placement = computeSuspensionPlacement(
+          front,
+          config,
+          corner,
+          wheelInterface.mountOffsetMeters,
+        );
+        const authoredChassisIntentLocal = placement.point(references.upperHinge);
+        const chassisMate = deriveFrontUpperChassisMateR3({
+          chassis,
+          authoredIntentLocal: authoredChassisIntentLocal,
+          physicalUpperHingeLocal: geometry.upperHinge,
+        });
+        const splitAuthority = deriveFrontUpperSplitAuthorityR3({
+          semanticChassisLocal: chassisMate.chassisLocal,
+          physicalUpperFrontLocal: geometry.upperFront,
+          physicalUpperRearLocal: geometry.upperRear,
+          physicalUpperHingeLocal: geometry.upperHinge,
+          physicalUpperBallLocal: geometry.upperBall,
+        });
+        frontUpperPilot = Object.freeze({
+          chassisLocal: splitAuthority.chassisLocal,
+          authoredChassisIntentLocal: Object.freeze([...authoredChassisIntentLocal]),
+          chassisMate,
+          splitAuthority,
+          outboardLocal: Object.freeze([...calibrated.report.targetBallLocal]),
+          referenceStartLocal: Object.freeze([...calibrated.report.mappedHinge]),
+          referenceEndLocal: Object.freeze([...calibrated.report.mappedOutboard]),
+          referenceUpDirection: Object.freeze(frontUpperReferenceUp(geometry, corner)),
+        });
+      }
     }
 
     knuckleReports[corner] = {};
@@ -507,6 +605,13 @@ export function buildOwnerM6FullRigPackageR3(input) {
     wheelBindings,
     damperEndpoints,
   );
+  if (frontUpperPilot === null) {
+    throw new Error('Owner M6 R3 front upper visual pilot was not derived.');
+  }
+  const frontUpperPilotBindings = replaceFrontUpperWishbonePilotBinding(
+    frontDamperBindings,
+    frontUpperPilot,
+  );
 
   for (const corner of ['fl', 'fr', 'rl', 'rr']) {
     const isFront = FRONT_CORNERS.includes(corner);
@@ -521,7 +626,7 @@ export function buildOwnerM6FullRigPackageR3(input) {
     cardanReports[corner] = endpoints.report;
   }
 
-  const preCardanBindings = expandRearTwinDamperBindings(decoded.json, frontDamperBindings, rearDamperPairs);
+  const preCardanBindings = expandRearTwinDamperBindings(decoded.json, frontUpperPilotBindings, rearDamperPairs);
   const cardanBindings = replaceCardanBindingSourcesR3(preCardanBindings, cardanEndpoints);
   const bindings = addPhysicalCoiloverCoverageBindings(decoded.json, cardanBindings);
   const glb = encodeGlb(decoded.json, decoded.binary);
@@ -584,6 +689,19 @@ export function buildOwnerM6FullRigPackageR3(input) {
       mountOffsetMeters: wheelInterface.mountOffsetMeters,
       provenance: wheelInterface.provenance,
       treatment: 'WHEEL_CENTER_REMAINS_PHYSICAL_SPIN_CENTER_SOCKET_WHEELMOUNT_IS_VISUAL_HUB_INTERFACE',
+    }),
+    frontUpperPilot: Object.freeze({
+      corner: 'fl',
+      treatment: 'VISUAL_ONLY_ROLL_PINNED_SPLIT_AXIS_CHASSIS_TO_PHYSICAL_OUTBOARD',
+      chassisLocal: frontUpperPilot.chassisLocal,
+      authoredChassisIntentLocal: frontUpperPilot.authoredChassisIntentLocal,
+      chassisMate: frontUpperPilot.chassisMate,
+      splitAuthority: frontUpperPilot.splitAuthority,
+      outboardLocal: frontUpperPilot.outboardLocal,
+      referenceStartLocal: frontUpperPilot.referenceStartLocal,
+      referenceEndLocal: frontUpperPilot.referenceEndLocal,
+      referenceUpDirection: frontUpperPilot.referenceUpDirection,
+      physics: 'UNCHANGED',
     }),
     output: Object.freeze({
       ...r2.report.output,
