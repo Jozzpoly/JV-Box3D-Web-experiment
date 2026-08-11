@@ -265,3 +265,42 @@ test("part-pair visual bindings validate two live body endpoints without creatin
   invalid.bindings.at(-1).source.endPartId = "m6.unknown.knuckle";
   assert.throws(() => validateVehicleVisualPackageV1(invalid), /unknown M6 partId/);
 });
+
+test("roll-pinned part-pair stretch can represent one visual part without changing pair-stretch semantics", () => {
+  const input = validPackage();
+  const upper = input.bindings.find(
+    (binding) => binding.source.kind === "PART" && binding.source.partId === "m6.fl.upper-arm",
+  );
+  assert.ok(upper);
+  upper.source = {
+    kind: "PART_PAIR_ROLL_PINNED_STRETCH",
+    partId: "m6.fl.upper-arm",
+    startPartId: "m6.chassis",
+    startLocalPosition: [1, 0, -0.5],
+    endPartId: "m6.fl.upper-arm",
+    endLocalPosition: [0, 0, -0.4],
+    referenceStartPosition: [0, 0, 0],
+    referenceEndPosition: [0, 0, -0.4],
+    referenceUpDirection: [0, 1, 0],
+    rollReferenceAxis: "+Y",
+  };
+  assert.doesNotThrow(() => validateVehicleVisualPackageV1(input));
+
+  const degenerate = structuredClone(input);
+  degenerate.bindings.find(
+    (binding) => binding.bindingId === upper.bindingId,
+  ).source.referenceEndPosition = [0, 0, 0];
+  assert.throws(
+    () => validateVehicleVisualPackageV1(degenerate),
+    /reference endpoints must be distinct/,
+  );
+
+  const parallelUp = structuredClone(input);
+  parallelUp.bindings.find(
+    (binding) => binding.bindingId === upper.bindingId,
+  ).source.referenceUpDirection = [0, 0, 1];
+  assert.throws(
+    () => validateVehicleVisualPackageV1(parallelUp),
+    /must not be parallel to the reference pair axis/,
+  );
+});

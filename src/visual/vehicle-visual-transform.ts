@@ -211,6 +211,58 @@ function transformPointByMatrix(
   );
 }
 
+function projectPerpendicular(value: Vec3, axisUnit: Vec3): Vec3 {
+  return subtract(value, scale(axisUnit, dot(value, axisUnit)));
+}
+
+function rollPinnedUp(
+  reference: Vec3,
+  longAxisUnit: Vec3,
+  label: string,
+  fallback: Vec3 | null,
+): Vec3 {
+  let projected = projectPerpendicular(reference, longAxisUnit);
+  if (!(length(projected) > EPSILON) && fallback !== null) {
+    projected = projectPerpendicular(fallback, longAxisUnit);
+  }
+  return normalize(projected, label);
+}
+
+function affineMatrixFromBasisMap(
+  referenceStart: Vec3,
+  referenceLong: Vec3,
+  referenceUp: Vec3,
+  referenceWidth: Vec3,
+  liveStart: Vec3,
+  liveLong: Vec3,
+  liveUp: Vec3,
+  liveWidth: Vec3,
+  axialScale: number,
+): VehicleVisualMatrixV1 {
+  const column = (axis: "x" | "y" | "z"): Vec3 =>
+    add(
+      add(
+        scale(liveLong, axialScale * referenceLong[axis]),
+        scale(liveUp, referenceUp[axis]),
+      ),
+      scale(liveWidth, referenceWidth[axis]),
+    );
+  const x = column("x");
+  const y = column("y");
+  const z = column("z");
+  const mappedReferenceStart = add(
+    add(scale(x, referenceStart.x), scale(y, referenceStart.y)),
+    scale(z, referenceStart.z),
+  );
+  const translation = subtract(liveStart, mappedReferenceStart);
+  return new Float32Array([
+    x.x, x.y, x.z, 0,
+    y.x, y.y, y.z, 0,
+    z.x, z.y, z.z, 0,
+    translation.x, translation.y, translation.z, 1,
+  ]);
+}
+
 function stretchScale(
   axis: VehicleVisualAxisV1,
   factor: number,
@@ -236,7 +288,8 @@ function resolveSegmentSourceMatrix(
   if (
     binding.source.kind === "PART" ||
     binding.source.kind === "PART_PAIR_STRETCH" ||
-    binding.source.kind === "PART_PAIR_ENDPOINT_AIM"
+    binding.source.kind === "PART_PAIR_ENDPOINT_AIM" ||
+    binding.source.kind === "PART_PAIR_ROLL_PINNED_STRETCH"
   ) {
     throw new Error(`${binding.source.kind} binding cannot resolve from a frame segment.`);
   }
@@ -317,6 +370,63 @@ function resolvePartPairSourceMatrix(
   );
 }
 
+function resolveRollPinnedPartPairSourceMatrix(
+  binding: VehicleVisualBindingV1,
+  startWorld: Vec3,
+  endWorld: Vec3,
+): VehicleVisualMatrixV1 {
+  if (binding.source.kind !== "PART_PAIR_ROLL_PINNED_STRETCH") {
+    throw new Error("Only a roll-pinned part-pair binding can resolve this source matrix.");
+  }
+  const referenceStart = vector(...binding.source.referenceStartPosition);
+  const referenceEnd = vector(...binding.source.referenceEndPosition);
+  const referenceForward = subtract(referenceEnd, referenceStart);
+  const referenceLength = length(referenceForward);
+  if (!(referenceLength > EPSILON)) {
+    throw new Error(`${binding.bindingId} has zero reference visual length.`);
+  }
+  const referenceLong = scale(referenceForward, 1 / referenceLength);
+  const referenceUp = rollPinnedUp(
+    vector(...binding.source.referenceUpDirection),
+    referenceLong,
+    `${binding.bindingId} reference up direction`,
+    null,
+  );
+  const referenceWidth = normalize(
+    cross(referenceLong, referenceUp),
+    `${binding.bindingId} reference width direction`,
+  );
+
+  const liveForward = subtract(endWorld, startWorld);
+  const liveLength = length(liveForward);
+  if (!(liveLength > EPSILON)) {
+    throw new Error(`${binding.bindingId} has zero part-pair visual length.`);
+  }
+  const liveLong = scale(liveForward, 1 / liveLength);
+  const liveUp = rollPinnedUp(
+    axisVector(binding.source.rollReferenceAxis),
+    liveLong,
+    `${binding.bindingId} live roll reference`,
+    axisVector("+X"),
+  );
+  const liveWidth = normalize(
+    cross(liveLong, liveUp),
+    `${binding.bindingId} live width direction`,
+  );
+
+  return affineMatrixFromBasisMap(
+    referenceStart,
+    referenceLong,
+    referenceUp,
+    referenceWidth,
+    startWorld,
+    liveLong,
+    liveUp,
+    liveWidth,
+    liveLength / referenceLength,
+  );
+}
+
 export function resolveVehicleVisualBindingsV1(
   visual: VehicleVisualPackageV1,
   frame: VehicleVisualFrameV1,
@@ -338,7 +448,8 @@ export function resolveVehicleVisualBindingsV1(
         );
       } else if (
         binding.source.kind === "PART_PAIR_STRETCH" ||
-        binding.source.kind === "PART_PAIR_ENDPOINT_AIM"
+        binding.source.kind === "PART_PAIR_ENDPOINT_AIM" ||
+        binding.source.kind === "PART_PAIR_ROLL_PINNED_STRETCH"
       ) {
         const startPart = indexed.parts.get(binding.source.startPartId);
         const endPart = indexed.parts.get(binding.source.endPartId);
@@ -360,17 +471,18 @@ export function resolveVehicleVisualBindingsV1(
           endPart.transform.position,
           endPart.transform.rotation,
         );
-        worldFromSource = resolvePartPairSourceMatrix(
-          binding,
-          transformPointByMatrix(
-            startMatrix,
-            binding.source.startLocalPosition,
-          ),
-          transformPointByMatrix(
-            endMatrix,
-            binding.source.endLocalPosition,
-          ),
+        const startWorld = transformPointByMatrix(
+          startMatrix,
+          binding.source.startLocalPosition,
         );
+        const endWorld = transformPointByMatrix(
+          endMatrix,
+          binding.source.endLocalPosition,
+        );
+        worldFromSource =
+          binding.source.kind === "PART_PAIR_ROLL_PINNED_STRETCH"
+            ? resolveRollPinnedPartPairSourceMatrix(binding, startWorld, endWorld)
+            : resolvePartPairSourceMatrix(binding, startWorld, endWorld);
       } else {
         const segment = indexed.segments.get(binding.source.segmentId);
         if (segment === undefined) {
