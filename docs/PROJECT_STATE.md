@@ -2,86 +2,97 @@
 
 Updated: 2026-08-11
 Owner: Jozz
-Status: `R0 PUBLISHED / R1 ACTIVE / S1 FL UPPER INTEGRATED / S2-R WHEEL-SIDE TOPOLOGY RECONSTRUCTION ACTIVE`
+Status: `R0 PUBLISHED / R1 ACTIVE / S1 FL UPPER INTEGRATED / GOLDEN FL FRONT-CORNER CONTRACT OWNER ACCEPTED / REBUILD NEXT`
 
 ## Product boundary
 
 ```text
 private product authority: Jozzpoly/JV-Box3D-Web-experiment main
-integrated S1 product: 67d66ed412342fee5445b2901d85a663a084bf4e
+integrated S1 product checkpoint: 67d66ed412342fee5445b2901d85a663a084bf4e
 product tree: f2e1836800719cc9cc7007631568c41e45471450
+native golden reference: Jozzpoly/Box3d_FunProject @ 959aefb78587ce60cf2b8eb03ff82797a4165142 — READ ONLY
 public R0: Jozzpoly/JV-Box3D-Web-Public release/r0 @ c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
-native JV: Jozzpoly/Box3d_FunProject — read-only reference for current reconstruction
 ```
 
-S1 FL upper static placement and real neutral live articulation remain OWNER ACCEPTED and integrated. Preserve them unless new evidence directly falsifies a specific accepted assumption.
+S1 FL upper static placement and real neutral live articulation remain OWNER ACCEPTED and integrated.
 
-## Current owner falsifier
+## Golden front-corner state
 
-The S2 technical role map and first S2 owner presentation incorrectly grouped the wheel-side mechanism as one `knuckle/upright-side` member.
+The parity investigation established a causal authority inversion: current Web R2/R3 copied stale role semantics and generic M6 hardpoint geometry instead of directly preserving the working native/source front-corner mechanism.
 
-Jozz rejected that interpretation and supplied annotated source-rig views showing a fundamental split:
-
-- **yellow:** a suspension-side member tied to the wishbones and static with respect to steering;
-- **red:** a separate steerable/rotating member that connects the first member toward the wheel;
-- **blue:** the relative steering-axis position/center shown in two projections.
-
-These two knuckle members must be rigged separately. Native/core JV already implements this conceptual split and must be used as read-only technical evidence.
-
-This falsifies the previous one-knuckle semantic conclusion even though that conclusion was internally consistent with the current Web code and runtime. Technical self-consistency is therefore not enough for this mechanism.
-
-## Current task — S2-R
-
-Before any FL lower/upright/hub/steering repair, reconstruct the exact two-stage wheel-side topology from:
-
-1. direct owner correction and annotated views;
-2. actual authored `OneSided_Steering_Suspension_Rig` geometry/hierarchy/pivots;
-3. native JV implementation/topology.
-
-The reconstruction must distinguish at minimum:
+Owner has now accepted the recovered golden contract strongly enough to begin a fresh production rebuild:
 
 ```text
-suspension-side carrier
-↕ suspension articulation via wishbones
-steerable carrier
-↻ steering DOF relative to suspension-side carrier
-wheel/spin member(s)
-↻ wheel-spin DOF distinct from steering
+#6 Socket_ChassisMount_b
+suspension-side / non-steering
+follows wishbone/suspension articulation
+
+#8 Socket_WheelCenter
+separate steerable structural member
+steers relative to #6
+no wheel spin
+
+wheel
+follows #8 for steering
+separate spin DOF
 ```
 
-Exact mesh/node membership, exact 3D steering axis and whether Web repair requires visual topology changes, physics topology changes, or both remain UNKNOWN until S2-R evidence is returned and owner-reviewed.
+The exact authored source provides `Axis_SuspensionTravel_Top` and `Axis_SuspensionTravel_Bottom`; `Socket_WheelCenter` lies exactly on their line and midpoint.
 
-No product patch is authorized in S2-R.
+### Steering-axis owner boundary
 
-## Reclassified old S2 evidence
+The critical accepted result is **axis position / steering center**, not mandatory perfect verticality.
 
-Still useful:
+Future implementation must keep the steering axis passing through the accepted source-derived WheelCenter steering center. A modest physically justified tilt/caster/KPI-like direction is allowed if it improves correct wheel behavior, provided the tilt occurs about that accepted center and does not reintroduce the rejected lateral/longitudinal kingpin offset.
 
-- source hierarchy observations;
-- differential-motion measurements;
-- stale cardan-audit finding;
-- ~0.222 m authored steering-socket/current physical-arm mismatch;
-- ~6.263 mm worst observed lower-ball shared-joint residual;
-- `#12` lower-outboard reference was inferred rather than authored.
+The old generic generated axis that missed WheelCenter by roughly 139 mm is rejected as owner-rig authority.
 
-Not durable as truth:
+## Root-cause chain to avoid
 
-- any conclusion that `Socket_ChassisMount_b`, `Socket_WheelCenter`, `Socket_SteeringRod`, `Socket_CardanHub` or surrounding wheel-side meshes all belong to one knuckle/upright member.
-
-They must be reclassified under the reconstructed multi-member topology.
-
-## Near-term direction
-
-Do not proceed to S3/FL lower merely because the previous technical S2 was green.
+Do not repeat:
 
 ```text
-S2-R reconstruct split + axis
--> owner semantic validation
--> separate bounded production implementation of accepted split
--> owner visual/live validation through iterations
--> only then resume downstream wishbone/upright/hub/wheel recovery
+stale JSON role contract
++ generic factory receipt caster/KPI/kingpinOffset
+-> Web-generated hardpoints
+-> R2 #6/#8 single-knuckle binding
+-> R3 affine/shear toward generated hardpoints
+-> tests proving self-consistency of the same derived model
 ```
 
-This split is an upstream dependency for steering, wheel-side packaging and likely several later bindings. Do not conceal it with geometry offsets or downstream tuning.
+The factory receipt may remain valid for generic native physics state, but it is not automatically visual/source-rig geometry authority.
 
-Handling/stability/steering feel remain deferred until visual/mechanical recovery closes.
+## Fresh-context decision
+
+The previous implementer conversation has accumulated long historical context, including the now-rejected authority hierarchy. It is intentionally retired for the next production transaction.
+
+A fresh implementer conversation should bootstrap from current Git only and must not import the previous chat as technical authority.
+
+Required initial reads:
+
+1. current `AGENTS.md`;
+2. current `AI_PROJECT_MEMORY.md`;
+3. current `docs/OWNER_CHECKPOINTS.md`;
+4. current `docs/IMPLEMENTER_TASK.md`.
+
+Then inspect exact authored source, golden native files and current Web code as demanded by the task.
+
+## Next product direction
+
+The next transaction is **FL-only golden front-corner rebuild**.
+
+Do not mirror FR yet. Do not proceed to general FL-lower polish, upright/hub packaging, dampers, cardans, stance or handling until the front-left runtime demonstrates:
+
+- #6 suspension articulation without steering inheritance;
+- #8 steering relative to #6;
+- steering about the accepted center/position;
+- separate wheel spin;
+- preserved/appropriately revalidated S1 upper behavior.
+
+The rebuild may change visual bindings, source-derived contracts, front steering hardpoint/axis logic and the minimum necessary physics/reference surface if evidence requires it. It should not add extra physics bodies merely to imitate the visual split if the working native mechanism can express the required DOFs with existing bodies/frames.
+
+## Owner gate requirement
+
+No promotion to `main` until Jozz visually validates the rebuilt FL front corner in real runtime. Use isolated, uncluttered views and make suspension motion, steering motion and wheel spin separately attributable.
+
+Handling/stability/steering feel remain a later campaign.
