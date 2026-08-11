@@ -2,128 +2,86 @@
 
 Updated: 2026-08-11
 Owner: Jozz
-Status: `R0 PUBLISHED / R1 ACTIVE / S1 FL UPPER INTEGRATED / S2 OWNER VALIDATION PENDING`
+Status: `R0 PUBLISHED / R1 ACTIVE / S1 FL UPPER INTEGRATED / S2-R WHEEL-SIDE TOPOLOGY RECONSTRUCTION ACTIVE`
 
-This document describes accepted/integrated product state and the current durable boundary.
-
-## 1. Authority
+## Product boundary
 
 ```text
-Private accepted/integrated product:
-Jozzpoly/JV-Box3D-Web-experiment
-main
-(resolve live tip before every write)
-
-Integrated S1 product checkpoint:
-67d66ed412342fee5445b2901d85a663a084bf4e
-tree: f2e1836800719cc9cc7007631568c41e45471450
-
-Frozen S1 cold evidence:
-work/owner-rig-s1-attachment-authority
-393ef4600be5c83ef42bced4a8a451446e372c32
-
-Public R0:
-Jozzpoly/JV-Box3D-Web-Public
-release/r0
-c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+private product authority: Jozzpoly/JV-Box3D-Web-experiment main
+integrated S1 product: 67d66ed412342fee5445b2901d85a663a084bf4e
+product tree: f2e1836800719cc9cc7007631568c41e45471450
+public R0: Jozzpoly/JV-Box3D-Web-Public release/r0 @ c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+native JV: Jozzpoly/Box3d_FunProject — read-only reference for current reconstruction
 ```
 
-`main` is the product. Historical/frozen refs are not parallel product authority.
+S1 FL upper static placement and real neutral live articulation remain OWNER ACCEPTED and integrated. Preserve them unless new evidence directly falsifies a specific accepted assumption.
 
-## 2. Product goal and dependency direction
+## Current owner falsifier
 
-Goal: a browser friend-demo that increasingly feels like Jozz's own game and is worth launching, driving, tuning and showing to friends.
+The S2 technical role map and first S2 owner presentation incorrectly grouped the wheel-side mechanism as one `knuckle/upright-side` member.
 
-Current recovery order:
+Jozz rejected that interpretation and supplied annotated source-rig views showing a fundamental split:
+
+- **yellow:** a suspension-side member tied to the wishbones and static with respect to steering;
+- **red:** a separate steerable/rotating member that connects the first member toward the wheel;
+- **blue:** the relative steering-axis position/center shown in two projections.
+
+These two knuckle members must be rigged separately. Native/core JV already implements this conceptual split and must be used as read-only technical evidence.
+
+This falsifies the previous one-knuckle semantic conclusion even though that conclusion was internally consistent with the current Web code and runtime. Technical self-consistency is therefore not enough for this mechanism.
+
+## Current task — S2-R
+
+Before any FL lower/upright/hub/steering repair, reconstruct the exact two-stage wheel-side topology from:
+
+1. direct owner correction and annotated views;
+2. actual authored `OneSided_Steering_Suspension_Rig` geometry/hierarchy/pivots;
+3. native JV implementation/topology.
+
+The reconstruction must distinguish at minimum:
 
 ```text
-chassis / attachment frame
--> corner landing + kinematic roles
--> wishbones
--> upright / hub / wheel
--> dampers / steering / cardans
--> stance
--> whole-rig integration
--> later dynamics/feel
+suspension-side carrier
+↕ suspension articulation via wishbones
+steerable carrier
+↻ steering DOF relative to suspension-side carrier
+wheel/spin member(s)
+↻ wheel-spin DOF distinct from steering
 ```
 
-Do not tune downstream systems to hide unresolved upstream geometry.
+Exact mesh/node membership, exact 3D steering axis and whether Web repair requires visual topology changes, physics topology changes, or both remain UNKNOWN until S2-R evidence is returned and owner-reviewed.
 
-## 3. Integrated S1 boundary
+No product patch is authorized in S2-R.
 
-FL upper is now integrated and OWNER ACCEPTED at current precision for:
+## Reclassified old S2 evidence
 
-- static FRONT + TOP chassis-side placement;
-- inboard X from physical upper hinge-axis midpoint;
-- inboard Y/Z from accepted semantic-main-chassis calibration;
-- existing physical upper ball as outboard;
-- `PART_PAIR_ROLL_PINNED_STRETCH` through real neutral extension/compression/rebound/rest.
+Still useful:
 
-Integrated package invariants remain 59 real bindings, 829944 GLB bytes and SHA-256 `57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a`; physics was unchanged.
+- source hierarchy observations;
+- differential-motion measurements;
+- stale cardan-audit finding;
+- ~0.222 m authored steering-socket/current physical-arm mismatch;
+- ~6.263 mm worst observed lower-ball shared-joint residual;
+- `#12` lower-outboard reference was inferred rather than authored.
 
-Not accepted by S1: FR, FL lower, upright/hub/wheel, dampers, steering geometry, cardans, mesh proportion, stance or dynamics/feel.
+Not durable as truth:
 
-## 4. Current unresolved owner-visible truth
+- any conclusion that `Socket_ChassisMount_b`, `Socket_WheelCenter`, `Socket_SteeringRod`, `Socket_CardanHub` or surrounding wheel-side meshes all belong to one knuckle/upright member.
 
-- upright/hub/suspension package remains buried in wheel region;
-- dampers/springs remain visibly wrong and enter/intersect wheel region;
-- cardans still miss correct visible mating, especially differential side;
-- final stance likely needs to be slightly higher;
-- global wheel placement cannot yet be accepted;
-- handling/stability/steering controllability remain strongly regressed and deliberately deferred.
+They must be reclassified under the reconstructed multi-member topology.
 
-## 5. S2 technical evidence — REVIEW_READY, not accepted
+## Near-term direction
 
-A read-only technical investigation of the front-left corner found the current proposed role map internally supported by source hierarchy, contracts, generated binding semantics and 180-frame real-M6 differential motion.
+Do not proceed to S3/FL lower merely because the previous technical S2 was green.
 
-Proposed interpretation:
+```text
+S2-R reconstruct split + axis
+-> owner semantic validation
+-> separate bounded production implementation of accepted split
+-> owner visual/live validation through iterations
+-> only then resume downstream wishbone/upright/hub/wheel recovery
+```
 
-- chassis-side: `Socket_ChassisMount_a`, `Socket_SingleDamper_Mount`, `Socket_SingleDamperUpper`, chassis-side role of `Socket_CardanDrive`;
-- lower-arm-side: `Chassis_Bottom` and `Socket_SingleDamperLower`;
-- knuckle/upright-side: `Socket_ChassisMount_b`, `Socket_WheelCenter`, `Socket_SteeringRod` outboard role, `Socket_CardanHub`;
-- `Chassis_Top` and `Chassis_Bottom` are spanning wishbone parts; upper/lower ball regions are shared pivots.
+This split is an upstream dependency for steering, wheel-side packaging and likely several later bindings. Do not conceal it with geometry offsets or downstream tuning.
 
-Technical counterfactual wrong-body hypotheses diverged materially during real motion, so no obvious body-role swap was found.
-
-However **Jozz has NOT validated this interpretation visually**. He explicitly stated that multiple earlier agents were similarly confident about this stage and produced badly wrong results. Therefore technical self-consistency is insufficient to close S2.
-
-S2 remains OPEN.
-
-## 6. Required owner semantic gate
-
-Before S3, Jozz must see clearly:
-
-1. the actual authored FL source rig with our role labels on the real parts/sockets;
-2. the same interpretation in focused real-runtime motion;
-3. which elements we believe follow chassis, lower arm and knuckle/upright;
-4. where we believe shared pivots are.
-
-The purpose is to let the owner correct our **understanding**, not accept final geometry.
-
-Known warnings that must remain visible in reasoning:
-
-- steering authored socket vs current physical arm position mismatch is about 0.222 m; steering geometry remains unaccepted;
-- interface-audit cardan endpoint path is stale relative to R3;
-- worst observed lower-ball shared-joint residual was about 6.263 mm; preserve as later evidence, not S2 role acceptance.
-
-Only direct owner confirmation/correction can close this semantic gate.
-
-## 7. Next step boundary
-
-Do not start S3, FL lower geometry, upright/hub/wheel, damper, steering, cardan, FR, stance or dynamics work yet.
-
-If owner accepts the role map, S2 closes and the likely next product slice is FL lower wishbone while preserving integrated FL upper.
-
-If owner corrects/rejects any role, replan that semantic mapping first; do not patch geometry around a misunderstood mechanism.
-
-## 8. Owner-validation ergonomics
-
-The previous live gate was visually cluttered. Use isolated/fixed views and ghost/hide unrelated geometry when that improves attribution. Do not build persistent tooling unless needed; disposable owner evidence is sufficient.
-
-## 9. Branch note
-
-No S2 work branch is needed because S2 is read-only. Existing completed/accidental refs are cleanup-only and must not be used as product authority.
-
-## 10. Public boundary
-
-Published R0 remains immutable. R1 waits for meaningful integrated owner-visible progress.
+Handling/stability/steering feel remain deferred until visual/mechanical recovery closes.
