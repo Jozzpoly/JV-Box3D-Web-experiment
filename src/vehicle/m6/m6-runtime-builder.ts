@@ -16,6 +16,7 @@ import {
   isFrontCorner,
   isLeftCorner,
   m6CornerOffset,
+  m6FrontLeftGoldenHardpoints,
   m6HingeSwingLimit,
   m6OffsetBoxPoints,
   m6SteeringLinkDroopLift,
@@ -33,6 +34,7 @@ import {
 } from "./m6-topology-contract.js";
 
 const IDENTITY_QUAT: b3Quat = { v: { x: 0, y: 0, z: 0 }, s: 1 };
+const FRONT_LEFT_CORNER = 0;
 
 function diagonalMassData(
   mass: number,
@@ -61,6 +63,18 @@ function createDynamicBody(
   bodyDef.position = position;
   bodyDef.rotation = rotation;
   return b3.b3CreateBody(worldId, bodyDef);
+}
+
+function setKnuckleLikeMass(
+  b3: Box3DModule,
+  bodyId: b3BodyId,
+  mass: number,
+): void {
+  const inertia = 0.4 * mass * 0.2 * 0.2;
+  b3.b3Body_SetMassData(
+    bodyId,
+    diagonalMassData(mass, vec3(inertia, inertia, inertia)),
+  );
 }
 
 export function destroyM6VehicleRuntime(
@@ -284,11 +298,13 @@ export function createM6VehicleRuntime(
     ) {
       const restLocal = m6CornerOffset(config, corner);
       const restWorld = add3(spawn, restLocal);
-      const hardpoints = m6WishboneHardpoints(
-        config,
-        corner,
-        restLocal,
-      );
+      const isGoldenFrontLeft = corner === FRONT_LEFT_CORNER;
+      const goldenHardpoints = isGoldenFrontLeft
+        ? m6FrontLeftGoldenHardpoints(config, restLocal)
+        : null;
+      const hardpoints =
+        goldenHardpoints ??
+        m6WishboneHardpoints(config, corner, restLocal);
 
       const knuckleId = createDynamicBody(
         b3,
@@ -297,19 +313,66 @@ export function createM6VehicleRuntime(
         IDENTITY_QUAT,
       );
       bodyIds.push(knuckleId);
-      const knuckleInertia =
-        0.4 * config.knuckleMass * 0.2 * 0.2;
-      b3.b3Body_SetMassData(
-        knuckleId,
-        diagonalMassData(
-          config.knuckleMass,
-          vec3(
-            knuckleInertia,
-            knuckleInertia,
-            knuckleInertia,
-          ),
-        ),
-      );
+      const knuckleMass = isGoldenFrontLeft
+        ? config.knuckleMass * 0.5
+        : config.knuckleMass;
+      setKnuckleLikeMass(b3, knuckleId, knuckleMass);
+
+      let suspensionCarrierId = knuckleId;
+      let steeringJointId: b3JointId | null = null;
+      let steeringCenterCarrierLocal: b3Vec3 | null = null;
+      let steeringCenterKnuckleLocal: b3Vec3 | null = null;
+      let steeringAxisCarrierLocal: b3Vec3 | null = null;
+      if (goldenHardpoints !== null) {
+        suspensionCarrierId = createDynamicBody(
+          b3,
+          worldId,
+          restWorld,
+          IDENTITY_QUAT,
+        );
+        bodyIds.push(suspensionCarrierId);
+        setKnuckleLikeMass(
+          b3,
+          suspensionCarrierId,
+          config.knuckleMass * 0.5,
+        );
+
+        const steeringFrame = b3.b3ComputeQuatBetweenUnitVectors(
+          vec3(0, 0, 1),
+          goldenHardpoints.steeringAxisDirection,
+        );
+        const steeringJointDef = b3.b3DefaultRevoluteJointDef();
+        steeringJointDef.base.bodyIdA = suspensionCarrierId;
+        steeringJointDef.base.bodyIdB = knuckleId;
+        steeringCenterCarrierLocal = sub3(
+          goldenHardpoints.steeringCenter,
+          restLocal,
+        );
+        steeringCenterKnuckleLocal = clone3(
+          steeringCenterCarrierLocal,
+        );
+        steeringAxisCarrierLocal = clone3(
+          goldenHardpoints.steeringAxisDirection,
+        );
+        steeringJointDef.base.localFrameA = {
+          p: steeringCenterCarrierLocal,
+          q: steeringFrame,
+        };
+        steeringJointDef.base.localFrameB = {
+          p: steeringCenterKnuckleLocal,
+          q: steeringFrame,
+        };
+        steeringJointDef.base.collideConnected = false;
+        steeringJointDef.enableSpring = false;
+        steeringJointDef.enableLimit = true;
+        steeringJointDef.lowerAngle = 0;
+        steeringJointDef.upperAngle = 0;
+        steeringJointId = b3.b3CreateRevoluteJoint(
+          worldId,
+          steeringJointDef,
+        );
+        jointIds.push(steeringJointId);
+      }
 
       const wheel = createLegacySplitWheel(
         b3,
@@ -324,33 +387,35 @@ export function createM6VehicleRuntime(
         wheel.sidewallShapeId,
       );
 
-      const kingpin = normalize3(
+      const suspensionAxis = normalize3(
         sub3(
           hardpoints.upperBallJoint,
           hardpoints.lowerBallJoint,
         ),
       );
-      const kingpinFrame =
+      const suspensionFrame =
         b3.b3ComputeQuatBetweenUnitVectors(
           vec3(0, 0, 1),
-          kingpin,
+          suspensionAxis,
         );
       const twistFence =
-        (isFrontCorner(corner)
+        (isGoldenFrontLeft
+          ? 0
+          : isFrontCorner(corner)
           ? config.maxSteeringAngleDegrees + 10
           : 15) * M6_DEGREES_TO_RADIANS;
       const upper = createControlArm(
         b3,
         worldId,
         chassisId,
-        knuckleId,
+        suspensionCarrierId,
         config,
         spawn,
         hardpoints.upperFrontChassis,
         hardpoints.upperRearChassis,
         hardpoints.upperBallJoint,
         restLocal,
-        kingpinFrame,
+        suspensionFrame,
         config.wishbone.upperArmLength,
         twistFence,
       );
@@ -361,14 +426,14 @@ export function createM6VehicleRuntime(
         b3,
         worldId,
         chassisId,
-        knuckleId,
+        suspensionCarrierId,
         config,
         spawn,
         hardpoints.lowerFrontChassis,
         hardpoints.lowerRearChassis,
         hardpoints.lowerBallJoint,
         restLocal,
-        kingpinFrame,
+        suspensionFrame,
         config.wishbone.lowerArmLength,
         twistFence,
       );
@@ -392,7 +457,7 @@ export function createM6VehicleRuntime(
       );
       const coiloverDef = b3.b3DefaultDistanceJointDef();
       coiloverDef.base.bodyIdA = chassisId;
-      coiloverDef.base.bodyIdB = knuckleId;
+      coiloverDef.base.bodyIdB = suspensionCarrierId;
       coiloverDef.base.localFrameA.p = coiloverAnchorA;
       coiloverDef.base.localFrameB.p = coiloverAnchorB;
       coiloverDef.base.collideConnected = false;
@@ -420,7 +485,18 @@ export function createM6VehicleRuntime(
         restLocal,
       );
       const steeringDef = b3.b3DefaultDistanceJointDef();
-      if (isFrontCorner(corner)) {
+      let steeringLinkJointId: b3JointId | null = null;
+      if (isGoldenFrontLeft) {
+        // S2: the authored #7 member is a live rack-center -> knuckle visual
+        // segment, while the centered carrier->knuckle revolute owns steering
+        // physically. Making #7 a rigid distance joint here would let
+        // suspension travel back-drive steering (bump-steer), contradicting
+        // the owner-accepted neutral-suspension DOF split.
+        steeringDef.base.bodyIdA = rackId;
+        steeringDef.base.bodyIdB = knuckleId;
+        steeringDef.base.localFrameA.p = vec3();
+        steeringDef.base.localFrameB.p = steeringArmKnuckle;
+      } else if (isFrontCorner(corner)) {
         const rackEndZ = isLeftCorner(corner)
           ? -config.rackHalfWidth
           : config.rackHalfWidth;
@@ -452,11 +528,13 @@ export function createM6VehicleRuntime(
           hardpoints.steeringArm,
         );
       }
-      steeringDef.base.collideConnected = false;
-      steeringDef.enableSpring = false;
-      const steeringLinkJointId =
-        b3.b3CreateDistanceJoint(worldId, steeringDef);
-      jointIds.push(steeringLinkJointId);
+      if (!isGoldenFrontLeft) {
+        steeringDef.base.collideConnected = false;
+        steeringDef.enableSpring = false;
+        steeringLinkJointId =
+          b3.b3CreateDistanceJoint(worldId, steeringDef);
+        jointIds.push(steeringLinkJointId);
+      }
 
       const spinDef = b3.b3DefaultRevoluteJointDef();
       spinDef.base.bodyIdA = knuckleId;
@@ -485,6 +563,11 @@ export function createM6VehicleRuntime(
       corners.push({
         wheel,
         knuckleId,
+        suspensionCarrierId,
+        steeringJointId,
+        steeringCenterCarrierLocal,
+        steeringCenterKnuckleLocal,
+        steeringAxisCarrierLocal,
         upperArmId: upper.armId,
         lowerArmId: lower.armId,
         spinJointId,
@@ -497,7 +580,7 @@ export function createM6VehicleRuntime(
         coiloverVisual: {
           bodyIdA: chassisId,
           localAnchorA: clone3(coiloverAnchorA),
-          bodyIdB: knuckleId,
+          bodyIdB: suspensionCarrierId,
           localAnchorB: clone3(coiloverAnchorB),
         },
         steeringLinkVisual: {

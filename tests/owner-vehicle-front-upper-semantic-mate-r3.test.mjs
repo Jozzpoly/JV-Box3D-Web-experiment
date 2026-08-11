@@ -171,9 +171,9 @@ test('S1-D changes only FL upper start X while protected outboard and FR baselin
   );
   assert.equal(frUpper.source.kind, 'PART');
   assert.equal(frUpper.source.partId, 'm6.fr.upper-arm');
-  assert.equal(result.glb.byteLength, 829944);
+  assert.equal(result.glb.byteLength, 829936);
   assert.equal(
     result.report.output.sha256,
-    '57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a',
+    '1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc',
   );
 });

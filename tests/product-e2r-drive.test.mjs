@@ -55,7 +55,7 @@ test("accepted M6 settles, contacts and drives on the full E2R product world", (
     });
     assert.equal(worldData.boxes.length, 410);
     assert.equal(worldData.capsules.length, 147);
-    assert.equal(world.counters.bodyCount, 594);
+    assert.equal(world.counters.bodyCount, 596);
     assert.equal(world.counters.shapeCount, 576);
     assert.equal(world.counters.jointCount, 58);
 

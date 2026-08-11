@@ -36,6 +36,7 @@ const EXPECTED_CHANGED_BINDINGS = Object.freeze([
 const EXPECTED_CHANGED_SOURCE_BINDINGS = Object.freeze([
   'owner.fl.upper-arm',
   'owner.fl.coilover.upper',
+  'owner.fl.knuckle.socket-chassismount-b',
   'owner.fl.coilover.stretch',
   'owner.fl.coilover.lower',
   'owner.fr.coilover.upper',
@@ -134,8 +135,8 @@ test('R3 reference-calibrated package is deterministic and keeps R2 source autho
   assert.equal(a.visualPackage.id, 'm6-owner-full-rig-r3');
   assert.equal(a.report.schema, 'JV_WEB_OWNER_M6_FULL_RIG_R3');
   assert.deepEqual(a.report.calibrationStrategy, {
-    frontWishbones: 'R3_AUTHORED_REFERENCE_PATCH_OVER_EXACT_R2',
-    frontKnuckle: 'R3_AUTHORED_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
+    frontWishbones: 'FL_S2_GOLDEN_RIGID_ENDS_TO_S1_PHYSICAL_HARDPOINTS__FR_R3_CONTROL',
+    frontKnuckle: 'FL_S2_CENTERED_WHEELCENTER_EXACT_SOURCE_NO_KINGPIN_AFFINE__FR_R3_CONTROL',
     frontChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
     frontDamper: 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR',
     rearWishbones: 'R3_GEOMETRY_MATING_AND_CHASSIS_FACE_REFERENCE_PATCH_OVER_EXACT_R2',
@@ -183,8 +184,8 @@ test('R3 reference-calibrated package is deterministic and keeps R2 source autho
     a.report.wheelInterface.treatment,
     'WHEEL_CENTER_REMAINS_PHYSICAL_SPIN_CENTER_SOCKET_WHEELMOUNT_IS_VISUAL_HUB_INTERFACE',
   );
-  assert.equal(a.glb.byteLength, 829944);
-  assert.equal(a.report.output.sha256, '57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a');
+  assert.equal(a.glb.byteLength, 829936);
+  assert.equal(a.report.output.sha256, '1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc');
 });
 
 test('R3 blast radius is exactly the accepted front and rear structural geometry bindings', async () => {
@@ -383,21 +384,47 @@ test('R3 front wishbones map authored references to physical hardpoints with one
       assert.equal(arm.mirrored, corner === 'fr');
     }
   }
-  close(corners.fl.arms.upper.axialScale, corners.fr.arms.upper.axialScale);
-  close(corners.fl.arms.lower.axialScale, corners.fr.arms.lower.axialScale);
+  assert.equal(
+    corners.fl.arms.upper.referenceAuthority.outboard,
+    'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Top_WHEEL_END',
+  );
+  assert.equal(
+    corners.fl.arms.lower.referenceAuthority.outboard,
+    'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Bottom_WHEEL_END',
+  );
+  assert.equal(
+    corners.fr.arms.upper.referenceAuthority.outboard,
+    'AUTHORED_VISUAL_REFERENCE:Socket_ChassisMount_b',
+  );
+  assert.equal(
+    corners.fr.arms.lower.referenceAuthority.outboard,
+    'INFERRED_PARALLEL_UPRIGHT_FROM_AUTHORED_UPPER_REFERENCE',
+  );
+  assert.notEqual(corners.fl.arms.upper.axialScale, corners.fr.arms.upper.axialScale);
+  assert.notEqual(corners.fl.arms.lower.axialScale, corners.fr.arms.lower.axialScale);
   close(corners.fl.arms.upper.spreadScale, corners.fr.arms.upper.spreadScale);
   close(corners.fl.arms.lower.spreadScale, corners.fr.arms.lower.spreadScale);
-  for (const corner of ['fl', 'fr']) {
-    for (const token of ['socket-chassismount-b', 'socket-wheelcenter']) {
-      const knuckle = corners[corner].knuckle[token];
-      close(knuckle.wheelCenterErrorMeters, 0);
-      close(knuckle.upperBallErrorMeters, 0, 1e-15);
-      close(knuckle.lowerBallErrorMeters, 0, 1e-15);
-      assert.equal(knuckle.mirrored, corner === 'fr');
+  for (const token of ['socket-chassismount-b', 'socket-wheelcenter']) {
+    const knuckle = corners.fl.knuckle[token];
+    assert.equal(knuckle.mode, 'S2_FL_EXACT_AUTHORED_RIGID_PLACEMENT_NO_KINGPIN_AFFINE');
+    assert.equal(knuckle.affineKingpinCalibration, false);
+    assert.deepEqual(knuckle.steeringCenter, corners.fl.physical.wheelCenter);
+    for (let axis = 0; axis < 3; axis += 1) {
+      close(knuckle.steeringAxisDirection[axis], [0, 1, 0][axis]);
     }
+    assert.equal(
+      knuckle.bodyRole,
+      token === 'socket-chassismount-b' ? 'lower-arm' : 'knuckle',
+    );
   }
-  close(corners.fl.knuckle['socket-chassismount-b'].radialScale, corners.fr.knuckle['socket-chassismount-b'].radialScale);
-  close(corners.fl.knuckle['socket-chassismount-b'].kingpinScale, corners.fr.knuckle['socket-chassismount-b'].kingpinScale);
+  for (const token of ['socket-chassismount-b', 'socket-wheelcenter']) {
+    const knuckle = corners.fr.knuckle[token];
+    assert.equal(knuckle.mode, 'AUTHORED_UPRIGHT_REFERENCE_TO_PHYSICAL_KNUCKLE_R3');
+    close(knuckle.wheelCenterErrorMeters, 0);
+    close(knuckle.upperBallErrorMeters, 0, 1e-15);
+    close(knuckle.lowerBallErrorMeters, 0, 1e-15);
+    assert.equal(knuckle.mirrored, true);
+  }
   for (const corner of ['fl', 'fr']) {
     for (const token of ['socket-chassismount-a', 'socket-singledamper-mount']) {
       const chassis = corners[corner].chassis[token];
@@ -445,16 +472,16 @@ test('R3 active consumers share one final artifact and root-count contract', asy
     readFile('tools/validate-public-r1-preview.mjs', 'utf8'),
     readFile('src/render/m6-owner-vehicle-layer.ts', 'utf8'),
   ]);
-  const sha = '57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a';
+  const sha = '1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc';
   assert.match(runtimeMotion, new RegExp(sha));
   assert.match(runtimeMotion, /plan\.length, 59/);
   assert.match(portable, new RegExp(sha));
-  assert.match(portable, /EXPECTED_OWNER_BYTES = 829944/);
+  assert.match(portable, /EXPECTED_OWNER_BYTES = 829936/);
   assert.match(portable, /boundNodeCount !== 64/);
   assert.match(portable, /boundRootCount !== 64/);
   assert.match(portable, /budget\.nodes !== 64/);
   assert.match(publicPreview, new RegExp(sha));
-  assert.match(publicPreview, /byteLength !== 829944/);
+  assert.match(publicPreview, /byteLength !== 829936/);
   assert.match(publicPreview, /length !== 59/);
   assert.match(ownerLayer, /M6_OWNER_R3_REAL_NODE_COUNT = 59 as const/);
 });

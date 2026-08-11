@@ -12,7 +12,7 @@ import type { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend
 import type { RateSteeringProfileId } from "./rate-steering-profile.js";
 
 export const M6_TOPOLOGY_COUNTS = Object.freeze({
-  bodies: 18,
+  bodies: 19,
   joints: 29,
   shapes: 9,
   corners: 4,
@@ -67,6 +67,14 @@ export interface M6DriveTrace {
 }
 
 export interface M6CornerTrace {
+  readonly knucklePosition: b3Vec3;
+  readonly knuckleRotation: M6Rotation;
+  readonly suspensionCarrierPosition: b3Vec3;
+  readonly suspensionCarrierRotation: M6Rotation;
+  readonly steeringJointAngle: number | null;
+  readonly steeringCenterCarrierWorld: b3Vec3 | null;
+  readonly steeringCenterKnuckleWorld: b3Vec3 | null;
+  readonly steeringAxisWorld: b3Vec3 | null;
   readonly wheelPosition: b3Vec3;
   readonly wheelRotation: M6Rotation;
   readonly wheelVelocity: b3Vec3;
@@ -116,6 +124,11 @@ export interface M6VisualSegmentRuntime {
 export interface M6CornerRuntime {
   readonly wheel: LegacySplitWheelReceipt;
   readonly knuckleId: b3BodyId;
+  readonly suspensionCarrierId: b3BodyId;
+  readonly steeringJointId: b3JointId | null;
+  readonly steeringCenterCarrierLocal: b3Vec3 | null;
+  readonly steeringCenterKnuckleLocal: b3Vec3 | null;
+  readonly steeringAxisCarrierLocal: b3Vec3 | null;
   readonly upperArmId: b3BodyId;
   readonly lowerArmId: b3BodyId;
   readonly spinJointId: b3JointId;
@@ -124,7 +137,7 @@ export interface M6CornerRuntime {
   readonly upperBallId: b3JointId;
   readonly lowerBallId: b3JointId;
   readonly coiloverJointId: b3JointId;
-  readonly steeringLinkJointId: b3JointId;
+  readonly steeringLinkJointId: b3JointId | null;
   readonly coiloverVisual: M6VisualSegmentRuntime;
   readonly steeringLinkVisual: M6VisualSegmentRuntime;
 }

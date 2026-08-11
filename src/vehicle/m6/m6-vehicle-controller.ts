@@ -12,10 +12,12 @@ import type {
 } from "../../physics/box3d-runtime-contract.js";
 import { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";
 import {
+  add3,
   clampNumber,
   clone3,
   distance3,
   dot3,
+  m6FrontLeftSteeringAngleFromRack,
   scale3,
   vec3,
 } from "./m6-geometry.js";
@@ -252,6 +254,20 @@ export class M6VehicleController {
       });
     }
 
+    const goldenFrontLeft = this.#runtime.corners[0]!;
+    if (goldenFrontLeft.steeringJointId !== null) {
+      const targetAngle = m6FrontLeftSteeringAngleFromRack(
+        this.#config,
+        liveRack,
+      );
+      this.#b3.b3RevoluteJoint_SetLimits(
+        goldenFrontLeft.steeringJointId,
+        targetAngle,
+        targetAngle,
+      );
+      this.#b3.b3Joint_WakeBodies(goldenFrontLeft.steeringJointId);
+    }
+
     this.#b3.b3Joint_WakeBodies(rackJointId);
     this.#applyDrive();
   }
@@ -292,7 +308,63 @@ export class M6VehicleController {
             corner.spinJointId,
           );
         currentMotorTorqueTotal += Math.abs(driveMotorTorque);
+        const carrierRotation = this.#b3.b3Body_GetRotation(
+          corner.suspensionCarrierId,
+        );
+        const knuckleRotation = this.#b3.b3Body_GetRotation(
+          corner.knuckleId,
+        );
+        const carrierPosition = this.#b3.b3Body_GetPosition(
+          corner.suspensionCarrierId,
+        );
+        const knucklePosition = this.#b3.b3Body_GetPosition(
+          corner.knuckleId,
+        );
+        const steeringCenterCarrierWorld =
+          corner.steeringCenterCarrierLocal === null
+            ? null
+            : add3(
+                carrierPosition,
+                this.#b3.b3RotateVector(
+                  carrierRotation,
+                  corner.steeringCenterCarrierLocal,
+                ),
+              );
+        const steeringCenterKnuckleWorld =
+          corner.steeringCenterKnuckleLocal === null
+            ? null
+            : add3(
+                knucklePosition,
+                this.#b3.b3RotateVector(
+                  knuckleRotation,
+                  corner.steeringCenterKnuckleLocal,
+                ),
+              );
+        const steeringAxisWorld =
+          corner.steeringAxisCarrierLocal === null
+            ? null
+            : clone3(
+                this.#b3.b3RotateVector(
+                  carrierRotation,
+                  corner.steeringAxisCarrierLocal,
+                ),
+              );
         return {
+          knucklePosition: clone3(knucklePosition),
+          knuckleRotation: this.#cloneRotation(corner.knuckleId),
+          suspensionCarrierPosition: clone3(carrierPosition),
+          suspensionCarrierRotation: this.#cloneRotation(
+            corner.suspensionCarrierId,
+          ),
+          steeringJointAngle:
+            corner.steeringJointId === null
+              ? null
+              : this.#b3.b3RevoluteJoint_GetAngle(
+                  corner.steeringJointId,
+                ),
+          steeringCenterCarrierWorld,
+          steeringCenterKnuckleWorld,
+          steeringAxisWorld,
           wheelPosition: clone3(
             this.#b3.b3Body_GetPosition(corner.wheel.bodyId),
           ),
@@ -539,8 +611,13 @@ export class M6VehicleController {
     );
     let transverseLoad = 0;
     for (let corner = 0; corner < 2; corner += 1) {
+      const steeringLinkJointId =
+        this.#runtime.corners[corner]!.steeringLinkJointId;
+      if (steeringLinkJointId === null) {
+        continue;
+      }
       const tieForce = this.#b3.b3Joint_GetConstraintForce(
-        this.#runtime.corners[corner]!.steeringLinkJointId,
+        steeringLinkJointId,
       );
       const axial = scale3(dot3(tieForce, rackAxis), rackAxis);
       transverseLoad += distance3(tieForce, axial);

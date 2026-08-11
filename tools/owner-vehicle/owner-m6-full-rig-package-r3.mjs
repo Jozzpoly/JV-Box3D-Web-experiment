@@ -11,6 +11,10 @@ import {
 import { buildOwnerM6FullRigPackageR2 } from './owner-m6-full-rig-package-r2.mjs';
 import {
   deriveFrontSuspensionReferencesR3,
+  deriveFrontLeftGoldenReferencesS2,
+  frontLeftGoldenWishboneReferencesS2,
+  frontLeftGoldenGeometryS2,
+  calibrateFrontLeftGoldenRigidPieceS2,
   calibrateFrontWishbonePieceR3,
   calibrateFrontChassisPieceR3,
   calibrateFrontKnucklePieceR3,
@@ -239,6 +243,27 @@ function replaceFrontUpperWishbonePilotBinding(bindings, pilot) {
   return bindings.map((candidate) => byId.get(candidate.bindingId));
 }
 
+function replaceFrontLeftGoldenBindingSourcesS2(bindings) {
+  const bindingId = 'owner.fl.knuckle.socket-chassismount-b';
+  const byId = new Map(bindings.map((binding) => [binding.bindingId, binding]));
+  const binding = byId.get(bindingId);
+  if (!binding) throw new Error(`Owner M6 S2 base is missing binding ${bindingId}.`);
+  if (binding.source.kind !== 'PART' || binding.source.partId !== 'm6.fl.knuckle') {
+    throw new Error(`Owner M6 S2 binding ${bindingId} has unexpected pre-S2 source semantics.`);
+  }
+  byId.set(bindingId, {
+    ...binding,
+    // Historical binding id retained to avoid gratuitous package churn. Its
+    // live source is intentionally no longer the knuckle: #6 follows the
+    // lower-arm/non-steering suspension-side frame, matching golden M6.
+    source: {
+      kind: 'PART',
+      partId: 'm6.fl.lower-arm',
+    },
+  });
+  return bindings.map((candidate) => byId.get(candidate.bindingId));
+}
+
 function replaceWheelBindingTransformsR3(bindings, wheelInterface) {
   const corners = ['fl', 'fr', 'rl', 'rr'];
   const byId = new Map(bindings.map((binding) => [binding.bindingId, binding]));
@@ -450,6 +475,14 @@ export function buildOwnerM6FullRigPackageR3(input) {
     'OneSided_Steering_Suspension_Rig.gltf',
   );
   const references = deriveFrontSuspensionReferencesR3(front);
+  const frontLeftGoldenReferences = deriveFrontLeftGoldenReferencesS2(front);
+  const frontLeftGoldenWishboneReferences = frontLeftGoldenWishboneReferencesS2(
+    frontLeftGoldenReferences,
+  );
+  const frontLeftGoldenGeometry = frontLeftGoldenGeometryS2(
+    config,
+    frontLeftGoldenReferences,
+  );
   const rear = inspectBlockbenchRigidPartsV1(
     input.rearSuspensionText,
     'One_Sided_wheel_mount.gltf',
@@ -469,12 +502,17 @@ export function buildOwnerM6FullRigPackageR3(input) {
   let frontUpperPilot = null;
 
   for (const corner of FRONT_CORNERS) {
-    const geometry = cornerRestGeometry(config, corner);
+    const geometry = corner === 'fl'
+      ? frontLeftGoldenGeometry
+      : cornerRestGeometry(config, corner);
     armReports[corner] = {};
     for (const which of ARM_KINDS) {
       const pieceName = which === 'upper' ? 'Chassis_Top' : 'Chassis_Bottom';
       const piece = requirePiece(front, pieceName, `${corner} front suspension`);
-      const calibrated = calibrateFrontWishbonePieceR3(piece, references, geometry, which);
+      const wishboneReferences = corner === 'fl'
+        ? frontLeftGoldenWishboneReferences
+        : references;
+      const calibrated = calibrateFrontWishbonePieceR3(piece, wishboneReferences, geometry, which);
       replaceBindingGeometry(decoded, r2.visualPackage, `owner.${corner}.${which}-arm`, calibrated.primitives);
       armReports[corner][which] = calibrated.report;
       if (corner === 'fl' && which === 'upper') {
@@ -513,7 +551,14 @@ export function buildOwnerM6FullRigPackageR3(input) {
     knuckleReports[corner] = {};
     for (const [pieceName, bindingToken] of FRONT_KNUCKLE_PIECES) {
       const piece = requirePiece(front, pieceName, `${corner} front upright`);
-      const calibrated = calibrateFrontKnucklePieceR3(piece, references, geometry);
+      const calibrated = corner === 'fl'
+        ? calibrateFrontLeftGoldenRigidPieceS2(
+            piece,
+            frontLeftGoldenReferences,
+            geometry,
+            pieceName === 'Socket_ChassisMount_b' ? 'lower-arm' : 'knuckle',
+          )
+        : calibrateFrontKnucklePieceR3(piece, references, geometry);
       replaceBindingGeometry(
         decoded,
         r2.visualPackage,
@@ -539,7 +584,12 @@ export function buildOwnerM6FullRigPackageR3(input) {
     }
     if (chassisMapPoint === null) throw new Error(`${corner} front chassis calibration produced no map.`);
     const lowerPiece = requirePiece(front, 'Chassis_Bottom', `${corner} front lower wishbone damper endpoint`);
-    const lowerArm = calibrateFrontWishbonePieceR3(lowerPiece, references, geometry, 'lower');
+    const lowerArm = calibrateFrontWishbonePieceR3(
+      lowerPiece,
+      corner === 'fl' ? frontLeftGoldenWishboneReferences : references,
+      geometry,
+      'lower',
+    );
     const upperChassisLocal = chassisMapPoint(references.damperUpper);
     const lowerArmLocal = lowerArm.mapPoint(references.damperLower);
     const lowerRestWorld = [
@@ -601,8 +651,11 @@ export function buildOwnerM6FullRigPackageR3(input) {
     renameR3Nodes(decoded.json, r2.visualPackage),
     wheelInterface,
   );
-  const frontDamperBindings = replaceFrontDamperBindingSources(
+  const s2FrontLeftBindings = replaceFrontLeftGoldenBindingSourcesS2(
     wheelBindings,
+  );
+  const frontDamperBindings = replaceFrontDamperBindingSources(
+    s2FrontLeftBindings,
     damperEndpoints,
   );
   if (frontUpperPilot === null) {
@@ -650,6 +703,20 @@ export function buildOwnerM6FullRigPackageR3(input) {
       FRONT_CORNERS.includes(corner)
         ? Object.freeze({
             ...value,
+            ...(corner === 'fl'
+              ? {
+                  physical: Object.freeze({
+                    ...value.physical,
+                    wheelCenter: frontLeftGoldenGeometry.wheelCenter,
+                    steeringStart: frontLeftGoldenGeometry.steeringStart,
+                    steeringArm: frontLeftGoldenGeometry.steeringArm,
+                    steeringCenter: frontLeftGoldenGeometry.steeringCenter,
+                    steeringAxisDirection: frontLeftGoldenGeometry.steeringAxisDirection,
+                    chassisMountB: frontLeftGoldenGeometry.chassisMountB,
+                    authority: frontLeftGoldenGeometry.authority,
+                  }),
+                }
+              : {}),
             arms: Object.freeze(armReports[corner]),
             knuckle: Object.freeze(knuckleReports[corner]),
             chassis: Object.freeze(chassisReports[corner]),
@@ -670,8 +737,8 @@ export function buildOwnerM6FullRigPackageR3(input) {
     ...r2.report,
     schema: 'JV_WEB_OWNER_M6_FULL_RIG_R3',
     calibrationStrategy: Object.freeze({
-      frontWishbones: 'R3_AUTHORED_REFERENCE_PATCH_OVER_EXACT_R2',
-      frontKnuckle: 'R3_AUTHORED_UPRIGHT_REFERENCE_PATCH_OVER_EXACT_R2',
+      frontWishbones: 'FL_S2_GOLDEN_RIGID_ENDS_TO_S1_PHYSICAL_HARDPOINTS__FR_R3_CONTROL',
+      frontKnuckle: 'FL_S2_CENTERED_WHEELCENTER_EXACT_SOURCE_NO_KINGPIN_AFFINE__FR_R3_CONTROL',
       frontChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
       frontDamper: 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR',
       rearWishbones: 'R3_GEOMETRY_MATING_AND_CHASSIS_FACE_REFERENCE_PATCH_OVER_EXACT_R2',
@@ -702,6 +769,20 @@ export function buildOwnerM6FullRigPackageR3(input) {
       referenceEndLocal: frontUpperPilot.referenceEndLocal,
       referenceUpDirection: frontUpperPilot.referenceUpDirection,
       physics: 'UNCHANGED',
+    }),
+    s2FrontLeftGolden: Object.freeze({
+      treatment: 'CENTER_FIRST_DOF_FIRST_GOLDEN_SOURCE_PORT',
+      wheelCenter: frontLeftGoldenGeometry.steeringCenter,
+      steeringAxisDirection: frontLeftGoldenGeometry.steeringAxisDirection,
+      upperArmVisualWheelEnd: frontLeftGoldenReferences.upper.wheelEnd,
+      lowerArmVisualWheelEnd: frontLeftGoldenReferences.lower.wheelEnd,
+      chassisMountB: frontLeftGoldenReferences.chassisMountB,
+      steeringRodOutboard: frontLeftGoldenReferences.steeringRod.outboard,
+      steeringRodInboardAuthority: frontLeftGoldenReferences.provenance.steeringRodInboard,
+      steeringLinkPhysics: 'VISUAL_REFERENCE_ONLY_CENTERED_REVOLUTE_TARGET_DERIVED_FROM_REST_SOURCE_ROD_AND_LIVE_RACK',
+      sourceAuthority: frontLeftGoldenReferences.provenance,
+      oldKingpinAffineAuthority: 'REJECTED_FOR_FL',
+      suspensionHardpoints: 'PRESERVED_FROM_INTEGRATED_S1_AS_CARRIER_CONSTRAINTS_NOT_STEERING_AXIS_AUTHORITY',
     }),
     output: Object.freeze({
       ...r2.report.output,

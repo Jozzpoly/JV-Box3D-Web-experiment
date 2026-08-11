@@ -25,23 +25,26 @@ function bounds(pts){const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infini
 const key=p=>p.map(x=>Math.round(x*1e6)/1e6).join(',');
 function assertMirrored(left,right,label){const l=new Set(left.map(p=>key([p[0],p[1],-p[2]]))),r=new Set(right.map(key));assert.equal(l.size,r.size,`${label} unique vertex count`);for(const p of l)assert.ok(r.has(p),`${label} missing mirrored vertex ${p}`);}
 
-test('R3 calibrated suspension PART geometry stays corner-local and exactly mirrors left/right',async()=>{
+test('R3 structural PART geometry stays corner-local while non-S2 pairs retain exact mirroring',async()=>{
   const i=await inputs(),r=buildOwnerM6FullRigPackageR3(i),d=decodeGlb(r.glb),cfg=parseM6FactoryConfig(i.factoryReceiptText);
   const geos=Object.fromEntries(['fl','fr','rl','rr'].map(c=>[c,cornerRestGeometry(cfg,c)]));
   const entries=new Map();
   for(const binding of r.visualPackage.bindings){const pts=worldPoints(binding,d,geos);if(pts)entries.set(binding.bindingId,{pts,bounds:bounds(pts)});}
-  assert.ok(entries.size>=25,'expected full structural PART coverage');
+  assert.ok(entries.size>=24,'expected full structural PART coverage');
   // Wheel meshes are intentionally excluded: wheel visual calibration is covered
   // by its dedicated marker/radius/width tests, while the runtime wheel body has
   // a separate rest/spin orientation. This gate audits the suspension geometry
   // baked into PART-local coordinates, where exact L/R mirroring is meaningful.
   const pairs=[
-    ['owner.fl.upper-arm','owner.fr.upper-arm'],['owner.fl.lower-arm','owner.fr.lower-arm'],
-    ['owner.fl.knuckle.socket-chassismount-b','owner.fr.knuckle.socket-chassismount-b'],['owner.fl.knuckle.socket-wheelcenter','owner.fr.knuckle.socket-wheelcenter'],
+    // Both FL wishbone meshes now use the S2 golden rigid-part endpoints,
+    // while FR deliberately remains the pre-S2 R3 control. FL upper is also
+    // the accepted S1 roll-pinned pair. Exact FL<->FR wishbone mirroring is
+    // therefore no longer a valid source-authority lock.
     ['owner.fl.chassis-bracket.socket-chassismount-a','owner.fr.chassis-bracket.socket-chassismount-a'],['owner.fl.chassis-bracket.socket-singledamper-mount','owner.fr.chassis-bracket.socket-singledamper-mount'],
     ['owner.rl.upper-arm','owner.rr.upper-arm'],['owner.rl.lower-arm','owner.rr.lower-arm'],
     ['owner.rl.knuckle.socket-wheelcenter','owner.rr.knuckle.socket-wheelcenter'],['owner.rl.chassis-bracket.socket-chassismount','owner.rr.chassis-bracket.socket-chassismount'],
   ];
+  assert.ok(entries.has('owner.fl.lower-arm')&&entries.has('owner.fr.lower-arm'),'FL/FR lower-arm control coverage');
   for(const [l,rid] of pairs){assert.ok(entries.has(l)&&entries.has(rid),`${l}/${rid}`);assertMirrored(entries.get(l).pts,entries.get(rid).pts,`${l}<->${rid}`);}
   for(const [id,e] of entries){const corner=id.match(/^owner\.(fl|fr|rl|rr)\./)?.[1];if(!corner||id.endsWith('.wheel'))continue;const wc=geos[corner].wheelCenter,c=e.bounds.center,dist=Math.hypot(c[0]-wc[0],c[1]-wc[1],c[2]-wc[2]);assert.ok(dist<1.25,`${id} escaped corner envelope: ${dist}`);}
 });

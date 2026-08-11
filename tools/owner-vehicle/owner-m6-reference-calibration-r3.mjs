@@ -1,6 +1,8 @@
 import {
+  cornerRestGeometry,
   mapPiecePrimitives,
   requireMarker,
+  requirePiece,
 } from './owner-m6-full-rig-calibration-r2.mjs';
 
 const EPS = 1e-9;
@@ -19,6 +21,180 @@ function norm(a,label='vector'){const l=len(a);if(!(l>EPS))fail(`${label} is deg
 function midpoint(a,b){return mul(add(a,b),0.5);}
 function distance(a,b){return len(sub(a,b));}
 function determinantColumns(a,b,c){return dot(a,cross(b,c));}
+
+function pieceBounds(piece) {
+  const min=[Infinity,Infinity,Infinity];
+  const max=[-Infinity,-Infinity,-Infinity];
+  for(const primitive of piece.primitives){
+    for(let i=0;i<primitive.positions.length;i+=3){
+      for(let axis=0;axis<3;axis+=1){
+        min[axis]=Math.min(min[axis],primitive.positions[i+axis]);
+        max[axis]=Math.max(max[axis],primitive.positions[i+axis]);
+      }
+    }
+  }
+  if(min.some((value)=>!Number.isFinite(value))||max.some((value)=>!Number.isFinite(value))){
+    fail(`piece ${piece.jointName} has no finite geometry`);
+  }
+  return Object.freeze({min:Object.freeze(min),max:Object.freeze(max)});
+}
+
+/**
+ * Exact JS equivalent of the golden native M6/M9 ArmEnds / PartXEnds helper.
+ * Rigid pieces in this asset family run along authored X. For the unmirrored
+ * left corner the wheel/outboard end is the -X extreme.
+ */
+export function frontLeftPartXEndsS2(piece) {
+  const bounds=pieceBounds(piece);
+  const y=0.5*(bounds.min[1]+bounds.max[1]);
+  const z=0.5*(bounds.min[2]+bounds.max[2]);
+  return Object.freeze({
+    chassisOrInboard:Object.freeze([bounds.max[0],y,z]),
+    wheelOrOutboard:Object.freeze([bounds.min[0],y,z]),
+    bounds,
+  });
+}
+
+function frontLeftSourceDeltaMetersS2(deltaBU) {
+  // Established JV source placement: yaw -90 degrees about Y, then 0.35 m/BU.
+  return Object.freeze([
+    -deltaBU[2]*OWNER_M6_R3_SCALE_METERS_PER_BU,
+    deltaBU[1]*OWNER_M6_R3_SCALE_METERS_PER_BU,
+    deltaBU[0]*OWNER_M6_R3_SCALE_METERS_PER_BU,
+  ]);
+}
+
+/**
+ * S2-PORT source authority for the front-left corner. This intentionally does
+ * not call deriveFrontSuspensionReferencesR3(): that older helper promoted
+ * Socket_ChassisMount_b to the upper wheel-side hardpoint and inferred the
+ * lower point from it, which is the rejected one-knuckle authority inversion.
+ */
+export function deriveFrontLeftGoldenReferencesS2(extracted) {
+  const wheelCenter=requireMarker(extracted,'Socket_WheelCenter','S2 FL golden source');
+  const chassisMountB=requireMarker(extracted,'Socket_ChassisMount_b','S2 FL golden source');
+  const travelTop=requireMarker(extracted,'Axis_SuspensionTravel_Top','S2 FL golden source');
+  const travelBottom=requireMarker(extracted,'Axis_SuspensionTravel_Bottom','S2 FL golden source');
+  const upperPiece=requirePiece(extracted,'Chassis_Top','S2 FL golden source');
+  const lowerPiece=requirePiece(extracted,'Chassis_Bottom','S2 FL golden source');
+  const steeringRodPiece=requirePiece(extracted,'Socket_SteeringRod','S2 FL golden source');
+  const upperEnds=frontLeftPartXEndsS2(upperPiece);
+  const lowerEnds=frontLeftPartXEndsS2(lowerPiece);
+  const steeringRodEnds=frontLeftPartXEndsS2(steeringRodPiece);
+  const travelMid=midpoint(travelTop,travelBottom);
+  if(distance(travelMid,wheelCenter)>1e-9){
+    fail(`S2 FL WheelCenter is not the authored travel-axis midpoint (${distance(travelMid,wheelCenter)} BU)`);
+  }
+  const steeringAxisSource=norm(sub(travelTop,travelBottom),'S2 FL authored steering axis');
+  const upperAxial=norm(sub(upperEnds.wheelOrOutboard,upperEnds.chassisOrInboard),'S2 FL upper arm axis');
+  const lowerAxial=norm(sub(lowerEnds.wheelOrOutboard,lowerEnds.chassisOrInboard),'S2 FL lower arm axis');
+  if(len(cross(upperAxial,lowerAxial))>1e-9){
+    fail('S2 FL authored upper/lower rigid-part axes are not parallel');
+  }
+  const sourceSpread=norm(cross(steeringAxisSource,upperAxial),'S2 FL authored wishbone spread axis');
+  return Object.freeze({
+    wheelCenter:Object.freeze(wheelCenter),
+    chassisMountB:Object.freeze(chassisMountB),
+    travelTop:Object.freeze(travelTop),
+    travelBottom:Object.freeze(travelBottom),
+    steeringAxisSource:Object.freeze(steeringAxisSource),
+    sourceSpread:Object.freeze(sourceSpread),
+    upper:Object.freeze({
+      chassisEnd:upperEnds.chassisOrInboard,
+      wheelEnd:upperEnds.wheelOrOutboard,
+      bounds:upperEnds.bounds,
+    }),
+    lower:Object.freeze({
+      chassisEnd:lowerEnds.chassisOrInboard,
+      wheelEnd:lowerEnds.wheelOrOutboard,
+      bounds:lowerEnds.bounds,
+    }),
+    steeringRod:Object.freeze({
+      inboard:steeringRodEnds.chassisOrInboard,
+      outboard:steeringRodEnds.wheelOrOutboard,
+      bounds:steeringRodEnds.bounds,
+    }),
+    provenance:Object.freeze({
+      wheelCenter:'AUTHORED_NODE:Socket_WheelCenter',
+      steeringAxis:'AUTHORED_AXIS:Axis_SuspensionTravel_Bottom->Top_THROUGH_WHEELCENTER',
+      upperWheelEnd:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Top',
+      lowerWheelEnd:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Bottom',
+      chassisMountB:'AUTHORED_NODE:Socket_ChassisMount_b_NON_STEERING_STRUCTURAL_MEMBER',
+      steeringRodOutboard:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Socket_SteeringRod',
+      steeringRodInboard:'REAL_M6_RACK_CENTER_OWNER_ACCEPTED_NOT_AUTHORED_STATIC_POINT',
+    }),
+  });
+}
+
+export function frontLeftGoldenWishboneReferencesS2(references) {
+  return Object.freeze({
+    upperHinge:references.upper.chassisEnd,
+    lowerHinge:references.lower.chassisEnd,
+    upperOutboard:references.upper.wheelEnd,
+    lowerOutboard:references.lower.wheelEnd,
+    sourceUp:references.steeringAxisSource,
+    sourceSpread:references.sourceSpread,
+    provenance:Object.freeze({
+      upperHinge:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Top_CHASSIS_END',
+      lowerHinge:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Bottom_CHASSIS_END',
+      upperOutboard:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Top_WHEEL_END',
+      lowerOutboard:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Bottom_WHEEL_END',
+    }),
+  });
+}
+
+export function frontLeftGoldenGeometryS2(config,references) {
+  const current=cornerRestGeometry(config,'fl');
+  const fromWheelCenter=(sourcePoint)=>add(
+    current.wheelCenter,
+    frontLeftSourceDeltaMetersS2(sub(sourcePoint,references.wheelCenter)),
+  );
+  const steeringArm=fromWheelCenter(references.steeringRod.outboard);
+  const chassisMountB=fromWheelCenter(references.chassisMountB);
+  const steeringAxisDirection=norm(
+    frontLeftSourceDeltaMetersS2(references.steeringAxisSource),
+    'S2 FL steering-axis direction',
+  );
+  return Object.freeze({
+    ...current,
+    steeringArm:Object.freeze(steeringArm),
+    steeringStart:Object.freeze([...current.rackRest]),
+    steeringCenter:Object.freeze([...current.wheelCenter]),
+    steeringAxisDirection:Object.freeze(steeringAxisDirection),
+    chassisMountB:Object.freeze(chassisMountB),
+    authority:'S2_FL_CENTER_AND_STEERING_LINK_SOURCE_REDERIVED_S1_SUSPENSION_HARDPOINTS_PRESERVED',
+  });
+}
+
+export function calibrateFrontLeftGoldenRigidPieceS2(piece,references,geometry,bodyRole) {
+  if(bodyRole!=='knuckle'&&bodyRole!=='lower-arm')fail(`unknown S2 FL rigid body role ${bodyRole}`);
+  const bodyOrigin=bodyRole==='knuckle'?geometry.wheelCenter:geometry.lowerHinge;
+  const point=(p)=>sub(
+    add(
+      geometry.wheelCenter,
+      frontLeftSourceDeltaMetersS2(sub(p,references.wheelCenter)),
+    ),
+    bodyOrigin,
+  );
+  const normal=(n)=>frontLeftSourceDeltaMetersS2(n);
+  const mappedWheelCenter=point(references.wheelCenter);
+  return Object.freeze({
+    primitives:mapPiecePrimitives(piece,point,normal,false),
+    mapPoint:(value)=>Object.freeze(point(value)),
+    report:Object.freeze({
+      mode:'S2_FL_EXACT_AUTHORED_RIGID_PLACEMENT_NO_KINGPIN_AFFINE',
+      bodyRole,
+      bodyOrigin:Object.freeze([...bodyOrigin]),
+      sourceWheelCenter:Object.freeze([...references.wheelCenter]),
+      mappedWheelCenter:Object.freeze(mappedWheelCenter),
+      steeringCenter:Object.freeze([...geometry.steeringCenter]),
+      steeringAxisDirection:Object.freeze([...geometry.steeringAxisDirection]),
+      scaleMetersPerBU:OWNER_M6_R3_SCALE_METERS_PER_BU,
+      transform:'SOURCE_DELTA_FROM_WHEELCENTER_YAW_MINUS_90_UNIFORM_SCALE',
+      affineKingpinCalibration:false,
+    }),
+  });
+}
 
 function projectionRange(piece, origin, axis) {
   let min=Infinity,max=-Infinity;

@@ -23,8 +23,8 @@ test('owner interface audit is deterministic measurement, not a visual acceptanc
   assert.equal(audit.schema,OWNER_M6_INTERFACE_AUDIT_SCHEMA);
   assert.equal(audit.classification,'MEASUREMENT_ONLY_NOT_ACCEPTANCE');
   assert.deepEqual(audit.artifact,{
-    id:'m6-owner-full-rig-r3',byteLength:829944,
-    sha256:'57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a',realBindingCount:59,
+    id:'m6-owner-full-rig-r3',byteLength:829936,
+    sha256:'1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc',realBindingCount:59,
   });
   assert.deepEqual(Object.keys(audit.corners),['fl','fr','rl','rr']);
   assert.equal(audit.bindingGroups.other.length,0);
