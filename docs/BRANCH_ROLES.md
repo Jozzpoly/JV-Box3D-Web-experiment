@@ -13,11 +13,9 @@ Branch names are workflow pointers, not project memory. Exact commits, current-s
 
 Resolve its live tip before every write. Do not treat any work/candidate/frozen branch as a parallel product authority.
 
-Current fresh-rebuild bootstrap checkpoint at the time of this document update is a docs-only descendant of the accepted S1 product. Always resolve the live SHA rather than trusting this prose.
-
 ## 2. Active write transaction
 
-### `work/front-corner-golden-rebuild-r1`
+### `work/front-corner-golden-rebuild-r2`
 
 **ACTIVE / SINGLE WRITE AUTHORITY FOR S2-PORT.**
 
@@ -49,7 +47,8 @@ Open only if a named S1 regression question requires exact historical evidence.
 
 The following refs contain no current write authority:
 
-- `work/owner-rig-s1-clean-integration` — completed clean-integration transaction; currently redundant with the old integrated S1 tip;
+- `work/front-corner-golden-rebuild-r1` — **ABANDONED BEFORE HANDOFF** after orchestrator-side pre-handoff write mistakes; it contains no legitimate product implementation and must never be used as a source or base;
+- `work/owner-rig-s1-clean-integration` — completed clean-integration transaction;
 - `noop-should-not-create` — accidental no-op ref, no unique product state;
 - `noop-should-not-create-2` — accidental no-op ref, no unique product state.
 
@@ -84,12 +83,12 @@ Every temporary branch needs one narrow purpose, exact parent/control tip, accep
 
 Normal policy remains: more than 8 total remote branches requires triage before creating another branch.
 
-The repository is temporarily above that budget because three completed/accidental refs cannot currently be deleted through the available connector. This is **cleanup debt, not permission to keep creating branches**.
+The repository is temporarily above that budget because completed/accidental refs cannot currently be deleted through the available connector. This is **cleanup debt, not permission to keep creating branches**.
 
 For S2-PORT:
 
 - branch triage has already occurred;
-- `work/front-corner-golden-rebuild-r1` is the one justified active transaction;
+- `work/front-corner-golden-rebuild-r2` is the one justified active transaction;
 - create **no additional remote branch** unless the orchestrator explicitly replans the transaction.
 
 ## 8. Durable cleanup rule
