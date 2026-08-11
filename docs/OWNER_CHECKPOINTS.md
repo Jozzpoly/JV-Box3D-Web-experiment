@@ -68,7 +68,7 @@ Protected constraint:
 ```text
 inboard X = midpoint(physical upperFront, physical upperRear).x
 inboard Y/Z = S1-C semantic-main-chassis calibration components
-outboard XYZ = existing physical upper ball
+outboard XYZ = existing physical upper ball at the accepted product checkpoint
 orientation = PART_PAIR_ROLL_PINNED_STRETCH
 contact claim = NONE_CONSTRAINT_COMPOSED_VISUAL_ATTACHMENT
 ```
@@ -110,65 +110,91 @@ product base examined: 67d66ed412342fee5445b2901d85a663a084bf4e
 classification: OWNER REJECTED / FUNDAMENTAL SEMANTIC TOPOLOGY CORRECTION
 ```
 
-The technical S2 role investigation produced an internally consistent interpretation that grouped the wheel-side purple geometry as one `knuckle/upright-side` member. A dedicated owner-facing source/runtime map exposed that this interpretation repeats a known historical agent failure.
+The technical S2 role investigation incorrectly grouped the wheel-side mechanism as one steering `knuckle/upright` member.
 
-Jozz corrected it directly on the source-rig views:
+Owner correction:
 
-- the knuckle mechanism has **two separate members that must be rigged separately**;
-- **YELLOW owner annotation:** suspension-side member tied to the wishbones, static with respect to steering;
-- **RED owner annotation:** separate steerable/rotating member connecting the first member toward the wheel;
-- steering rotation and wheel spin are separate DOFs;
-- native/core JV contains this conceptual split and is required read-only reference for reconstruction.
+- yellow `Socket_ChassisMount_b` member = suspension-side / non-steering;
+- red `Socket_WheelCenter` member = separate steerable structural member;
+- steering rotation between them and wheel spin are separate DOFs;
+- the previous one-knuckle interpretation is rejected.
 
-Protected meaning:
-
-1. do not collapse the wheel-side mechanism into one semantic/body-role called `knuckle` or `upright`;
-2. distinguish suspension-side carrier from steerable carrier;
-3. distinguish their steering DOF from wheel-spin DOF;
-4. previous S2 technical measurements remain evidence only where they do not depend on the rejected one-knuckle assumption;
-5. S1 FL upper acceptance remains protected unless new direct evidence falsifies it.
-
-## S2-A — authored axis + native parity authority reset
+## S2-A — authority inversion root cause
 
 ```text
 date: 2026-08-11
 web integrated product base: 67d66ed412342fee5445b2901d85a663a084bf4e
 native reference examined: 959aefb78587ce60cf2b8eb03ff82797a4165142
-classification: OWNER AUTHORITY CORRECTION / PROBABLE MULTI-DAY ROOT-CAUSE DISCOVERY
+classification: ROOT-CAUSE DISCOVERY / AUTHORITY RESET
 ```
 
-Owner clarified that the practical objective was to copy the already-working core JV rig, not repeatedly redesign the front corner from secondary documentation/calibration. The exact authored source asset is geometry authority for this mechanism.
+The recovery goal was to copy the already-working core JV front-corner mechanism, but Web repeatedly reconstructed a new rig from secondary contracts, receipts, generic hardpoints and calibration helpers.
 
-Hard owner/source facts:
+Direct evidence:
 
-- `Axis_SuspensionTravel_Top` and `Axis_SuspensionTravel_Bottom` define the intended steering-axis placement in `OneSided_Steering_Suspension_Rig.gltf`;
-- `Socket_WheelCenter` lies exactly on that authored Top↔Bottom line and exactly halfway between the two markers;
-- the owner's hand-drawn corrected axis agrees with those markers;
-- do not let generic caster/KPI/hardpoint values silently move the authored steering axis away from this source geometry.
+- working native M6 visual behavior puts `Socket_ChassisMount_b` on a non-steering arm/carrier frame and `Socket_WheelCenter` on the steering knuckle frame;
+- the stale copied JSON contract labels both as `knuckle`;
+- Web R2/R3 follows the collapsed interpretation;
+- exact authored source contains `Axis_SuspensionTravel_Top` / `Axis_SuspensionTravel_Bottom`, with `Socket_WheelCenter` exactly on their line and midpoint;
+- generic M6 caster/KPI/kingpin-offset geometry displaced the runtime kingpin and R3 then sheared authored geometry toward those generated hardpoints.
 
-A direct audit exposed an authority inversion that can explain repeated regressions:
+Durable authority for this lane:
 
-- working native M6 rig-lab behavior puts `Socket_ChassisMount_b` on `lowerArmId` / a NON-STEERING frame and `Socket_WheelCenter` on `knuckleId` / the steering frame;
-- the copied steering-suspension JSON contract instead labels both as `ridesBody: "knuckle"`;
-- Web R2/R3 package generation follows the collapsed interpretation and groups both as front knuckle pieces;
-- native and Web generic M6 geometry generate upper/lower ball hardpoints and kingpin direction from caster/KPI parameters independently of the authored Top↔Bottom axis;
-- R3 calibration then maps/shears authored upright geometry toward those generated hardpoints.
+1. owner + exact authored source;
+2. exact working native behavior where it agrees with owner/source;
+3. current Web as repair target;
+4. docs/contracts/receipts/calibration prose/tests as secondary until revalidated.
 
-Therefore a green/self-consistent Web test is not sufficient evidence of a correct port if the test only validates the same secondary derived system.
+## S2-P — golden front-corner contract accepted for rebuild
 
-Durable authority for this recovery lane:
+```text
+date: 2026-08-11
+web product base examined: 67d66ed412342fee5445b2901d85a663a084bf4e
+native golden reference: 959aefb78587ce60cf2b8eb03ff82797a4165142
+classification: OWNER ACCEPTED — GOLDEN TOPOLOGY + STEERING-AXIS POSITION / DIRECTION STILL TUNABLE
+```
 
-1. OWNER + exact authored source asset = intended geometry/semantic authority;
-2. exact working native/core JV behavior = golden implementation reference where it agrees with owner/source;
-3. current JV-Web = target to audit/repair, not truth;
-4. docs/contracts/factory receipts/calibration prose = secondary evidence only until revalidated.
+Owner reviewed the S2-PARITY golden board and disposable golden prototype and reported that the reconstruction now looks correct enough to proceed.
 
-Do not blindly copy every native helper: core contains both a working visual rig path and generic physical M6 geometry. The implementer must identify the exact golden behavior rather than treating all native layers as equally authoritative.
+Accepted mechanical contract:
 
-Current operation: `S2-PARITY — recover the golden native FL front-corner rig contract`. No production patch or downstream S3 is authorized before owner validation of the recovered golden/source mechanism and the proposed repair boundary.
+```text
+#6 Socket_ChassisMount_b
+= suspension-side member
+= follows suspension articulation
+= must NOT inherit steering rotation
+
+#8 Socket_WheelCenter
+= separate steerable structural member
+= steers relative to #6
+= does NOT wheel-spin
+
+wheel
+= follows steerable member for steering
+= retains independent spin DOF
+
+steering axis position
+= anchored at the authored source position/center
+= must pass through the source-derived WheelCenter center/reference
+= the old ~140 mm displaced kingpin is rejected
+```
+
+Critical owner nuance about the steering axis:
+
+- the **position/center of steering is now considered correct and is the protected result**;
+- the final axis direction does **not** have to remain perfectly vertical;
+- a modest physically justified tilt/caster/KPI-like direction is allowed if useful for correct wheel behavior;
+- such tilt must be introduced **about the accepted steering center/position**, not by laterally/longitudinally displacing the whole axis away from WheelCenter again;
+- therefore `Axis_SuspensionTravel_Top/Bottom` are authoritative for source registration/center, while final runtime direction remains an engineering DOF subject to later owner-visible validation.
+
+This supersedes the earlier over-strong reading that the raw vertical Top↔Bottom direction itself must be immutable in final runtime.
+
+Owner also accepted the strategic conclusion that stale/corrupted secondary documentation contributed materially to repeated regressions. A fresh implementer conversation is preferred before production rebuild so old chat context does not reintroduce the rejected authority hierarchy.
 
 ## Owner-checkpoint method
 
-Use small dependency-driven slices, but when the goal is a port of an already-working mechanism, prefer **copy/parity evidence over re-derivation**. Record exact accepted/rejected constraints rather than whole-asset labels.
+When porting an already-working mechanism, prefer copy/parity evidence over re-derivation. Owner/source/golden behavior outrank secondary documentation.
 
-For high-risk mechanical semantics, an internally consistent agent model is not sufficient evidence. Tests must challenge parity against owner/source/golden behavior rather than only proving internal consistency. Handling/feel remains a separate later campaign.
+For high-risk mechanical semantics, agent self-consistency is not owner truth. Tests must challenge parity against the intended mechanism, not only validate a derived model against itself.
+
+Handling/feel remains a later campaign.
