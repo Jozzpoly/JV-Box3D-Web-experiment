@@ -2,29 +2,28 @@
 
 Updated: 2026-08-11
 Owner: Jozz
-Status: `R0 PUBLISHED / R1 ACTIVE / S1 FL UPPER STATIC+LIVE OWNER ACCEPTED / CLEAN INTEGRATION ACTIVE`
+Status: `R0 PUBLISHED / R1 ACTIVE / S1 FL UPPER INTEGRATED / S2 FL CORNER ROLES ACTIVE`
 
-This document describes the **accepted/integrated product state and durable current project boundary**. It is not an experiment log.
+This document describes accepted/integrated product state and the current durable boundary. It is not an experiment log.
 
-## 1. Authority model
+## 1. Product authority
 
 ```text
-Private accepted/integrated product authority:
+Private accepted/integrated authority:
 Jozzpoly/JV-Box3D-Web-experiment
 main
 (resolve live tip before every write)
 
-Frozen reviewed S1 reference:
+Integrated FL-upper product checkpoint:
+67d66ed412342fee5445b2901d85a663a084bf4e
+tree: f2e1836800719cc9cc7007631568c41e45471450
+
+Frozen S1 cold evidence:
 work/owner-rig-s1-attachment-authority
 393ef4600be5c83ef42bced4a8a451446e372c32
 tree: 92c896a8b0579a66b3c5381b777baf853a469908
-NOT INTEGRATED INTO main
 
-Active clean-integration transaction:
-work/owner-rig-s1-clean-integration
-(fresh descendant of current main; verify exact live tip)
-
-Public artifact repo:
+Public R0:
 Jozzpoly/JV-Box3D-Web-Public
 release/r0
 c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
@@ -34,126 +33,121 @@ Jozzpoly/Box3d_FunProject
 read-only reference for this campaign
 ```
 
-`main` remains the accepted/integrated product authority. Owner acceptance attached to a divergent work candidate does not authorize wholesale merge.
+`main` is the product. Frozen/candidate branch names are evidence or transaction pointers, never parallel product authority.
 
-## 2. Product goal and current campaign
+## 2. Product goal and campaign
 
-Goal: a browser friend-demo that increasingly feels like Jozz's own game.
+Goal: a browser friend-demo that increasingly feels like Jozz's own game and is worth launching, driving, tuning and showing to friends.
 
-Current campaign: recover owner-vehicle visual/mechanical readability one attributable interface at a time.
+Active lane: restore owner-vehicle visual/mechanical readability one attributable interface at a time.
 
-Deferred until visual recovery closes:
+Dependency principle:
 
-- driving feel;
-- suspension stability tuning;
-- steering feel/rate;
-- tire/contact tuning;
-- drivetrain redesign;
-- unrelated camera/UI polish;
-- scan/world work;
-- public R1 promotion.
+```text
+chassis / attachment frame
+-> corner landing + kinematic body roles
+-> wishbone relationships
+-> upright / hub / wheel
+-> dampers / steering / cardans
+-> stance
+-> whole-rig integration
+-> later dynamics/feel campaign
+```
 
-Durable campaign contract: `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md`.
+Do not use downstream geometry, stance or handling changes to conceal unresolved upstream relationships.
 
-## 3. Accepted integrated baseline on `main`
+## 3. Integrated S1 result
 
-The reproducible owner-rig baseline remains:
+The clean curated integration candidate was independently reviewed and fast-forward promoted to `main`.
+
+Exact integrated commit:
+
+```text
+67d66ed412342fee5445b2901d85a663a084bf4e
+tree: f2e1836800719cc9cc7007631568c41e45471450
+parent/control lineage: 220083612116ea055cc7ae39498bd59a61fbce70
+integration shape: 2 commits / 8 files / no merge / no S1-history cherry-pick
+```
+
+Independent review confirmed the four product blobs and the four focused regression blobs on the curated surface are byte-identical to the exact reviewed frozen implementation.
+
+Integrated package invariants remain:
 
 ```text
 package: m6-owner-full-rig-r3
 real bindings: 59
 GLB bytes: 829944
 GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
+physics: unchanged
 ```
 
-No S1 product implementation has yet been promoted to `main`.
+Automated candidate evidence was supplemental rather than canonical-toolchain evidence: focused tests 30/30 PASS, existing real-M6 runtime 1/1 PASS, plus a 180-frame neutral live regression reproducing the reviewed endpoint/frame behavior. GitHub CI was absent; do not call this a CI PASS.
 
-## 4. Owner-accepted FL upper evidence outside `main`
+## 4. Owner-accepted FL upper boundary
 
-Exact reviewed source:
+Accepted at current precision and now integrated:
 
-```text
-candidate: 393ef4600be5c83ef42bced4a8a451446e372c32
-tree: 92c896a8b0579a66b3c5381b777baf853a469908
-```
+- static FRONT + TOP chassis-side placement;
+- inboard X from physical upper hinge-axis midpoint;
+- inboard Y/Z from the accepted semantic-main-chassis calibration;
+- no literal mesh-contact claim for the composed inboard point;
+- existing physical upper ball preserved as outboard;
+- `PART_PAIR_ROLL_PINNED_STRETCH` behavior through real neutral extension/compression/rebound/rest.
 
-### Static — OWNER ACCEPTED
+Still NOT accepted by this result:
 
-At current visual precision:
+- FR upper;
+- FL lower wishbone;
+- final wheel-side upright/hub/wheel package;
+- dampers/springs;
+- steering geometry;
+- cardans;
+- mesh proportion/scale;
+- stance;
+- handling/dynamics/feel.
 
-- inboard X = midpoint of physical `upperFront` and `upperRear` X;
-- inboard Y/Z = preserved S1-C semantic-main-chassis calibration components;
-- final inboard point is a constraint-composed visual attachment with no literal chassis-mesh contact claim;
-- outboard remains the existing physical upper ball;
-- FRONT + TOP placement is accepted.
+## 5. Current unresolved visual truth
 
-### Live articulation — OWNER ACCEPTED
+Owner-visible/recovered evidence still says:
 
-The exact FL upper `PART_PAIR_ROLL_PINNED_STRETCH` binding was observed through a real neutral M6 suspension sequence containing extension, compression/bump, rebound and settling/rest.
+- wheel-side upright/hub/suspension package is buried in the wheel region;
+- dampers/springs are visibly wrong and enter/intersect the wheel region;
+- cardans visibly miss proper mating, especially differential-side;
+- final stance likely needs to sit slightly higher;
+- global wheel placement cannot be accepted while surrounding corner geometry is incoherent;
+- FL upper mesh proportion/stretch is imperfect but deliberately deferred unless later correct rigging requires changing it.
 
-Technical evidence on the exact frozen source showed:
+Dynamics/handling/steering controllability remain OWNER OBSERVED strongly regressed and deliberately deferred until visual recovery closes.
 
-- both declared live endpoints remain attached through the sampled motion;
-- maximum start-endpoint residual about `9.11e-8 m`;
-- maximum end-endpoint residual about `7.00e-8 m`;
-- no observed flip, twist, discontinuity or frame singularity;
-- worst adjacent-frame full-frame change about `1.70°` during the faster initial motion.
+## 6. Current dependency question — S2 FL corner roles
 
-Execution was explicitly **supplemental** because the validator used Node 22 / TypeScript 5.8.3 rather than pinned Node 24.16.0 / npm 11.13.0. This limits the toolchain claim, not the recorded owner visual verdict.
+Before another geometry correction, validate the current front-left authored corner landing / kinematic body-role mapping.
 
-Jozz then OWNER ACCEPTED the focused question that the FL upper preserves natural placement/orientation and the accepted mounting relationship during real suspension work.
+Current source contract includes non-obvious semantics, for example:
 
-## 5. Still unresolved / not accepted
+- `Socket_ChassisMount_b` is knuckle-side despite its name;
+- `Socket_WheelCenter`, `Socket_SteeringRod`, `Socket_CardanHub` are knuckle-side;
+- `Socket_SingleDamperLower` rides the lower arm;
+- `Socket_ChassisMount_a`, `Socket_SingleDamper_Mount`, `Socket_SingleDamperUpper`, `Socket_CardanDrive` are chassis-side.
 
-- FR upper mirroring/placement;
-- FL lower-arm acceptance as part of this S1 result;
-- wheel-side upright/hub/suspension packaging remains buried in the wheel;
-- damper/spring rig remains wrong and enters/intersects the wheel region;
-- cardans still miss correct visible mating, particularly differential side;
-- FL upper mesh proportion/stretch remains visibly imperfect and deferred unless later rigging requires change;
-- final stance likely needs to be slightly higher;
-- wheel placement cannot be globally accepted while surrounding corner geometry is incoherent;
-- driving feel, suspension stability and steering/controllability remain strongly regressed and deliberately deferred.
+These declarations are evidence to validate, not truth to assume. A joint-shared endpoint may be represented in another body's local coordinates if the world-space joint point remains coincident through motion; do not require literal `ridesBody == partId` when the mechanics say otherwise.
 
-## 6. Integration boundary
+S2 is read-only by default. If current roles/pivots/handed placement are coherent, close the technical dependency and proceed toward S3 wishbones. If not, return exact mismatch evidence and open a separate repair transaction.
 
-The owner-accepted S1 result must now be integrated cleanly onto current-main lineage.
+## 7. Owner-validation ergonomics
 
-Required method:
+The S1 live owner gate was accepted, but Jozz reported that line clutter made the relevant motion harder to read.
 
-```text
-exact frozen reviewed implementation/evidence
-        ↓ read-only technical reference
-minimal accepted FL-upper semantics + required mechanism/tests
-        ↓ curated port/reproduction
-fresh descendant of current main
-        ↓ candidate validation + orchestrator review
-main promotion only if proven
-```
+For the next owner-sensitive geometry decision, use minimal isolation and reproducible projection views when they materially improve attribution. T1/T3 remain lazy tooling: do not turn them into a separate project if disposable/focused presentation is enough.
 
-Do **not** merge frozen S1 and do **not** cherry-pick its history wholesale.
+## 8. Branch/cleanup note
 
-Clean integration is not a new attempt to solve S1 from memory. The frozen exact implementation is the reviewed reference; the task is to reproduce the minimum final semantics on current-main lineage and prove equivalence/scope.
+`work/owner-rig-s1-clean-integration` now points to the same integrated commit as `main` and has completed its purpose. It should be deleted when a proper delete-ref operation is available.
 
-## 7. Evidence model
+Two accidental no-op refs, `noop-should-not-create` and `noop-should-not-create-2`, also point exactly at `67d66ed...`; they contain no unique product state and are cleanup-only. Current connector tooling exposes no delete-ref, so do not use these refs as development bases or evidence authority.
 
-```text
-E0 identity/reproducibility
-E1 local calibration consistency
-E2 cross-asset mating truth
-E3 runtime kinematic coherence
-E4 owner visual acceptance
-E5 owner handling/feel acceptance — later
-```
+No new S2 work branch is created because S2 has no remote write authority.
 
-S1 FL upper now has narrow E4 static + live acceptance outside `main`; integration is the current missing boundary.
+## 9. Public boundary
 
-## 8. Current operational state
-
-- controlled orchestrator handoff is complete;
-- S1-LIVE validation is complete and OWNER ACCEPTED;
-- frozen `393ef460...` remains read-only reviewed reference;
-- one clean curated integration task is active;
-- `main` must not move during that product transaction except by orchestrator after review;
-- implementation writes belong only on `work/owner-rig-s1-clean-integration`;
-- FR, downstream wheel-side geometry, mesh scale and dynamics remain out of scope for this transaction.
+Published R0 remains immutable. R1 publication waits for meaningful integrated owner-visible progress; do not rebuild R0 in place.

@@ -2,332 +2,310 @@
 
 Updated: 2026-08-11
 Status: **ACTIVE**
-Task: **S1-INTEGRATE — clean curated FL-upper integration**
-Mode: **PRODUCTION PATCH / CURATED INTEGRATION**
+Task: **S2-FL-ROLES — front-left corner landing / kinematic body-role validation**
+Mode: **VALIDATION-FIRST / READ-ONLY / NO PRODUCTION PATCH**
 
-This task exists because S1-D static placement and S1-LIVE real suspension articulation are now OWNER ACCEPTED on the exact frozen candidate, but the accepted result still lives outside `main`.
+This task exists because the accepted FL upper mechanism is now integrated into `main`, while downstream geometry is still visually incoherent. Before changing another mesh/attachment, establish whether the current FL front-corner authored pieces/endpoints are associated with the correct M6 kinematic bodies/shared pivots.
 
-The task is **not** to solve S1 again and is **not** permission to continue S1 into another corner/subsystem.
+Do not fix geometry in this task. A discovered role/pivot mismatch returns `REPLAN` with exact evidence.
 
-## 0. One technical objective
+## 0. One technical question
 
-Transfer/reproduce the **minimal reviewed FL upper semantics and the mechanism required to support them** from the exact frozen reference onto a fresh current-main descendant, then prove that the integration candidate preserves the accepted static + live result without importing unrelated S1 history.
+Answer exactly this:
 
-Success means an orchestrator-reviewable candidate that can be promoted cleanly to `main`.
+> Does the current integrated FL front-corner visual rig preserve the intended authored **kinematic roles and shared pivots** — chassis-side, lower-arm-side and knuckle-side — through representative real M6 motion, without relying on misleading node names or accidental static coincidence?
 
-## 1. Authority and exact identities
+This is a body-role / landing gate, not a wishbone-shape, upright packaging, damper, steering-geometry, cardan-mating or dynamics gate.
 
-### CONTROL TIP / integration parent
+## 1. Authority and exact product base
 
-The orchestrator will supply the exact current `main` tip that contains this ACTIVE packet and the post-S1-LIVE semantic checkpoint.
+The orchestrator will supply the exact current `main` CONTROL TIP carrying this ACTIVE task packet.
 
-At execution start verify:
+The product bytes being validated must descend docs-only from this integrated product checkpoint:
 
 ```text
 repository: Jozzpoly/JV-Box3D-Web-experiment
-main tip:   EXACT CONTROL TIP supplied by orchestrator
-work branch parent: must equal that exact CONTROL TIP
+integrated product base: 67d66ed412342fee5445b2901d85a663a084bf4e
+product tree: f2e1836800719cc9cc7007631568c41e45471450
+role: accepted/integrated private product
 ```
 
-Do not infer a control tip from this file's own future commit SHA.
+At execution start:
 
-### Work branch — only write authority
+1. verify current `main` equals the orchestrator-supplied CONTROL TIP;
+2. prove CONTROL TIP is a docs-only descendant of `67d66ed...` with unchanged product bytes;
+3. verify the integrated product tree/source mirror used for execution corresponds exactly to `f2e1836800719cc9cc7007631568c41e45471450` before disposable diagnostics.
+
+### Remote write authority
 
 ```text
-branch: work/owner-rig-s1-clean-integration
-role:   fresh clean-integration transaction
-writes: ALLOWED only here
+NONE
 ```
 
-The orchestrator creates this branch from the exact CONTROL TIP. If its parent/tip does not match the supplied handoff state, STOP.
+Do not create a work branch and do not change any remote ref/file.
 
-### Frozen reviewed reference — read only
+The old frozen S1 branch is **not needed by default** for S2. Do not preload it or old S1 chats. The accepted FL upper semantics now live on `main`.
+
+## 2. Bootstrap / execution mirror
+
+Read only:
+
+1. current `AGENTS.md`;
+2. this current `docs/IMPLEMENTER_TASK.md`.
+
+Then inspect only current files needed to answer the S2 question.
+
+The already verified local integration-candidate mirror may be reused **only if** its full reconstructed Git tree equals:
+
+`f2e1836800719cc9cc7007631568c41e45471450`
+
+The already supplied `box3d.js@0.0.2` dependency packet may be reused in a disposable environment.
+
+Canonical toolchain is preferred:
 
 ```text
-branch: work/owner-rig-s1-attachment-authority
-commit: 393ef4600be5c83ef42bced4a8a451446e372c32
-tree:   92c896a8b0579a66b3c5381b777baf853a469908
-state:  FROZEN / READ-ONLY TECHNICAL REFERENCE
+Node 24.16.0
+npm 11.13.0
 ```
 
-Do not write, merge, rebase or force-update this branch.
+If unavailable, substitute execution may be used but must remain explicitly `supplemental`. Do not spend a long cycle fighting network/toolchain access.
 
-Do **not** merge frozen S1 and do **not** cherry-pick its commits. Use exact frozen files/diffs only as reviewed technical reference for a curated port.
+## 3. Current source-role hypotheses to validate
 
-## 2. Accepted semantics that must survive
+Use the current source asset hierarchy/contract as hypotheses, then independently check them against generated binding semantics and real runtime behavior.
 
-The exact accepted FL upper result is:
+### Chassis-side authored endpoints
 
 ```text
-bindingId:
-  owner.fl.upper-arm
-
-INBOARD X:
-  midpoint(current physical upperFront + upperRear).x
-
-INBOARD Y/Z:
-  S1-C semantic-main-chassis calibration components
-
-FINAL INBOARD:
-  constraint-composed visual attachment
-  literal chassis-mesh contact claim: NONE
-
-OUTBOARD XYZ:
-  existing physical upper ball
-
-BINDING MECHANISM:
-  PART_PAIR_ROLL_PINNED_STRETCH
-  startPartId = m6.chassis
-  endPartId   = m6.fl.upper-arm
-
-STATIC:
-  OWNER ACCEPTED FRONT + TOP at current precision
-
-LIVE:
-  OWNER ACCEPTED through real neutral M6 extension/compression/rebound/rest
+Socket_ChassisMount_a
+Socket_SingleDamper_Mount
+Socket_SingleDamperUpper
+Socket_CardanDrive
 ```
 
-The exact frozen implementation is the reviewed technical reference. Port/reproduce its minimal final semantics; do not invent a new mechanism from memory.
+Expected role: chassis-side / world point derived from chassis ownership.
 
-## 3. Integration scope
-
-### Primary allowed product files
-
-The expected minimal product surface is:
+### Lower-arm-side authored endpoint
 
 ```text
-src/visual/vehicle-visual-package.ts
-src/visual/vehicle-visual-transform.ts
-tools/owner-vehicle/owner-m6-front-upper-chassis-mate-r3.mjs
-tools/owner-vehicle/owner-m6-full-rig-package-r3.mjs
+Socket_SingleDamperLower
 ```
 
-Expected focused regression surface:
+Expected role: lower-arm-side. Current contract states it is a child of `Chassis_Bottom`; do not silently attach it to the knuckle merely because it is near wheel-side geometry.
+
+### Knuckle-side authored endpoints
 
 ```text
-tests/vehicle-visual-package.test.mjs
-tests/vehicle-visual-transform.test.mjs
-tests/owner-vehicle-front-upper-semantic-mate-r3.test.mjs
-tests/owner-vehicle-full-rig-r3-front-reference.test.mjs
+Socket_ChassisMount_b
+Socket_WheelCenter
+Socket_SteeringRod
+Socket_CardanHub
 ```
 
-The frozen branch also differs in broader interface/whole-car tests. **Do not port those diffs by default.** Change another tracked file only if the clean candidate cannot be made internally correct/testable without it, and report the exact reason.
+Expected role: knuckle-side. `Socket_ChassisMount_b` is deliberately named misleadingly; node name is not authority.
 
-Historical S1 governance files are never integration input.
+### Wishbone visual parts
 
-### Mechanism scope
+```text
+Chassis_Top
+Chassis_Bottom
+```
 
-Current `main` lacks `PART_PAIR_ROLL_PINNED_STRETCH`; the frozen reviewed result requires it.
+These are spanning wishbone parts, not simple endpoint labels.
 
-Curated integration may therefore add the minimal schema/parser/runtime transform support required for that source kind, using the exact frozen implementation as reference.
+`Chassis_Top` / `owner.fl.upper-arm` is already accepted and integrated. Treat it as a protected control, not a new acceptance question.
 
-Do not generalize/refactor beyond what is required to reproduce the reviewed mechanism safely.
+Do not solve FL lower wishbone geometry in S2. Its detailed inboard/outboard/orientation question belongs to S3 if S2 closes cleanly.
 
-### Calibration/generator scope
+## 4. Shared-joint rule — avoid a false failure
 
-Port the exact reviewed FL upper semantic path:
+Do **not** require `contract ridesBody == binding partId` mechanically.
 
-- semantic-main-chassis Y/Z derivation used by S1-C;
-- S1-D split-axis X authority from the physical upper hinge-axis midpoint;
-- existing physical upper ball as outboard;
-- roll-pinned reference-frame data and binding replacement for **FL upper only**;
-- provenance/report fields necessary to prove the accepted semantics.
+At a real joint, the same world-space pivot may be represented in local coordinates of either participating body. Example: a knuckle-side upper-ball reference can be evaluated from the upper-arm local frame if runtime proves it remains exactly/coherently coincident with the shared knuckle joint point.
 
-Do not mirror this to FR.
+Validate:
 
-## 4. Explicit protected scope
+```text
+semantic role
++ source hierarchy/provenance
++ current generated endpoint semantics
++ world-space shared-pivot coincidence through motion
+```
 
-Do not change or retune:
+rather than string equality between labels.
 
-- frozen branch/history;
-- FR upper;
-- FL lower arm;
-- physical suspension hardpoints or physics;
-- upright / hub / wheel geometry or placement;
-- dampers / springs;
-- steering geometry or acceptance scope;
-- cardans;
-- stance / ride height;
-- wishbone mesh geometry/proportion/scale beyond whatever unchanged scaling behavior is inherent in the reviewed roll-pinned mechanism;
-- handling, suspension stability, tire/contact, drivetrain or steering feel;
+## 5. Required evidence
+
+### A. Exact FL role ledger
+
+Produce one compact table/ledger for every named FL endpoint/part above containing at least:
+
+```text
+authored node
+source parent/hierarchy evidence
+contract role / ridesBody
+current generator/calibration provenance
+current binding/source kind and participating part IDs
+expected kinematic role
+observed runtime result
+classification: SUPPORTED | CONTRADICTED | AMBIGUOUS
+```
+
+Do not promote contract prose to proof if current source/runtime contradicts it.
+
+### B. Source pivots / handed placement
+
+Confirm current source composed transforms/pivots are read consistently and that FL placement/mirroring conventions do not silently invert the intended role/frame.
+
+FR may be inspected only as a cheap handedness/mirror **control** if it helps falsify FL mapping. This does not open FR owner acceptance or authorize FR changes.
+
+### C. Existing interface audit
+
+Run/reuse `buildOwnerM6InterfaceAudit` / its focused test as measurement evidence.
+
+Keep its classification explicit:
+
+`MEASUREMENT_ONLY_NOT_ACCEPTANCE`
+
+Use it to locate discrepancies; do not turn current distances into acceptance thresholds without independent justification.
+
+### D. Real M6 body-role discrimination
+
+Use actual `M6TopologyWorld` / normal visual-frame path.
+
+At minimum observe:
+
+- settled/rest state;
+- natural suspension motion sufficient to move lower-arm/knuckle relative to chassis;
+- a continuous sequence rather than only two snapshots.
+
+For each role, track the relevant derived authored/generated world point relative to its expected body frame and at least one plausible wrong body frame. The intended ownership/shared-joint relationship should remain invariant/coincident as the bodies move differentially.
+
+A small steering control state is allowed **only as technical discrimination for knuckle-side ownership** if neutral suspension motion does not sufficiently separate knuckle/chassis frames. It is not a steering-geometry gate and must not become an owner question.
+
+Do not hand-edit `VehicleVisualFrame` and call that live evidence.
+
+### E. Protected integrated FL upper
+
+Confirm S2 diagnostics do not reopen or alter:
+
+- accepted FL upper inboard X/Y/Z relation;
+- accepted outboard physical upper ball;
+- `PART_PAIR_ROLL_PINNED_STRETCH` behavior;
+- integrated package identity.
+
+No new FL upper owner gate is required.
+
+## 6. Protected scope
+
+Do not change:
+
+- any product source or test;
+- any remote ref;
+- FL upper mechanism/calibration;
+- FL lower geometry/calibration;
+- FR geometry;
+- physical hardpoints/physics;
+- upright/hub/wheel placement;
+- damper/spring geometry;
+- steering geometry/tuning;
+- cardan mating/calibration;
+- mesh proportion/scale;
+- stance;
+- handling/dynamics/feel;
 - native JV;
-- public R0/R1;
-- unrelated governance/current-state docs.
+- public R0/R1.
 
-If a correct integration requires changing one of these, return `REPLAN` rather than broadening the task.
+Disposable local diagnostics are allowed if they do not alter candidate/product bytes.
 
-## 5. Execution mirror / environment
+If the smallest correct next action requires a production change, stop and return `REPLAN` with the exact violated role/pivot and smallest justified repair surface.
 
-Prefer an exact checkout/source mirror of the work-branch parent.
-
-If a direct exact current-main checkout is unavailable, it is acceptable to reconstruct a disposable execution mirror from already available exact source material **only if the resulting full Git tree is independently reconstructed and equals the exact work-branch parent tree before the production patch is applied**.
-
-Do not substitute another JV-Web/JV/Box3D folder.
-
-For canonical automated evidence prefer:
-
-```text
-Node: 24.16.0
-npm:  11.13.0
-```
-
-If unavailable, clearly classify substitute execution as supplemental. The already supplied `box3d.js@0.0.2` dependency packet may be reused in a disposable mirror; do not modify tracked source merely to satisfy the sandbox.
-
-Do not spend a long cycle fighting network/toolchain access. After a small number of direct checks, request the exact missing packet or return `BLOCKED` with the smallest named blocker.
-
-## 6. Required implementation discipline
-
-1. Verify exact CONTROL TIP, work-branch tip/parent and frozen reference before writes.
-2. Inspect current-main versions and exact frozen versions of only the expected integration files/tests.
-3. Build a **curated diff**; do not replay S1 commits.
-4. Every production write goes only to `work/owner-rig-s1-clean-integration`.
-5. Verify candidate bytes == tested bytes before claiming tests.
-6. Keep commits small enough that the orchestrator can review the actual semantic delta.
-7. Stop if the branch moves unexpectedly.
-
-## 7. Required invariants
-
-The clean candidate must prove all of the following.
-
-### Identity / scope
-
-- branch is a clean descendant of exact current-main CONTROL TIP;
-- frozen reference remains exactly `393ef460... / 92c896a8...`;
-- no merge commit and no cherry-picked S1 history;
-- candidate diff contains only files justified by this task.
-
-### FL upper semantics
-
-- `owner.fl.upper-arm` uses `PART_PAIR_ROLL_PINNED_STRETCH`;
-- `startPartId = m6.chassis`;
-- `endPartId = m6.fl.upper-arm`;
-- split-axis inboard authority matches the reviewed frozen semantics;
-- no literal contact claim is introduced;
-- outboard remains the existing physical upper ball;
-- FR binding/source remains unchanged from current-main baseline.
-
-### Product invariants
-
-Unless the curated port reveals a source-level contradiction, preserve:
-
-```text
-package: m6-owner-full-rig-r3
-real bindings: 59
-GLB bytes: 829944
-GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
-physics: unchanged
-```
-
-A changed GLB hash/length is a stop-and-explain condition, not something to normalize silently.
-
-## 8. Required validation
-
-### A. Curated-diff audit
-
-Compare:
-
-1. current-main parent → integration candidate;
-2. exact frozen reference → integration candidate for the accepted FL-upper mechanism/calibration surface.
-
-Explain which frozen hunks were intentionally ported and which were intentionally excluded.
-
-### B. Focused static/mechanism regressions
-
-Run at least the smallest relevant tests covering:
-
-- visual package parsing/validation for `PART_PAIR_ROLL_PINNED_STRETCH`;
-- generic roll-pinned endpoint/frame transform behavior;
-- S1-C/S1-D FL upper semantic/split-axis calibration;
-- generated R3 FL upper reference/binding semantics;
-- deterministic owner package identity.
-
-Run broader existing checks only where they provide useful regression value; do not modify unrelated tests merely to make the suite green.
-
-### C. Real M6 live regression on the integration candidate
-
-Do **not** rely only on the previous frozen-branch S1-LIVE result.
-
-Run the existing real-M6 owner full-rig runtime path against the **integration candidate**.
-
-Also reuse the disposable S1-LIVE observation method, without committing it, to confirm candidate FL upper behavior through a natural neutral extension/compression/rebound/rest sequence:
-
-- endpoint attachment remains within justified numerical precision;
-- roll/frame remains continuous;
-- no flip/twist/discontinuity/singularity appears.
-
-The purpose is candidate regression, not a new owner acceptance experiment.
-
-### D. No owner gate by default
-
-Do **not** ask Jozz to re-accept the same geometry/motion if the integration candidate is proven semantically equivalent to the exact reviewed frozen result and no visible output changed.
-
-If exact semantic equivalence cannot be demonstrated, return `REPLAN` rather than silently creating a new owner question.
-
-## 9. Decision states
+## 7. Decision states
 
 ### `REVIEW_READY`
 
-Return this only when:
+Return this when current FL role/pivot mapping is supported strongly enough to close S2 without a production patch:
 
-- the branch is cleanly based on the supplied CONTROL TIP;
-- the curated diff is bounded and justified;
-- accepted FL upper semantics are reproduced;
-- required focused/static/live candidate validation passes or any supplemental limitation is explicit;
-- protected scope is unchanged;
-- no new owner decision is required.
+- exact identity proven;
+- role ledger complete;
+- source/contract/generator semantics reconciled;
+- real M6 differential motion supports the intended body/shared-pivot roles;
+- no material contradiction or ambiguity remains for the bounded FL question;
+- protected FL upper/product identity unchanged.
+
+No owner gate is expected for a purely technical role-mapping PASS.
 
 ### `REPLAN`
 
-Return without broadening the patch if:
+Return without patching when any named FL role/pivot is contradicted or materially ambiguous, including:
 
-- exact accepted semantics cannot be reproduced cleanly on current-main lineage;
-- a protected subsystem must change;
-- the minimal mechanism requires materially different behavior from the reviewed frozen reference;
-- candidate visual/product identity changes in a way that invalidates equivalence.
+- an endpoint follows the wrong body through motion;
+- a supposed shared joint separates under real motion;
+- source hierarchy and current generator semantics encode incompatible roles;
+- handed placement/mirroring invalidates the FL role interpretation;
+- a fix would require entering a protected subsystem.
+
+State the smallest repair hypothesis, but do not implement it.
 
 ### `BLOCKED`
 
-Return if exact source identity, required dependency bytes or executable candidate identity cannot be established.
+Return if exact integrated source identity or a usable real-M6 execution path cannot be established.
+
+## 8. Owner-facing tooling
+
+Do not implement persistent T1/T3 tooling in S2 merely because the previous owner gate was visually cluttered.
+
+If a disposable isolated view helps technical attribution, use it locally. Preserve the lesson for the next owner-sensitive geometry task: focused masking/fixed projection views are now justified when they reduce ambiguity.
+
+## 9. What this task does not decide
+
+S2 does not decide:
+
+- final FL lower wishbone placement;
+- upright/hub/wheel correctness;
+- damper endpoints/shape;
+- steering rod geometry;
+- cardan mating;
+- FR acceptance;
+- stance;
+- dynamics/feel;
+- public R1 readiness.
+
+If S2 passes, the orchestrator should use its role ledger to frame S3 wishbone work, likely FL lower first while preserving integrated FL upper.
 
 ## 10. Return contract
 
 Return compactly in Polish:
 
 ```text
-TASK: S1-INTEGRATE — clean curated FL-upper integration
+TASK: S2-FL-ROLES — front-left corner landing / kinematic body-role validation
 RESULT: REVIEW_READY | REPLAN | BLOCKED
 
 CONTROL TIP:
-WORK BRANCH:
-STARTING WORK TIP/PARENT:
-FINAL CANDIDATE TIP:
-FINAL CANDIDATE TREE:
-FROZEN REFERENCE VERIFIED:
+INTEGRATED PRODUCT BASE: 67d66ed412342fee5445b2901d85a663a084bf4e
+INTEGRATED PRODUCT TREE: f2e1836800719cc9cc7007631568c41e45471450
+EXECUTION MIRROR / TOOLCHAIN:
+PRODUCT BYTES VERIFIED:
+REMOTE FILES CHANGED: NONE expected
+REMOTE REFS CHANGED: NONE expected
 
-COMMITS CREATED:
-FILES CHANGED:
-CURATED FROZEN HUNKS PORTED:
-FROZEN/UNRELATED HUNKS EXCLUDED:
-ADDITIONAL FILES OUTSIDE EXPECTED LIST: NONE | explain
+FL ROLE LEDGER:
+SOURCE/HIERARCHY RESULT:
+HANDEDNESS / PIVOT RESULT:
+INTERFACE AUDIT RESULT:
+REAL M6 MOTION PATH:
+CHASSIS-SIDE ROLE RESULT:
+LOWER-ARM-SIDE ROLE RESULT:
+KNUCKLE-SIDE ROLE RESULT:
+SHARED-JOINT COINCIDENCE RESULT:
+STEERING CONTROL USED: NO by default | YES with technical justification
+INTEGRATED FL UPPER CONTROL:
 
-FL UPPER SOURCE SEMANTICS:
-SPLIT-AXIS CALIBRATION RESULT:
-FR UNCHANGED:
-PHYSICS UNCHANGED:
-GLB BYTE LENGTH / SHA-256:
-REAL BINDING COUNT:
-
-FOCUSED TESTS:
-REAL M6 CANDIDATE RUNTIME:
-LIVE ENDPOINT RESULT:
-LIVE FRAME-CONTINUITY RESULT:
-TOOLCHAIN CLASSIFICATION: canonical | supplemental
-CANDIDATE BYTES == TESTED BYTES:
-
+CONTRADICTIONS / AMBIGUITIES:
 PROTECTED SCOPE CONFIRMED:
 WHAT WAS NOT TESTED:
-OWNER GATE REQUIRED: NO expected | explain if not
+OWNER GATE REQUIRED: NO expected | explain if otherwise
 RECOMMENDED ORCHESTRATOR ACTION:
 ```
 
-Do not merge/promote to `main` yourself. Return the exact candidate to the orchestrator for independent review.
+Do not create a branch, patch product code, update governance or continue into S3. Return control to the orchestrator.
