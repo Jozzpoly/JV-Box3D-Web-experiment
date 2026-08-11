@@ -41,11 +41,9 @@ GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
 classification: HISTORICAL OWNER PARTIAL OBSERVATION
 ```
 
-Historical session feedback said wheels excellent, suspension almost excellent, stance slightly wide/low, steering rods short and front steering/upright pivot wrong.
+Historical feedback said wheels excellent, suspension almost excellent, stance slightly wide/low, steering rods short and front steering/upright pivot wrong. This is not current visual authority; the historical preset was not persisted exactly.
 
-This is **not current visual authority**. `owner_r4` and `Tire=0` were not persisted as an exact reproducible preset.
-
-## V0 — exact current baseline revalidation
+## V0 — exact baseline revalidation
 
 ```text
 date: 2026-08-10
@@ -72,138 +70,99 @@ Dynamic state: `OWNER OBSERVED HIGH-SEVERITY DYNAMIC REGRESSION / DEFERRED BY OW
 
 Do not tune handling/stability/steering feel until visual recovery closes.
 
-Protected V0 meaning: exact reproducible comparison baseline, chassis/body as rough reference, wheel-center vs `Socket_WheelMount` semantic distinction, and deferred dynamics decision. Most visual rig placement is not accepted.
-
-## S1-D — FL upper wishbone static split-authority checkpoint
+## S1-D — FL upper static split-authority checkpoint
 
 ```text
 date: 2026-08-10
 candidate: 393ef4600be5c83ef42bced4a8a451446e372c32
 tree: 92c896a8b0579a66b3c5381b777baf853a469908
-branch at validation: work/owner-rig-s1-attachment-authority
 package: m6-owner-full-rig-r3
-real bindings: 59
 GLB bytes: 829944
 GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
-classification: OWNER ACCEPTED — STATIC FRONT+TOP ONLY / PARTIAL INTERFACE CHECKPOINT
+classification: OWNER ACCEPTED — STATIC FRONT+TOP / PARTIAL INTERFACE CHECKPOINT
 ```
 
-### Reviewed constraint
+Reviewed constraint:
 
 ```text
-inboard X:
-  midpoint(physical upperFront, physical upperRear).x
-
-inboard Y/Z:
-  preserved S1-C semantic-main-chassis calibration components
-
-outboard XYZ:
-  existing physical upper ball
-
-orientation:
-  PART_PAIR_ROLL_PINNED_STRETCH
+inboard X = midpoint(physical upperFront, physical upperRear).x
+inboard Y/Z = S1-C semantic-main-chassis calibration components
+outboard XYZ = existing physical upper ball
+orientation = PART_PAIR_ROLL_PINNED_STRETCH
+contact claim = NONE_CONSTRAINT_COMPOSED_VISUAL_ATTACHMENT
 ```
 
-The final inboard point is a **constraint-composed visual attachment**. It does not claim literal contact with `group5` after X substitution.
+Source/test evidence removed the previous longitudinal residual of about `-0.155671 m` to `0 m` while preserving the accepted Y/Z and outboard relation.
 
-Source/test evidence removed the S1-C longitudinal residual from about `-0.155671 m` to `0 m`, preserved S1-C Y/Z and protected outboard, and left GLB identity unchanged.
+Owner verdict:
 
-### OWNER OBSERVED verdict
+- FRONT good enough at current precision;
+- TOP previous longitudinal yaw removed and placement good enough;
+- wheel-side geometry remains near/buried in the tire/upright region;
+- visible FL upper mesh stretch/proportion is deferred unless later rigging requires changing it.
 
-Jozz inspected FRONT, TOP and wheel-side views:
+Protected meaning: preserve the accepted static FL upper inboard relationship. This does not accept FR, FL lower, upright/hub/wheel, final mesh scale or physical suspension topology.
 
-- FRONT: FL upper placement is good enough at current precision;
-- TOP: previous longitudinal yaw is removed; placement is good enough at current precision;
-- wheel-side: wishbone/wheel-side geometry reaches very near the tire and intermediate upright/hub/suspension geometry remains buried in the wheel;
-- visible mesh stretching/lengthening is deferred unless later correct rigging requires changing it.
-
-### Protected meaning
-
-Preserve unless new evidence explicitly reopens it:
-
-- accepted static FL upper inboard X relation;
-- accepted static FL upper inboard Y/Z relation at current precision;
-- decision not to polish mesh proportion yet.
-
-At this checkpoint live motion was still open. That limitation is superseded **only for the exact FL upper binding** by the later S1-LIVE checkpoint below.
-
-Still do not promote S1-D/S1-LIVE to FR acceptance, final outboard/wheel-side packaging, upright/hub/wheel acceptance, final mesh-scale acceptance or physical suspension-topology acceptance.
-
-### Integration state
-
-The candidate remains frozen and **not integrated into `main`**. Acceptance attaches to the exact candidate and explicit constraints, not to automatic branch merge.
-
-## S1-LIVE — FL upper live-articulation checkpoint
+## S1-LIVE — FL upper real suspension articulation
 
 ```text
 date: 2026-08-11
 candidate: 393ef4600be5c83ef42bced4a8a451446e372c32
 tree: 92c896a8b0579a66b3c5381b777baf853a469908
-branch at validation: work/owner-rig-s1-attachment-authority
-package: m6-owner-full-rig-r3
-real bindings: 59
-GLB bytes: 829944
-GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
 classification: OWNER ACCEPTED — FL UPPER LIVE ARTICULATION / NEUTRAL SUSPENSION RANGE
 ```
 
-### Technical gate
+The exact frozen source was exercised through the normal `M6TopologyWorld` path over 180 consecutive neutral frames containing natural extension, compression/bump, rebound and settling/rest.
 
-The exact frozen source tree was validated through the normal M6 runtime path, not synthetic endpoint injection.
+Technical evidence, explicitly **supplemental toolchain evidence** (Node 22 rather than pinned Node 24):
 
-Focused controls:
+- S1-D static 4/4 PASS;
+- generic transform controls 10/10 PASS;
+- existing real-M6 runtime test 1/1 PASS;
+- maximum chassis-side endpoint residual about `9.11e-8 m`;
+- maximum arm-side endpoint residual about `7.00e-8 m`;
+- no observed flip/twist/discontinuity/singularity;
+- worst adjacent full-frame change about `1.70058°` during faster initial motion.
 
-- S1-D static control: 4/4 PASS;
-- generic vehicle visual transform controls: 10/10 PASS, including roll-pinned endpoint/frame cases;
-- existing real-M6 owner full-rig runtime test: 1/1 PASS.
+Jozz reviewed a focused FRONT + TOP capture and answered that the FL upper behavior is correct. He noted that surrounding line clutter made the motion somewhat harder to read, but remained almost certain it was correct.
 
-A disposable observation harness then sampled 180 consecutive real neutral M6 frames from the standard spawn/settling sequence with steering released and zero drive.
+Protected meaning: the S1-D acceptance extends to natural FL upper placement/orientation and mounting preservation through the observed real neutral suspension range.
 
-Representative motion included natural extension, compression/bump, rebound and settling/rest over about `0.1078750491 m` of observed FL coilover length range.
+Still not accepted by S1-LIVE: FR, FL lower, upright/hub/wheel packaging, dampers, mesh proportion/scale, steering geometry, handling/dynamics/feel.
 
-Measured FL upper result:
+## S1-I — clean integration into `main`
 
-- maximum chassis-side endpoint residual: about `9.11e-8 m`;
-- maximum arm-side endpoint residual: about `7.00e-8 m`;
-- no observed flip, 180-degree inversion, discontinuity or frame singularity;
-- handedness remained positive;
-- worst adjacent-frame full-frame change: about `1.70058°` during faster initial suspension motion.
+```text
+date: 2026-08-11
+integrated commit: 67d66ed412342fee5445b2901d85a663a084bf4e
+integrated tree: f2e1836800719cc9cc7007631568c41e45471450
+integration parent: 220083612116ea055cc7ae39498bd59a61fbce70
+shape: 2 commits / 8 files / fast-forward lineage
+classification: INTEGRATED PRODUCT STATE / NO NEW OWNER GATE
+```
 
-Execution classification: **supplemental toolchain evidence** — Node 22.16.0 / TypeScript 5.8.3 with supplied `box3d.js@0.0.2`, rather than pinned Node 24.16.0 / npm 11.13.0. Do not silently upgrade this to canonical-toolchain proof.
+The orchestrator independently reviewed the curated candidate and fast-forward promoted it to `main`.
 
-### OWNER OBSERVED verdict
+Integration properties:
 
-Jozz reviewed a focused FRONT + TOP owner-gate capture of the exact FL upper through the natural suspension sequence and answered that it is correct. He noted that the surrounding line clutter made the motion somewhat harder to read, but remained almost certain the FL upper behavior was correct.
+- no merge of frozen S1;
+- no cherry-pick of S1 history;
+- exactly four product files + four focused regression files changed;
+- all eight curated blobs are byte-identical to the reviewed frozen implementation on the accepted surface;
+- FR and physics remain unchanged;
+- package remains 59 real bindings / 829944 bytes / SHA-256 `57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a`;
+- focused tests 30/30 PASS;
+- real-M6 candidate runtime 1/1 PASS plus the same 180-frame neutral endpoint/frame regression;
+- GitHub CI was absent and is not classified as PASS.
 
-Classification: **OWNER ACCEPTED** for the bounded question.
+No new owner gate was required because the integrated surface is the exact reviewed mechanism/calibration semantics with unchanged generated visual identity and reproduced live behavior.
 
-### Protected meaning
-
-S1-LIVE extends the S1-D acceptance for this exact binding from static placement to real neutral suspension articulation:
-
-- accepted mounting relationship remains intact through observed motion;
-- accepted natural FL upper placement/orientation remains intact through observed motion;
-- current roll-pinned mechanism is supported for this accepted FL upper result.
-
-This does **not** accept:
-
-- FR;
-- FL lower arm;
-- upright/hub/wheel packaging;
-- dampers;
-- mesh proportion/scale;
-- steering geometry;
-- handling/dynamics/feel;
-- the frozen S1 branch as a whole.
-
-### Integration state
-
-Still **NOT INTEGRATED INTO `main`** at this checkpoint.
-
-The next operation is clean curated integration of the minimal reviewed FL-upper semantics and required mechanism/tests onto current-main lineage. Frozen `393ef...` remains read-only technical reference until that integration is independently validated.
+Durable meaning: the accepted FL upper static + live result now belongs to `main`. Frozen `393ef...` is cold technical/history evidence, not a required development base.
 
 ## Owner-checkpoint method
 
-Use very small dependency-driven slices. For each accepted/rejected result record the exact constraint, not merely “asset good/bad”. Preserve accepted DOFs while reopening only unresolved ones.
+Use small dependency-driven slices. Record exact accepted/rejected constraints rather than whole-asset labels. Preserve accepted DOFs while reopening only unresolved ones.
+
+For the next owner-sensitive geometry gate, reduce visual clutter when practical; use isolation/fixed projection views only when they improve attribution rather than as tooling work for its own sake.
 
 Handling/feel remains a separate later campaign.
