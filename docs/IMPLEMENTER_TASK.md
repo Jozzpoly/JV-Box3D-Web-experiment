@@ -38,7 +38,7 @@ The old copied steering-suspension JSON contract is known to contain stale seman
 
 ## 2. Exact transaction references
 
-The orchestrator will supply the exact current CONTROL TIP and verify that the work branch starts from it.
+The orchestrator supplies the exact current CONTROL TIP and work-branch STARTING TIP in the opening message. They must be equal at handoff and independently verified before writes.
 
 Write authority:
 
