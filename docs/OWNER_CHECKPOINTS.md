@@ -19,8 +19,6 @@ classification: OWNER ACCEPTED
 
 Proved browser integration of real owner chassis/wheels, M6 drive/steer/brake/reset, chase/orbit camera, Map/Offroad and debug behavior.
 
-Durable meaning: browser owner-vehicle integration has playable accepted history.
-
 ## R2 — first full owner rig package
 
 ```text
@@ -28,7 +26,7 @@ source: 5d508485ba5c24e6552e324cfbbcb5ec19399fec
 classification: OWNER REJECTED VISUALLY / TECHNICAL EVIDENCE ONLY
 ```
 
-Major calibration defects included suspension packaging, dampers and cardans. Do not resurrect R2 placement because tests are green.
+Major calibration defects included suspension packaging, dampers and cardans.
 
 ## R4 — historical partial observation
 
@@ -41,7 +39,7 @@ GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
 classification: HISTORICAL OWNER PARTIAL OBSERVATION
 ```
 
-Historical feedback said wheels excellent, suspension almost excellent, stance slightly wide/low, steering rods short and front steering/upright pivot wrong. This is not current visual authority; the historical preset was not persisted exactly.
+Historical feedback said wheels excellent, suspension almost excellent, stance slightly wide/low, steering rods short and front steering/upright pivot wrong. This is not current visual authority.
 
 ## V0 — exact baseline revalidation
 
@@ -54,35 +52,18 @@ GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
 classification: OWNER OBSERVED / CURRENT BASELINE REJECTED AS FINAL GEOMETRY
 ```
 
-Canonical Windows validation used Node 24.16.0 / npm 11.13.0, pinned install, typecheck, deterministic generation, 13/13 focused tests and production build.
+Owner-visible baseline: chassis roughly acceptable; suspension/wishbones displaced; dampers wrong; cardans miss mating; upright/hub package buried in wheels; wheel placement not globally judgeable; stance likely slightly low. Dynamics/steering feel strongly regressed and deliberately deferred.
 
-Owner-visible baseline:
-
-- chassis/body roughly acceptable;
-- wishbones/suspension too far from frame;
-- dampers/springs wrong and entering wheel region;
-- cardans visibly miss correct differential mating;
-- upright/hub/suspension package buried in wheels;
-- wheel placement not globally judgeable while surrounding geometry is incoherent;
-- final ride height likely slightly higher.
-
-Dynamic state: `OWNER OBSERVED HIGH-SEVERITY DYNAMIC REGRESSION / DEFERRED BY OWNER`.
-
-Do not tune handling/stability/steering feel until visual recovery closes.
-
-## S1-D — FL upper static split-authority checkpoint
+## S1-D — FL upper static checkpoint
 
 ```text
 date: 2026-08-10
 candidate: 393ef4600be5c83ef42bced4a8a451446e372c32
 tree: 92c896a8b0579a66b3c5381b777baf853a469908
-package: m6-owner-full-rig-r3
-GLB bytes: 829944
-GLB SHA-256: 57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a
 classification: OWNER ACCEPTED — STATIC FRONT+TOP / PARTIAL INTERFACE CHECKPOINT
 ```
 
-Reviewed constraint:
+Protected constraint:
 
 ```text
 inboard X = midpoint(physical upperFront, physical upperRear).x
@@ -92,16 +73,7 @@ orientation = PART_PAIR_ROLL_PINNED_STRETCH
 contact claim = NONE_CONSTRAINT_COMPOSED_VISUAL_ATTACHMENT
 ```
 
-Source/test evidence removed the previous longitudinal residual of about `-0.155671 m` to `0 m` while preserving the accepted Y/Z and outboard relation.
-
-Owner verdict:
-
-- FRONT good enough at current precision;
-- TOP previous longitudinal yaw removed and placement good enough;
-- wheel-side geometry remains near/buried in the tire/upright region;
-- visible FL upper mesh stretch/proportion is deferred unless later rigging requires changing it.
-
-Protected meaning: preserve the accepted static FL upper inboard relationship. This does not accept FR, FL lower, upright/hub/wheel, final mesh scale or physical suspension topology.
+Owner accepted FRONT+TOP placement at current precision. Wheel-side package and mesh proportion remained unresolved/deferred.
 
 ## S1-LIVE — FL upper real suspension articulation
 
@@ -112,23 +84,9 @@ tree: 92c896a8b0579a66b3c5381b777baf853a469908
 classification: OWNER ACCEPTED — FL UPPER LIVE ARTICULATION / NEUTRAL SUSPENSION RANGE
 ```
 
-The exact frozen source was exercised through the normal `M6TopologyWorld` path over 180 consecutive neutral frames containing natural extension, compression/bump, rebound and settling/rest.
+Real `M6TopologyWorld` evidence covered natural extension/compression/rebound/rest. Supplemental Node 22 execution showed endpoint residuals around `9.11e-8 m` / `7.00e-8 m`, no observed flip/twist/singularity, and worst adjacent full-frame change about `1.70058°`.
 
-Technical evidence, explicitly **supplemental toolchain evidence** (Node 22 rather than pinned Node 24):
-
-- S1-D static 4/4 PASS;
-- generic transform controls 10/10 PASS;
-- existing real-M6 runtime test 1/1 PASS;
-- maximum chassis-side endpoint residual about `9.11e-8 m`;
-- maximum arm-side endpoint residual about `7.00e-8 m`;
-- no observed flip/twist/discontinuity/singularity;
-- worst adjacent full-frame change about `1.70058°` during faster initial motion.
-
-Jozz reviewed a focused FRONT + TOP capture and answered that the FL upper behavior is correct. He noted that surrounding line clutter made the motion somewhat harder to read, but remained almost certain it was correct.
-
-Protected meaning: the S1-D acceptance extends to natural FL upper placement/orientation and mounting preservation through the observed real neutral suspension range.
-
-Still not accepted by S1-LIVE: FR, FL lower, upright/hub/wheel packaging, dampers, mesh proportion/scale, steering geometry, handling/dynamics/feel.
+Jozz visually accepted the focused live FL upper gate. Surrounding line clutter was noted as a presentation weakness.
 
 ## S1-I — clean integration into `main`
 
@@ -137,32 +95,46 @@ date: 2026-08-11
 integrated commit: 67d66ed412342fee5445b2901d85a663a084bf4e
 integrated tree: f2e1836800719cc9cc7007631568c41e45471450
 integration parent: 220083612116ea055cc7ae39498bd59a61fbce70
-shape: 2 commits / 8 files / fast-forward lineage
 classification: INTEGRATED PRODUCT STATE / NO NEW OWNER GATE
 ```
 
-The orchestrator independently reviewed the curated candidate and fast-forward promoted it to `main`.
+Clean integration used 2 commits / 8 files with no frozen-branch merge or S1-history cherry-pick. Curated blobs matched the reviewed frozen surface, FR/physics stayed unchanged, and package identity remained 59 bindings / 829944 bytes / SHA-256 `57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a`.
 
-Integration properties:
+Durable meaning: accepted FL upper static+live semantics belong to `main`.
 
-- no merge of frozen S1;
-- no cherry-pick of S1 history;
-- exactly four product files + four focused regression files changed;
-- all eight curated blobs are byte-identical to the reviewed frozen implementation on the accepted surface;
-- FR and physics remain unchanged;
-- package remains 59 real bindings / 829944 bytes / SHA-256 `57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a`;
-- focused tests 30/30 PASS;
-- real-M6 candidate runtime 1/1 PASS plus the same 180-frame neutral endpoint/frame regression;
-- GitHub CI was absent and is not classified as PASS.
+## S2-O — one-knuckle interpretation falsified by owner
 
-No new owner gate was required because the integrated surface is the exact reviewed mechanism/calibration semantics with unchanged generated visual identity and reproduced live behavior.
+```text
+date: 2026-08-11
+product base examined: 67d66ed412342fee5445b2901d85a663a084bf4e
+classification: OWNER REJECTED / FUNDAMENTAL SEMANTIC TOPOLOGY CORRECTION
+```
 
-Durable meaning: the accepted FL upper static + live result now belongs to `main`. Frozen `393ef...` is cold technical/history evidence, not a required development base.
+The technical S2 role investigation produced an internally consistent interpretation that grouped the wheel-side purple geometry as one `knuckle/upright-side` member. A dedicated owner-facing source/runtime map exposed that this interpretation repeats a known historical agent failure.
+
+Jozz corrected it directly on the source-rig views:
+
+- the knuckle mechanism has **two separate members that must be rigged separately**;
+- **YELLOW owner annotation:** suspension-side member tied to the wishbones, static with respect to steering;
+- **RED owner annotation:** separate steerable/rotating member connecting the first member toward the wheel;
+- **BLUE owner annotation:** steering rotation axis/center between those members, shown in side/front-like and top projections;
+- native/core JV currently implements this conceptual split and is required read-only reference for reconstruction.
+
+Protected meaning:
+
+1. do not collapse the wheel-side mechanism into one semantic/body-role called `knuckle` or `upright`;
+2. distinguish suspension-side carrier from steerable carrier;
+3. distinguish their steering DOF from wheel-spin DOF;
+4. exact authored mesh membership, exact 3D steering axis and exact Web physics/visual repair remain UNKNOWN until reconstructed from owner evidence + authored source + native JV;
+5. previous S2 technical measurements remain evidence only where they do not depend on the rejected one-knuckle assumption;
+6. S1 FL upper acceptance remains protected unless new direct evidence falsifies it.
+
+Known unresolved evidence carried forward: authored steering socket/current physical arm mismatch about `0.222 m`; stale R3 cardan endpoint path in interface audit; worst prior lower-ball shared-joint residual about `6.263 mm`; old owner-map lower-outboard `#12` was inferred rather than an authored named socket.
+
+Next operation: `S2-R — reconstruct FL two-stage wheel-side steering mechanism`, read-only and owner-validation-first. No production repair or S3 is authorized before the reconstructed topology is visually validated by Jozz.
 
 ## Owner-checkpoint method
 
 Use small dependency-driven slices. Record exact accepted/rejected constraints rather than whole-asset labels. Preserve accepted DOFs while reopening only unresolved ones.
 
-For the next owner-sensitive geometry gate, reduce visual clutter when practical; use isolation/fixed projection views only when they improve attribution rather than as tooling work for its own sake.
-
-Handling/feel remains a separate later campaign.
+For high-risk mechanical semantics, an internally consistent agent model is not sufficient evidence. Use owner-facing falsification before implementation. Handling/feel remains a separate later campaign.
