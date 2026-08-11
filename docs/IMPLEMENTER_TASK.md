@@ -43,7 +43,7 @@ The orchestrator supplies the exact current CONTROL TIP and work-branch STARTING
 Write authority:
 
 ```text
-work/front-corner-golden-rebuild-r1
+work/front-corner-golden-rebuild-r2
 ```
 
 Create **no additional remote branch**. `docs/BRANCH_ROLES.md` contains the current cleanup/budget situation if branch lifecycle itself becomes relevant, but do not preload it otherwise.
@@ -284,10 +284,10 @@ Before the first remote write verify:
 
 ```text
 main == orchestrator-supplied CONTROL TIP
-work/front-corner-golden-rebuild-r1 == orchestrator-supplied STARTING TIP
+work/front-corner-golden-rebuild-r2 == orchestrator-supplied STARTING TIP
 ```
 
-All production writes go only to `work/front-corner-golden-rebuild-r1`.
+All production writes go only to `work/front-corner-golden-rebuild-r2`.
 
 Do not create another branch, do not force-update refs, do not modify native/core JV, and do not promote to `main`.
 
