@@ -1,66 +1,75 @@
 # JV Web — branch roles and lifecycle
 
-Updated: 2026-08-10
+Updated: 2026-08-11
+Status: **CURRENT**
 
-Branch names are workflow pointers, not project memory. Exact commits, owner checkpoints and current-state documents carry durable meaning.
+Branch names are workflow pointers, not project memory. Exact commits, current-state docs and owner checkpoints carry durable meaning.
 
-## Long-lived authority
+## 1. Product authority
 
 ### `main`
 
 **ACCEPTED / INTEGRATED PRIVATE PRODUCT AUTHORITY AND DEFAULT BRANCH.**
 
-Fresh agents resolve its live tip before writes. Do not maintain another permanent development branch merely to separate “real work” from the default branch.
+Resolve its live tip before every write. Do not treat any work/candidate/frozen branch as a parallel product authority.
 
-## Frozen archive ref
+Current fresh-rebuild bootstrap checkpoint at the time of this document update is a docs-only descendant of the accepted S1 product. Always resolve the live SHA rather than trusting this prose.
 
-### `archive/pre-cleanup-2026-08-10`
+## 2. Active write transaction
 
-**FROZEN HISTORY RETENTION — NEVER AN ACTIVE DEVELOPMENT BASE.**
+### `work/front-corner-golden-rebuild-r1`
 
-```text
-commit: ee77c4760a08a739a712fec5418e3489746ad63d
-tree:   37fe95af17cb21836cadc552830d55e6889048c1
-```
+**ACTIVE / SINGLE WRITE AUTHORITY FOR S2-PORT.**
 
-Open only for a named historical/salvage question that current source/baselines cannot answer.
+Purpose: rebuild the front-left corner from the owner-accepted authored/golden contract in `docs/IMPLEMENTER_TASK.md`.
 
-## Preserved historical evidence/salvage refs
+Rules:
 
-- `product/jv-web-car-map-scan` — retained c8e0 scan evidence lineage;
-- `repair/jv-web-release-r0` — closed private R0 repair/release lineage;
-- `candidate/jv-web-owner-vehicle-visual-r1` — frozen early owner-vehicle tooling salvage;
-- `candidate/jv-web-render-host-r1` — frozen render-host experiment salvage.
+- branch starts from the exact orchestrator-supplied current `main` control tip;
+- fresh implementer writes only here;
+- no additional work/candidate branch is needed during this transaction;
+- `main` is not updated by the implementer;
+- owner gate + orchestrator review are required before promotion.
 
-Do not inspect by default.
-
-## Frozen handoff transaction
+## 3. Cold technical evidence
 
 ### `work/owner-rig-s1-attachment-authority`
-
-Current handoff freeze:
 
 ```text
 tip:  393ef4600be5c83ef42bced4a8a451446e372c32
 tree: 92c896a8b0579a66b3c5381b777baf853a469908
-state: FROZEN — NO WRITES DURING ORCHESTRATOR HANDOFF
+state: FROZEN / READ ONLY
 ```
 
-Purpose: preserve exact S1-A..D experimental evidence and the owner-accepted **static FL upper-wishbone constraint** while the project is handed to a fresh orchestrator.
+Historical exact S1 technical evidence only. The accepted FL-upper result has already been curated into `main`; this ref is not a development base or a second source authority.
 
-This branch is **not a second source authority** and is **not automatically mergeable**. The latest owner acceptance is narrower than the entire experimental branch.
+Open only if a named S1 regression question requires exact historical evidence.
 
-The new orchestrator must first complete takeover gates in `docs/HANDOFF.md`. Afterward it may:
+## 4. Completed / cleanup-only refs
 
-- integrate a clean reviewed subset/result into `main`;
-- continue the same topic only after explicitly reopening a bounded task;
-- or record evidence and abandon/delete the branch if a cleaner integration supersedes it.
+The following refs contain no current write authority:
 
-Do not create another S1 archive branch merely to preserve this ref.
+- `work/owner-rig-s1-clean-integration` — completed clean-integration transaction; currently redundant with the old integrated S1 tip;
+- `noop-should-not-create` — accidental no-op ref, no unique product state;
+- `noop-should-not-create-2` — accidental no-op ref, no unique product state.
 
-## Temporary branch rules
+Delete these when an actual delete-ref operation is available. Do not reuse them for development or evidence.
 
-Allowed when isolation is justified:
+## 5. Preserved historical / salvage refs
+
+Do not inspect by default:
+
+- `archive/pre-cleanup-2026-08-10` — frozen history retention;
+- `product/jv-web-car-map-scan` — retained scan evidence lineage;
+- `repair/jv-web-release-r0` — closed private R0 repair/release lineage;
+- `candidate/jv-web-owner-vehicle-visual-r1` — frozen early owner-vehicle tooling salvage;
+- `candidate/jv-web-render-host-r1` — frozen render-host experiment salvage.
+
+These refs are not current authority and are never an automatic merge source.
+
+## 6. Temporary branch policy
+
+Allowed only when isolation has a concrete benefit:
 
 ```text
 work/<bounded-topic>
@@ -71,20 +80,20 @@ No `agent/*` branches.
 
 Every temporary branch needs one narrow purpose, exact parent/control tip, acceptance/rejection condition and cleanup point.
 
-Git history + exact SHA + checkpoint documentation are normal archival mechanisms. Branch names are not memory.
+## 7. Branch-budget exception currently in effect
 
-## Branch budget
+Normal policy remains: more than 8 total remote branches requires triage before creating another branch.
 
-Normal retained operational refs excluding the single frozen archive: **5**.
+The repository is temporarily above that budget because three completed/accidental refs cannot currently be deleted through the available connector. This is **cleanup debt, not permission to keep creating branches**.
 
-The frozen S1 work transaction temporarily makes **6 operational refs + 1 archive = 7 total remote refs**.
+For S2-PORT:
 
-This is within budget and should return to steady state after handoff/integration/abandonment.
+- branch triage has already occurred;
+- `work/front-corner-golden-rebuild-r1` is the one justified active transaction;
+- create **no additional remote branch** unless the orchestrator explicitly replans the transaction.
 
-More than 8 total remote branches requires branch triage before any new branch creation.
+## 8. Durable cleanup rule
 
-## Durable cleanup rule
+Do not recreate branch cemetery. Preserve facts in current Git, exact SHAs and owner checkpoints. Delete completed temporary refs when proper delete-ref tooling is available.
 
-The 2026-08-10 cleanup reduced a 23-branch state to a controlled set.
-
-Do not recreate branch cemetery. Preserve facts in current documents, exact SHAs, Git ancestry and owner checkpoints; delete temporary branch names when their transactional purpose is complete.
+A branch name never outranks current source, current owner truth or exact evidence.
