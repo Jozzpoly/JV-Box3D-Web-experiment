@@ -1,70 +1,59 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-11
-Status: `R0 PUBLISHED / R1 ACTIVE / S1 FL UPPER INTEGRATED / S2 OWNER SEMANTIC VALIDATION PENDING`
+Status: `S1 FL UPPER INTEGRATED / S2-R TWO-STAGE WHEEL-SIDE RECONSTRUCTION ACTIVE`
 Owner: Jozz
 
-This is a router, not project history. Current Git, exact execution evidence and direct owner observation outrank documentation.
+This is a router. Current Git, exact evidence and direct owner correction outrank documentation and agent confidence.
 
-## Product direction
-
-JV-Web should increasingly feel like a real browser expression of Jozz's own game. Current priority is owner-vehicle visual/mechanical recovery, one attributable interface at a time. Do not hide unresolved local rigging with stance or downstream tuning. Handling/stability/steering feel remain deferred until visual/mechanical recovery closes.
-
-## Current authority
+## Product authority
 
 ```text
-PRIVATE PRODUCT AUTHORITY
-Jozzpoly/JV-Box3D-Web-experiment
-main
-(resolve live tip before every write)
-
-INTEGRATED PRODUCT CHECKPOINT
-67d66ed412342fee5445b2901d85a663a084bf4e
+Jozzpoly/JV-Box3D-Web-experiment main
+integrated product checkpoint: 67d66ed412342fee5445b2901d85a663a084bf4e
 tree: f2e1836800719cc9cc7007631568c41e45471450
 
-FROZEN S1 COLD EVIDENCE
-work/owner-rig-s1-attachment-authority
-393ef4600be5c83ef42bced4a8a451446e372c32
+native/core reference for S2-R:
+Jozzpoly/Box3d_FunProject — READ ONLY
 
-PUBLIC R0
-Jozzpoly/JV-Box3D-Web-Public
-release/r0
+public R0:
+Jozzpoly/JV-Box3D-Web-Public release/r0
 c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-## Integrated accepted result
+## Protected integrated truth
 
-FL upper static placement + real neutral live articulation are OWNER ACCEPTED and cleanly integrated on `main` through `67d66ed...`. Preserve that result unless new evidence explicitly reopens it.
+FL upper static FRONT+TOP relationship and real neutral suspension articulation are OWNER ACCEPTED and integrated. Do not reopen without direct contradictory evidence.
 
-## Current S2 status
+## Critical current owner correction
 
-Technical S2-FL-ROLES evidence returned `REVIEW_READY`: source hierarchy, generated binding semantics and real M6 differential motion were mutually consistent with the proposed chassis/lower-arm/knuckle role map.
+Previous S2 agents/analysis repeated a historical failure mode: the wheel-side mechanism was modeled semantically as one `knuckle/upright` member.
 
-**This is NOT owner validation.**
+OWNER REJECTED.
 
-Jozz explicitly stated that he has already gone through this kind of corner-interpretation stage with agents about three times and agents were confident while the resulting implementation was badly wrong. Therefore the project must not proceed to S3 based on technical self-consistency alone.
+Hard current truth:
 
-Current ACTIVE task: `S2-OWNER — owner validation of FL corner role interpretation`.
+- knuckle mechanism has **two separately rigged members**;
+- suspension-side member: tied to wishbones, static relative to steering — owner marked YELLOW;
+- steerable member: separate rotating member linking onward to wheel — owner marked RED;
+- a distinct relative steering axis/DOF exists between them — owner marked its projected position/center with BLUE lines;
+- wheel spin is a separate DOF from this steering rotation;
+- native JV already contains the correct conceptual split and is mandatory read-only reference.
 
-The owner must see a clear static map of the actual source rig plus a focused runtime demonstration of what we think belongs to chassis, lower arm and knuckle/upright, with shared pivots visible. Only after Jozz confirms/corrects this semantic model may the orchestrator close S2.
+Do not infer exact mesh membership or exact 3D axis from the annotations alone. Those remain to be reconstructed from owner evidence + authored source + core JV.
 
-Known technical warnings to preserve:
+## Active task
 
-- authored `Socket_SteeringRod` position differs from current physical steering arm by about 0.222 m; body role support is not steering-geometry acceptance;
-- interface-audit cardan endpoint path is stale relative to current R3 semantics;
-- worst S2 observed shared-joint residual was about 6.263 mm at lower ball; not classified as role swap, but preserve for later geometry work.
+`S2-R — reconstruct FL two-stage wheel-side steering mechanism`
 
-## Near-term direction
+No product writes. Implementer has broad freedom to investigate current JV-Web and native JV, use disposable analysis/prototypes and choose the best method.
 
-Only after S2 owner semantic acceptance:
+Required output: native topology, authored source decomposition, 3D steering axis/joint, exact current Web mismatch, smallest future repair architecture and a clean owner-facing map/prototype.
 
-```text
-S3 wishbones — likely FL lower, preserving integrated FL upper
--> S4 upright / hub / wheel
--> dampers / steering / cardans
--> stance
--> whole-rig visual integration
--> later dynamics/feel recovery
-```
+No production implementation or S3 until owner validates the reconstructed semantic/topological model.
 
-Do not treat a green technical role ledger as authority over direct owner understanding.
+## Workflow lesson
+
+For this difficult mechanism, agent technical self-consistency is not owner truth. The project has repeatedly produced confident but wrong interpretations here. Use owner-facing falsification before implementation.
+
+Orchestrator sets authority/protected truth/falsifiers; implementer should do the heavy technical investigation and have freedom over method. Avoid repeating full repo archaeology when exact continuity is already established.
