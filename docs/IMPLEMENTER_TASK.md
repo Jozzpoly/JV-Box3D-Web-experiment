@@ -2,310 +2,146 @@
 
 Updated: 2026-08-11
 Status: **ACTIVE**
-Task: **S2-FL-ROLES — front-left corner landing / kinematic body-role validation**
-Mode: **VALIDATION-FIRST / READ-ONLY / NO PRODUCTION PATCH**
+Task: **S2-OWNER — owner validation of FL corner role interpretation**
+Mode: **OWNER-EVIDENCE / READ-ONLY / NO PRODUCT PATCH**
 
-This task exists because the accepted FL upper mechanism is now integrated into `main`, while downstream geometry is still visually incoherent. Before changing another mesh/attachment, establish whether the current FL front-corner authored pieces/endpoints are associated with the correct M6 kinematic bodies/shared pivots.
+The technical S2-FL-ROLES investigation returned `REVIEW_READY`, but Jozz explicitly rejected treating that as validated understanding. This project has already gone through several earlier agent attempts where the agents were confident about the corner semantics and the visible result was wrong. Therefore S2 remains OPEN until the owner validates what we think the front-left mechanism actually is.
 
-Do not fix geometry in this task. A discovered role/pivot mismatch returns `REPLAN` with exact evidence.
+Do not proceed to S3.
 
-## 0. One technical question
+## 1. Product boundary
 
-Answer exactly this:
-
-> Does the current integrated FL front-corner visual rig preserve the intended authored **kinematic roles and shared pivots** — chassis-side, lower-arm-side and knuckle-side — through representative real M6 motion, without relying on misleading node names or accidental static coincidence?
-
-This is a body-role / landing gate, not a wishbone-shape, upright packaging, damper, steering-geometry, cardan-mating or dynamics gate.
-
-## 1. Authority and exact product base
-
-The orchestrator will supply the exact current `main` CONTROL TIP carrying this ACTIVE task packet.
-
-The product bytes being validated must descend docs-only from this integrated product checkpoint:
+Integrated product base remains:
 
 ```text
-repository: Jozzpoly/JV-Box3D-Web-experiment
-integrated product base: 67d66ed412342fee5445b2901d85a663a084bf4e
-product tree: f2e1836800719cc9cc7007631568c41e45471450
-role: accepted/integrated private product
+67d66ed412342fee5445b2901d85a663a084bf4e
+tree: f2e1836800719cc9cc7007631568c41e45471450
 ```
 
-At execution start:
+Current `main` will be a docs-only descendant carrying this packet.
 
-1. verify current `main` equals the orchestrator-supplied CONTROL TIP;
-2. prove CONTROL TIP is a docs-only descendant of `67d66ed...` with unchanged product bytes;
-3. verify the integrated product tree/source mirror used for execution corresponds exactly to `f2e1836800719cc9cc7007631568c41e45471450` before disposable diagnostics.
+Remote write authority: **NONE**.
 
-### Remote write authority
+Do not rebuild the full repository identity proof again if the same exact product mirror from S2 is still available. A light continuity check is enough:
+
+- verify current `main` equals the orchestrator-supplied CONTROL TIP;
+- verify changes since `67d66ed...` are docs-only;
+- reuse the already verified exact `f2e183...` product mirror.
+
+Only repeat full reconstruction if continuity is actually broken.
+
+## 2. What must be owner-validated
+
+The owner must be able to verify our **semantic interpretation**, not merely that the current animation is numerically self-consistent.
+
+Current technical hypothesis to present visibly:
+
+### Chassis-side
+
+- `Socket_ChassisMount_a`
+- `Socket_SingleDamper_Mount`
+- `Socket_SingleDamperUpper`
+- `Socket_CardanDrive` — chassis-side role only; its authored position is NOT claimed as the final cardan endpoint
+
+### Lower-arm-side
+
+- `Chassis_Bottom` = lower wishbone visual part
+- `Socket_SingleDamperLower` follows the lower arm
+
+### Knuckle/upright-side
+
+- `Socket_ChassisMount_b` despite its misleading name
+- `Socket_WheelCenter`
+- `Socket_SteeringRod` outboard role
+- `Socket_CardanHub`
+
+### Spanning / shared-joint interpretation
+
+- `Chassis_Top` = accepted upper wishbone spanning chassis ↔ upper-ball region
+- `Chassis_Bottom` = lower wishbone spanning chassis ↔ lower-ball region
+- upper/lower ball locations are shared mechanical pivots, not evidence that one textual `partId` alone semantically owns the joint
+
+Do not present any of the above as owner truth before Jozz accepts or corrects it.
+
+## 3. Required owner-facing evidence
+
+Prepare **clear visual material**, not another long numerical report.
+
+### A. Static source-role map — mandatory
+
+Show the actual front-left source rig geometry in a clean isolated view and visibly identify what each named node/part corresponds to.
+
+Use a consistent role color/legend for:
+
+- chassis-side;
+- lower-arm-side;
+- knuckle/upright-side;
+- accepted upper-arm control;
+- shared pivot/reference points.
+
+Show the original authored geometry/hierarchy clearly enough that Jozz can say: “yes, that is the part/socket I meant” or correct us.
+
+Do not hide semantic mistakes behind current calibrated placement.
+
+### B. Runtime role demonstration — mandatory
+
+Using the same visual legend, show the interpreted groups in the real integrated M6 runtime through a short natural suspension sequence.
+
+Prefer several simple focused captures over one cluttered capture, for example:
+
+1. chassis-side group vs moving corner;
+2. lower-arm + its damper-lower point;
+3. knuckle/upright-side group + shared upper/lower ball and wheel center.
+
+Use fixed readable views. FRONT/TOP/SIDE or a close three-quarter view may be combined as needed. Hide or ghost unrelated geometry, especially the wheel, when it obscures the mechanism.
+
+No steering is required unless a very short neutral-vs-steered control materially helps the owner understand which object we call the knuckle/upright. Do not turn this into steering validation.
+
+### C. Explicit labels — mandatory
+
+The material must state in plain language what we believe each highlighted element is and what it should move with. Node names alone are insufficient.
+
+### D. Do not conceal known warnings
+
+Mention visually or in the short accompanying note:
+
+- authored steering socket position differs strongly from current physical steering arm (~0.222 m); this did NOT validate steering geometry;
+- current interface-audit cardan endpoint path is stale relative to R3 and was not treated as authority;
+- worst observed lower-ball shared-joint solver residual in the S2 technical run was about 6.263 mm; this was not classified as a body-role swap but remains evidence for later geometry work.
+
+These warnings must not be used to ask the owner to accept those downstream geometries.
+
+## 4. Owner question
+
+After the material, ask exactly this top-level question:
+
+> **Czy poprawnie rozumiemy przedni lewy corner: które elementy są związane z chassis, które z dolnym wahaczem, które ze zwrotnicą/uprightem oraz gdzie są wspólne punkty przegubów? Jeśli nie, wskaż proszę konkretnie co rozumiemy źle.**
+
+A correction of one element is a valid answer. Do not force a binary yes/no if Jozz sees a semantic mistake.
+
+## 5. Decision boundary
+
+- `OWNER_ACCEPTED`: only if Jozz confirms the role interpretation strongly enough to proceed.
+- `OWNER_CORRECTED` / `OWNER_REJECTED`: stop and return the corrected semantic map; orchestrator will replan before any geometry patch.
+- `OWNER_UNCERTAIN`: improve the presentation/isolated view; do not proceed to S3.
+
+No product code, tests, calibration, physics or remote refs may change in this task.
+
+Do not begin FL lower geometry, upright/hub/wheel work, damper fixes, steering fixes, cardan fixes, FR work, stance or dynamics.
+
+## 6. Return
+
+Respond in Polish. Keep the technical recap short. Attach/show the owner-facing material directly so Jozz does not need to run Node, a dev server, scripts or local tools.
+
+Return:
 
 ```text
-NONE
-```
-
-Do not create a work branch and do not change any remote ref/file.
-
-The old frozen S1 branch is **not needed by default** for S2. Do not preload it or old S1 chats. The accepted FL upper semantics now live on `main`.
-
-## 2. Bootstrap / execution mirror
-
-Read only:
-
-1. current `AGENTS.md`;
-2. this current `docs/IMPLEMENTER_TASK.md`.
-
-Then inspect only current files needed to answer the S2 question.
-
-The already verified local integration-candidate mirror may be reused **only if** its full reconstructed Git tree equals:
-
-`f2e1836800719cc9cc7007631568c41e45471450`
-
-The already supplied `box3d.js@0.0.2` dependency packet may be reused in a disposable environment.
-
-Canonical toolchain is preferred:
-
-```text
-Node 24.16.0
-npm 11.13.0
-```
-
-If unavailable, substitute execution may be used but must remain explicitly `supplemental`. Do not spend a long cycle fighting network/toolchain access.
-
-## 3. Current source-role hypotheses to validate
-
-Use the current source asset hierarchy/contract as hypotheses, then independently check them against generated binding semantics and real runtime behavior.
-
-### Chassis-side authored endpoints
-
-```text
-Socket_ChassisMount_a
-Socket_SingleDamper_Mount
-Socket_SingleDamperUpper
-Socket_CardanDrive
-```
-
-Expected role: chassis-side / world point derived from chassis ownership.
-
-### Lower-arm-side authored endpoint
-
-```text
-Socket_SingleDamperLower
-```
-
-Expected role: lower-arm-side. Current contract states it is a child of `Chassis_Bottom`; do not silently attach it to the knuckle merely because it is near wheel-side geometry.
-
-### Knuckle-side authored endpoints
-
-```text
-Socket_ChassisMount_b
-Socket_WheelCenter
-Socket_SteeringRod
-Socket_CardanHub
-```
-
-Expected role: knuckle-side. `Socket_ChassisMount_b` is deliberately named misleadingly; node name is not authority.
-
-### Wishbone visual parts
-
-```text
-Chassis_Top
-Chassis_Bottom
-```
-
-These are spanning wishbone parts, not simple endpoint labels.
-
-`Chassis_Top` / `owner.fl.upper-arm` is already accepted and integrated. Treat it as a protected control, not a new acceptance question.
-
-Do not solve FL lower wishbone geometry in S2. Its detailed inboard/outboard/orientation question belongs to S3 if S2 closes cleanly.
-
-## 4. Shared-joint rule — avoid a false failure
-
-Do **not** require `contract ridesBody == binding partId` mechanically.
-
-At a real joint, the same world-space pivot may be represented in local coordinates of either participating body. Example: a knuckle-side upper-ball reference can be evaluated from the upper-arm local frame if runtime proves it remains exactly/coherently coincident with the shared knuckle joint point.
-
-Validate:
-
-```text
-semantic role
-+ source hierarchy/provenance
-+ current generated endpoint semantics
-+ world-space shared-pivot coincidence through motion
-```
-
-rather than string equality between labels.
-
-## 5. Required evidence
-
-### A. Exact FL role ledger
-
-Produce one compact table/ledger for every named FL endpoint/part above containing at least:
-
-```text
-authored node
-source parent/hierarchy evidence
-contract role / ridesBody
-current generator/calibration provenance
-current binding/source kind and participating part IDs
-expected kinematic role
-observed runtime result
-classification: SUPPORTED | CONTRADICTED | AMBIGUOUS
-```
-
-Do not promote contract prose to proof if current source/runtime contradicts it.
-
-### B. Source pivots / handed placement
-
-Confirm current source composed transforms/pivots are read consistently and that FL placement/mirroring conventions do not silently invert the intended role/frame.
-
-FR may be inspected only as a cheap handedness/mirror **control** if it helps falsify FL mapping. This does not open FR owner acceptance or authorize FR changes.
-
-### C. Existing interface audit
-
-Run/reuse `buildOwnerM6InterfaceAudit` / its focused test as measurement evidence.
-
-Keep its classification explicit:
-
-`MEASUREMENT_ONLY_NOT_ACCEPTANCE`
-
-Use it to locate discrepancies; do not turn current distances into acceptance thresholds without independent justification.
-
-### D. Real M6 body-role discrimination
-
-Use actual `M6TopologyWorld` / normal visual-frame path.
-
-At minimum observe:
-
-- settled/rest state;
-- natural suspension motion sufficient to move lower-arm/knuckle relative to chassis;
-- a continuous sequence rather than only two snapshots.
-
-For each role, track the relevant derived authored/generated world point relative to its expected body frame and at least one plausible wrong body frame. The intended ownership/shared-joint relationship should remain invariant/coincident as the bodies move differentially.
-
-A small steering control state is allowed **only as technical discrimination for knuckle-side ownership** if neutral suspension motion does not sufficiently separate knuckle/chassis frames. It is not a steering-geometry gate and must not become an owner question.
-
-Do not hand-edit `VehicleVisualFrame` and call that live evidence.
-
-### E. Protected integrated FL upper
-
-Confirm S2 diagnostics do not reopen or alter:
-
-- accepted FL upper inboard X/Y/Z relation;
-- accepted outboard physical upper ball;
-- `PART_PAIR_ROLL_PINNED_STRETCH` behavior;
-- integrated package identity.
-
-No new FL upper owner gate is required.
-
-## 6. Protected scope
-
-Do not change:
-
-- any product source or test;
-- any remote ref;
-- FL upper mechanism/calibration;
-- FL lower geometry/calibration;
-- FR geometry;
-- physical hardpoints/physics;
-- upright/hub/wheel placement;
-- damper/spring geometry;
-- steering geometry/tuning;
-- cardan mating/calibration;
-- mesh proportion/scale;
-- stance;
-- handling/dynamics/feel;
-- native JV;
-- public R0/R1.
-
-Disposable local diagnostics are allowed if they do not alter candidate/product bytes.
-
-If the smallest correct next action requires a production change, stop and return `REPLAN` with the exact violated role/pivot and smallest justified repair surface.
-
-## 7. Decision states
-
-### `REVIEW_READY`
-
-Return this when current FL role/pivot mapping is supported strongly enough to close S2 without a production patch:
-
-- exact identity proven;
-- role ledger complete;
-- source/contract/generator semantics reconciled;
-- real M6 differential motion supports the intended body/shared-pivot roles;
-- no material contradiction or ambiguity remains for the bounded FL question;
-- protected FL upper/product identity unchanged.
-
-No owner gate is expected for a purely technical role-mapping PASS.
-
-### `REPLAN`
-
-Return without patching when any named FL role/pivot is contradicted or materially ambiguous, including:
-
-- an endpoint follows the wrong body through motion;
-- a supposed shared joint separates under real motion;
-- source hierarchy and current generator semantics encode incompatible roles;
-- handed placement/mirroring invalidates the FL role interpretation;
-- a fix would require entering a protected subsystem.
-
-State the smallest repair hypothesis, but do not implement it.
-
-### `BLOCKED`
-
-Return if exact integrated source identity or a usable real-M6 execution path cannot be established.
-
-## 8. Owner-facing tooling
-
-Do not implement persistent T1/T3 tooling in S2 merely because the previous owner gate was visually cluttered.
-
-If a disposable isolated view helps technical attribution, use it locally. Preserve the lesson for the next owner-sensitive geometry task: focused masking/fixed projection views are now justified when they reduce ambiguity.
-
-## 9. What this task does not decide
-
-S2 does not decide:
-
-- final FL lower wishbone placement;
-- upright/hub/wheel correctness;
-- damper endpoints/shape;
-- steering rod geometry;
-- cardan mating;
-- FR acceptance;
-- stance;
-- dynamics/feel;
-- public R1 readiness.
-
-If S2 passes, the orchestrator should use its role ledger to frame S3 wishbone work, likely FL lower first while preserving integrated FL upper.
-
-## 10. Return contract
-
-Return compactly in Polish:
-
-```text
-TASK: S2-FL-ROLES — front-left corner landing / kinematic body-role validation
-RESULT: REVIEW_READY | REPLAN | BLOCKED
-
+TASK: S2-OWNER
 CONTROL TIP:
-INTEGRATED PRODUCT BASE: 67d66ed412342fee5445b2901d85a663a084bf4e
-INTEGRATED PRODUCT TREE: f2e1836800719cc9cc7007631568c41e45471450
-EXECUTION MIRROR / TOOLCHAIN:
-PRODUCT BYTES VERIFIED:
-REMOTE FILES CHANGED: NONE expected
-REMOTE REFS CHANGED: NONE expected
-
-FL ROLE LEDGER:
-SOURCE/HIERARCHY RESULT:
-HANDEDNESS / PIVOT RESULT:
-INTERFACE AUDIT RESULT:
-REAL M6 MOTION PATH:
-CHASSIS-SIDE ROLE RESULT:
-LOWER-ARM-SIDE ROLE RESULT:
-KNUCKLE-SIDE ROLE RESULT:
-SHARED-JOINT COINCIDENCE RESULT:
-STEERING CONTROL USED: NO by default | YES with technical justification
-INTEGRATED FL UPPER CONTROL:
-
-CONTRADICTIONS / AMBIGUITIES:
-PROTECTED SCOPE CONFIRMED:
-WHAT WAS NOT TESTED:
-OWNER GATE REQUIRED: NO expected | explain if otherwise
-RECOMMENDED ORCHESTRATOR ACTION:
+PRODUCT BASE: 67d66ed412342fee5445b2901d85a663a084bf4e
+PRODUCT BYTES UNCHANGED: YES expected
+REMOTE WRITES: NONE expected
+OWNER MATERIAL: links/attachments
+KNOWN WARNINGS: concise
+OWNER QUESTION: exact question from section 4
 ```
-
-Do not create a branch, patch product code, update governance or continue into S3. Return control to the orchestrator.
