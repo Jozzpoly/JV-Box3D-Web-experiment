@@ -117,24 +117,58 @@ Jozz corrected it directly on the source-rig views:
 - the knuckle mechanism has **two separate members that must be rigged separately**;
 - **YELLOW owner annotation:** suspension-side member tied to the wishbones, static with respect to steering;
 - **RED owner annotation:** separate steerable/rotating member connecting the first member toward the wheel;
-- **BLUE owner annotation:** steering rotation axis/center between those members, shown in side/front-like and top projections;
-- native/core JV currently implements this conceptual split and is required read-only reference for reconstruction.
+- steering rotation and wheel spin are separate DOFs;
+- native/core JV contains this conceptual split and is required read-only reference for reconstruction.
 
 Protected meaning:
 
 1. do not collapse the wheel-side mechanism into one semantic/body-role called `knuckle` or `upright`;
 2. distinguish suspension-side carrier from steerable carrier;
 3. distinguish their steering DOF from wheel-spin DOF;
-4. exact authored mesh membership, exact 3D steering axis and exact Web physics/visual repair remain UNKNOWN until reconstructed from owner evidence + authored source + native JV;
-5. previous S2 technical measurements remain evidence only where they do not depend on the rejected one-knuckle assumption;
-6. S1 FL upper acceptance remains protected unless new direct evidence falsifies it.
+4. previous S2 technical measurements remain evidence only where they do not depend on the rejected one-knuckle assumption;
+5. S1 FL upper acceptance remains protected unless new direct evidence falsifies it.
 
-Known unresolved evidence carried forward: authored steering socket/current physical arm mismatch about `0.222 m`; stale R3 cardan endpoint path in interface audit; worst prior lower-ball shared-joint residual about `6.263 mm`; old owner-map lower-outboard `#12` was inferred rather than an authored named socket.
+## S2-A — authored axis + native parity authority reset
 
-Next operation: `S2-R — reconstruct FL two-stage wheel-side steering mechanism`, read-only and owner-validation-first. No production repair or S3 is authorized before the reconstructed topology is visually validated by Jozz.
+```text
+date: 2026-08-11
+web integrated product base: 67d66ed412342fee5445b2901d85a663a084bf4e
+native reference examined: 959aefb78587ce60cf2b8eb03ff82797a4165142
+classification: OWNER AUTHORITY CORRECTION / PROBABLE MULTI-DAY ROOT-CAUSE DISCOVERY
+```
+
+Owner clarified that the practical objective was to copy the already-working core JV rig, not repeatedly redesign the front corner from secondary documentation/calibration. The exact authored source asset is geometry authority for this mechanism.
+
+Hard owner/source facts:
+
+- `Axis_SuspensionTravel_Top` and `Axis_SuspensionTravel_Bottom` define the intended steering-axis placement in `OneSided_Steering_Suspension_Rig.gltf`;
+- `Socket_WheelCenter` lies exactly on that authored Top↔Bottom line and exactly halfway between the two markers;
+- the owner's hand-drawn corrected axis agrees with those markers;
+- do not let generic caster/KPI/hardpoint values silently move the authored steering axis away from this source geometry.
+
+A direct audit exposed an authority inversion that can explain repeated regressions:
+
+- working native M6 rig-lab behavior puts `Socket_ChassisMount_b` on `lowerArmId` / a NON-STEERING frame and `Socket_WheelCenter` on `knuckleId` / the steering frame;
+- the copied steering-suspension JSON contract instead labels both as `ridesBody: "knuckle"`;
+- Web R2/R3 package generation follows the collapsed interpretation and groups both as front knuckle pieces;
+- native and Web generic M6 geometry generate upper/lower ball hardpoints and kingpin direction from caster/KPI parameters independently of the authored Top↔Bottom axis;
+- R3 calibration then maps/shears authored upright geometry toward those generated hardpoints.
+
+Therefore a green/self-consistent Web test is not sufficient evidence of a correct port if the test only validates the same secondary derived system.
+
+Durable authority for this recovery lane:
+
+1. OWNER + exact authored source asset = intended geometry/semantic authority;
+2. exact working native/core JV behavior = golden implementation reference where it agrees with owner/source;
+3. current JV-Web = target to audit/repair, not truth;
+4. docs/contracts/factory receipts/calibration prose = secondary evidence only until revalidated.
+
+Do not blindly copy every native helper: core contains both a working visual rig path and generic physical M6 geometry. The implementer must identify the exact golden behavior rather than treating all native layers as equally authoritative.
+
+Current operation: `S2-PARITY — recover the golden native FL front-corner rig contract`. No production patch or downstream S3 is authorized before owner validation of the recovered golden/source mechanism and the proposed repair boundary.
 
 ## Owner-checkpoint method
 
-Use small dependency-driven slices. Record exact accepted/rejected constraints rather than whole-asset labels. Preserve accepted DOFs while reopening only unresolved ones.
+Use small dependency-driven slices, but when the goal is a port of an already-working mechanism, prefer **copy/parity evidence over re-derivation**. Record exact accepted/rejected constraints rather than whole-asset labels.
 
-For high-risk mechanical semantics, an internally consistent agent model is not sufficient evidence. Use owner-facing falsification before implementation. Handling/feel remains a separate later campaign.
+For high-risk mechanical semantics, an internally consistent agent model is not sufficient evidence. Tests must challenge parity against owner/source/golden behavior rather than only proving internal consistency. Handling/feel remains a separate later campaign.
