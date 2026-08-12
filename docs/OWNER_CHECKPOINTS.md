@@ -191,6 +191,32 @@ This supersedes the earlier over-strong reading that the raw vertical Top↔Bott
 
 Owner also accepted the strategic conclusion that stale/corrupted secondary documentation contributed materially to repeated regressions. A fresh implementer conversation is preferred before production rebuild so old chat context does not reintroduce the rejected authority hierarchy.
 
+
+## S2-N — narrow source/DOF checkpoint
+
+```text
+date: 2026-08-12
+candidate: a4468042550265d10c2fa4b13b926d9227040d89
+tree: 0eb726975c84b5df4783178fa4bb72907435f416
+offline evidence bundle: JV_WEB_S2_NARROW_OWNER_GATE_A4468042.zip
+bundle SHA-256: 7e7700c8d60b73f26c667988edcd4fbcccce26e60b52362baab9b2cb4f4183e8
+classification: OWNER ACCEPTED — NARROW SOURCE / RELATIVE-DOF / STEERING-CENTER CHECKPOINT
+```
+
+Owner confirmed only the bounded behavior that was actually reviewed:
+
+- source role #6 is the suspension-side/non-steering reference;
+- source role #8 is distinct and exhibits steering motion relative to #6;
+- steering remains centered at the source-derived `Socket_WheelCenter` position;
+- wheel orientation/spin is independent of structural #8 wheel-spin;
+- the accepted S1 FL-upper mechanism remains a protected control.
+
+This checkpoint **does not accept** the current implementation topology or final steering physics. In particular it does not approve `suspensionCarrierId` as future architecture, body count/naming, the 50/50 carrier/knuckle mass split, the current rack-to-angle law, physical vs non-physical tie rod choice, rack-side anchor, a zero-bump-steer target, final caster/KPI/axis direction, steering back-drive, steering feel or handling.
+
+Owner additionally observed that the **FL lower wishbone is still positioned incorrectly**. Classification: `OWNER OBSERVED / OPEN GEOMETRY DEFECT / NOT ACCEPTED BY S2-N`. It is real follow-up debt, but it must not block the immediate move toward in-game validation or cause unrelated reopening of the accepted S2-N boundary.
+
+Next evidence priority is actual JV-Web in-game/browser behavior. S2-N is an intermediate checkpoint, not a final front-corner or vehicle acceptance.
+
 ## Owner-checkpoint method
 
 When porting an already-working mechanism, prefer copy/parity evidence over re-derivation. Owner/source/golden behavior outrank secondary documentation.
