@@ -2,8 +2,8 @@
 
 Updated: 2026-08-12
 Status: **ACTIVE**
-Task: **R1-DRIVE-01 — real driving baseline and next rig-independent product slice**
-Mode: **IN-GAME EVIDENCE / RIG-SENSITIVE GEOMETRY FROZEN**
+Task: **R1-STEER-01 — coherent front steering + hands-off contact stability**
+Mode: **CAUSAL PHYSICS RESEARCH / DISPOSABLE EXPERIMENTS BEFORE PRODUCT CODE**
 
 ## Write scope
 
@@ -11,66 +11,87 @@ Mode: **IN-GAME EVIDENCE / RIG-SENSITIVE GEOMETRY FROZEN**
 repository: Jozzpoly/JV-Box3D-Web-experiment
 active branch: work/front-corner-golden-rebuild-r2
 control main: 97055331a2eef8bdbf8411db243417591731e664
-committed base before this checkpoint record: 8e79e69aa4912088bab453a0fb9b9b26afe9d6b0
-public R0: immutable until a later publication decision
+R1-DRIVE-01 discovery parent: af71a419dcaab0037a6e4278f42e4449d15c0a31
+public R0: immutable
 native JV: read only
 ```
 
-Resolve live refs before every write. Do not create geometry fixes merely to improve the present rig appearance.
+Resolve live refs before every write. Keep physics experiments disposable until a bounded candidate passes the research gates.
+
+## Why this task exists
+
+R1-DRIVE-01 showed that the largest current driving defect must not be skipped merely because it is fundamental or rig-adjacent.
+
+The current S2 product candidate mixes incompatible steering mechanisms across the front axle. That produces roughly ~14° FL vs ~29–30° FR at similar rack lock in either direction and large left/right vehicle asymmetry.
+
+Disposable equalized steering proved this mismatch is causal. A disposable symmetric centered + physical-link implementation then recovered active left/right symmetry and inner/outer angle swapping, but still showed hands-off straight instability.
 
 ## One objective
 
-Use the normal JV-Web Offroad runtime to identify the **single highest-value next improvement that does not depend on solving the deferred front rig/mating problem**.
+Determine a physically defensible coherent front steering/contact mechanism that is good enough to become the next owner-playable candidate, or prove that the current legacy contact backend blocks that goal.
 
-This is a discovery/selection slice first. Do not start from an assumed steering, suspension or M6 solution.
+Do **not** optimize for an easy `rig-independent` fix. Follow the dominant evidence.
 
 ## Protected controls
 
-Preserve:
+Preserve in every experiment:
 
-- S1 FL-upper accepted static/live behavior;
-- S2-N source/DOF facts;
-- S2-GAME-01 accepted broad in-game regression state;
-- S2-K direct in-game #6/#8 relative-motion checkpoint.
+- accepted WheelCenter steering center;
+- #6 suspension-side / #8 steerable role separation;
+- separate wheel spin;
+- accepted S1 upper behavior as a control;
+- no fake wishbone↔knuckle visual mating fix.
 
-Do not repeat those gates unless new evidence contradicts them.
+## Current strongest hypothesis — not authority
 
-## Deferred / frozen for this task
+A symmetric solver-native bilateral linkage can be viable **if** both front corners share a coherent WheelCenter-centered steering DOF. Evidence so far:
 
-Treat as `RIG-SENSITIVE / DEFERRED`:
+- active left/right vehicle response becomes nearly mirrored;
+- the larger steering angle swaps to the inner wheel with direction;
+- contact/knuckle forces retain a physical path to the rack.
 
-- FL lower wishbone placement;
-- wishbone↔knuckle visual mating/joint references;
-- ad-hoc offsets intended to keep those parts visually joined;
-- damper/cardan endpoint polish whose correctness depends on the unresolved mating geometry;
-- physical hardpoint changes made only to match the current visuals.
+Still provisional:
 
-A future dedicated rig/workbench must establish explicit owner-authored mating points/frames and motion-valid relationships.
+- mirrored FR carrier/body topology;
+- rack-side tie-rod anchor;
+- final steering-axis direction;
+- mass split and all handling values.
 
-## Driving evidence priority
+## Hands-off causal findings already established
 
-Use the ordinary wheel-visible product and distinguish observations by cause. Prefer a small set of representative maneuvers rather than broad tuning:
+Do not repeat without contradiction:
 
-1. straight launch / acceleration / braking;
-2. low-speed steering and release;
-3. moderate turn/slalom or direction reversal;
-4. rough-terrain suspension/contact event.
+- drive torque is not required for divergence — it persists in coast after release;
+- front suspension travel is not required — it persists with front suspension experimentally constrained near settled length;
+- positive vs negative mechanical trail has the expected opposite effect on stability;
+- increasing positive trail improves straight stability monotonically in sensitivity runs, but no tested angle/value is accepted;
+- rack-side width affects stability less strongly in the tested range and remains open.
 
-Capture only telemetry already available or minimal instrumentation required to identify a cause. Do not build a new telemetry framework unless a concrete question requires it.
+## Next research steps
 
-## Selection rule for the next implementation
+1. Express steering-axis tests in physical contact terms: mechanical trail / scrub at the ground from an axis constrained to pass through WheelCenter. Avoid treating historical caster/KPI degrees as targets.
+2. Characterize straight-state stability over speed, not one final yaw number. Record onset speed / rack growth / steering-angle growth.
+3. Check whether a plausible positive-trail region also preserves steering release/back-drive instead of merely resisting motion.
+4. Keep rack-side anchor as an independent hypothesis and test only enough sensitivity to determine whether it changes the mechanism class; do not tune it to a green result.
+5. If the legacy rolling-sphere backend needs extreme mechanical trail or artificial damping to stay stable, classify `CONTACT_BACKEND_LIMIT` and evaluate the already-allowed bounded `b3Wheel`/contact research lane instead of adding hidden steering assist.
+6. Only when one mechanism passes headless active-symmetry + hands-off gates, package an owner-playable A/B build. Product branch physics remains unchanged until then.
 
-A candidate fix is eligible only if it is both:
+## Required falsifiers
 
-- visibly/physically important in real play; and
-- substantially independent of the deferred rig geometry.
+Reject a candidate if any of these occur:
 
-Examples of potentially safe domains: input/control response, camera/reset UX, runtime/browser stability/performance, clearly isolated drive/brake/contact defects, or diagnostic observability. Steering/suspension tuning that depends on current hardpoints is not automatically safe.
+- larger steering angle stays on one physical side instead of swapping inner/outer;
+- mirrored commands produce materially asymmetric speed/yaw without a demonstrated physical cause;
+- release requires servo-to-zero, hidden centering spring or arbitrary large friction;
+- contact loads cannot back-drive rack;
+- straight instability remains a growing mode in the representative driving range;
+- stability depends on the deferred visual rig mating or guessed wishbone offsets;
+- a parameter is justified only because M5/M6/latest native used it.
 
-Return with one of:
+## Return states
 
-`NEXT_SLICE_SELECTED` — one bounded rig-independent improvement is supported by in-game evidence;
+`OWNER_AB_READY` — one coherent steering candidate passes causal headless gates and is ready for owner A/B driving.
 
-`RIG_SENSITIVE_BLOCKER` — the dominant problem cannot be separated from deferred rigging, so do not compensate for it;
+`CONTACT_BACKEND_LIMIT` — the legacy split-sphere contact model is the dominant blocker; route to bounded contact/b3Wheel research instead of compensating steering.
 
-`NO_MAJOR_DRIVING_BLOCKER` — current driving is sufficient to shift R1 effort toward browser/demo/product polish.
+`MECHANISM_REPLAN` — neither physical linkage nor another defensible mechanism can pass without unresolved rig-authoring information.
