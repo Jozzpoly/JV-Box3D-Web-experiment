@@ -2,93 +2,75 @@
 
 Updated: 2026-08-12
 Status: **ACTIVE**
-Task: **S2-GAME-01 — exact S2-N candidate into real browser/in-game owner validation**
-Mode: **PRODUCT RUNTIME GATE / NO STEERING-PHYSICS REDESIGN BEFORE PLAYTEST**
+Task: **R1-DRIVE-01 — real driving baseline and next rig-independent product slice**
+Mode: **IN-GAME EVIDENCE / RIG-SENSITIVE GEOMETRY FROZEN**
 
-## Authority and write scope
+## Write scope
 
 ```text
 repository: Jozzpoly/JV-Box3D-Web-experiment
-write branch: work/front-corner-golden-rebuild-r2
+active branch: work/front-corner-golden-rebuild-r2
 control main: 97055331a2eef8bdbf8411db243417591731e664
-S2-N accepted candidate parent: a4468042550265d10c2fa4b13b926d9227040d89
-public R0: immutable
+committed base before this checkpoint record: 8e79e69aa4912088bab453a0fb9b9b26afe9d6b0
+public R0: immutable until a later publication decision
 native JV: read only
 ```
 
-Before any write, independently resolve `main` and the work-branch tip. All writes remain fast-forward descendants of the verified work tip. Do not create another branch.
+Resolve live refs before every write. Do not create geometry fixes merely to improve the present rig appearance.
 
 ## One objective
 
-Get the actual S2-N JV-Web candidate into a real owner-playable browser/in-game session with minimal product disturbance, so subsequent engineering is selected from runtime evidence rather than another architecture assumption.
+Use the normal JV-Web Offroad runtime to identify the **single highest-value next improvement that does not depend on solving the deferred front rig/mating problem**.
 
-## Protected S2-N facts
+This is a discovery/selection slice first. Do not start from an assumed steering, suspension or M6 solution.
+
+## Protected controls
 
 Preserve:
 
-- source #6 suspension-side / non-steering role;
-- source #8 distinct steering motion relative to #6;
-- source-derived WheelCenter steering center;
-- independent wheel orientation/spin relative to #8;
-- accepted S1 FL-upper behavior.
+- S1 FL-upper accepted static/live behavior;
+- S2-N source/DOF facts;
+- S2-GAME-01 accepted broad in-game regression state;
+- S2-K direct in-game #6/#8 relative-motion checkpoint.
 
-These facts do not prescribe the future physics topology.
+Do not repeat those gates unless new evidence contradicts them.
 
-## Explicitly provisional / not owner accepted
+## Deferred / frozen for this task
 
-Do not encode as new requirements:
+Treat as `RIG-SENSITIVE / DEFERRED`:
 
-- `suspensionCarrierId` or current body count/naming;
-- 50/50 carrier/knuckle mass or inertia split;
-- current rack-to-angle law;
-- physical/non-physical tie rod choice or rack-side anchor;
-- zero bump-steer;
-- final caster/KPI/axis direction;
-- steering back-drive, self-aligning behavior, steering feel or handling.
+- FL lower wishbone placement;
+- wishbone↔knuckle visual mating/joint references;
+- ad-hoc offsets intended to keep those parts visually joined;
+- damper/cardan endpoint polish whose correctness depends on the unresolved mating geometry;
+- physical hardpoint changes made only to match the current visuals.
 
-## Known open defect
+A future dedicated rig/workbench must establish explicit owner-authored mating points/frames and motion-valid relationships.
 
-FL lower wishbone placement is owner-observed wrong and remains `OPEN / NOT ACCEPTED`.
+## Driving evidence priority
 
-Do not fix it opportunistically before the first in-game gate unless it prevents a meaningful playtest. During owner validation, keep it visible as known debt rather than asking the owner to re-approve it.
+Use the ordinary wheel-visible product and distinguish observations by cause. Prefer a small set of representative maneuvers rather than broad tuning:
 
-## Implementation preference
+1. straight launch / acceleration / braking;
+2. low-speed steering and release;
+3. moderate turn/slalom or direction reversal;
+4. rough-terrain suspension/contact event.
 
-Prefer **no physics changes** in S2-GAME-01. Reuse the existing product runtime, Offroad location, vehicle controls, camera and portable/public-preview tooling. A small launcher/evidence helper outside product code is preferred over adding a special S2 viewer or permanent debug architecture.
+Capture only telemetry already available or minimal instrumentation required to identify a cause. Do not build a new telemetry framework unless a concrete question requires it.
 
-Public Pages currently serves immutable `release/r0`; do not repoint Pages merely for this gate. A disposable local Windows/browser package is acceptable and preferred for the first playtest.
+## Selection rule for the next implementation
 
-## Automated preflight
+A candidate fix is eligible only if it is both:
 
-Before asking the owner to play:
+- visibly/physically important in real play; and
+- substantially independent of the deferred rig geometry.
 
-1. exact source/candidate identity;
-2. focused S2 source/DOF test;
-3. full available regression suite;
-4. generated owner GLB identity;
-5. portable/public-preview static/path/privacy checks where the execution environment permits them;
-6. launcher/package integrity and explicit toolchain classification.
+Examples of potentially safe domains: input/control response, camera/reset UX, runtime/browser stability/performance, clearly isolated drive/brake/contact defects, or diagnostic observability. Steering/suspension tuning that depends on current hardpoints is not automatically safe.
 
-A Linux/platform-tool failure is not a product failure. If final bundling can only be executed on the owner's Windows machine, package the exact Windows dependencies already supplied and make the owner action one-click; do not ask for manual build commands.
+Return with one of:
 
-## Owner playtest question
+`NEXT_SLICE_SELECTED` — one bounded rig-independent improvement is supported by in-game evidence;
 
-Do **not** ask whether final steering physics is correct.
+`RIG_SENSITIVE_BLOCKER` — the dominant problem cannot be separated from deferred rigging, so do not compensate for it;
 
-Ask for actual in-game observations:
-
-- does the vehicle launch and remain mechanically stable enough to drive;
-- does steering visibly/runtime behave without new catastrophic regressions;
-- does suspension motion expose any new source/DOF breakage;
-- does the known lower-arm misplacement merely remain visible or cause runtime interference/instability;
-- what behavior now most strongly limits the sense of a real JV car.
-
-Classify feedback before modifying code.
-
-## Return states
-
-`OWNER_PLAYTEST_READY` — exact runnable package is prepared; automated preflight is coherent.
-
-`REPLAN` — current candidate cannot provide meaningful in-game evidence without a substantive product change.
-
-`BLOCKED` — exact runtime bytes/dependency required for the playtest are unavailable; request only the missing artifact.
+`NO_MAJOR_DRIVING_BLOCKER` — current driving is sufficient to shift R1 effort toward browser/demo/product polish.

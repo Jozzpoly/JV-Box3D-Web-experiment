@@ -1,7 +1,7 @@
 # JV Web — active transaction handoff
 
 Updated: 2026-08-12
-Status: **S2-N OWNER ACCEPTED / WORK BRANCH ACTIVE / IN-GAME VALIDATION NEXT**
+Status: **S2-K OWNER ACCEPTED / RIG MATING DEFERRED / R1-DRIVE-01 NEXT**
 
 ## Exact boundary
 
@@ -9,58 +9,58 @@ Status: **S2-N OWNER ACCEPTED / WORK BRANCH ACTIVE / IN-GAME VALIDATION NEXT**
 private repo: Jozzpoly/JV-Box3D-Web-experiment
 main: 97055331a2eef8bdbf8411db243417591731e664
 active branch: work/front-corner-golden-rebuild-r2
-S2-N accepted candidate parent: a4468042550265d10c2fa4b13b926d9227040d89
-candidate tree: 0eb726975c84b5df4783178fa4bb72907435f416
+committed base before this checkpoint record: 8e79e69aa4912088bab453a0fb9b9b26afe9d6b0
+S2-N mechanics/source candidate: a4468042550265d10c2fa4b13b926d9227040d89
 public R0: Jozzpoly/JV-Box3D-Web-Public release/r0 @ c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-Verify live refs immediately before every write. No writes to native JV, private `main`, public R0 or Pages during S2-GAME-01.
+Verify live refs immediately before every write. Native JV remains read-only. Do not touch private `main`, public R0 or Pages without a new explicit transaction decision.
 
-## Accepted vs provisional
+## Accepted front-corner evidence
 
-S2-N owner acceptance is deliberately narrow. Preserve only:
+S2-N + S2-GAME-01 + S2-K establish only:
 
-- source #6 suspension-side / non-steering role;
-- source #8 distinct relative-steering role;
-- steering center at source-derived WheelCenter;
-- wheel orientation/spin independent of #8 structural wheel-spin;
-- accepted S1 FL-upper behavior.
+- #6 is suspension-side/non-steering;
+- #8 is separate and steers relative to #6;
+- direct in-game inspection with the FL wheel hidden confirmed that relative motion;
+- steering motion is around the expected accepted WheelCenter-centered axis/center at current precision;
+- wheel spin/orientation remains separate;
+- S1 FL-upper remains protected;
+- normal Offroad runtime showed no serious new regression at this stage.
 
-The current carrier body, body topology, 50/50 mass split, rack-to-angle law, rack anchor and absence/presence of a physical tie rod are **candidate implementation hypotheses**, not project truth.
+Do not infer final steering physics or topology from this.
 
-M5/M6/latest-native rigs are not whole-architecture authority. Use them only as mechanism-specific evidence/falsifiers where independently relevant.
+## Deferred rigging problem
 
-## Open defect that must remain open
+Owner directly observed that the present wishbone/knuckle visual assembly lacks reliable mating references through articulation. As suspension motion changes, visual parts can separate instead of remaining joined at true mechanical interfaces.
 
-Owner observed on 2026-08-12 that the FL lower wishbone is still positioned incorrectly.
+This old/core-JV-class problem is deliberately deferred:
 
 ```text
-classification: OWNER OBSERVED / OPEN / NOT ACCEPTED
+classification: OWNER OBSERVED / DEFERRED RIG-WORKBENCH DEBT
+lower wishbone static placement: OPEN / NOT ACCEPTED
+quick offset fitting: FORBIDDEN AS A SUBSTITUTE FOR RIGGING
 ```
 
-Do not silently close it through S2-N. Do not broaden into a lower-arm rebuild before in-game validation unless the defect prevents a meaningful runtime gate.
+The disposable S2-VIS-01 inspection packet was evidence tooling only. Its lower-arm lines/points were hypotheses and must not be promoted into product geometry.
 
-## Next transaction — S2-GAME-01
+## Rig-sensitive freeze
 
-Goal: move the exact S2-N candidate into **real JV-Web browser/in-game validation** with the smallest possible change surface.
+Until a dedicated owner-rigging/workbench campaign exists, do not opportunistically modify front wishbone↔knuckle endpoints, lower-arm visual mapping, or other interfaces whose correctness depends on those unresolved mating points. If another subsystem exposes the same debt, classify it rather than masking it.
 
-Preferred order:
+## Next transaction — R1-DRIVE-01
 
-1. preserve S2-N product bytes/mechanics;
-2. produce an exact runnable Windows/browser packet from the active candidate;
-3. automated preflight: focused S2 + existing product/portable checks available in the execution lane;
-4. owner playtest in actual Offroad/game runtime;
-5. classify observations separately: hard failure, geometry defect, steering-physics hypothesis, general handling/feel;
-6. only then choose the next engineering slice.
+Return to the normal wheel-visible product. Use real driving evidence to decide what currently most limits JV-Web as a believable, shareable car.
 
-The first in-game gate is discovery/regression evidence, not final steering or lower-arm acceptance.
+Prefer work that survives later rig replacement: runtime stability, input/control behavior, camera/reset/product UX, browser performance, contact/drive/brake issues that can be isolated from unresolved rig geometry, and instrumentation needed to distinguish causes.
+
+Do not tune around the current visual rig. If an observed driving problem depends materially on unresolved suspension/steering hardpoints, mark it `RIG-SENSITIVE / DEFERRED` instead of compensating for it.
 
 ## Stop conditions
 
-Stop before broadening if:
+Stop and replan before:
 
-- S2-N accepted source/DOF facts regress;
-- S1 upper regresses;
-- the lower-arm defect makes runtime mechanically unusable rather than merely visibly wrong;
-- the smallest next fix requires changing multiple independent vehicle subsystems;
-- public R0/Pages would need to be modified just to obtain the first in-game evidence.
+- reopening an already accepted S2-K fact without contradictory evidence;
+- changing rig-sensitive geometry to improve appearance in a few poses;
+- copying M5/M6/latest-native whole-rig geometry as authority;
+- promoting provisional S2 steering architecture into `main` merely because the current candidate is playable.
