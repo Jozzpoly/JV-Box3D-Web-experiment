@@ -1,23 +1,24 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-14
-Status: `FRIENDS R1 LIVE / FOUNDATION NORMALIZATION PASS 1 COMPLETE / USABILITY + MEASURED PERFORMANCE NEXT`
+Status: `FRIENDS R1 LIVE / USABILITY FOUNDATION CANDIDATE IN PROGRESS`
 
 This file is only a router. Current Git, runtime evidence and direct owner observation outrank it.
 
 ## Current product truth
 
-- accepted private source authority: current `main`;
+- accepted private source authority: `main@f8eb0908f5934aed2d504f34ce483a02754039ec`;
 - live public Friends: `release/friends-r1@7161215e47f00573b8c1b5c31e5931c89f9d709a`;
 - private source used by that live hotfix: `0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb`;
-- immutable rollback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`.
+- immutable rollback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`;
+- current non-accepted usability/foundation candidate: `work/friends-r1-usability`.
 
 Owner validated on real devices:
 
-- Plac E2R: works on desktop and phone;
-- Offroad: works and the car drives over terrain;
-- full JSPREV2 scan: works on desktop and phone after the Pages/CDN transport-length fix;
-- phone scan: noticeably slow/heavy but still usable at low speed;
+- Plac E2R works on desktop and phone;
+- Offroad works and the car drives over terrain;
+- full JSPREV2 scan works on desktop and phone after the Pages/CDN transport-length fix;
+- phone scan is noticeably slow/heavy but still usable at low speed;
 - phone camera/framing and parts of responsive UI remain rough.
 
 ## Vehicle truth
@@ -36,15 +37,16 @@ Current full scan metrics: 7 tiles, 25 groups/textures, 1,409,687 vertices, 1,77
 
 ## Current direction
 
-Foundation normalization pass 1 is complete. Private `main` now contains the accepted Friends source line and current operating truth; the old implementer steering task is inactive.
+Foundation normalization pass 1 is complete on accepted `main`. The isolated usability candidate adds exact build identity, Debug-only frame/viewport observability and further documentation reduction without changing vehicle mechanics or scan geometry.
 
 Next slices:
 
-1. release/cache/build observability;
-2. mobile camera/framing + responsive controls;
-3. targeted performance measurement;
-4. simple scan memory/culling/draw/texture wins before advanced LOD;
-5. later consume authored rig outputs from JURE;
-6. revisit final steering/feel only from improved rig evidence.
+1. canonically build enough owner-visible usability work to justify one device test;
+2. use the new Debug readouts to measure desktop/phone frame time, FPS, backing resolution and DPR;
+3. tune mobile camera/framing as a separate reversible slice;
+4. improve responsive controls after camera composition is understood;
+5. choose simple measured scan wins before advanced LOD;
+6. later consume authored rig outputs from JURE;
+7. revisit final steering/feel only from improved rig evidence.
 
-Read `docs/PROJECT_STATE.md` for the current boundary. Historical campaign/handoff files are cold evidence only.
+Read `docs/PROJECT_STATE.md` for the current boundary. Historical campaigns, handoffs, ADRs and orchestration proposals are recoverable from Git history only when a specific historical question requires them.

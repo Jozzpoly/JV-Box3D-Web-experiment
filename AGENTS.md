@@ -64,7 +64,9 @@ Fresh work should normally need only:
 
 `AI_PROJECT_MEMORY.md` is a compact router, not a second project history.
 
-Historical campaign notes, old handoffs, recovery documents and archived branch evidence are cold evidence. Open them only for a named historical question. Do not create dated handoff stacks, RFC chains or parallel roadmaps for ordinary work. Update or remove stale current-state text; Git keeps history.
+Historical campaign notes, old handoffs, recovery documents, ADRs and orchestration proposals are Git history, not current documentation. Recover them only for a named historical question. Do not recreate dated handoff stacks, RFC chains or parallel roadmaps for ordinary work. Update or remove stale current-state text; Git keeps history.
+
+Technical format contracts and reproducible baselines may remain when they describe an external/executable boundary that source types alone do not communicate clearly.
 
 ## 6. Git and branch discipline
 
