@@ -198,7 +198,7 @@ A harness/operator failure is not automatically a product failure.
 
 ## 11. Public and physics boundaries
 
-Published `release/r0` is immutable. R1 must be a new artifact with exact source/artifact/rollback identity. Private scan bytes must never leak into public output.
+Published `release/r0` is immutable. R1/Friends must be a new artifact with exact source/artifact/rollback identity. Jozz has explicitly approved the Friends project scan series for public publication, including the current scan and future scans he intentionally supplies for this project; unrelated or merely discovered local scans remain private. Every public release that includes a scan must pin its exact pack identity. Do not rewrite historical source-pack privacy metadata to manufacture approval retroactively.
 
 Browser `legacy_ts_m6` is a reference browser fixture, not native JV parity/product-physics authority. Do not invent/tune final native drivetrain/suspension/tire/steering physics in TypeScript and call it JV authority.
 

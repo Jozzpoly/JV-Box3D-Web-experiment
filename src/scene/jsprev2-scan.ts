@@ -91,12 +91,34 @@ function integer(
   return value as number;
 }
 
-function assetUrl(value: unknown, label: string): string {
-  const url = nonEmptyString(value, label);
-  if (!/^\/__jv_scan__\/asset\/[1-9][0-9]*$/.test(url)) {
-    throw new Error(`${label} is outside the local scan asset boundary.`);
+function scanRootUrl(): URL {
+  return new URL("__jv_scan__/", document.baseURI);
+}
+
+function assetUrl(value: unknown, label: string, root: URL): string {
+  const relative = nonEmptyString(value, label);
+  const segments = relative.split("/");
+  if (
+    relative.startsWith("/") ||
+    relative.includes("\\") ||
+    relative.includes("?") ||
+    relative.includes("#") ||
+    /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(relative) ||
+    !/^[a-zA-Z0-9._/-]+$/.test(relative) ||
+    segments.some(
+      (segment) => segment.length === 0 || segment === "." || segment === "..",
+    )
+  ) {
+    throw new Error(`${label} is outside the scan asset boundary.`);
   }
-  return url;
+  const resolved = new URL(relative, root);
+  if (
+    resolved.origin !== root.origin ||
+    !resolved.pathname.startsWith(root.pathname)
+  ) {
+    throw new Error(`${label} is outside the scan asset boundary.`);
+  }
+  return resolved.href;
 }
 
 function canonicalFinite(value: number, label: string): number {
@@ -114,7 +136,7 @@ function assertFiniteStream(stream: Float32Array, label: string): void {
   }
 }
 
-function parseIndex(value: unknown): ScanIndex {
+function parseIndex(value: unknown, scanRoot: URL): ScanIndex {
   const source = record(value, "Local scan index");
   if (source["available"] !== true) {
     throw new Error("Local scan index is not marked available.");
@@ -161,6 +183,7 @@ function parseIndex(value: unknown): ScanIndex {
             textureUrl: assetUrl(
               group["textureUrl"],
               `tile ${tileIndex} group ${groupIndex} textureUrl`,
+              scanRoot,
             ),
             textureBytes: integer(
               group["textureBytes"],
@@ -181,6 +204,7 @@ function parseIndex(value: unknown): ScanIndex {
       const binaryUrl = assetUrl(
         tile["binaryUrl"],
         `tile ${tileIndex} binaryUrl`,
+        scanRoot,
       );
       if (tileIds.has(tileId) || binaryUrls.has(binaryUrl)) {
         throw new Error(
@@ -532,7 +556,8 @@ function translateBounds(bounds: JvBounds, origin: JvVec3): JvBounds {
 export async function loadLocalJsprev2Scan(
   signal?: AbortSignal,
 ): Promise<JvScanWorld | null> {
-  const response = await fetch("/__jv_scan__/index.json", {
+  const scanRoot = scanRootUrl();
+  const response = await fetch(new URL("index.json", scanRoot), {
     cache: "no-store",
     ...(signal === undefined ? {} : { signal }),
   });
@@ -542,7 +567,7 @@ export async function loadLocalJsprev2Scan(
   if (!response.ok) {
     throw new Error(`Local scan index failed with HTTP ${response.status}.`);
   }
-  const index = parseIndex(await response.json());
+  const index = parseIndex(await response.json(), scanRoot);
   const groups: JvIndexedMesh[] = [];
   for (const tile of index.tiles) {
     const tileResponse = await fetch(tile.binaryUrl, {

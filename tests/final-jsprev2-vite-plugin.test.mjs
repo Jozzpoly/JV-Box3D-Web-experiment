@@ -145,7 +145,8 @@ test("Vite serves one structurally validated exact 25/25 JSPREV2 pack", async ()
     assert.equal(document.triangleCount, 25);
     assert.equal(document.tiles[0].groups.length, 25);
     assert.equal(index.body.includes(root), false);
-    assert.match(document.tiles[0].binaryUrl, /^\/__jv_scan__\/asset\/\d+$/);
+    assert.match(document.tiles[0].binaryUrl, /^asset\/\d+$/);
+    assert.match(document.tiles[0].groups[0].textureUrl, /^asset\/\d+$/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

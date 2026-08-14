@@ -7,6 +7,7 @@ import {
 
 const INDEX_PATH = "/__jv_scan__/index.json";
 const ASSET_PREFIX = "/__jv_scan__/asset/";
+const DOCUMENT_ASSET_PREFIX = "asset/";
 
 function isPlainFile(filePath) {
   try {
@@ -37,7 +38,7 @@ function loadExactPack(packDirectory) {
   const expose = (filePath) => {
     const id = String(nextAssetId++);
     assets.set(id, filePath);
-    return `${ASSET_PREFIX}${id}`;
+    return `${DOCUMENT_ASSET_PREFIX}${id}`;
   };
   const tiles = inspected.tiles.map((tile) => ({
     tileId: tile.tileId,

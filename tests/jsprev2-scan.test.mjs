@@ -9,6 +9,9 @@ const VERTEX_COUNT = GROUP_COUNT * 3;
 const INDEX_COUNT = GROUP_COUNT * 3;
 const TRIANGLE_COUNT = GROUP_COUNT;
 
+const TEST_BASE_URI = "https://example.test/JV-Box3D-Web-Public/";
+globalThis.document = { baseURI: TEST_BASE_URI };
+
 function minimalTile(magic = "JSPREV2\0") {
   const descriptorBytes = GROUP_COUNT * 8;
   const groupPayloadBytes = 3 * 32 + 3 * 4;
@@ -73,13 +76,13 @@ function indexDocument(overrides = {}) {
     tiles: [
       {
         tileId: 7,
-        binaryUrl: "/__jv_scan__/asset/1",
+        binaryUrl: "asset/1",
         binaryBytes,
         vertexCount: VERTEX_COUNT,
         indexCount: INDEX_COUNT,
         triangleCount: TRIANGLE_COUNT,
         groups: Array.from({ length: GROUP_COUNT }, (_, index) => ({
-          textureUrl: `/__jv_scan__/asset/${index + 2}`,
+          textureUrl: `asset/${index + 2}`,
           textureBytes: 1,
           vertexCount: 3,
           indexCount: 3,
@@ -98,10 +101,12 @@ function indexResponse(overrides = {}) {
   });
 }
 
-test("JSPREV2 loader keeps exact render/collision metrics and canonical origin", async () => {
+test("JSPREV2 loader keeps exact render/collision metrics and resolves assets under the site base", async () => {
   const previousFetch = globalThis.fetch;
+  const requests = [];
   globalThis.fetch = async (input) => {
     const url = String(input);
+    requests.push(url);
     if (url.endsWith("/index.json")) {
       return indexResponse();
     }
@@ -129,6 +134,15 @@ test("JSPREV2 loader keeps exact render/collision metrics and canonical origin",
     assert.deepEqual(scan.origin, { x: 0, y: -2, z: 317 });
     assert.equal(Object.is(scan.origin.x, -0), false);
     assert.deepEqual([...scan.groups[0].uvs], [0, 0, 1, 0, 0.5, 1]);
+    assert.equal(
+      requests[0],
+      `${TEST_BASE_URI}__jv_scan__/index.json`,
+    );
+    assert.ok(requests.includes(`${TEST_BASE_URI}__jv_scan__/asset/1`));
+    assert.equal(
+      scan.groups[0].textureUrl,
+      `${TEST_BASE_URI}__jv_scan__/asset/2`,
+    );
   } finally {
     globalThis.fetch = previousFetch;
   }
@@ -189,6 +203,31 @@ test("JSPREV2 loader rejects per-tile aggregate metric drift", async () => {
       loadLocalJsprev2Scan(),
       /aggregate metrics disagree/,
     );
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
+test("JSPREV2 loader rejects asset references outside the site-relative scan root", async () => {
+  const previousFetch = globalThis.fetch;
+  try {
+    for (const binaryUrl of [
+      "/__jv_scan__/asset/1",
+      "../escape.bin",
+      "https://example.invalid/asset.bin",
+    ]) {
+      const document = indexDocument();
+      document.tiles[0].binaryUrl = binaryUrl;
+      globalThis.fetch = async () =>
+        new Response(JSON.stringify(document), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      await assert.rejects(
+        loadLocalJsprev2Scan(),
+        /outside the scan asset boundary/,
+      );
+    }
   } finally {
     globalThis.fetch = previousFetch;
   }
