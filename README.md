@@ -1,77 +1,93 @@
 # JV Web
 
-JV Web is the private desktop/mobile browser development line for Jozz Vehicle and the current R1 friend-demo campaign. The goal is a browser build that is useful and enjoyable to drive, investigate and show — not merely a technical demonstrator.
+JV Web is the browser product line for Jozz Vehicle: a driveable desktop/mobile build used both as an R&D surface and as the public Friends demo.
 
-The private repository is the source/development laboratory. `Jozzpoly/JV-Box3D-Web-Public` is the publication surface. Native `Jozzpoly/Box3d_FunProject` remains read-only mechanism evidence/research for this campaign unless Jozz explicitly changes scope.
+## Live Friends R1
 
-## Current R1 state
+Public site:
 
-The current line includes:
+`https://jozzpoly.github.io/JV-Box3D-Web-Public/`
 
-- the browser Box3D reference vehicle and E2R/offroad world;
-- desktop/mobile controls and chase/orbit/zoom camera support;
-- optional private LOCAL_FULL JSPREV2 loading through the dev server;
-- Jozz's authored chassis, wheels, suspension pieces, dampers and cardans;
-- deterministic owner-vehicle generation and live loading;
-- public-preview validation tooling for a later R1 Pages path;
-- an owner-accepted **temporary** coherent-front driving bridge that removes the previous left/right mismatch caused by two different steering mechanisms on the front axle.
+Current public line:
 
-Current generated owner visual package:
+- repo: `Jozzpoly/JV-Box3D-Web-Public`
+- branch: `release/friends-r1`
+- live commit: `7161215e47f00573b8c1b5c31e5931c89f9d709a`
+- rollback: immutable `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`
 
-```text
-real bindings: 59
-GLB bytes: 829936
-SHA-256: 1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc
-```
+Owner-validated on 2026-08-14:
 
-The temporary bridge is not final steering architecture. Physical steering feedback/self-align remains open, and the current wishbone<->knuckle mating plus FL lower placement remain deferred rig/workbench debt. Do not hide that debt with offsets or inherit M5/M6 geometry as current truth.
+- Plac E2R works on desktop and phone;
+- Offroad works and is driveable over terrain;
+- full public JSPREV2 scan works on desktop and phone;
+- phone scan is heavy but usable at low speed and remains an intentional stress test for now;
+- phone camera/framing and some responsive UI still need a dedicated pass.
 
-Current continuation details live in `AI_PROJECT_MEMORY.md` and `docs/HANDOFF.md`.
+The current vehicle uses an owner-accepted temporary coherent-front bridge. It is a useful product baseline, not final rig/steering/handling authority.
 
-## Public baseline
-
-Public R0 is closed and immutable:
+## Source and publication
 
 ```text
+Jozzpoly/JV-Box3D-Web-experiment
+  private source / development
+
 Jozzpoly/JV-Box3D-Web-Public
-release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+  public build artifacts / GitHub Pages
+
+Jozzpoly/Box3d_FunProject
+  native JV reference/research unless a task explicitly changes scope
 ```
 
-R0 is rollback/evidence history, not a build profile current R1 must preserve. Exact closure lives in `docs/baselines/R0_PUBLISHED_2026-08-07.md`.
-
-## Start here
-
-For a fresh agent or handoff:
-
-1. resolve current private/public refs;
-2. read `AGENTS.md`;
-3. read `AI_PROJECT_MEMORY.md`;
-4. for active work read `docs/HANDOFF.md` and `docs/IMPLEMENTER_TASK.md`;
-5. inspect only source/tests directly needed for the current question.
-
-Use `docs/PROJECT_STATE.md` for current state and `docs/OWNER_CHECKPOINTS.md` for owner-validated checkpoints. Historical evidence is not current authority by default.
+Rig authoring is moving to the separate Jozz Universal Rig Editor (JURE). JV Web should consume authored rig/frame outputs later instead of continuing to guess hardpoints or growing another temporary rig editor.
 
 ## Development
 
-Canonical toolchain:
+Canonical runtime line:
 
 ```text
 Node 24.16.0
-npm 11.13.0
+npm >=11.13.0 <12
 TypeScript 7.0.2
 Vite 8.1.5
+box3d.js 0.0.2
 ```
 
-Typical private workflow:
+Typical local start:
 
-```powershell
+```text
 npm ci
-npm run check
 npm run dev -- --host 0.0.0.0
 ```
 
-The exact toolchain contract is enforced by `package.json`, `.node-version` and `.npmrc`. Validation run under any different local toolchain must be labeled supplemental rather than canonical.
+For ordinary work, run the smallest relevant test rather than the whole suite:
 
-See `docs/DEVELOPMENT.md` and `docs/BRANCH_ROLES.md` for validation and branch lifecycle.
+```text
+npm test -- tests/<relevant>.test.mjs
+```
 
-Third-party notices are in `THIRD_PARTY_NOTICES.md`. No general public reuse license is granted.
+Use `npm run check` for broad foundation/integration checkpoints, not automatically after every tiny feature.
+
+A Friends build with a new scan requires `JOZZ_SCAN_PREVIEW_PACK` pointing at the exact approved source pack. Code-only public hotfixes can preserve the already-published exact scan.
+
+## Start here
+
+A fresh agent should read:
+
+1. `AGENTS.md`
+2. `docs/PROJECT_STATE.md`
+3. only the code/tests needed for the current task
+
+`AI_PROJECT_MEMORY.md` is a short router. `docs/ARCHITECTURE.md` is for stable boundaries. Historical recovery/campaign/handoff files are cold evidence, not default context.
+
+## Current direction
+
+Near-term order is intentionally product-led:
+
+1. finish foundation cleanup and keep private `main` equal to accepted product truth;
+2. make release/update diagnosis cheap (including visible build identity);
+3. improve phone camera/layout without changing vehicle mechanics;
+4. measure scan bottlenecks, then take the simplest high-value performance wins before considering advanced LOD;
+5. integrate better authored rig data from JURE when it is ready;
+6. only then revisit final steering/handling work from better geometry.
+
+Third-party notices are in `THIRD_PARTY_NOTICES.md`.

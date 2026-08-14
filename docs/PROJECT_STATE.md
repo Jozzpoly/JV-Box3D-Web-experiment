@@ -1,94 +1,121 @@
-# JV Web — accepted project state
+# JV Web — current project state
 
-Updated: 2026-08-13
+Updated: 2026-08-14
 Owner: Jozz
-Status: `R0 PUBLISHED / R1 ACTIVE / S2-K PROTECTED / R1-DRIVE-BRIDGE-01 OWNER ACCEPTED AS TEMPORARY INTERMEDIATE / FINAL STEERING + RIG OPEN`
+Status: `FRIENDS R1 LIVE / FOUNDATION BASELINE ACCEPTED / CLEANUP + PRODUCTIZATION NEXT`
 
-## Product / transaction boundary
+## 1. Current release
+
+Public site: `https://jozzpoly.github.io/JV-Box3D-Web-Public/`
 
 ```text
-private product authority: Jozzpoly/JV-Box3D-Web-experiment main
-main control: 97055331a2eef8bdbf8411db243417591731e664
-active R1 work branch: work/front-corner-golden-rebuild-r2
-pre-bridge checkpoint tip: 4ad9de6fd0ff3b6b9193fa2fb17b7f77e0a67785
-S2 mechanics/source base beneath bridge: a4468042550265d10c2fa4b13b926d9227040d89
-public R0: Jozzpoly/JV-Box3D-Web-Public release/r0 @ c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
-native JV: READ ONLY mechanism evidence/research, not whole-rig authority
+public repo: Jozzpoly/JV-Box3D-Web-Public
+live branch: release/friends-r1
+live commit: 7161215e47f00573b8c1b5c31e5931c89f9d709a
+live tree: 73fe33de5d0ed62953e6e1493a4d47676507c809
+public rollback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+private source used by live hotfix: 0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb
 ```
 
-`main` remains unchanged during the current work transaction. The historical word `golden` in the branch name is workflow naming only.
+The live Friends artifact contains 54 files / 114,496,451 bytes and the exact approved JSPREV2 scan. Pages has built the hotfix successfully.
 
-## Owner-accepted evidence
+## 2. Owner-validated product baseline
 
-Preserve narrowly:
+Direct owner testing on 2026-08-14 established:
 
-- S1 FL upper static placement and live articulation;
-- #6 `Socket_ChassisMount_b` is suspension-side / non-steering;
-- #8 `Socket_WheelCenter` is a distinct steerable source role relative to #6;
-- steering center remains at the accepted source-derived WheelCenter position;
-- wheel steering/orientation and wheel spin are separate;
-- S2-GAME-01 broad Offroad regression checkpoint;
-- S2-K direct in-game #6/#8 motion/axis confirmation;
-- R1-DRIVE-BRIDGE-01: owner accepts the current symmetric kinematic front only as a **temporary R1 intermediate** because straight driving and left/right steering are materially more coherent.
+### Desktop
 
-None of this accepts final steering physics, current rack->angle mapping, self-align/back-drive, final body topology, FR legacy axis/hardpoints, caster/KPI/trail, tie-rod/rack geometry or handling.
+- normal entry starts at Plac E2R;
+- vehicle loads, drives and basic camera/UI work;
+- Offroad loads and is driveable over terrain;
+- full JSPREV2 scan loads, renders and runs with live physics;
+- the Pages/CDN `Content-Length` startup failure is resolved.
 
-## Current temporary bridge
+### Phone
 
-The bridge removes the proven mixed-mechanism defect with the smallest product delta:
+- Plac E2R and Offroad work;
+- full JSPREV2 scan also loads and runs;
+- scan performance is noticeably slow/heavy, but driving remains possible at low speed;
+- portrait and landscape both render the product;
+- camera framing and responsive composition are visibly rough and need a later UX pass.
 
-- no new body/carrier/hardpoint/visual offset;
-- remove the historical FR physical steering distance joint;
-- command FR with the same provisional rack->angle mapping used by FL;
-- no physical contact->rack feedback claim;
-- visual package remains 59 real bindings / 829936 B / SHA-256 `1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc`.
+This is the first accepted end-to-end Friends foundation. Automated PASSes support it but do not replace the owner/device evidence.
 
-Residual asymmetry and driving imperfections remain open.
+## 3. Vehicle boundary
 
-## Deferred rig/workbench debt
+The current symmetric temporary front bridge remains accepted only as an R1 product intermediate:
 
-Owner directly observed:
+- straight driving and left/right steering are coherent enough to continue;
+- final steering feedback/back-drive/self-align is not accepted;
+- residual asymmetry/feel issues remain;
+- FL lower wishbone and wishbone<->knuckle mating remain unresolved;
+- no current caster/KPI/trail/tie-rod/rack geometry is final authority.
 
-- FL lower wishbone placement remains wrong;
-- current wishbone<->knuckle visuals lack trustworthy mating frames and can separate through articulation.
+Do not spend the next JV Web phase guessing those details. Authoring of reliable mating points/frames belongs in JURE.
 
-Classification: `OWNER OBSERVED / DEFERRED RIG-WORKBENCH DEBT`.
+## 4. Scan/runtime boundary
 
-Do not hide this with offsets. Do not tune future rack/tie-rod hardpoints to the old rig merely to improve visual mating or bump-steer. Future workbench/rig authoring must establish real owner-authored mating points/frames.
+Current approved Friends scan:
 
-## Authority hierarchy after reset
+```text
+preview SHA-256: aee5242a208482944666b56bcc7ddfe66cbd4e72dc9da99199fbe667bd578146
+COMPLETE.json SHA-256: a0f3bc792f0a273c18fb00117deafdec95959f8f7e9f2a0bb85af34c8c2e29fb
+tiles: 7
+groups/textures: 25 / 25
+vertices: 1,409,687
+triangles: 1,775,775
+source payload: ~111 MB
+```
 
-For each mechanism, establish authority separately. There is no whole-rig M5/M6/latest-native golden.
+The browser loader validates decoded tile body bytes and JSPREV2 structure. It intentionally ignores compressed transport `Content-Length` as a logical file-integrity signal.
 
-Use, in order appropriate to the specific claim:
+Current renderer uploads all scan groups and draws all of them every frame. There is no tile/frustum culling, streaming, mipmapped texture pipeline or scan LOD yet. The loader also keeps render geometry and builds a merged collision representation. These are optimization opportunities, not current release blockers.
 
-1. direct owner-accepted evidence;
-2. exact authored source semantics/geometry for what the asset actually authors;
-3. reproducible current Web runtime evidence;
-4. later native/recovery findings as mechanism-specific evidence or falsifiers;
-5. secondary contracts, receipts, calibration reports and tests only after revalidation.
+## 5. Current foundation task
 
-Historical M5/M6 implementations, numeric caster/KPI/kingpin values and old Web calibration are not automatically transferable.
+The next work is not another vehicle-mechanics expedition. Foundation work should make the accepted product cheap to continue:
 
-## Physical steering research status
+1. make private `main` match accepted Friends source truth;
+2. remove stale transaction/steering instructions from active docs;
+3. keep ordinary dev loops targeted and cheap;
+4. keep public release/hotfix identity easy to diagnose;
+5. keep JURE as the rig-authoring boundary rather than duplicating it here.
 
-Reproduced research establishes useful constraints, not configuration truth:
+No active implementer research task exists after this cleanup.
 
-- the former mixed FL/FR steering mechanisms caused the dominant left/right asymmetry;
-- a coherent bilateral physical front can recover active symmetry, so physical linkage itself is not falsified;
-- weakly restoring bilateral constraints at product 4 substeps showed severe solver construction-order sensitivity;
-- inherited constant 40 N rack stiction was harmful in that experimental graph;
-- steering-joint angle is not chassis-relative toe;
-- apparent scrub centering was confounded by toe preload and is rejected as a solution;
-- positive longitudinal mechanical trail through WheelCenter produced plausible speed-dependent restoring behavior in a near-neutral-toe provisional experiment;
-- the spatial physical tie-rod still produced several degrees of bump-steer because rack/suspension hardpoints remain provisional.
+## 6. Planned product phases
 
-No tested trail, caster, KPI, scrub, tie-rod length or rack anchor is accepted.
+### Phase A — foundation normalization
 
-## Current limiting problem
+Current phase. Documentation/workflow/main integration only; do not change vehicle feel or scan rendering.
 
-With the temporary bridge, broad straight/turn/brake probes no longer expose a larger catastrophic drive/contact defect than steering feedback. The clearest intentional limitation is that RATE `RELEASE` stops rack input but does not physically back-drive/self-align the rack.
+### Phase B — Friends usability
 
-The next bounded question is whether the pinned Web/Box3D boundary can provide an energy-consistent bilateral rack-translation <-> steering-coordinate coupling without guessed spatial mating points or hidden centering. If not, classify final physical steering as rig-authoring blocked rather than inventing another compensating mechanism.
+Small owner-visible slices:
 
-See `docs/HANDOFF.md` and `docs/IMPLEMENTER_TASK.md` for the active transaction.
+- visible build/release identity so cache/deploy state is obvious;
+- mobile camera/framing;
+- responsive control layout and orientation behavior;
+- clearer scan loading/startup feedback if needed.
+
+### Phase C — scan performance
+
+Measure before architecture. Start with the cheapest proven bottlenecks: memory copies, visibility/tile culling, draw workload and texture behavior. Only introduce geometric LOD/decimation/streaming when measurement shows simpler steps are insufficient.
+
+Desktop scan quality/performance is the reference. Phone scan remains available throughout optimization rather than being silently disabled.
+
+### Phase D — JURE integration
+
+Consume explicit owner-authored rig/frame data when JURE is ready. Revalidate lower suspension/mating and only then decide what physical steering geometry is justified.
+
+### Phase E — driving/physics refinement
+
+Final steering response, self-align/back-drive, handling and feel come after better rig evidence. Owner driving remains the final gate for feel.
+
+## 7. Explicitly deferred
+
+- old-build archaeology for a remembered driving feel;
+- final physical steering experiments against the provisional rig;
+- advanced mobile scan LOD before basic profiling/simple wins;
+- large documentation or process frameworks;
+- rewriting native JV or JURE from this repo.

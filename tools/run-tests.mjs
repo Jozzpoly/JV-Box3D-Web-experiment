@@ -17,10 +17,21 @@ if (compile.status !== 0) {
   process.exit(compile.status ?? 1);
 }
 
-const testFiles = (await readdir(testsDirectory, { withFileTypes: true }))
-  .filter((entry) => entry.isFile() && entry.name.endsWith(".test.mjs"))
-  .map((entry) => `tests/${entry.name}`)
-  .sort();
+const requestedTestFiles = process.argv.slice(2);
+for (const testFile of requestedTestFiles) {
+  if (!testFile.startsWith("tests/") || !testFile.endsWith(".test.mjs")) {
+    throw new Error(
+      `Focused test path must be tests/<name>.test.mjs; received ${testFile}.`,
+    );
+  }
+}
+
+const testFiles = requestedTestFiles.length > 0
+  ? requestedTestFiles
+  : (await readdir(testsDirectory, { withFileTypes: true }))
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".test.mjs"))
+      .map((entry) => `tests/${entry.name}`)
+      .sort();
 
 if (testFiles.length === 0) {
   throw new Error("No test files found.");

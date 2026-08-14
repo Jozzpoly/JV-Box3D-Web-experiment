@@ -1,253 +1,105 @@
-# JV Web — agent operating contract
+# JV Web — operating contract
 
-Updated: 2026-08-10
-Campaign: **R1 friend-demo / long-running owner-directed development**
+Updated: 2026-08-14
 Owner: Jozz
 
-This is the first operational authority for agents working in this repository. It is intentionally stable. Current Git/execution evidence and direct owner observation outrank documentation when they conflict.
+JV Web is the browser product line for Jozz Vehicle. The current product goal is simple: a public build that is useful and enjoyable to launch, drive and show on desktop and phone, while remaining a practical R&D surface for later improvements.
 
-## 1. Repository scope
+## 1. Current authority
 
-```text
-Jozzpoly/JV-Box3D-Web-experiment
-  PRIVATE SOURCE / DEVELOPMENT LAB
+- `main` is the accepted private source/product authority.
+- `Jozzpoly/JV-Box3D-Web-Public` is an artifact/publication repository, not the source of product semantics.
+- `release/r0` is immutable rollback/history.
+- `release/friends-r1` is the current live Friends Pages line.
+- Git/current source, reproducible runtime evidence and direct owner observation outrank stale documentation or historical branch names.
 
-Jozzpoly/JV-Box3D-Web-Public
-  PUBLIC ARTIFACT / GITHUB PAGES SURFACE
+Owner acceptance is always scoped. A working Friends build does not make provisional steering, rig geometry or handling final truth.
 
-Jozzpoly/Box3d_FunProject
-  NATIVE JV / READ-ONLY REFERENCE FOR THIS CAMPAIGN
-```
+## 2. Accepted Friends baseline
 
-Do not modify native JV or published R0 unless Jozz explicitly changes scope.
+Preserve unless the current task explicitly changes it:
 
-## 2. Owner goal
+- default start: Plac E2R;
+- Offroad is available and driveable;
+- full approved JSPREV2 scan is public and selectable on desktop and phone;
+- Pages project-path/subpath delivery works;
+- current owner vehicle visual package loads and drives;
+- debug is limited and closed by default;
+- location switching by reload is acceptable for this release;
+- the temporary symmetric front/drive bridge is good enough to keep product work moving.
 
-Build a browser version that increasingly feels like a real piece of Jozz's game and is worth launching, driving, tuning and showing to friends.
+Known debt is not a blocker for this baseline:
 
-Priority is adaptive. Owner play/feel may reorder otherwise valid engineering work. Do not follow a stale roadmap merely because it is documented.
+- phone camera/framing and some responsive UI need work;
+- full scan is heavy on phone and currently acts as an intentional stress test;
+- final rig, lower wishbone/mating, steering physics/back-drive and final handling are not accepted.
 
-## 3. Evidence vocabulary
+## 3. JURE boundary
 
-Keep distinct:
+Rig authoring belongs in the separate Jozz Universal Rig Editor (JURE) line. JV Web should consume explicit authored outputs later; it should not grow another temporary rig editor or keep guessing hardpoints/frames to repair current visuals.
 
-```text
-CURRENT SOURCE FACT
-SOURCE-GATE PASS
-ARTIFACT-GATE PASS
-RUNTIME OBSERVED
-OWNER OBSERVED
-OWNER ACCEPTED
-HISTORICAL PROOF
-RECOVERED SOURCE
-HYPOTHESIS
-UNKNOWN
-PUBLISHED
-```
+Do not revive the old `R1-STEER-COUPLING-01` research task as the default next step. Final steering/rig work waits for better authored geometry unless new evidence gives a narrower reason.
 
-Never silently promote one level into another.
+## 4. Work style
 
-Evidence preference:
+Jozz defines vision, priorities and owner-visible acceptance. The agent is responsible for programming, repository work, technical analysis and release mechanics.
 
-```text
-1. current Git/current code/live runtime
-2. exact execution evidence + direct owner observation
-3. exact recovered source snapshots
-4. durable current contracts/checkpoints
-5. historical plans/handoffs
-6. interpretation/hypothesis
-```
+Do not ask Jozz to apply patches, run terminal commands or debug engineering machinery that the agent can handle. Ask for owner intervention only when it is genuinely irreplaceable: visual/feel/device judgement, an inaccessible file, or one unavoidable owner-side platform action.
 
-## 4. Accepted state vs active transaction state
+Prefer:
 
-`main` is the long-lived **accepted/integrated private product authority**.
+`small need -> small vertical slice -> smallest relevant check -> owner-visible result -> continue`
 
-A bounded `work/<topic>` branch may temporarily contain newer experimental code/evidence. That branch is **ACTIVE/FROZEN TRANSACTION STATE**, not automatically accepted product state.
+Do not build process for its own sake. Tests, manifests, scripts and documentation are tools to reach product truth; they are not product value by themselves.
 
-Owner acceptance can be narrower than a branch:
+For ordinary changes run only the checks that cover the changed risk. Full validation is for foundation/schema/toolchain changes, major integration boundaries and public releases.
 
-- accept one constraint/DOF without accepting the whole branch;
-- freeze the exact candidate/evidence;
-- integrate only when the orchestrator has an honest integration boundary.
+## 5. Documentation discipline
 
-Do not merge a work branch merely because it is newer or contains an owner-accepted subpart.
+Fresh work should normally need only:
 
-`docs/PROJECT_STATE.md` describes accepted/current project boundary.
-`docs/HANDOFF.md` describes active or frozen transaction/handoff state.
+1. `AGENTS.md`;
+2. `docs/PROJECT_STATE.md`;
+3. source/tests for the current task.
 
-## 5. Role-aware bootstrap / context control
+`AI_PROJECT_MEMORY.md` is a compact router, not a second project history.
 
-Do not preload repository history.
+Historical campaign notes, old handoffs, recovery documents and archived branch evidence are cold evidence. Open them only for a named historical question. Do not create dated handoff stacks, RFC chains or parallel roadmaps for ordinary work. Update or remove stale current-state text; Git keeps history.
 
-### Fresh orchestrator
+## 6. Git and branch discipline
 
-1. Resolve current private/public refs.
-2. Read this file.
-3. Read `AI_PROJECT_MEMORY.md`.
-4. Read `docs/HANDOFF.md`.
-5. Reconstruct accepted vs active/frozen transaction state.
-6. Load `docs/PROJECT_STATE.md`, `docs/OWNER_CHECKPOINTS.md`, campaign/source/tests only when needed to verify a named question.
+Resolve repo/ref before writes. Use normal fast-forward history; no routine force pushes.
 
-If `docs/HANDOFF.md` declares orchestrator takeover/freeze, obey its takeover gates before product writes.
+Temporary branches require a concrete isolation reason. Do not create branches per agent or conversation. Prefer integrating accepted work into `main` and retiring the transaction branch.
 
-### Bounded implementer
+Old branch names such as `golden` do not establish authority.
 
-Only if `docs/IMPLEMENTER_TASK.md` is ACTIVE:
+## 7. Release discipline
 
-1. Resolve the named work-branch tip and compare it with the **CONTROL TIP supplied by the orchestrator handoff**.
-2. Read this file.
-3. Read `docs/IMPLEMENTER_TASK.md`.
-4. Satisfy its `EXECUTION MODE` prerequisite before broad technical work.
-5. Inspect only files directly required by the one task question.
+Public releases are built artifacts from accepted private source.
 
-`docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md` is reference material; a bounded implementer need not preload it when the task is complete.
+- Never rewrite `release/r0`.
+- Code-only Friends hotfixes may carry forward the already-published exact scan.
+- A release that changes the scan must pin and validate the new exact approved scan input.
+- Do not treat HTTP transport metadata such as compressed `Content-Length` as integrity of decoded scan bytes; validate the actual downloaded payload and format.
+- Keep rollback straightforward and verify the exact public commit after publication.
 
-Do not preload `AI_PROJECT_MEMORY.md`, `docs/HANDOFF.md`, `docs/PROJECT_STATE.md`, old baselines, archived branches or old chat history unless one exact item is explicitly authorized.
+## 8. Product boundaries
 
-Do not use personal-context/chat-history recovery as ordinary implementation evidence. If accidentally exposed to such context, independently re-derive any relevant claim from allowed current evidence.
+The browser Box3D vehicle is the current Web implementation, not proof of native JV parity or final vehicle physics.
 
-If `IMPLEMENTER_TASK.md` is INACTIVE/FROZEN, **there is no implementer task**. Do not infer one from branch contents or chat history.
+Do not silently convert visual calibration, historical M5/M6 values, secondary contracts or convenience tests into mechanical authority.
 
-## 6. Remote identity — before every GitHub write
+Do not disable the phone scan merely because it is slow; measure first and optimize the real bottleneck. Do not add LOD, streaming or complex architecture before simpler evidence-backed wins are exhausted.
 
-Verify from current GitHub data:
-
-```text
-repository
-target branch
-exact 40-character tip
-exact tree
-intended operation
-```
-
-Writes must be bounded fast-forward descendants of the verified tip. Stop on unexpected movement or identity mismatch. Never force-push as routine recovery.
-
-## 7. Local execution / execution packet
-
-Canonical checkout claims require explicit repo/ref/tree/worktree identity.
-
-A bounded implementer may instead receive an exact source ZIP as an execution mirror. A GitHub Download ZIP has no `.git`; remote GitHub ref/SHA remains write authority.
-
-If a task says `SOURCE_ZIP_REQUIRED` and the source packet is missing, ask for the exact ZIP early. Do not spend long periods on private-clone, `gh`, DNS or archive workarounds.
-
-When local execution bytes are later written through GitHub, verify **candidate bytes == tested bytes** before claiming the tests for the candidate.
-
-If the exact dependency/toolchain remains unavailable, execute only what remains valid and classify results as supplemental rather than canonical.
-
-Never substitute another JV/Box3D folder.
-
-## 8. Branch lifecycle
-
-Long-lived:
-- `main`;
-- one frozen pre-cleanup archive ref;
-- explicitly retained historical/salvage refs documented in `docs/BRANCH_ROLES.md`.
-
-Temporary work branches exist only when isolation has a concrete benefit. Do not create branches per agent/conversation.
-
-Every temporary branch needs:
-- one narrow purpose;
-- exact parent/control tip;
-- acceptance/rejection condition;
-- explicit cleanup/integration/abandonment point.
-
-Exploratory history need not be copied verbatim to `main`; a clean independently verified final integration is allowed.
-
-A work branch may remain **temporarily frozen** across an orchestrator handoff when owner acceptance is only partial and its exact evidence must remain stable. Record that exception explicitly; do not turn it into a permanent development branch.
-
-Operational branch budget remains `<= 6` normal retained refs excluding the one frozen archive, plus at most one justified temporary branch. More than 8 total remote branches requires triage before new branch creation.
-
-## 9. Work slicing and owner checkpoints
-
-Prefer one mechanically or visually attributable question at a time.
-
-```text
-narrow mechanism/constraint
--> automatable evidence
--> exact stable candidate
--> one focused owner observation
--> ACCEPT / PARTIAL / REJECT
--> record checkpoint
--> freeze accepted constraint
-```
-
-The unit of acceptance may be one DOF/relationship, not an entire asset/package.
-
-For geometry recovery explicitly separate:
-
-```text
-position X/Y/Z
-orientation/frame
-asset geometry/scale
-live ownership/articulation
-```
-
-Do not reopen accepted constraints merely because a downstream mechanism is still wrong.
-
-Record meaningful owner verdicts in `docs/OWNER_CHECKPOINTS.md`.
-
-## 10. Validation tiers
-
-Tier 1 — private slice: exact identity + focused checks + smallest relevant smoke.
-
-Tier 2 — owner visual/feel/device checkpoint: agent completes automatable validation; Jozz answers only the question automation cannot.
-
-Tier 3 — public release candidate: reproducible source/artifact/provenance/rollback + live Pages smoke.
-
-A harness/operator failure is not automatically a product failure.
-
-## 11. Public and physics boundaries
-
-Published `release/r0` is immutable. R1/Friends must be a new artifact with exact source/artifact/rollback identity. Jozz has explicitly approved the Friends project scan series for public publication, including the current scan and future scans he intentionally supplies for this project; unrelated or merely discovered local scans remain private. Every public release that includes a scan must pin its exact pack identity. Do not rewrite historical source-pack privacy metadata to manufacture approval retroactively.
-
-Browser `legacy_ts_m6` is a reference browser fixture, not native JV parity/product-physics authority. Do not invent/tune final native drivetrain/suspension/tire/steering physics in TypeScript and call it JV authority.
-
-## 12. Context-control documents
-
-One purpose per document:
-
-- `AGENTS.md` — stable operating constitution;
-- `AI_PROJECT_MEMORY.md` — short router;
-- `docs/PROJECT_STATE.md` — accepted/current project boundary;
-- `docs/HANDOFF.md` — active/frozen orchestrator transaction checkpoint;
-- `docs/OWNER_CHECKPOINTS.md` — durable owner verdict ledger;
-- `docs/IMPLEMENTER_TASK.md` — one ACTIVE task or explicit INACTIVE/FROZEN state;
-- `docs/ORCHESTRATOR_IMPLEMENTER_PROTOCOL.md` — stable split-execution protocol;
-- `docs/OWNER_VEHICLE_RECOVERY_CAMPAIGN.md` — campaign dependency/evidence contract;
-- `docs/baselines/` + Git history — cold exact evidence.
-
-Do not create dated handoff stacks for ordinary conversation changes. Do not duplicate chronological narratives across current-state documents.
-
-## 13. Context health / orchestrator migration
-
-Do not wait for context failure.
-
-Migration is recommended when old hypotheses begin competing with current truth, repeated recap becomes necessary, or a new subsystem would require broad archaeology.
-
-At a safe transaction boundary:
-
-1. stop new implementation;
-2. freeze exact work/candidate refs;
-3. record latest owner verdict and negative memory;
-4. set `IMPLEMENTER_TASK.md` INACTIVE;
-5. compact `HANDOFF.md` to current semantic truth;
-6. start a fresh orchestrator with no product writes;
-7. validate state reconstruction and first task packet before handing over control.
-
-Conversation continuity is expendable. Exact Git/evidence continuity is not.
-
-## 14. Stop conditions
+## 9. Stop conditions
 
 Stop and investigate when:
 
-- public R0 would be modified in place;
-- private assets may leak public;
-- native/product authority is claimed without evidence;
-- accepted owner-visible constraints would change outside declared scope;
-- release identity/rollback is not exact;
-- a historical branch is being wholesale-merged because it has more code;
-- validation/documentation machinery expands without proportional product value;
-- Jozz is asked to perform technical work the agent can do;
-- an active task grows too broad for attributable owner feedback;
-- an implementer tries to continue while `IMPLEMENTER_TASK.md` is INACTIVE;
-- a fresh orchestrator cannot reconstruct accepted vs frozen transaction state without old-chat archaeology.
+- a write would modify the wrong repo/ref or overwrite rollback history;
+- a change would alter an owner-accepted visible behavior outside declared scope;
+- a task starts rebuilding rig/steering assumptions that JURE is intended to author;
+- validation/documentation machinery grows faster than product value;
+- a release artifact cannot be tied to exact source and rollback;
+- third-party licensing/provenance is unclear;
+- the agent is about to push routine programming work onto Jozz.
