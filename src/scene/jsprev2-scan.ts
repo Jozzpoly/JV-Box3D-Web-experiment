@@ -577,12 +577,6 @@ export async function loadLocalJsprev2Scan(
     if (!tileResponse.ok) {
       throw new Error(`Scan tile failed with HTTP ${tileResponse.status}.`);
     }
-    const contentLength = tileResponse.headers.get("content-length");
-    if (contentLength !== null && Number(contentLength) !== tile.binaryBytes) {
-      throw new Error(
-        `Scan tile ${tile.tileId} HTTP bytes ${contentLength} != ${tile.binaryBytes}.`,
-      );
-    }
     groups.push(...parseTile(await tileResponse.arrayBuffer(), tile));
   }
 
