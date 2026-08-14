@@ -1,4 +1,5 @@
 import type {
+  JvBounds,
   JvColor,
   JvIndexedMesh,
   JvQuat,
@@ -7,9 +8,17 @@ import type {
   JvWorldData,
 } from "../scene/jv-world-contract.js";
 import {
+  calculateJvMeshBounds,
+  isJvBoundsVisibleInClipSpace,
+} from "./jv-frustum-culling.js";
+import {
   splitJvIndexedMeshForUint16,
   type JvUint16MeshChunk,
 } from "./jv-mesh-chunker.js";
+import {
+  clearJvScanRenderStats,
+  publishJvScanRenderStats,
+} from "./jv-scan-render-stats.js";
 
 export type JvRenderMatrix = Float32Array;
 
@@ -38,6 +47,7 @@ type GpuGroup = Readonly<{
   color: JvColor;
   meshes: readonly GpuMesh[];
   texture: WebGLTexture | null;
+  bounds: JvBounds | null;
 }>;
 
 type ProgramLocations = Readonly<{
@@ -537,6 +547,7 @@ export class JvWorldRendererMobile {
   readonly #staticGroups: GpuGroup[] = [];
   readonly #scanGroups: GpuGroup[] = [];
   readonly #pendingImages = new Set<HTMLImageElement>();
+  readonly #scanDrawCallBudget: number;
   #solid: ProgramLocations | null = null;
   #textured: ProgramLocations | null = null;
   #offroad: GpuGroup | null = null;
@@ -564,7 +575,7 @@ export class JvWorldRendererMobile {
       this.#offroad = this.#uploadGroup(world.offroad);
       if (world.scan !== null) {
         for (const source of world.scan.groups) {
-          this.#scanGroups.push(this.#uploadGroup(source));
+          this.#scanGroups.push(this.#uploadGroup(source, true));
         }
       }
     } catch (error: unknown) {
@@ -572,6 +583,10 @@ export class JvWorldRendererMobile {
       this.#disposed = true;
       throw error;
     }
+    this.#scanDrawCallBudget = this.#scanGroups.reduce(
+      (sum, group) => sum + group.meshes.length,
+      0,
+    );
   }
 
   get drawCallBudget(): number {
@@ -591,16 +606,35 @@ export class JvWorldRendererMobile {
     if (this.#offroad !== null) {
       this.#drawGroup(this.#offroad, viewProjection, IDENTITY_MODEL);
     }
+
+    let visibleScanGroups = 0;
+    let visibleScanDrawCalls = 0;
     if (this.#world.scan !== null) {
       const scanModel = modelMatrix(
         this.#world.scan.origin,
         IDENTITY_ROTATION,
         IDENTITY_SCALE,
       );
+      const clipFromScanLocal = multiply(viewProjection, scanModel);
       for (const group of this.#scanGroups) {
+        if (
+          group.bounds !== null &&
+          !isJvBoundsVisibleInClipSpace(group.bounds, clipFromScanLocal)
+        ) {
+          continue;
+        }
+        visibleScanGroups += 1;
+        visibleScanDrawCalls += group.meshes.length;
         this.#drawGroup(group, viewProjection, scanModel);
       }
     }
+    publishJvScanRenderStats(
+      this.#gl.canvas,
+      visibleScanGroups,
+      this.#scanGroups.length,
+      visibleScanDrawCalls,
+      this.#scanDrawCallBudget,
+    );
   }
 
   dispose(): void {
@@ -608,10 +642,14 @@ export class JvWorldRendererMobile {
       return;
     }
     this.#disposed = true;
+    clearJvScanRenderStats(this.#gl.canvas);
     this.#releaseResources();
   }
 
-  #uploadGroup(source: JvIndexedMesh): GpuGroup {
+  #uploadGroup(source: JvIndexedMesh, captureBounds = false): GpuGroup {
+    const bounds = captureBounds
+      ? calculateJvMeshBounds(source.positions)
+      : null;
     const meshes: GpuMesh[] = [];
     let texture: WebGLTexture | null = null;
     try {
@@ -624,7 +662,7 @@ export class JvWorldRendererMobile {
         }
         texture = this.#createTexture(source.textureUrl);
       }
-      return { color: source.color, meshes, texture };
+      return { color: source.color, meshes, texture, bounds };
     } catch (error: unknown) {
       for (const mesh of meshes) this.#deleteMesh(mesh);
       if (texture !== null) this.#gl.deleteTexture(texture);

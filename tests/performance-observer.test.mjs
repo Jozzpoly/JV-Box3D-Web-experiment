@@ -37,7 +37,7 @@ test("canvas summary distinguishes effective render scale from device DPR", () =
   );
 });
 
-test("performance sampling is Debug-only and exposes real canvas resolution", async () => {
+test("performance sampling is Debug-only and exposes viewport plus scan visibility", async () => {
   const [entry, observer] = await Promise.all([
     readFile(path.resolve(root, "src/product-main.ts"), "utf8"),
     readFile(path.resolve(root, "src/runtime/performance-observer.ts"), "utf8"),
@@ -54,4 +54,7 @@ test("performance sampling is Debug-only and exposes real canvas resolution", as
   assert.match(observer, /canvas\.clientHeight/);
   assert.match(observer, /render \$\{renderScale\}×/);
   assert.match(observer, /device DPR/);
+  assert.match(observer, /readJvScanRenderStats\(canvas\)/);
+  assert.match(observer, /scan \$\{scan\.visibleGroups\}\/\$\{scan\.totalGroups\} groups/);
+  assert.match(observer, /\$\{scan\.visibleDrawCalls\}\/\$\{scan\.totalDrawCalls\} draws/);
 });

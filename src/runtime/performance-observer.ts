@@ -1,3 +1,5 @@
+import { readJvScanRenderStats } from "../render/jv-scan-render-stats.js";
+
 export interface JvFrameWindowSummary {
   readonly frameMs: number;
   readonly fps: number;
@@ -112,10 +114,15 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
           ? "?"
           : ((resolution.renderScaleX + resolution.renderScaleY) / 2)
               .toFixed(2);
+        const scan = readJvScanRenderStats(canvas);
+        const scanText = scan === null || scan.totalGroups === 0
+          ? ""
+          : ` · scan ${scan.visibleGroups}/${scan.totalGroups} groups · ` +
+            `${scan.visibleDrawCalls}/${scan.totalDrawCalls} draws`;
         value.textContent =
           `${summary.frameMs.toFixed(1)} ms · ${summary.fps.toFixed(0)} fps · ` +
           `${canvas.width}×${canvas.height} · render ${renderScale}× · ` +
-          `device DPR ${devicePixelRatio.toFixed(2)}`;
+          `device DPR ${devicePixelRatio.toFixed(2)}${scanText}`;
       }
       elapsedMs = 0;
       frameCount = 0;
