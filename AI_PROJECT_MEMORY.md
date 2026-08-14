@@ -1,105 +1,94 @@
 # AI project memory — JV Web
 
-Updated: 2026-08-12
-Status: `R1 ACTIVE / S2-K OWNER ACCEPTED / RIG MATING DEFERRED / INTERRUPTION RECOVERED / R1-DRIVE-BRIDGE-01 OWNER GATE NEXT`
+Updated: 2026-08-13
+Status: `R1 ACTIVE / S2-K PROTECTED / R1-DRIVE-BRIDGE-01 OWNER ACCEPTED AS TEMPORARY INTERMEDIATE / RIG MATING DEFERRED / FINAL STEERING OPEN`
 Owner: Jozz
 
-Current Git, exact authored source, reproducible execution evidence and direct owner observation outrank documentation and historical M5/M6 rigs.
+Current Git, exact authored source, reproducible execution evidence and direct owner observation outrank documentation, historical M5/M6 rigs and legacy naming.
 
 ## Transaction boundary
 
 ```text
-private main: 97055331a2eef8bdbf8411db243417591731e664
-active research branch: work/front-corner-golden-rebuild-r2
-pre-recovery docs tip: 9dc319c6f5811d18354923fafec2c14246ee801f
-S2 mechanics/source candidate below docs checkpoints: a4468042550265d10c2fa4b13b926d9227040d89
+private main control: 97055331a2eef8bdbf8411db243417591731e664
+active work branch: work/front-corner-golden-rebuild-r2
+pre-bridge-integration work tip: 4ad9de6fd0ff3b6b9193fa2fb17b7f77e0a67785
+S2 mechanics/source base beneath the temporary bridge: a4468042550265d10c2fa4b13b926d9227040d89
 public R0: c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44 — immutable
-native JV: READ ONLY
+native JV: READ ONLY research/evidence source, never whole-rig golden authority
 ```
 
-No R1 steering experiment has been committed as product physics. `main` remains unchanged.
+Do not infer product authority from the historical `golden` wording in the work-branch name or retained compatibility identifiers.
 
-## Protected owner evidence
+## Owner-accepted evidence — narrow and durable
 
-Preserve only:
+Preserve only what the owner actually validated:
 
-- S1 FL-upper static + live articulation;
+- S1 FL upper static placement and live articulation;
 - #6 `Socket_ChassisMount_b` = suspension-side / non-steering source role;
 - #8 `Socket_WheelCenter` = distinct steerable source role relative to #6;
-- steering center at the accepted source-derived WheelCenter position;
-- wheel spin/orientation separate from structural #8 spin;
+- steering center remains at the accepted source-derived WheelCenter position;
+- wheel steering/orientation and wheel spin remain separate from structural #8 spin;
 - S2-GAME-01 broad Offroad checkpoint;
-- S2-K direct in-game #6/#8 motion/axis confirmation.
+- S2-K direct in-game confirmation of #6/#8 relative motion around the expected WheelCenter-centered axis;
+- R1-DRIVE-BRIDGE-01 owner verdict: as a **temporary R1 intermediate**, the car now drives straight and steers much more coherently left/right; the previous two-mechanism front-axle defect is roughly resolved enough to continue.
 
-None of this accepts final body topology, rack law, tie rod, rack anchor, caster/KPI/trail, mass split, self-align or handling.
+The bridge acceptance does **not** accept final steering physics, the current rack->angle map, self-align/back-drive, carrier/body topology, FR legacy axis/hardpoints, caster/KPI/trail, tie-rod geometry, mass split or handling.
+
+Residual asymmetry and imperfections remain owner-observed.
+
+## Temporary bridge — current implementation status
+
+`R1-DRIVE-BRIDGE-01` is intentionally provisional:
+
+- no new body/carrier/hardpoint/visual offset;
+- historical FR physical steering distance joint removed;
+- both front wheels receive the same provisional rack->angle command using existing coordinates;
+- no physical `contact -> steering -> rack` back-drive;
+- RATE `RELEASE` stops rack input; it does not self-center;
+- visual package remains the owner-accepted S2-K geometry: 59 real bindings / 829936 B / SHA-256 `1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc`.
+
+This is a product bridge, not a steering architecture.
 
 ## Deferred rig/workbench debt
 
-Owner confirmed that current wishbone↔knuckle visuals lack trustworthy mating frames through articulation and FL lower placement is still wrong.
+Owner-observed and still deferred:
 
-Classification: `OWNER OBSERVED / DEFERRED RIG-WORKBENCH DEBT`.
+- FL lower wishbone placement is wrong;
+- current wishbone<->knuckle visuals lack trustworthy mating frames through articulation and can separate in motion;
+- do not mask this with offsets;
+- do not tune rack/tie-rod hardpoints to the old rig merely to make bump-steer or visual mating look better.
 
-Do not hide it with offsets or tune physical steering hardpoints to make this old rig look joined. Future rig/workbench authoring must establish real mating points/frames.
+Future rig/workbench authoring should establish real owner-authored mating points/frames.
 
-## Interruption recovery audit
+## Physical-steering research — reproduced findings, not product truth
 
-The 2026-08-12 connection loss did not leave hidden product physics on GitHub, but work did continue invisibly for a period:
+Keep these as research evidence with their scope:
 
-- one accidental docs-only commit `1f354eeb...` (`TEMP`) created a scratch file saying it should not exist;
-- `9dc319c6...` removed that scratch file and wrote research notes;
-- a local background sweep also continued after UI visibility was lost; it was found and killed;
-- no hidden/background process remains;
-- recovery did not trust those results: key experiments were rebuilt from the clean mechanics baseline and rerun independently.
+- mixed FL one-way steering + FR physical linkage was causal for the large left/right asymmetry;
+- a coherent symmetric physical front can recover active left/right symmetry, so bilateral linkage itself is not falsified;
+- a weakly restoring bilateral graph at product 4 substeps showed severe solver-order sensitivity; reversing only FL/FR constraint construction reversed the runaway direction;
+- inherited constant `rackFrictionBase = 40 N` blocked useful return in that physical experiment; this is context-specific evidence, not a universal new value;
+- steering-joint angle is not chassis-relative toe/heading;
+- apparent scrub centering was contaminated by toe preload and is rejected as a solution;
+- with near-neutral actual toe, positive longitudinal mechanical trail through WheelCenter produced plausible speed-dependent return in the provisional physical experiment; no tested trail/caster value is accepted;
+- the same physical spatial-link experiment still produced several degrees of bump-steer across representative suspension travel because rack/suspension hardpoints remain provisional.
 
-Do not resume or cite abandoned sweep directories as authority.
+Therefore no physical-steering experiment is currently promotable. Historical M5/M6 or latest native values may be used only as mechanism-specific evidence/falsifiers after direct revalidation.
 
-## R1-DRIVE-01 durable discovery
+## Authority cleanup completed with bridge candidate
 
-The dominant current driving defect is the mixed front steering mechanism:
+Active code/tests/contracts must distinguish source facts from implementation hypotheses:
 
-```text
-FL = centered #6→#8 DOF + one-way rack→angle, no physical tie rod
-FR = historical one-knuckle steering + physical rack distance link
-```
+- canonical runtime names use `SourceRegistered` / `ProvisionalSteering...`; retained `Golden` exports are compatibility aliases only;
+- the front semantic contract v3 records #6 as `suspensionSide`, #8/#7-outboard as `steerableMember`, and rack-side #7 as not authored/open;
+- legacy R3 visual calibration is explicitly labeled as deferred-rig/historical current-Web mapping, not steering authority;
+- S2 tests protect source registration, #6/#8 separation, center, signed motion and independent wheel spin; they do not certify the provisional rack law as owner truth;
+- topology-count tests use the declared current topology contract rather than magic historical `29` assertions.
 
-At comparable rack lock this produced roughly ~14° FL vs ~29–30° FR in both directions and large left/right vehicle asymmetry.
+## Current limiting question
 
-Clean causal interventions established:
+The temporary bridge makes active left/right driving coherent enough to continue, but it deliberately removes physical steering feedback. Disposable post-bridge probes show the rack moves less than ~0.2 mm after `RELEASE` at lock while the car keeps turning, which is expected for the bridge and is now the clearest remaining steering/feel limitation.
 
-- equal kinematic rack→angle on both front wheels nearly removes the asymmetry;
-- a coherent symmetric physical front also recovers active left/right symmetry and swaps the larger inner-wheel angle with direction;
-- therefore the mixed mechanism is causal; physical bilateral linkage itself is not falsified.
+A physical spatial tie rod cannot be honestly tuned further against the deferred rig. The next bounded research question is therefore whether an energy-consistent **bilateral rack-translation <-> steering-coordinate coupling** can be implemented without guessed spatial mating hardpoints or hidden centering. This is a hypothesis to falsify, not the next architecture.
 
-## Physical steering research — corrected state
-
-A clean symmetric physical front revealed important constraints:
-
-- vertical/weakly restoring steering at product `4 substeps` has severe solver-order sensitivity: reversing only FL/FR joint construction order reverses spontaneous straight-line steering (~+33° ↔ -33° yaw); 8/16 substeps reduce the runaway strongly;
-- the inherited constant `rackFrictionBase = 40 N` can arrest natural return and is not protected authority; load-dependent tie-rod friction is much less harmful;
-- `steeringJointAngle` is not the same thing as actual chassis-relative toe/heading; previous interpretations that conflated them are rejected;
-- scrub looked artificially effective when the provisional tie-rod length carried non-zero toe preload; near-neutral actual toe removed that apparent solution;
-- with near-neutral actual toe, a positive longitudinal mechanical-trail experiment through the accepted WheelCenter gives physically plausible speed-dependent return and suppresses solver-order runaway. No tested trail value is accepted as final geometry.
-
-The strongest physical candidate is still **not promotable** because its spatial tie-rod/rack geometry produces several degrees of bump-steer through representative suspension travel. Fixing that by tuning rack anchors to the current old suspension hardpoints would violate the deferred rig/workbench boundary.
-
-Box3D.js 0.0.2 exposes no solver-native gear/rack-pinion coordinate joint that directly replaces the spatial tie rod while retaining bilateral back-drive. A future physical solution therefore needs correct rig/rack geometry or a separately designed generalized bilateral coupling.
-
-## Active owner candidate — temporary bridge only
-
-`R1-DRIVE-BRIDGE-01` is a disposable, uncommitted product candidate built from the clean S2 mechanics baseline:
-
-- no new body/carrier/hardpoint/visual offset;
-- removes only the historical FR physical tie-rod joint;
-- FR receives the same provisional rack→angle command as FL through its existing twist DOFs;
-- no contact→rack back-drive or final FR-axis claim;
-- normal owner GLB remains byte-identical: 829936 B, SHA-256 `1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc`;
-- supplemental full suite after boundary-test cleanup: 326/326 PASS;
-- mirrored driving probe at 0.30 throttle: about `-41.34° / +41.44°` final yaw with four contacts; straight drift ~`-0.76°`.
-
-This bridge exists to keep R1 moving while final physical steering remains an explicit research/workbench problem. Do not infer final steering architecture from it.
-
-## Next operation
-
-Run the owner in-game gate for `R1-DRIVE-BRIDGE-01`. Judge whether the car now behaves coherently left vs right. Do not ask the owner to approve final self-align/back-drive or deferred rig geometry.
-
-Only after owner evidence decide whether the temporary bridge is worth committing/integrating as an R1 intermediate. Physical steering remains a separate unresolved lane.
+If that cannot be done cleanly with the pinned Box3D/Web boundary, classify final physical steering as rig-authoring blocked and move R1 product work forward without disguising the limitation.

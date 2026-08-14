@@ -4,15 +4,15 @@ import { readFile } from "node:fs/promises";
 import Box3D from "box3d.js/inline";
 import { inspectBlockbenchRigidPartsV1 } from "../tools/owner-vehicle/blockbench-gltf-rigid-parts.mjs";
 import {
-  deriveFrontLeftGoldenReferencesS2,
+  deriveFrontLeftSourceReferencesS2,
 } from "../tools/owner-vehicle/owner-m6-reference-calibration-r3.mjs";
 import { buildOwnerM6FullRigPackageR3 } from "../tools/owner-vehicle/owner-m6-full-rig-package-r3.mjs";
 import { validatePinnedNativeFactoryReceiptText } from "../.test-dist/config/native-factory-receipt.js";
 import {
-  M6_FRONT_LEFT_GOLDEN_SOURCE,
+  M6_FRONT_LEFT_SOURCE_REFERENCE,
   distance3,
-  m6FrontLeftGoldenHardpoints,
-  m6FrontLeftSteeringAngleFromRack,
+  m6FrontLeftSourceRegisteredHardpoints,
+  m6FrontLeftProvisionalSteeringAngleFromRack,
 } from "../.test-dist/vehicle/m6/m6-geometry.js";
 import { M6TopologyWorld } from "../.test-dist/vehicle/m6/m6-topology-world.js";
 
@@ -44,51 +44,12 @@ function degrees(radians) {
   return (radians * 180) / Math.PI;
 }
 
-function sourceDeltaMeters(deltaBU) {
-  return {
-    x: -deltaBU[2] * 0.35,
-    y: deltaBU[1] * 0.35,
-    z: deltaBU[0] * 0.35,
-  };
-}
-
-function subtractArray(a, b) {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
-
-function rotateAboutY(vector, angle) {
-  const cosine = Math.cos(angle);
-  const sine = Math.sin(angle);
-  return {
-    x: cosine * vector.x + sine * vector.z,
-    y: vector.y,
-    z: -sine * vector.x + cosine * vector.z,
-  };
-}
-
 function quaternionAngularDeltaDegrees(a, b) {
   const dot = Math.min(
     1,
     Math.abs(a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w),
   );
   return degrees(2 * Math.acos(dot));
-}
-
-function independentRackRodResidual(config, references, rackTranslation, steeringAngle) {
-  const outboardRest = sourceDeltaMeters(
-    subtractArray(references.steeringRod.outboard, references.wheelCenter),
-  );
-  const rackRest = {
-    x: -config.wishbone.steeringArmBack,
-    y:
-      config.wishbone.lowerArmLength *
-      Math.tan((config.wishbone.restArmDroopDeg * Math.PI) / 180),
-    z: config.trackHalfWidth,
-  };
-  const restLength = distance3(outboardRest, rackRest);
-  const outboardSteered = rotateAboutY(outboardRest, steeringAngle);
-  const rackLive = { ...rackRest, z: rackRest.z + rackTranslation };
-  return distance3(outboardSteered, rackLive) - restLength;
 }
 
 async function ownerR3Inputs() {
@@ -121,7 +82,17 @@ test("S2 source authority keeps WheelCenter on the exact authored axis midpoint 
     frontText,
     "OneSided_Steering_Suspension_Rig.gltf",
   );
-  const references = deriveFrontLeftGoldenReferencesS2(extracted);
+  const references = deriveFrontLeftSourceReferencesS2(extracted);
+
+  const semanticContract = JSON.parse(
+    await readFile(`${contractRoot}/one_sided_steering_suspension.asset.json`, "utf8"),
+  );
+  assert.equal(semanticContract.source.contractVersion, 3);
+  assert.equal(semanticContract.semantics.sockets.chassisMountB.ridesBody, "suspensionSide");
+  assert.equal(semanticContract.semantics.sockets.wheelCenter.ridesBody, "steerableMember");
+  assert.equal(semanticContract.semantics.sockets.steeringRod.ridesBody, "steerableMember");
+  assert.match(semanticContract.physics.steeringRodInboardEnd, /not authored/i);
+  assert.match(references.provenance.steeringRodInboard, /NOT_OWNER_ACCEPTED/);
 
   for (let axis = 0; axis < 3; axis += 1) {
     close(
@@ -145,25 +116,25 @@ test("S2 source authority keeps WheelCenter on the exact authored axis midpoint 
   );
   close(
     sourceDelta[0],
-    M6_FRONT_LEFT_GOLDEN_SOURCE.steeringRodOutboardFromWheelCenterBU.x,
+    M6_FRONT_LEFT_SOURCE_REFERENCE.steeringRodOutboardFromWheelCenterBU.x,
     1e-12,
     "#7 rigid outboard delta x",
   );
   close(
     sourceDelta[1],
-    M6_FRONT_LEFT_GOLDEN_SOURCE.steeringRodOutboardFromWheelCenterBU.y,
+    M6_FRONT_LEFT_SOURCE_REFERENCE.steeringRodOutboardFromWheelCenterBU.y,
     1e-12,
     "#7 rigid outboard delta y",
   );
   close(
     sourceDelta[2],
-    M6_FRONT_LEFT_GOLDEN_SOURCE.steeringRodOutboardFromWheelCenterBU.z,
+    M6_FRONT_LEFT_SOURCE_REFERENCE.steeringRodOutboardFromWheelCenterBU.z,
     1e-12,
     "#7 rigid outboard delta z",
   );
 });
 
-test("S2 FL steering center and rack law are independent of rejected kingpinOffset/caster/KPI authority", () => {
+test("S2 source-registered FL center/outboard and the current provisional rack mapping do not inherit rejected kingpinOffset/caster/KPI", () => {
   const world = new M6TopologyWorld(b3, receipt);
   try {
     const config = world.config;
@@ -172,7 +143,7 @@ test("S2 FL steering center and rack law are independent of rejected kingpinOffs
       y: -config.restDrop,
       z: -config.trackHalfWidth,
     };
-    const baseline = m6FrontLeftGoldenHardpoints(config, rest);
+    const baseline = m6FrontLeftSourceRegisteredHardpoints(config, rest);
     const altered = {
       ...config,
       wishbone: {
@@ -182,7 +153,7 @@ test("S2 FL steering center and rack law are independent of rejected kingpinOffs
         kingpinInclinationDeg: 23,
       },
     };
-    const changed = m6FrontLeftGoldenHardpoints(altered, rest);
+    const changed = m6FrontLeftSourceRegisteredHardpoints(altered, rest);
 
     closePoint(baseline.steeringCenter, changed.steeringCenter, 1e-12, "steering center");
     closePoint(baseline.steeringArm, changed.steeringArm, 1e-12, "source #7 outboard");
@@ -195,21 +166,21 @@ test("S2 FL steering center and rack law are independent of rejected kingpinOffs
 
     for (const rack of [0, config.rackTravel, -config.rackTravel]) {
       close(
-        m6FrontLeftSteeringAngleFromRack(config, rack),
-        m6FrontLeftSteeringAngleFromRack(altered, rack),
+        m6FrontLeftProvisionalSteeringAngleFromRack(config, rack),
+        m6FrontLeftProvisionalSteeringAngleFromRack(altered, rack),
         1e-12,
-        `rack law ${rack}`,
+        `provisional rack mapping ${rack}`,
       );
     }
-    close(m6FrontLeftSteeringAngleFromRack(config, 0), 0, 1e-12, "neutral rack angle");
-    assert.ok(m6FrontLeftSteeringAngleFromRack(config, config.rackTravel) > 0.1);
-    assert.ok(m6FrontLeftSteeringAngleFromRack(config, -config.rackTravel) < -0.1);
+    close(m6FrontLeftProvisionalSteeringAngleFromRack(config, 0), 0, 1e-12, "neutral rack angle");
+    assert.ok(m6FrontLeftProvisionalSteeringAngleFromRack(config, config.rackTravel) > 0.1);
+    assert.ok(m6FrontLeftProvisionalSteeringAngleFromRack(config, -config.rackTravel) < -0.1);
   } finally {
     world.dispose();
   }
 });
 
-test("S2 visual package separates #6/#8 and leaves FR as the pre-S2 control", async () => {
+test("S2 visual package separates FL #6/#8 while legacy FR visual calibration remains outside this checkpoint", async () => {
   const generated = buildOwnerM6FullRigPackageR3(await ownerR3Inputs());
   const binding = (id) => {
     const value = generated.visualPackage.bindings.find(
@@ -232,12 +203,12 @@ test("S2 visual package separates #6/#8 and leaves FR as the pre-S2 control", as
     partId: "m6.fr.knuckle",
   });
   assert.equal(
-    generated.report.s2FrontLeftGolden.oldKingpinAffineAuthority,
+    generated.report.s2FrontLeftSourceRegistered.oldKingpinAffineAuthority,
     "REJECTED_FOR_FL",
   );
   assert.match(
-    generated.report.s2FrontLeftGolden.steeringLinkPhysics,
-    /CENTERED_REVOLUTE_TARGET_DERIVED_FROM_REST_SOURCE_ROD_AND_LIVE_RACK/,
+    generated.report.s2FrontLeftSourceRegistered.steeringLinkPhysics,
+    /PROVISIONAL_RACK_TO_ANGLE__NO_FINAL_BACKDRIVE_CLAIM/,
   );
   assert.equal(
     generated.report.calibration.corners.fl.knuckle["socket-chassismount-b"].affineKingpinCalibration,
@@ -265,9 +236,6 @@ test("real S2 M6 keeps neutral suspension separate from steering, steers about W
   const frontText = await readFile(
     `${sourceRoot}/OneSided_Steering_Suspension_Rig.gltf`,
     "utf8",
-  );
-  const sourceReferences = deriveFrontLeftGoldenReferencesS2(
-    inspectBlockbenchRigidPartsV1(frontText, "OneSided_Steering_Suspension_Rig.gltf"),
   );
   const world = new M6TopologyWorld(b3, receipt);
   const vehicle = world.createVehicle({ x: 0, y: 1.2, z: 0 }, 1);
@@ -319,17 +287,9 @@ test("real S2 M6 keeps neutral suspension separate from steering, steers about W
     trace = world.step(240)[0];
     let fl = trace.corners[0];
     assert.ok(degrees(fl.steeringJointAngle) > 10);
-    close(
-      independentRackRodResidual(
-        world.config,
-        sourceReferences,
-        trace.rackTranslation,
-        fl.steeringJointAngle,
-      ),
-      0,
-      1e-4,
-      "positive-lock authored #7/rack-center geometric residual",
-    );
+    // The current rack->angle mapping is a provisional implementation, not
+    // owner-accepted steering physics. This gate protects signed steering and
+    // the WheelCenter-centered relative DOF instead of certifying that law.
     assert.ok(
       distance3(fl.steeringCenterCarrierWorld, fl.steeringCenterKnuckleWorld) < 0.0025,
       "centered steering constraint exceeded 2.5 mm at positive lock",
@@ -361,23 +321,12 @@ test("real S2 M6 keeps neutral suspension separate from steering, steers about W
     trace = world.step(300)[0];
     fl = trace.corners[0];
     assert.ok(degrees(fl.steeringJointAngle) < -10);
-    close(
-      independentRackRodResidual(
-        world.config,
-        sourceReferences,
-        trace.rackTranslation,
-        fl.steeringJointAngle,
-      ),
-      0,
-      1e-4,
-      "negative-lock authored #7/rack-center geometric residual",
-    );
 
     for (let corner = 1; corner < 4; corner += 1) {
       assert.equal(
         trace.corners[corner].steeringJointAngle,
         null,
-        `corner ${corner} must remain outside S2 FL topology`,
+        `corner ${corner} remains outside the FL-only S2 steeringJointAngle trace contract`,
       );
     }
 

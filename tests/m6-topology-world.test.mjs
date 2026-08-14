@@ -131,7 +131,7 @@ test("F4 config is derived from the F3 receipt and rejects artificial assists", 
   );
 });
 
-test("one S2 M6 vehicle owns exactly 19 bodies, 29 joints and 9 shapes", () => {
+test("one M6 vehicle owns the declared topology counts", () => {
   const world = new M6TopologyWorld(b3, receiptFixture());
   try {
     const vehicle = world.createVehicle(
@@ -140,9 +140,9 @@ test("one S2 M6 vehicle owns exactly 19 bodies, 29 joints and 9 shapes", () => {
     );
     assert.deepEqual(vehicle.topologyCounts, M6_TOPOLOGY_COUNTS);
     assert.equal(vehicle.collisionGroupIndex, -1000);
-    assert.equal(world.counters.bodyCount, 20);
-    assert.equal(world.counters.shapeCount, 10);
-    assert.equal(world.counters.jointCount, 29);
+    assert.equal(world.counters.bodyCount, M6_TOPOLOGY_COUNTS.bodies + 1);
+    assert.equal(world.counters.shapeCount, M6_TOPOLOGY_COUNTS.shapes + 1);
+    assert.equal(world.counters.jointCount, M6_TOPOLOGY_COUNTS.joints);
   } finally {
     world.dispose();
   }
@@ -169,9 +169,9 @@ test("two M6 instances use unique negative groups, settle, and contact tagged te
       left.collisionGroupIndex,
       right.collisionGroupIndex,
     );
-    assert.equal(world.counters.bodyCount, 39);
-    assert.equal(world.counters.shapeCount, 19);
-    assert.equal(world.counters.jointCount, 58);
+    assert.equal(world.counters.bodyCount, 2 * M6_TOPOLOGY_COUNTS.bodies + 1);
+    assert.equal(world.counters.shapeCount, 2 * M6_TOPOLOGY_COUNTS.shapes + 1);
+    assert.equal(world.counters.jointCount, 2 * M6_TOPOLOGY_COUNTS.joints);
 
     world.step(600);
     const leftTrace = left.lastTrace;
@@ -320,7 +320,7 @@ test("destroy and rebuild releases the complete F4 world without leaked ownershi
     second.step(120);
     assert.equal(rebuilt.lastTrace?.generation, 2);
     assert.equal(second.counters.bodyCount, 20);
-    assert.equal(second.counters.jointCount, 29);
+    assert.equal(second.counters.jointCount, M6_TOPOLOGY_COUNTS.joints);
   } finally {
     second.dispose();
   }

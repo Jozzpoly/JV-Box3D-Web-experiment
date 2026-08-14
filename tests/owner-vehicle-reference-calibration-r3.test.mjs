@@ -34,7 +34,7 @@ function close(actual, expected, tolerance = 1e-12) {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`);
 }
 
-test('R3 recovers a coherent authored front suspension reference skeleton', async () => {
+test('legacy R3 visual reference extraction remains deterministic without becoming current steering authority', async () => {
   const { config, references } = await fixture();
   assert.deepEqual(references.upperHinge, [0.40625, 0.96875, 0]);
   assert.deepEqual(references.lowerHinge, [0.40625, 0.03125, 0]);
@@ -45,10 +45,7 @@ test('R3 recovers a coherent authored front suspension reference skeleton', asyn
   close(references.sanity.authoredKingpinOffsetMeters, 0.1421875);
   close(references.sanity.authoredUpperArmLengthBU, 1.1875);
   close(references.sanity.authoredLowerArmLengthBU, 1.1875);
-  assert.ok(
-    Math.abs(references.sanity.authoredKingpinOffsetMeters - config.wishbone.kingpinOffset) < 0.003,
-    'authored kingpin offset should independently agree with M6 within 3 mm',
-  );
+  assert.match(references.sanity.legacyOffsetInterpretation, /NOT_STEERING_AXIS_AUTHORITY/);
   close(OWNER_M6_R3_SCALE_METERS_PER_BU, 0.35);
 
   const wheel = inspectBlockbenchRigidSourceV1(
@@ -60,16 +57,14 @@ test('R3 recovers a coherent authored front suspension reference skeleton', asyn
     config.wheelRadius,
     config.wheelWidth,
   );
-  const mountPlaneResidual = config.wishbone.kingpinOffset - wheelCalibration.report.mountOffset;
   close(wheelCalibration.report.mountOffset, 0.13125);
-  close(mountPlaneResidual, 0.00875);
   assert.ok(
-    Math.abs(references.sanity.authoredKingpinOffsetMeters - mountPlaneResidual) > 0.13,
-    'suspension Socket_WheelCenter cannot be the wheel mount plane: it would collapse the authored kingpin offset',
+    references.sanity.authoredKingpinOffsetMeters > wheelCalibration.report.mountOffset,
+    'legacy R3 source midpoint offset and authored wheel mount-face offset must remain distinct measurements',
   );
 });
 
-test('R3 front wishbone solve anchors authored pivots to live M6 hardpoints and mirrors without side fudge', async () => {
+test('legacy R3 front wishbone visual solve remains deterministic against the current deferred-rig hardpoints', async () => {
   const { front, config, references } = await fixture();
   const upperPiece = requirePiece(front, 'Chassis_Top', 'front suspension');
   const lowerPiece = requirePiece(front, 'Chassis_Bottom', 'front suspension');
@@ -87,8 +82,8 @@ test('R3 front wishbone solve anchors authored pivots to live M6 hardpoints and 
     close(lower.report.outboardErrorMeters, 0);
     assert.equal(upper.report.mirrored, corner === 'fr');
     assert.equal(lower.report.mirrored, corner === 'fr');
-    assert.equal(upper.report.referenceAuthority.physicalTarget, 'M6_WISHBONE_HARDPOINT');
-    assert.equal(lower.report.referenceAuthority.physicalTarget, 'M6_WISHBONE_HARDPOINT');
+    assert.equal(upper.report.referenceAuthority.physicalTarget, 'CURRENT_WEB_SUSPENSION_HARDPOINT_DEFERRED_RIG_REFERENCE');
+    assert.equal(lower.report.referenceAuthority.physicalTarget, 'CURRENT_WEB_SUSPENSION_HARDPOINT_DEFERRED_RIG_REFERENCE');
   }
 
   close(reports.fl.upper.axialScale, reports.fr.upper.axialScale);
@@ -100,7 +95,7 @@ test('R3 front wishbone solve anchors authored pivots to live M6 hardpoints and 
   assert.ok(reports.fl.upper.spreadScale > 0.45 && reports.fl.upper.spreadScale < 0.46);
 });
 
-test('R3 front upright solve maps authored wheel/kingpin references to physical knuckle hardpoints without mount offset', async () => {
+test('legacy R3 upright visual solve remains deterministic against historical current-Web knuckle hardpoints', async () => {
   const { front, config, references } = await fixture();
   const uprightPiece = requirePiece(front, 'Socket_ChassisMount_b', 'front upright');
   const hubPiece = requirePiece(front, 'Socket_WheelCenter', 'front upright');
@@ -117,7 +112,7 @@ test('R3 front upright solve maps authored wheel/kingpin references to physical 
       close(result.report.upperBallErrorMeters, 0, 1e-15);
       close(result.report.lowerBallErrorMeters, 0, 1e-15);
       assert.equal(result.report.mirrored, corner === 'fr');
-      assert.equal(result.report.referenceAuthority.physicalTarget, 'M6_KNUCKLE_WHEEL_CENTER_AND_BALL_HARDPOINTS');
+      assert.equal(result.report.referenceAuthority.physicalTarget, 'CURRENT_WEB_LEGACY_KNUCKLE_WHEELCENTER_AND_BALL_HARDPOINTS_NOT_FL_AUTHORITY');
     }
   }
 

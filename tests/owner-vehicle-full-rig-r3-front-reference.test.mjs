@@ -135,8 +135,8 @@ test('R3 reference-calibrated package is deterministic and keeps R2 source autho
   assert.equal(a.visualPackage.id, 'm6-owner-full-rig-r3');
   assert.equal(a.report.schema, 'JV_WEB_OWNER_M6_FULL_RIG_R3');
   assert.deepEqual(a.report.calibrationStrategy, {
-    frontWishbones: 'FL_S2_GOLDEN_RIGID_ENDS_TO_S1_PHYSICAL_HARDPOINTS__FR_R3_CONTROL',
-    frontKnuckle: 'FL_S2_CENTERED_WHEELCENTER_EXACT_SOURCE_NO_KINGPIN_AFFINE__FR_R3_CONTROL',
+    frontWishbones: 'FL_S2_SOURCE_RIGID_ENDS_TO_CURRENT_SUSPENSION_HARDPOINTS_DEFERRED_RIG__FR_R3_LEGACY_VISUAL',
+    frontKnuckle: 'FL_S2_WHEELCENTER_SOURCE_REGISTERED_NO_KINGPIN_AFFINE__FR_R3_LEGACY_VISUAL',
     frontChassis: 'R3_AUTHORED_CHASSIS_REFERENCE_PATCH_OVER_EXACT_R2',
     frontDamper: 'VISUAL_AUTHORED_CHASSIS_TO_LOWER_ARM_PART_PAIR',
     rearWishbones: 'R3_GEOMETRY_MATING_AND_CHASSIS_FACE_REFERENCE_PATCH_OVER_EXACT_R2',
@@ -372,13 +372,13 @@ test('S1-B FL upper pilot maps its selected authored chassis and physical outboa
   close(end.z, physical.upperBall[2], 1e-6);
 });
 
-test('R3 front wishbones map authored references to physical hardpoints with one mirrored solve', async () => {
+test('current R3 visual package maps front wishbones to the explicitly deferred current-Web suspension targets', async () => {
   const result = buildOwnerM6FullRigPackageR3(await inputs());
   const corners = result.report.calibration.corners;
   for (const corner of ['fl', 'fr']) {
     for (const which of ['upper', 'lower']) {
       const arm = corners[corner].arms[which];
-      assert.equal(arm.mode, 'AUTHORED_REFERENCE_TO_PHYSICAL_HARDPOINT_R3');
+      assert.equal(arm.mode, 'LEGACY_R3_AUTHORED_REFERENCE_TO_CURRENT_WEB_SUSPENSION_HARDPOINT');
       close(arm.hingeErrorMeters, 0);
       close(arm.outboardErrorMeters, 0);
       assert.equal(arm.mirrored, corner === 'fr');
@@ -419,7 +419,7 @@ test('R3 front wishbones map authored references to physical hardpoints with one
   }
   for (const token of ['socket-chassismount-b', 'socket-wheelcenter']) {
     const knuckle = corners.fr.knuckle[token];
-    assert.equal(knuckle.mode, 'AUTHORED_UPRIGHT_REFERENCE_TO_PHYSICAL_KNUCKLE_R3');
+    assert.equal(knuckle.mode, 'LEGACY_R3_AUTHORED_UPRIGHT_REFERENCE_TO_CURRENT_WEB_KNUCKLE');
     close(knuckle.wheelCenterErrorMeters, 0);
     close(knuckle.upperBallErrorMeters, 0, 1e-15);
     close(knuckle.lowerBallErrorMeters, 0, 1e-15);

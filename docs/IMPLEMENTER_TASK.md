@@ -1,60 +1,72 @@
 # JV Web — implementer task
 
-Updated: 2026-08-12
+Updated: 2026-08-13
 Status: **ACTIVE**
-Task: **R1-DRIVE-BRIDGE-01 — owner in-game gate for temporary coherent front**
-Mode: **DISPOSABLE PRODUCT CANDIDATE / NO FINAL STEERING CLAIM**
+Task: **R1-STEER-COUPLING-01 — bounded bilateral coordinate-coupling feasibility**
+Mode: **DISPOSABLE CAUSAL RESEARCH / TEMPORARY BRIDGE PROTECTED**
 
-## Write scope
+## Transaction boundary
 
 ```text
 repository: Jozzpoly/JV-Box3D-Web-experiment
 active branch: work/front-corner-golden-rebuild-r2
-control main: 97055331a2eef8bdbf8411db243417591731e664
-S2 mechanics/source base: a4468042550265d10c2fa4b13b926d9227040d89
+main control: 97055331a2eef8bdbf8411db243417591731e664
+bridge integration parent: 4ad9de6fd0ff3b6b9193fa2fb17b7f77e0a67785
 public R0: immutable
-native JV: READ ONLY
+native JV: READ ONLY evidence/research
 ```
 
-Resolve refs before every write. Do not commit the temporary bridge until owner in-game evidence exists.
+The owner accepted `R1-DRIVE-BRIDGE-01` only as a temporary R1 intermediate. Preserve it as the product baseline while this task runs in disposable workspaces.
 
 ## Why this task exists
 
-R1-DRIVE-01 proved that the product candidate mixes two different front steering mechanisms and this causes the dominant left/right driving asymmetry.
+The bridge fixed the dominant two-mechanism front-axle asymmetry well enough for R1, but intentionally removes physical rack back-drive. Post-bridge probes confirm that after RATE `RELEASE` at steering lock the rack stays effectively fixed while the car continues turning.
 
-A coherent physical linkage remains promising but cannot be honestly promoted yet: its spatial tie-rod/rack geometry depends on provisional suspension/rack hardpoints and currently produces several degrees of bump-steer. Do not tune those anchors around the deferred old rig.
+The strongest spatial physical-link experiment is not promotable because its bump-steer depends on provisional rack/suspension hardpoints that belong to deferred rig/workbench debt. Do not tune those points.
 
-## Candidate under test
+## One question
 
-`TEMPORARY_SYMMETRIC_KINEMATIC_FRONT`:
+Can an energy-consistent bilateral relation between rack translation and steering rotation be expressed with the exact pinned Web/Box3D API **without**:
 
-- preserve accepted FL S2-K mechanism/source behavior;
-- remove only FR historical physical tie-rod joint;
-- use the same provisional rack→angle command on FR through its existing twist DOFs;
-- do not add a carrier/body/hardpoint or visual offset;
-- no physical contact→rack back-drive claim;
-- no self-align claim;
-- no FR-axis/hardpoint acceptance;
-- deferred wishbone↔knuckle rig debt remains untouched.
+- guessed spatial tie-rod/rack mating points;
+- hidden centering target or servo-to-zero;
+- one-way mapped forces pretending to be a constraint;
+- dependency on the deferred wishbone<->knuckle visual rig;
+- importing M5/M6/latest-native geometry as authority?
 
-## Automated gate already achieved in supplemental lane
+This is mechanism feasibility, not selection of a future architecture.
 
-- TypeScript compile: PASS;
-- full suite after correcting stale boundary assertions: 326/326 PASS;
-- straight 0.30-throttle probe: ~-0.76° final yaw, 4 contacts;
-- mirrored active probe: ~-41.34° / +41.44° final yaw, nearly equal peak speed;
-- owner GLB remains byte-identical to S2-K: 829936 B / `1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc`.
+## Protected controls
 
-## Owner question
+Every experiment must preserve:
 
-Drive normal Offroad. Judge whether left/right steering response now feels coherent enough for an R1 intermediate.
+- owner-accepted WheelCenter steering center;
+- #6 suspension-side / #8 steerable separation on FL;
+- independent wheel spin;
+- S1 FL upper accepted behavior;
+- current temporary bridge as rollback/control;
+- no lower-arm/mating offset fix;
+- mirrored left/right test cases and product 4-substep baseline.
 
-Do **not** ask whether final steering physics, self-align, back-drive or rig geometry is correct. RATE steering `RELEASE` still means stop moving the rack; no hidden centering assist is added.
+## Required evidence
 
-## Return states
+Before writing any candidate physics to the branch:
 
-`BRIDGE_OWNER_ACCEPTED` — temporary coherent steering is worth integrating as an explicitly provisional R1 product step.
+1. identify the exact Box3D.js 0.0.2 primitives/API available for bilateral coordinate coupling;
+2. distinguish solver-native constraint possibilities from external force/impulse approximations;
+3. if a candidate exists, prove forward path `rack -> steering` and reverse path `contact/steering -> rack`;
+4. test construction-order sensitivity at product substeps;
+5. confirm no artificial zero-angle/rack target is required;
+6. compare suspension travel behavior without tuning spatial hardpoints;
+7. reject any candidate whose good result depends on stale M5/M6 numeric geometry.
 
-`BRIDGE_OWNER_REJECTED` — do not commit; return to mechanism/product planning with the owner observation.
+## Fast stop conditions
 
-`RIG/PHYSICS_REPLAN` — owner evidence shows that even the temporary bridge cannot provide meaningful product progress without confronting the deferred rig/physical-steering problem directly.
+Return `RIG_AUTHORING_BLOCKED` instead of extending the experiment if:
+
+- the pinned binding exposes no suitable solver constraint and a faithful custom constraint would require engine/binding work beyond a bounded slice;
+- external force mapping remains soft/order-sensitive/unstable or cannot conserve the intended bidirectional relation;
+- credible behavior requires hidden centering or hand-tuned compensation;
+- the only remaining path is a spatial linkage whose geometry must come from future owner rig/workbench authoring.
+
+If stopped, do not treat that as project failure: preserve the accepted temporary bridge and choose the next R1 product slice from the clean driving baseline.

@@ -15,7 +15,7 @@ export interface M6WishboneHardpoints {
   readonly coiloverKnuckle: b3Vec3;
 }
 
-export interface M6FrontLeftGoldenHardpoints extends M6WishboneHardpoints {
+export interface M6FrontLeftSourceRegisteredHardpoints extends M6WishboneHardpoints {
   readonly steeringCenter: b3Vec3;
   readonly steeringAxisDirection: b3Vec3;
   readonly suspensionAxisDirection: b3Vec3;
@@ -25,7 +25,7 @@ export interface M6FrontLeftGoldenHardpoints extends M6WishboneHardpoints {
 // assets/owner-vehicle/source/OneSided_Steering_Suspension_Rig.gltf.
 // Source axes are converted with the established JV vehicle placement:
 // yaw -90 degrees about Y and 0.35 meters per Blockbench unit.
-export const M6_FRONT_LEFT_GOLDEN_SOURCE = Object.freeze({
+export const M6_FRONT_LEFT_SOURCE_REFERENCE = Object.freeze({
   metersPerBlockbenchUnit: 0.35,
   // Exact native ArmEnds() outboard endpoint for source node 7.
   // It is derived from the rigid-part geometry bounds, not from the
@@ -194,7 +194,7 @@ export function m6WishboneHardpoints(
 }
 
 function frontLeftSourceDeltaMeters(sourceDeltaBU: b3Vec3): b3Vec3 {
-  const scale = M6_FRONT_LEFT_GOLDEN_SOURCE.metersPerBlockbenchUnit;
+  const scale = M6_FRONT_LEFT_SOURCE_REFERENCE.metersPerBlockbenchUnit;
   return vec3(
     -sourceDeltaBU.z * scale,
     sourceDeltaBU.y * scale,
@@ -203,29 +203,30 @@ function frontLeftSourceDeltaMeters(sourceDeltaBU: b3Vec3): b3Vec3 {
 }
 
 /**
- * S2-PORT front-left authority repair.
+ * S2 front-left source-registration repair.
  *
- * S2 deliberately preserves the already integrated suspension hardpoints.
- * Their old upper/lower line may remain a suspension-carrier constraint, but
- * it is no longer allowed to act as the steering/kingpin axis. The new
- * carrier->knuckle revolute is centered independently on authored
- * Socket_WheelCenter. Only the steering-link outboard is source-rederived in
- * this bounded transaction.
+ * This preserves the current/integrated suspension hardpoints as provisional
+ * runtime constraints while removing their old line from steering-axis
+ * authority. The separate carrier->knuckle steering DOF is centered at the
+ * authored Socket_WheelCenter and #7 outboard is source-derived.
+ *
+ * This does NOT make the current suspension hardpoints, carrier topology or
+ * rack mapping final JV architecture.
  */
-export function m6FrontLeftGoldenHardpoints(
+export function m6FrontLeftSourceRegisteredHardpoints(
   config: M6TopologyConfig,
   restWheelCenter: b3Vec3,
-): M6FrontLeftGoldenHardpoints {
+): M6FrontLeftSourceRegisteredHardpoints {
   const current = m6WishboneHardpoints(config, 0, restWheelCenter);
   const steeringArm = add3(
     restWheelCenter,
     frontLeftSourceDeltaMeters(
-      M6_FRONT_LEFT_GOLDEN_SOURCE.steeringRodOutboardFromWheelCenterBU,
+      M6_FRONT_LEFT_SOURCE_REFERENCE.steeringRodOutboardFromWheelCenterBU,
     ),
   );
   const steeringAxisDirection = normalize3(
     frontLeftSourceDeltaMeters(
-      M6_FRONT_LEFT_GOLDEN_SOURCE.steeringAxisDirectionBU,
+      M6_FRONT_LEFT_SOURCE_REFERENCE.steeringAxisDirectionBU,
     ),
   );
   const suspensionAxisDirection = normalize3(
@@ -241,7 +242,15 @@ export function m6FrontLeftGoldenHardpoints(
   };
 }
 
-export function m6FrontLeftSteeringAngleFromRack(
+/**
+ * Legacy S2 naming retained for compatibility with older tooling/tests.
+ * "Golden" here is a historical identifier only, not project authority.
+ */
+export type M6FrontLeftGoldenHardpoints = M6FrontLeftSourceRegisteredHardpoints;
+export const M6_FRONT_LEFT_GOLDEN_SOURCE = M6_FRONT_LEFT_SOURCE_REFERENCE;
+export const m6FrontLeftGoldenHardpoints = m6FrontLeftSourceRegisteredHardpoints;
+
+export function m6FrontLeftProvisionalSteeringAngleFromRack(
   config: M6TopologyConfig,
   rackTranslation: number,
 ): number {
@@ -254,15 +263,13 @@ export function m6FrontLeftSteeringAngleFromRack(
     return 0;
   }
 
-  // Source/golden steering law for the rebuilt FL corner. The real rack body
-  // remains the steering reference, but suspension travel is not allowed to
-  // back-drive the centered carrier->knuckle steering DOF. Instead, derive
-  // the angle that the authored #7 outboard would have at the REST carrier
-  // pose for the live rack translation. This is the same geometric relation
-  // as a rigid tie rod at rest, without reintroducing bump-steer as a hidden
-  // steering command during suspension articulation.
+  // Provisional S2 rack->angle mapping used by the current bridge. The rack
+  // remains the input coordinate, but this mapping is NOT owner-accepted
+  // steering physics and has no contact->rack back-drive claim. It reconstructs
+  // the rest-pose #7 geometric relation only to provide a stable temporary
+  // steering command while physical steering/rack geometry remains research.
   const outboard = frontLeftSourceDeltaMeters(
-    M6_FRONT_LEFT_GOLDEN_SOURCE.steeringRodOutboardFromWheelCenterBU,
+    M6_FRONT_LEFT_SOURCE_REFERENCE.steeringRodOutboardFromWheelCenterBU,
   );
   const rackRestFromWheelCenter = vec3(
     -config.wishbone.steeringArmBack,
@@ -303,7 +310,7 @@ export function m6FrontLeftSteeringAngleFromRack(
   }
   if (Math.sign(lowResidual) === Math.sign(highResidual)) {
     throw new Error(
-      `FL golden rack geometry has no steering root inside the accepted fence for rack=${clampedRack}.`,
+      `FL provisional rack mapping has no steering root inside the configured search fence for rack=${clampedRack}.`,
     );
   }
 
@@ -323,6 +330,10 @@ export function m6FrontLeftSteeringAngleFromRack(
   }
   return 0.5 * (low + high);
 }
+
+/** Legacy compatibility alias; the rack mapping remains provisional. */
+export const m6FrontLeftSteeringAngleFromRack =
+  m6FrontLeftProvisionalSteeringAngleFromRack;
 
 export function m6SteeringLinkDroopLift(config: M6TopologyConfig): number {
   return (

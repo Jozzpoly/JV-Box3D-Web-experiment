@@ -36,7 +36,7 @@ test('R3 structural PART geometry stays corner-local while non-S2 pairs retain e
   // a separate rest/spin orientation. This gate audits the suspension geometry
   // baked into PART-local coordinates, where exact L/R mirroring is meaningful.
   const pairs=[
-    // Both FL wishbone meshes now use the S2 golden rigid-part endpoints,
+    // Both FL wishbone meshes use S2 source-derived rigid-part endpoints;
     // while FR deliberately remains the pre-S2 R3 control. FL upper is also
     // the accepted S1 roll-pinned pair. Exact FL<->FR wishbone mirroring is
     // therefore no longer a valid source-authority lock.

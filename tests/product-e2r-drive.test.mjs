@@ -10,6 +10,7 @@ import {
   INITIAL_RATE_STEERING_PROFILE_ID,
   M6TopologyWorld,
 } from "../.test-dist/vehicle/m6/m6-topology-world.js";
+import { M6_TOPOLOGY_COUNTS } from "../.test-dist/vehicle/m6/m6-topology-contract.js";
 
 const receiptPath = new URL(
   "../public/receipts/jv_m6_factory_receipt.json",
@@ -55,9 +56,9 @@ test("accepted M6 settles, contacts and drives on the full E2R product world", (
     });
     assert.equal(worldData.boxes.length, 410);
     assert.equal(worldData.capsules.length, 147);
-    assert.equal(world.counters.bodyCount, 596);
-    assert.equal(world.counters.shapeCount, 576);
-    assert.equal(world.counters.jointCount, 58);
+    assert.equal(world.counters.bodyCount, 558 + 2 * M6_TOPOLOGY_COUNTS.bodies);
+    assert.equal(world.counters.shapeCount, 558 + 2 * M6_TOPOLOGY_COUNTS.shapes);
+    assert.equal(world.counters.jointCount, 2 * M6_TOPOLOGY_COUNTS.joints);
 
     world.step(360);
     const settled = vehicle.lastTrace;

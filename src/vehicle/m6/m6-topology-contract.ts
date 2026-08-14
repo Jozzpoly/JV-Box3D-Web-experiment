@@ -13,7 +13,7 @@ import type { RateSteeringProfileId } from "./rate-steering-profile.js";
 
 export const M6_TOPOLOGY_COUNTS = Object.freeze({
   bodies: 19,
-  joints: 29,
+  joints: 28,
   shapes: 9,
   corners: 4,
 } as const);

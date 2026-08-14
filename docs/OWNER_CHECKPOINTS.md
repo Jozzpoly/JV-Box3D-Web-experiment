@@ -1,6 +1,6 @@
 # JV Web — owner checkpoint ledger
 
-Updated: 2026-08-11
+Updated: 2026-08-13
 
 This ledger records owner-visible decisions future agents must preserve. It is not a test log or chronological chat summary.
 
@@ -138,23 +138,18 @@ Direct evidence:
 - exact authored source contains `Axis_SuspensionTravel_Top` / `Axis_SuspensionTravel_Bottom`, with `Socket_WheelCenter` exactly on their line and midpoint;
 - generic M6 caster/KPI/kingpin-offset geometry displaced the runtime kingpin and R3 then sheared authored geometry toward those generated hardpoints.
 
-Durable authority for this lane:
+Historical lesson from this checkpoint: the Web repair target had inverted authority by letting secondary contracts/configuration define the mechanism. Later owner feedback further narrowed this rule: use owner evidence, authored source and reproducible behavior **per mechanism/claim**; native implementations are evidence/falsifiers after revalidation, not a whole-rig authority.
 
-1. owner + exact authored source;
-2. exact working native behavior where it agrees with owner/source;
-3. current Web as repair target;
-4. docs/contracts/receipts/calibration prose/tests as secondary until revalidated.
-
-## S2-P — golden front-corner contract accepted for rebuild
+## S2-P — historical parity checkpoint; scope superseded by later owner evidence
 
 ```text
 date: 2026-08-11
 web product base examined: 67d66ed412342fee5445b2901d85a663a084bf4e
-native golden reference: 959aefb78587ce60cf2b8eb03ff82797a4165142
-classification: OWNER ACCEPTED — GOLDEN TOPOLOGY + STEERING-AXIS POSITION / DIRECTION STILL TUNABLE
+native reference examined at the time: 959aefb78587ce60cf2b8eb03ff82797a4165142
+classification: HISTORICAL OWNER CHECKPOINT / ROLE + STEERING-CENTER PORTION PRESERVED / WHOLE-RIG-GOLDEN INTERPRETATION SUPERSEDED
 ```
 
-Owner reviewed the S2-PARITY golden board and disposable golden prototype and reported that the reconstruction now looks correct enough to proceed.
+At this historical checkpoint the owner reported that the role split and steering-center reconstruction looked correct enough to proceed. Later feedback explicitly rejected treating M5/M6, this native ref, the candidate topology, carrier or steering law as whole-rig golden architecture. Preserve only the narrower facts that later survived direct in-game validation.
 
 Accepted mechanical contract:
 
@@ -189,38 +184,45 @@ Critical owner nuance about the steering axis:
 
 This supersedes the earlier over-strong reading that the raw vertical Top↔Bottom direction itself must be immutable in final runtime.
 
-Owner also accepted the strategic conclusion that stale/corrupted secondary documentation contributed materially to repeated regressions. A fresh implementer conversation is preferred before production rebuild so old chat context does not reintroduce the rejected authority hierarchy.
+Durable remainder after later S2-N/S2-K evidence: #6 suspension-side/non-steering, #8 separate steerable relative role, independent wheel spin, and steering center at source-derived WheelCenter. Final mechanism/topology/direction remain engineering/research questions.
 
 
-## S2-N — narrow source/DOF checkpoint
+## S2-N / S2-K — source/DOF checkpoint confirmed in real game
 
 ```text
 date: 2026-08-12
-candidate: a4468042550265d10c2fa4b13b926d9227040d89
-tree: 0eb726975c84b5df4783178fa4bb72907435f416
-offline evidence bundle: JV_WEB_S2_NARROW_OWNER_GATE_A4468042.zip
-bundle SHA-256: 7e7700c8d60b73f26c667988edcd4fbcccce26e60b52362baab9b2cb4f4183e8
-classification: OWNER ACCEPTED — NARROW SOURCE / RELATIVE-DOF / STEERING-CENTER CHECKPOINT
+mechanics/source candidate: a4468042550265d10c2fa4b13b926d9227040d89
+classification: OWNER ACCEPTED — NARROW SOURCE/DOF + IN-GAME KNUCKLE CHECKPOINT
 ```
 
-Owner confirmed only the bounded behavior that was actually reviewed:
+Owner confirmed in normal Offroad inspection that:
 
-- source role #6 is the suspension-side/non-steering reference;
-- source role #8 is distinct and exhibits steering motion relative to #6;
-- steering remains centered at the source-derived `Socket_WheelCenter` position;
-- wheel orientation/spin is independent of structural #8 wheel-spin;
-- the accepted S1 FL-upper mechanism remains a protected control.
+- #6 stays with suspension and does not inherit steering;
+- #8 is a separate element that steers relative to #6 around the expected WheelCenter-centered axis;
+- wheel spin remains separate.
 
-This checkpoint **does not accept** the current implementation topology or final steering physics. In particular it does not approve `suspensionCarrierId` as future architecture, body count/naming, the 50/50 carrier/knuckle mass split, the current rack-to-angle law, physical vs non-physical tie rod choice, rack-side anchor, a zero-bump-steer target, final caster/KPI/axis direction, steering back-drive, steering feel or handling.
+This checkpoint **does not** accept carrier/body topology, rack->angle law, tie-rod choice, mass split, final steering-axis direction, bump-steer target, self-align/back-drive or handling.
 
-Owner additionally observed that the **FL lower wishbone is still positioned incorrectly**. Classification: `OWNER OBSERVED / OPEN GEOMETRY DEFECT / NOT ACCEPTED BY S2-N`. It is real follow-up debt, but it must not block the immediate move toward in-game validation or cause unrelated reopening of the accepted S2-N boundary.
+Owner also observed that FL lower placement remains wrong and wishbone<->knuckle visuals lack trustworthy mating frames through articulation. That is `DEFERRED RIG-WORKBENCH DEBT`; do not mask it with offsets.
 
-Next evidence priority is actual JV-Web in-game/browser behavior. S2-N is an intermediate checkpoint, not a final front-corner or vehicle acceptance.
+## R1-DRIVE-BRIDGE-01 — temporary coherent driving intermediate
+
+```text
+date: 2026-08-13
+classification: OWNER ACCEPTED — TEMPORARY R1 INTERMEDIATE ONLY
+visual package: 59 bindings / 829936 B / SHA-256 1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc
+```
+
+Owner drove the temporary symmetric kinematic front and confirmed that the car now travels straight and steers materially more coherently left/right. Residual asymmetry and imperfections remain.
+
+Protected meaning: the previous mixed front mechanism was a real product defect and the temporary bridge is useful enough to keep R1 moving.
+
+Explicitly **not accepted**: final steering physics, the provisional rack->angle map, lack of back-drive/self-align as desirable behavior, final FR axis/hardpoints, final topology, caster/KPI/trail, spatial tie-rod/rack geometry, or deferred rig mating.
 
 ## Owner-checkpoint method
 
-When porting an already-working mechanism, prefer copy/parity evidence over re-derivation. Owner/source/golden behavior outrank secondary documentation.
+Authority is mechanism-specific. Direct owner evidence and exact authored semantics outrank secondary documentation. Historical native implementations are evidence/falsifiers only after direct revalidation; there is no whole-rig golden.
 
-For high-risk mechanical semantics, agent self-consistency is not owner truth. Tests must challenge parity against the intended mechanism, not only validate a derived model against itself.
+For high-risk mechanical semantics, agent self-consistency is not owner truth. Tests must protect accepted invariants and independently meaningful behavior, not certify an experimental implementation against itself.
 
-Handling/feel remains a later campaign.
+Handling/feel and physical steering remain separately gated.

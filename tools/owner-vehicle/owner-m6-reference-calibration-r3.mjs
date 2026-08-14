@@ -40,9 +40,11 @@ function pieceBounds(piece) {
 }
 
 /**
- * Exact JS equivalent of the golden native M6/M9 ArmEnds / PartXEnds helper.
- * Rigid pieces in this asset family run along authored X. For the unmirrored
- * left corner the wheel/outboard end is the -X extreme.
+ * Validated rigid-part endpoint extraction convention recovered from historical native ArmEnds / PartXEnds behavior.
+ * It is used here only to recover authored rigid geometry; it does not make any
+ * historical M5/M6/M9 rig a whole-mechanism authority. Rigid pieces in this
+ * asset family run along authored X; for the unmirrored left corner the
+ * wheel/outboard end is the -X extreme.
  */
 export function frontLeftPartXEndsS2(piece) {
   const bounds=pieceBounds(piece);
@@ -65,19 +67,20 @@ function frontLeftSourceDeltaMetersS2(deltaBU) {
 }
 
 /**
- * S2-PORT source authority for the front-left corner. This intentionally does
- * not call deriveFrontSuspensionReferencesR3(): that older helper promoted
+ * S2 front-left source-registration helper. Legacy aliases containing
+ * "Golden" are retained below for compatibility only; they are not architecture
+ * claims. This intentionally does not call deriveFrontSuspensionReferencesR3(): that older helper promoted
  * Socket_ChassisMount_b to the upper wheel-side hardpoint and inferred the
  * lower point from it, which is the rejected one-knuckle authority inversion.
  */
-export function deriveFrontLeftGoldenReferencesS2(extracted) {
-  const wheelCenter=requireMarker(extracted,'Socket_WheelCenter','S2 FL golden source');
-  const chassisMountB=requireMarker(extracted,'Socket_ChassisMount_b','S2 FL golden source');
-  const travelTop=requireMarker(extracted,'Axis_SuspensionTravel_Top','S2 FL golden source');
-  const travelBottom=requireMarker(extracted,'Axis_SuspensionTravel_Bottom','S2 FL golden source');
-  const upperPiece=requirePiece(extracted,'Chassis_Top','S2 FL golden source');
-  const lowerPiece=requirePiece(extracted,'Chassis_Bottom','S2 FL golden source');
-  const steeringRodPiece=requirePiece(extracted,'Socket_SteeringRod','S2 FL golden source');
+export function deriveFrontLeftSourceReferencesS2(extracted) {
+  const wheelCenter=requireMarker(extracted,'Socket_WheelCenter','S2 FL authored source');
+  const chassisMountB=requireMarker(extracted,'Socket_ChassisMount_b','S2 FL authored source');
+  const travelTop=requireMarker(extracted,'Axis_SuspensionTravel_Top','S2 FL authored source');
+  const travelBottom=requireMarker(extracted,'Axis_SuspensionTravel_Bottom','S2 FL authored source');
+  const upperPiece=requirePiece(extracted,'Chassis_Top','S2 FL authored source');
+  const lowerPiece=requirePiece(extracted,'Chassis_Bottom','S2 FL authored source');
+  const steeringRodPiece=requirePiece(extracted,'Socket_SteeringRod','S2 FL authored source');
   const upperEnds=frontLeftPartXEndsS2(upperPiece);
   const lowerEnds=frontLeftPartXEndsS2(lowerPiece);
   const steeringRodEnds=frontLeftPartXEndsS2(steeringRodPiece);
@@ -121,12 +124,12 @@ export function deriveFrontLeftGoldenReferencesS2(extracted) {
       lowerWheelEnd:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Chassis_Bottom',
       chassisMountB:'AUTHORED_NODE:Socket_ChassisMount_b_NON_STEERING_STRUCTURAL_MEMBER',
       steeringRodOutboard:'AUTHORED_RIGID_GEOMETRY_X_EXTREME:Socket_SteeringRod',
-      steeringRodInboard:'REAL_M6_RACK_CENTER_OWNER_ACCEPTED_NOT_AUTHORED_STATIC_POINT',
+      steeringRodInboard:'CURRENT_WEB_RACK_CENTER_ENGINEERING_REFERENCE_NOT_AUTHORED_NOT_OWNER_ACCEPTED',
     }),
   });
 }
 
-export function frontLeftGoldenWishboneReferencesS2(references) {
+export function frontLeftSourceWishboneReferencesS2(references) {
   return Object.freeze({
     upperHinge:references.upper.chassisEnd,
     lowerHinge:references.lower.chassisEnd,
@@ -143,7 +146,7 @@ export function frontLeftGoldenWishboneReferencesS2(references) {
   });
 }
 
-export function frontLeftGoldenGeometryS2(config,references) {
+export function frontLeftSourceRegisteredGeometryS2(config,references) {
   const current=cornerRestGeometry(config,'fl');
   const fromWheelCenter=(sourcePoint)=>add(
     current.wheelCenter,
@@ -162,11 +165,11 @@ export function frontLeftGoldenGeometryS2(config,references) {
     steeringCenter:Object.freeze([...current.wheelCenter]),
     steeringAxisDirection:Object.freeze(steeringAxisDirection),
     chassisMountB:Object.freeze(chassisMountB),
-    authority:'S2_FL_CENTER_AND_STEERING_LINK_SOURCE_REDERIVED_S1_SUSPENSION_HARDPOINTS_PRESERVED',
+    authority:'S2_FL_SOURCE_REGISTERED_CENTER_AND_OUTBOARD__CURRENT_SUSPENSION_HARDPOINTS_PRESERVED_AS_PROVISIONAL',
   });
 }
 
-export function calibrateFrontLeftGoldenRigidPieceS2(piece,references,geometry,bodyRole) {
+export function calibrateFrontLeftSourceRigidPieceS2(piece,references,geometry,bodyRole) {
   if(bodyRole!=='knuckle'&&bodyRole!=='lower-arm')fail(`unknown S2 FL rigid body role ${bodyRole}`);
   const bodyOrigin=bodyRole==='knuckle'?geometry.wheelCenter:geometry.lowerHinge;
   const point=(p)=>sub(
@@ -209,6 +212,21 @@ function projectionRange(piece, origin, axis) {
   return Object.freeze({min,max,length:max-min,center:(min+max)*0.5});
 }
 
+/**
+ * Legacy exported names retained for compatibility with older R3/S2 tooling.
+ * "Golden" in these identifiers is historical naming debt, not authority.
+ */
+export const deriveFrontLeftGoldenReferencesS2 = deriveFrontLeftSourceReferencesS2;
+export const frontLeftGoldenWishboneReferencesS2 = frontLeftSourceWishboneReferencesS2;
+export const frontLeftGoldenGeometryS2 = frontLeftSourceRegisteredGeometryS2;
+export const calibrateFrontLeftGoldenRigidPieceS2 = calibrateFrontLeftSourceRigidPieceS2;
+
+/**
+ * Legacy R3 visual-calibration helper retained for deterministic historical
+ * package generation and non-FL compatibility. Its #6-as-upper-outboard and
+ * inferred-lower model is superseded for current FL source/steering semantics
+ * and must not be treated as rig or steering authority.
+ */
 export function deriveFrontSuspensionReferencesR3(extracted) {
   const upperHinge=requireMarker(extracted,'Chassis_Top','front suspension reference');
   const lowerHinge=requireMarker(extracted,'Chassis_Bottom','front suspension reference');
@@ -261,6 +279,7 @@ export function deriveFrontSuspensionReferencesR3(extracted) {
       authoredKingpinOffsetMeters:distance(sourceBallMid,wheelCenter)*OWNER_M6_R3_SCALE_METERS_PER_BU,
       authoredUpperArmLengthBU:distance(upperHinge,upperOutboard),
       authoredLowerArmLengthBU:distance(lowerHinge,lowerOutboard),
+      legacyOffsetInterpretation:'R3_SOURCE_BALLMID_TO_WHEELCENTER_DISTANCE_NOT_STEERING_AXIS_AUTHORITY',
     }),
   });
 }
@@ -313,7 +332,7 @@ export function calibrateFrontWishbonePieceR3(piece,references,geometry,which) {
     primitives:mapPiecePrimitives(piece,point,normal,reverseWinding),
     mapPoint:(value)=>Object.freeze(point(value)),
     report:Object.freeze({
-      mode:'AUTHORED_REFERENCE_TO_PHYSICAL_HARDPOINT_R3',
+      mode:'LEGACY_R3_AUTHORED_REFERENCE_TO_CURRENT_WEB_SUSPENSION_HARDPOINT',
       sourceHinge:Object.freeze([...sourceHinge]),
       sourceOutboard:Object.freeze([...sourceOutboard]),
       sourceAxialLength,
@@ -332,7 +351,7 @@ export function calibrateFrontWishbonePieceR3(piece,references,geometry,which) {
       referenceAuthority:Object.freeze({
         hinge:which==='upper'?references.provenance.upperHinge:references.provenance.lowerHinge,
         outboard:which==='upper'?references.provenance.upperOutboard:references.provenance.lowerOutboard,
-        physicalTarget:'M6_WISHBONE_HARDPOINT',
+        physicalTarget:'CURRENT_WEB_SUSPENSION_HARDPOINT_DEFERRED_RIG_REFERENCE',
       }),
     }),
   });
@@ -390,7 +409,7 @@ export function calibrateFrontChassisPieceR3(piece,references,geometry) {
     primitives:mapPiecePrimitives(piece,point,normal,reverseWinding),
     mapPoint:(value)=>Object.freeze(point(value)),
     report:Object.freeze({
-      mode:'AUTHORED_CHASSIS_REFERENCE_TO_PHYSICAL_WISHBONE_FRAME_R3',
+      mode:'LEGACY_R3_AUTHORED_CHASSIS_REFERENCE_TO_CURRENT_WEB_WISHBONE_FRAME',
       radialScale:len(targetRadialVector)/sourceRadialLength,
       verticalScale:len(targetVerticalHalf)/sourceVerticalHalfLength,
       thicknessScale:OWNER_M6_R3_SCALE_METERS_PER_BU,
@@ -405,8 +424,8 @@ export function calibrateFrontChassisPieceR3(piece,references,geometry) {
       lowerHingeErrorMeters:distance(mappedLowerHinge,geometry.lowerHinge),
       referenceAuthority:Object.freeze({
         sourceFrame:'AUTHORED_WHEEL_CENTER_PLUS_UPPER_LOWER_WISHBONE_HINGES',
-        physicalTarget:'M6_WHEEL_CENTER_PLUS_UPPER_LOWER_WISHBONE_HINGES',
-        longitudinal:'M6_WISHBONE_FRONT_REAR_AXIS',
+        physicalTarget:'CURRENT_WEB_WHEELCENTER_PLUS_SUSPENSION_HINGES_DEFERRED_RIG_REFERENCE',
+        longitudinal:'CURRENT_WEB_WISHBONE_FRONT_REAR_AXIS_DEFERRED_RIG_REFERENCE',
       }),
     }),
   });
@@ -433,9 +452,10 @@ export function calibrateFrontKnucklePieceR3(piece,references,geometry) {
   const targetRadialLength=len(targetRadialVector);
   const targetKingpinHalfLength=len(targetKingpinHalf);
 
-  // Columns of the source-basis -> knuckle-local affine map. Target radial and
-  // kingpin are intentionally allowed to be non-orthogonal: KPI/caster encode a
-  // real shear relative to the Blockbench prototype's orthogonal reference rig.
+  // Legacy R3 visual affine map. Target radial/old kingpin columns may be
+  // non-orthogonal because current historical runtime hardpoints contain
+  // caster/KPI-style shear. That shear is NOT authored/source steering-axis
+  // authority and is not used for the current FL source-registered knuckle.
   const radialColumn=mul(targetRadialVector,1/sourceRadialLength);
   const kingpinColumn=mul(targetKingpinHalf,1/sourceKingpinHalfLength);
   const longitudinalColumn=mul(targetLongitudinal,OWNER_M6_R3_SCALE_METERS_PER_BU);
@@ -472,7 +492,7 @@ export function calibrateFrontKnucklePieceR3(piece,references,geometry) {
   return Object.freeze({
     primitives:mapPiecePrimitives(piece,point,normal,reverseWinding),
     report:Object.freeze({
-      mode:'AUTHORED_UPRIGHT_REFERENCE_TO_PHYSICAL_KNUCKLE_R3',
+      mode:'LEGACY_R3_AUTHORED_UPRIGHT_REFERENCE_TO_CURRENT_WEB_KNUCKLE',
       sourceWheelCenter:Object.freeze([...sourceWheelCenter]),
       sourceUpper:Object.freeze([...references.upperOutboard]),
       sourceLower:Object.freeze([...references.lowerOutboard]),
@@ -494,8 +514,8 @@ export function calibrateFrontKnucklePieceR3(piece,references,geometry) {
         wheelCenter:references.provenance.wheelCenter,
         upper:references.provenance.upperOutboard,
         lower:references.provenance.lowerOutboard,
-        physicalTarget:'M6_KNUCKLE_WHEEL_CENTER_AND_BALL_HARDPOINTS',
-        longitudinal:'M6_WISHBONE_FRONT_REAR_AXIS',
+        physicalTarget:'CURRENT_WEB_LEGACY_KNUCKLE_WHEELCENTER_AND_BALL_HARDPOINTS_NOT_FL_AUTHORITY',
+        longitudinal:'CURRENT_WEB_WISHBONE_FRONT_REAR_AXIS_DEFERRED_RIG_REFERENCE',
       }),
     }),
   });

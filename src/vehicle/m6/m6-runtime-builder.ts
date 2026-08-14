@@ -16,7 +16,7 @@ import {
   isFrontCorner,
   isLeftCorner,
   m6CornerOffset,
-  m6FrontLeftGoldenHardpoints,
+  m6FrontLeftSourceRegisteredHardpoints,
   m6HingeSwingLimit,
   m6OffsetBoxPoints,
   m6SteeringLinkDroopLift,
@@ -298,12 +298,12 @@ export function createM6VehicleRuntime(
     ) {
       const restLocal = m6CornerOffset(config, corner);
       const restWorld = add3(spawn, restLocal);
-      const isGoldenFrontLeft = corner === FRONT_LEFT_CORNER;
-      const goldenHardpoints = isGoldenFrontLeft
-        ? m6FrontLeftGoldenHardpoints(config, restLocal)
+      const isSourceRegisteredFrontLeft = corner === FRONT_LEFT_CORNER;
+      const sourceRegisteredHardpoints = isSourceRegisteredFrontLeft
+        ? m6FrontLeftSourceRegisteredHardpoints(config, restLocal)
         : null;
       const hardpoints =
-        goldenHardpoints ??
+        sourceRegisteredHardpoints ??
         m6WishboneHardpoints(config, corner, restLocal);
 
       const knuckleId = createDynamicBody(
@@ -313,7 +313,7 @@ export function createM6VehicleRuntime(
         IDENTITY_QUAT,
       );
       bodyIds.push(knuckleId);
-      const knuckleMass = isGoldenFrontLeft
+      const knuckleMass = isSourceRegisteredFrontLeft
         ? config.knuckleMass * 0.5
         : config.knuckleMass;
       setKnuckleLikeMass(b3, knuckleId, knuckleMass);
@@ -323,7 +323,7 @@ export function createM6VehicleRuntime(
       let steeringCenterCarrierLocal: b3Vec3 | null = null;
       let steeringCenterKnuckleLocal: b3Vec3 | null = null;
       let steeringAxisCarrierLocal: b3Vec3 | null = null;
-      if (goldenHardpoints !== null) {
+      if (sourceRegisteredHardpoints !== null) {
         suspensionCarrierId = createDynamicBody(
           b3,
           worldId,
@@ -339,20 +339,20 @@ export function createM6VehicleRuntime(
 
         const steeringFrame = b3.b3ComputeQuatBetweenUnitVectors(
           vec3(0, 0, 1),
-          goldenHardpoints.steeringAxisDirection,
+          sourceRegisteredHardpoints.steeringAxisDirection,
         );
         const steeringJointDef = b3.b3DefaultRevoluteJointDef();
         steeringJointDef.base.bodyIdA = suspensionCarrierId;
         steeringJointDef.base.bodyIdB = knuckleId;
         steeringCenterCarrierLocal = sub3(
-          goldenHardpoints.steeringCenter,
+          sourceRegisteredHardpoints.steeringCenter,
           restLocal,
         );
         steeringCenterKnuckleLocal = clone3(
           steeringCenterCarrierLocal,
         );
         steeringAxisCarrierLocal = clone3(
-          goldenHardpoints.steeringAxisDirection,
+          sourceRegisteredHardpoints.steeringAxisDirection,
         );
         steeringJointDef.base.localFrameA = {
           p: steeringCenterCarrierLocal,
@@ -399,7 +399,7 @@ export function createM6VehicleRuntime(
           suspensionAxis,
         );
       const twistFence =
-        (isGoldenFrontLeft
+        (isSourceRegisteredFrontLeft
           ? 0
           : isFrontCorner(corner)
           ? config.maxSteeringAngleDegrees + 10
@@ -486,7 +486,7 @@ export function createM6VehicleRuntime(
       );
       const steeringDef = b3.b3DefaultDistanceJointDef();
       let steeringLinkJointId: b3JointId | null = null;
-      if (isGoldenFrontLeft) {
+      if (isSourceRegisteredFrontLeft) {
         // S2: the authored #7 member is a live rack-center -> knuckle visual
         // segment, while the centered carrier->knuckle revolute owns steering
         // physically. Making #7 a rigid distance joint here would let
@@ -528,7 +528,13 @@ export function createM6VehicleRuntime(
           hardpoints.steeringArm,
         );
       }
-      if (!isGoldenFrontLeft) {
+      // R1 temporary driving bridge: keep the accepted FL centered steering
+      // behavior and remove only the historical FR physical tie-rod constraint.
+      // FR remains on its existing body/suspension topology; this does NOT
+      // promote those hardpoints or that steering axis to future authority.
+      // Both front wheels are commanded kinematically below so the R1 product
+      // no longer mixes one-way FL steering with a back-drivable FR linkage.
+      if (!isSourceRegisteredFrontLeft && corner !== 1) {
         steeringDef.base.collideConnected = false;
         steeringDef.enableSpring = false;
         steeringLinkJointId =

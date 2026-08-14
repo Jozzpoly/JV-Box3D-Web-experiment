@@ -1,98 +1,94 @@
 # JV Web — accepted project state
 
-Updated: 2026-08-11
+Updated: 2026-08-13
 Owner: Jozz
-Status: `R0 PUBLISHED / R1 ACTIVE / S1 FL UPPER INTEGRATED / GOLDEN FL FRONT-CORNER CONTRACT OWNER ACCEPTED / REBUILD NEXT`
+Status: `R0 PUBLISHED / R1 ACTIVE / S2-K PROTECTED / R1-DRIVE-BRIDGE-01 OWNER ACCEPTED AS TEMPORARY INTERMEDIATE / FINAL STEERING + RIG OPEN`
 
-## Product boundary
+## Product / transaction boundary
 
 ```text
 private product authority: Jozzpoly/JV-Box3D-Web-experiment main
-integrated S1 product checkpoint: 67d66ed412342fee5445b2901d85a663a084bf4e
-product tree: f2e1836800719cc9cc7007631568c41e45471450
-native golden reference: Jozzpoly/Box3d_FunProject @ 959aefb78587ce60cf2b8eb03ff82797a4165142 — READ ONLY
+main control: 97055331a2eef8bdbf8411db243417591731e664
+active R1 work branch: work/front-corner-golden-rebuild-r2
+pre-bridge checkpoint tip: 4ad9de6fd0ff3b6b9193fa2fb17b7f77e0a67785
+S2 mechanics/source base beneath bridge: a4468042550265d10c2fa4b13b926d9227040d89
 public R0: Jozzpoly/JV-Box3D-Web-Public release/r0 @ c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
+native JV: READ ONLY mechanism evidence/research, not whole-rig authority
 ```
 
-S1 FL upper static placement and real neutral live articulation remain OWNER ACCEPTED and integrated.
+`main` remains unchanged during the current work transaction. The historical word `golden` in the branch name is workflow naming only.
 
-## Golden front-corner state
+## Owner-accepted evidence
 
-The parity investigation established a causal authority inversion: current Web R2/R3 copied stale role semantics and generic M6 hardpoint geometry instead of directly preserving the working native/source front-corner mechanism.
+Preserve narrowly:
 
-Owner has now accepted the recovered golden contract strongly enough to begin a fresh production rebuild:
+- S1 FL upper static placement and live articulation;
+- #6 `Socket_ChassisMount_b` is suspension-side / non-steering;
+- #8 `Socket_WheelCenter` is a distinct steerable source role relative to #6;
+- steering center remains at the accepted source-derived WheelCenter position;
+- wheel steering/orientation and wheel spin are separate;
+- S2-GAME-01 broad Offroad regression checkpoint;
+- S2-K direct in-game #6/#8 motion/axis confirmation;
+- R1-DRIVE-BRIDGE-01: owner accepts the current symmetric kinematic front only as a **temporary R1 intermediate** because straight driving and left/right steering are materially more coherent.
 
-```text
-#6 Socket_ChassisMount_b
-suspension-side / non-steering
-follows wishbone/suspension articulation
+None of this accepts final steering physics, current rack->angle mapping, self-align/back-drive, final body topology, FR legacy axis/hardpoints, caster/KPI/trail, tie-rod/rack geometry or handling.
 
-#8 Socket_WheelCenter
-separate steerable structural member
-steers relative to #6
-no wheel spin
+## Current temporary bridge
 
-wheel
-follows #8 for steering
-separate spin DOF
-```
+The bridge removes the proven mixed-mechanism defect with the smallest product delta:
 
-The exact authored source provides `Axis_SuspensionTravel_Top` and `Axis_SuspensionTravel_Bottom`; `Socket_WheelCenter` lies exactly on their line and midpoint.
+- no new body/carrier/hardpoint/visual offset;
+- remove the historical FR physical steering distance joint;
+- command FR with the same provisional rack->angle mapping used by FL;
+- no physical contact->rack feedback claim;
+- visual package remains 59 real bindings / 829936 B / SHA-256 `1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc`.
 
-### Steering-axis owner boundary
+Residual asymmetry and driving imperfections remain open.
 
-The critical accepted result is **axis position / steering center**, not mandatory perfect verticality.
+## Deferred rig/workbench debt
 
-Future implementation must keep the steering axis passing through the accepted source-derived WheelCenter steering center. A modest physically justified tilt/caster/KPI-like direction is allowed if it improves correct wheel behavior, provided the tilt occurs about that accepted center and does not reintroduce the rejected lateral/longitudinal kingpin offset.
+Owner directly observed:
 
-The old generic generated axis that missed WheelCenter by roughly 139 mm is rejected as owner-rig authority.
+- FL lower wishbone placement remains wrong;
+- current wishbone<->knuckle visuals lack trustworthy mating frames and can separate through articulation.
 
-## Root-cause chain to avoid
+Classification: `OWNER OBSERVED / DEFERRED RIG-WORKBENCH DEBT`.
 
-Do not repeat:
+Do not hide this with offsets. Do not tune future rack/tie-rod hardpoints to the old rig merely to improve visual mating or bump-steer. Future workbench/rig authoring must establish real owner-authored mating points/frames.
 
-```text
-stale JSON role contract
-+ generic factory receipt caster/KPI/kingpinOffset
--> Web-generated hardpoints
--> R2 #6/#8 single-knuckle binding
--> R3 affine/shear toward generated hardpoints
--> tests proving self-consistency of the same derived model
-```
+## Authority hierarchy after reset
 
-The factory receipt may remain valid for generic native physics state, but it is not automatically visual/source-rig geometry authority.
+For each mechanism, establish authority separately. There is no whole-rig M5/M6/latest-native golden.
 
-## Fresh-context decision
+Use, in order appropriate to the specific claim:
 
-The previous implementer conversation has accumulated long historical context, including the now-rejected authority hierarchy. It is intentionally retired for the next production transaction.
+1. direct owner-accepted evidence;
+2. exact authored source semantics/geometry for what the asset actually authors;
+3. reproducible current Web runtime evidence;
+4. later native/recovery findings as mechanism-specific evidence or falsifiers;
+5. secondary contracts, receipts, calibration reports and tests only after revalidation.
 
-A fresh implementer conversation should bootstrap from current Git only and must not import the previous chat as technical authority.
+Historical M5/M6 implementations, numeric caster/KPI/kingpin values and old Web calibration are not automatically transferable.
 
-Required initial reads:
+## Physical steering research status
 
-1. current `AGENTS.md`;
-2. current `AI_PROJECT_MEMORY.md`;
-3. current `docs/OWNER_CHECKPOINTS.md`;
-4. current `docs/IMPLEMENTER_TASK.md`.
+Reproduced research establishes useful constraints, not configuration truth:
 
-Then inspect exact authored source, golden native files and current Web code as demanded by the task.
+- the former mixed FL/FR steering mechanisms caused the dominant left/right asymmetry;
+- a coherent bilateral physical front can recover active symmetry, so physical linkage itself is not falsified;
+- weakly restoring bilateral constraints at product 4 substeps showed severe solver construction-order sensitivity;
+- inherited constant 40 N rack stiction was harmful in that experimental graph;
+- steering-joint angle is not chassis-relative toe;
+- apparent scrub centering was confounded by toe preload and is rejected as a solution;
+- positive longitudinal mechanical trail through WheelCenter produced plausible speed-dependent restoring behavior in a near-neutral-toe provisional experiment;
+- the spatial physical tie-rod still produced several degrees of bump-steer because rack/suspension hardpoints remain provisional.
 
-## Next product direction
+No tested trail, caster, KPI, scrub, tie-rod length or rack anchor is accepted.
 
-The next transaction is **FL-only golden front-corner rebuild**.
+## Current limiting problem
 
-Do not mirror FR yet. Do not proceed to general FL-lower polish, upright/hub packaging, dampers, cardans, stance or handling until the front-left runtime demonstrates:
+With the temporary bridge, broad straight/turn/brake probes no longer expose a larger catastrophic drive/contact defect than steering feedback. The clearest intentional limitation is that RATE `RELEASE` stops rack input but does not physically back-drive/self-align the rack.
 
-- #6 suspension articulation without steering inheritance;
-- #8 steering relative to #6;
-- steering about the accepted center/position;
-- separate wheel spin;
-- preserved/appropriately revalidated S1 upper behavior.
+The next bounded question is whether the pinned Web/Box3D boundary can provide an energy-consistent bilateral rack-translation <-> steering-coordinate coupling without guessed spatial mating points or hidden centering. If not, classify final physical steering as rig-authoring blocked rather than inventing another compensating mechanism.
 
-The rebuild may change visual bindings, source-derived contracts, front steering hardpoint/axis logic and the minimum necessary physics/reference surface if evidence requires it. It should not add extra physics bodies merely to imitate the visual split if the working native mechanism can express the required DOFs with existing bodies/frames.
-
-## Owner gate requirement
-
-No promotion to `main` until Jozz visually validates the rebuilt FL front corner in real runtime. Use isolated, uncluttered views and make suspension motion, steering motion and wheel spin separately attributable.
-
-Handling/stability/steering feel remain a later campaign.
+See `docs/HANDOFF.md` and `docs/IMPLEMENTER_TASK.md` for the active transaction.

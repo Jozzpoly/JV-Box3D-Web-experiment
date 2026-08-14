@@ -1,75 +1,74 @@
 # JV Web — architecture map
 
-Updated: 2026-08-10
-Status: **CURRENT R1 ARCHITECTURE**
+Updated: 2026-08-13
+Status: **CURRENT R1 BOUNDARIES / PROVISIONAL VEHICLE MECHANICS EXPLICIT**
 
-This document describes stable architectural boundaries, not the current task queue. Scheduling lives in `docs/HANDOFF.md`.
+This document describes current system boundaries. It does not declare temporary steering or rig choices to be final architecture; active task state lives in `docs/HANDOFF.md`.
 
 ## 1. Product/runtime entry
 
 ```text
 index.html
 -> src/product-main.ts
--> configure product world + controls
+-> product world + controls
 -> M6ProductRenderer
 -> M6WorldRenderer
 ```
 
-`M6ProductRenderer` subscribes to the product world and loads the generated owner-vehicle visual package. `M6WorldRenderer` owns WebGL rendering, camera state/input and vehicle visualization.
+`M6ProductRenderer` loads the generated owner-vehicle visual package. `M6WorldRenderer` owns WebGL rendering, camera state/input and vehicle visualization.
 
 ## 2. World boundary
 
-The product world combines the browser vehicle with E2R/offroad world data and optional private JSPREV2 scan data.
+The product world combines browser vehicle physics with E2R/offroad world data and optional private JSPREV2 scan data.
+
+Private scan delivery is a dev-only/local path and remains separate from any future public Pages asset decision.
+
+## 3. Physics boundary
+
+Current browser backend remains a Web/reference vehicle implementation, not a declaration that historical native M5/M6 topology is authoritative.
+
+Mechanism-specific native/recovery evidence can inform Web work after direct revalidation. Native JV remains read only in this campaign.
+
+## 4. Current front-corner state
+
+Owner-accepted semantics are narrower than the implementation:
 
 ```text
-LOCAL_FULL private dev
-  -> loadLocalProductWorld
-  -> optional loadLocalJsprev2Scan
-  -> product world
+#6 Socket_ChassisMount_b -> suspension-side / non-steering source role
+#8 Socket_WheelCenter   -> separate steerable source role relative to #6
+wheel                   -> steering orientation + independent spin
+steering center         -> accepted source-derived WheelCenter position
 ```
 
-Private scan delivery uses a dev-only Vite plugin and local filesystem pack selection. That mechanism is intentionally separate from any later public Pages asset design.
+Current FL realizes those DOFs using a provisional carrier/steerable-body split. That topology is **not** accepted as future JV architecture.
 
-## 3. Physics authority
+`R1-DRIVE-BRIDGE-01` is also explicitly temporary: the historical FR physical steering link is removed and FR receives the same provisional rack->angle command as FL. This fixes the proven mixed-mechanism driving defect but intentionally provides no physical contact->rack back-drive/self-align.
 
-Current runtime backend:
+Do not infer final steering mechanism, final FR topology, caster/KPI/trail or rack geometry from the bridge.
+
+## 5. Deferred rig/mating boundary
+
+Current wishbone<->knuckle visuals do not have trustworthy authored mating frames through articulation; FL lower placement is not accepted.
+
+Do not repair this by visual offsets or by tuning physics hardpoints to make the current mesh assembly look joined. A future owner-facing rig/workbench should author the actual mating points/frames.
+
+## 6. Physics -> visual boundary
+
+Runtime vehicle state exposes part transforms; the owner-vehicle layer maps semantic source meshes onto them. Segment/part-pair deformation remains useful for visual attachment, but visual calibration must not silently become physics authority.
+
+Current generated owner package remains deterministic at:
 
 ```text
-legacy_ts_m6
-role: REFERENCE_BROWSER_FIXTURE
-productPhysicsAuthority: false
-nativeParity: NOT_PROVEN
+real bindings: 59
+GLB bytes: 829936
+SHA-256: 1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc
 ```
 
-The browser fixture is valuable for deterministic integration and friend-demo work. It must not silently become a second authoritative native physics product.
+The temporary bridge does not change those visual bytes.
 
-Long-term native/WASM reasoning is documented separately in `docs/NATIVE_PORT_NOTES.md` and ADR-0003.
+## 7. Owner vehicle source / authority boundary
 
-## 4. M6 topology
-
-Current M6 physical topology separates:
-
-- chassis;
-- upper/lower suspension-arm bodies;
-- knuckle/upright bodies;
-- spherical arm-to-knuckle constraints;
-- rack body and rack prismatic motion;
-- rack-to-knuckle steering-link constraints;
-- wheel bodies with knuckle-to-wheel spin revolutes.
-
-This is important for steering diagnosis: a visible wrong pivot does not by itself prove that the physical topology needs a new carrier hierarchy.
-
-## 5. Physics -> visual boundary
-
-The runtime exposes vehicle visual frames/part transforms. The owner-vehicle layer maps semantic package bindings onto those physical parts.
-
-The visual package contract supports rigid part attachment and segment/part-pair deformation for components such as dampers, steering links and cardans.
-
-Keep visual calibration separate from physics authority wherever possible so source-asset corrections do not mutate vehicle mechanics accidentally.
-
-## 6. Owner vehicle source pipeline
-
-Source authority:
+Tracked inputs include:
 
 ```text
 assets/owner-vehicle/source/*.gltf
@@ -77,64 +76,46 @@ assets/owner-vehicle/contracts/*.asset.json
 public/receipts/jv_m6_factory_receipt.json
 ```
 
-Generator path:
+These files do **not** share one authority level.
 
-```text
-Blockbench glTF inspection
--> semantic reference extraction
--> R2/R3 calibration helpers
--> m6-owner-full-rig-r3 package
--> generated visual JSON/report/GLB
--> live owner vehicle loader
-```
+- authored glTF markers/rigid geometry author what they explicitly contain;
+- current owner checkpoints govern accepted semantics/behavior;
+- secondary JSON contracts/receipts/calibration reports are derived or historical evidence and must be revalidated when they conflict;
+- legacy R3 calibration helpers remain compatibility/reproducibility machinery, not current steering truth.
 
-Current generated package is deterministic: 59 real bindings, GLB SHA-256 `57a20f3d54277d50f07afd56e5f4e00980b4386cdab74d23d3d09893cf45c28a`.
+The front semantic contract is v3: #6 `suspensionSide`, #8 and #7 outboard `steerableMember`; rack-side #7 geometry/coupling is not authored and remains an engineering decision.
 
-## 7. Wheel interface invariant
+## 8. Wheel interface invariant
 
-The physical wheel spin center and authored `Socket_WheelMount` are different semantic points.
+The physical wheel spin center and authored `Socket_WheelMount` are distinct semantic points. Do not collapse them merely because both participate in wheel packaging.
 
-`Socket_WheelMount` is the authored visual mounting-face endpoint and must not be collapsed into the physical wheel center merely because both participate in wheel placement.
+## 9. Steering research boundary
 
-Current R3 tests protect this distinction through steering/spin motion.
+Reproduced physical research shows that a coherent bilateral mechanism can recover active left/right symmetry, but current spatial tie-rod experiments remain coupled to unresolved rack/suspension hardpoints and produce material bump-steer.
 
-## 8. Front suspension calibration caveat
+No numeric caster/KPI/trail/scrub/rack-anchor setting is architecture. Current bounded research asks whether a bilateral rack-translation <-> steering-coordinate constraint can be expressed without guessed spatial mating geometry or hidden centering.
 
-Front authored source currently provides an upper outboard reference but no independent lower-outboard marker used by the R3 calibration. The calibration infers lower outboard from a parallel-upright assumption.
+## 10. Camera/input ownership
 
-Treat this as calibration provenance, not as automatically correct geometry. Live steering truth must decide whether the physical constraint axis is coherent and whether only visual mapping needs correction.
+Camera state and pointer camera controls live in the renderer path. Vehicle input and camera gestures must not steal ownership from each other.
 
-## 9. Camera/input ownership
+RATE steering `RELEASE` means stop commanding rack motion. The temporary bridge does not add hidden recentering.
 
-Camera state (yaw/pitch/distance/chase behavior) and pointer camera controls live in the renderer path. Vehicle control pointers and camera gestures must not steal ownership from each other.
+## 11. Scene/package contracts
 
-Camera work should normally remain a separate owner-feel slice from vehicle geometry work.
+Durable public contracts live under `docs/contracts/`. Contract changes should be explicit and tested. Tests should protect invariants and externally meaningful behavior, not incidental implementation counts or provisional steering equations.
 
-## 10. Scene/package contracts
+## 12. Public artifact boundary
 
-Durable public contracts live under `docs/contracts/`:
+Private source and public release remain separate repositories. Published R0 is immutable historical proof. Future R1 publication must use a new explicit artifact/version and separately decide what scan resources may be public.
 
-- scene package;
-- static scene visual package;
-- steering command contract;
-- vehicle visual package.
+## 13. Architecture principles
 
-Implementations may evolve, but contract changes should be explicit and tested.
-
-## 11. Public artifact boundary
-
-Private source and public release are separate repositories.
-
-Published R0 is immutable historical proof. Current R1 source should not carry R0-specific release machinery merely to preserve history; exact historical commits and the public artifact are the reproduction authority.
-
-Future R1 Pages publication uses a new versioned artifact and must explicitly decide what, if any, scan resources are public.
-
-## 12. Architecture principles
-
-- fixed-step/lifecycle ownership stays explicit;
-- device input does not become physics authority;
-- source asset semantics are explicit contracts, not inferred from mesh bounds when authored markers exist;
-- generated artifacts are reproducible from tracked source;
-- visual corrections should not silently retune physics;
-- old branches are salvage sources only when a current question explicitly needs them;
-- owner-visible acceptance is recorded separately from automated test success.
+- owner evidence and exact authored semantics outrank historical rig labels;
+- authoring asset, visual model, physics prefab and contact model are separate layers;
+- source-derived facts must be distinguished from engineering hypotheses;
+- generated artifacts remain reproducible;
+- visual corrections do not silently retune physics;
+- temporary product bridges remain explicitly temporary;
+- tests protect accepted invariants rather than freezing experimental implementation;
+- unresolved rig debt is exposed, not masked.

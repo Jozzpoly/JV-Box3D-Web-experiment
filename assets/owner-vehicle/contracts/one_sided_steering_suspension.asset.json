@@ -4,7 +4,7 @@
   "source": {
     "gltf": "../source/OneSided_Steering_Suspension_Rig.gltf",
     "authoringTool": "Blockbench",
-    "contractVersion": 2
+    "contractVersion": 3
   },
   "units": {
     "metersPerBlockbenchUnit": 0.35,
@@ -22,9 +22,9 @@
     }
   },
   "notes": {
-    "criticalParentingWarning": "Socket_ChassisMount_b is NOT chassis-mounted despite its name: it is the upright/knuckle that ties both wishbone arms to the wheel, and must ride the KNUCKLE body, not the chassis. Socket_WheelCenter also rides the knuckle. Do not classify parts by name substring alone - see roleCategory/role below.",
+    "criticalParentingWarning": "SUPERSEDED_V2_ROLE_NOTE: Socket_ChassisMount_b is a suspension-side/non-steering structural role; Socket_WheelCenter is a distinct steerable structural role relative to it. Do not bind both to one steering body merely from historical R2/R3 semantics.",
     "damperLowerParent": "Socket_SingleDamperLower is a child of Chassis_Bottom (the lower wishbone arm) in the source glTF, not of the knuckle. Its live position must be derived from the lower arm's placement, not the upright's.",
-    "steeringRodParent": "Socket_SteeringRod is a child of Socket_WheelCenter (rides the knuckle at the outboard end). The inboard end is NOT part of this model - it must be driven by the vehicle's real steering rack body/joint (no new physics should be invented for it)."
+    "steeringRodParent": "Socket_SteeringRod is a child of Socket_WheelCenter, so its outboard visual role follows the steerable #8 member. The authored asset does not define the rack-side/inboard hardpoint; current Web rack location and physical coupling remain engineering decisions."
   },
   "semantics": {
     "sockets": {
@@ -48,7 +48,7 @@
         "space": "authoring_world_after_composed_transforms",
         "required": true,
         "physicsAuthority": false,
-        "ridesBody": "knuckle"
+        "ridesBody": "suspensionSide"
       },
       "wheelCenter": {
         "role": "steering_suspension.visual.wheel_center",
@@ -59,7 +59,7 @@
         "space": "authoring_world_after_composed_transforms",
         "required": true,
         "physicsAuthority": false,
-        "ridesBody": "knuckle"
+        "ridesBody": "steerableMember"
       },
       "damperMount": {
         "role": "steering_suspension.visual.damper_mount",
@@ -103,7 +103,7 @@
         "space": "authoring_world_after_composed_transforms",
         "required": true,
         "physicsAuthority": false,
-        "ridesBody": "knuckle"
+        "ridesBody": "steerableMember"
       },
       "cardanDrive": {
         "role": "steering_suspension.visual.cardan_drive",
@@ -178,8 +178,12 @@
     }
   },
   "physics": {
-    "v0Treatment": "visual_only_isolated_bench_before_vehicle_integration",
-    "futureTreatment": "front double-wishbone corner replacement for one_sided_wheel_mount after validation",
-    "steeringRodInboardEnd": "must be driven by the vehicle's existing rack/steerLinkJoint physics, never a new body or constraint"
+    "v0Treatment": "historical_visual_only_isolated_bench_before_vehicle_integration",
+    "futureTreatment": "open_future_front_corner_rig_after_owner_authored_mating_and_physical_steering_validation",
+    "steeringRodInboardEnd": "not authored in this asset; current Web rack point is an engineering reference and physical coupling/anchor remain open"
+  },
+  "authorityStatus": {
+    "classification": "SECONDARY_SEMANTIC_CONTRACT",
+    "note": "Exact authored glTF plus current owner-accepted checkpoints outrank this file. v2 one-knuckle role/physics interpretations are superseded."
   }
 }

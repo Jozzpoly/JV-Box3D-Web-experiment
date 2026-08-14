@@ -1,6 +1,6 @@
 # JV Web — owner vehicle recovery campaign
 
-Updated: 2026-08-11
+Updated: 2026-08-13
 Status: **DURABLE CAMPAIGN CONTRACT — CURRENT STATE LIVES ELSEWHERE**
 
 This document defines the long-horizon method and dependency structure for owner-vehicle recovery. It is deliberately **not current-state authority**.
@@ -29,7 +29,7 @@ Deferred until visual/mechanical closure:
 - unrelated camera/UI polish;
 - public R1 publication.
 
-Native/core JV is read-only reference. When the practical goal is to port an already-working native mechanism, **working behavior parity outranks re-derivation from secondary docs/configuration**.
+Native/core JV is read-only mechanism evidence. Historical M5/M6 or later native rigs are not whole-rig authority. When a specific native mechanism has been independently shown to embody the intended behavior, that mechanism-specific evidence may outrank stale secondary docs/configuration.
 
 ## 2. Evidence layers
 
@@ -46,28 +46,26 @@ Durable rule:
 
 ```text
 GREEN TEST / INTERNAL CONSISTENCY
-!= GOLDEN-NATIVE PARITY
+!= HISTORICAL-RIG PARITY
 != OWNER TRUTH
 != GOOD VEHICLE FEEL
 ```
 
-A generator and its tests can share the same wrong assumption. Tests must challenge the intended source/golden mechanism, not only derived Web data.
+A generator and its tests can share the same wrong assumption. Tests must challenge accepted source/owner invariants and independently meaningful behavior, not only derived Web data or a historical rig.
 
 ## 3. Authority discipline for ports
 
-For authored owner-vehicle geometry/mechanisms:
+For authored owner-vehicle geometry/mechanisms, establish authority **per claim** rather than for an entire rig:
 
 ```text
-DIRECT OWNER ACCEPTANCE + EXACT AUTHORED SOURCE
-> EXACT WORKING NATIVE BEHAVIOR where it agrees with owner/source
-> candidate runtime evidence
-> current Web implementation as repair target
-> docs / JSON contracts / factory receipts / calibration prose as secondary evidence
+direct owner-accepted evidence
++ exact authored semantics/geometry for what the asset actually authors
++ reproducible candidate/runtime evidence
++ mechanism-specific native/recovery evidence after direct revalidation
++ secondary docs/contracts/receipts/calibration only after revalidation
 ```
 
-Secondary artifacts can be stale or scope-misused. If they contradict owner/source/golden working behavior, correct/retire them rather than averaging interpretations.
-
-Do not blindly copy every native helper either: distinguish the exact working path from generic benches/configuration layers.
+There is no universal ordering that turns one complete M5/M6/latest-native rig into project truth. Secondary artifacts can be stale or scope-misused; correct or retire contradictions instead of averaging them. Historical native helpers/benches remain evidence only for the specific property they actually demonstrate.
 
 ## 4. Work unit: interface / mechanism + constraints
 
@@ -135,7 +133,7 @@ Do not tune downstream systems to conceal unresolved upstream topology/geometry.
 
 ```text
 implementer:
-  exact source + golden reference
+  exact source + independently validated mechanism evidence
   bounded implementation/evidence
   stable candidate
 
@@ -175,12 +173,12 @@ Never use a stage number as evidence that its assumptions are accepted.
 - Interface audit remains measurement evidence, not acceptance authority.
 - Isolation/masking and fixed FRONT/TOP/SIDE views are justified when they reduce owner ambiguity.
 - Physical/reference overlays are diagnostic only and must never alter physics.
-- Accepted-constraint regressions should encode independent/source/golden truth, not accidental current numbers.
+- Accepted-constraint regressions should encode independent/source/owner truth, not accidental current numbers.
 - Tooling must not become the project.
 
 ## 10. Predicted failure modes
 
-**Authority inversion:** secondary receipts/contracts/calibration override the mechanism being ported. Recover source/golden parity first.
+**Authority inversion:** secondary receipts/contracts/calibration override the mechanism being ported. Recover the intended mechanism from current owner/source/reproducible evidence first.
 
 **Green-test trap:** implementation and tests share the same wrong derived assumptions.
 

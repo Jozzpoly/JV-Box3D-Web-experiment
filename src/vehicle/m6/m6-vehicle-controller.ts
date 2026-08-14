@@ -17,7 +17,7 @@ import {
   clone3,
   distance3,
   dot3,
-  m6FrontLeftSteeringAngleFromRack,
+  m6FrontLeftProvisionalSteeringAngleFromRack,
   scale3,
   vec3,
 } from "./m6-geometry.js";
@@ -254,18 +254,42 @@ export class M6VehicleController {
       });
     }
 
-    const goldenFrontLeft = this.#runtime.corners[0]!;
-    if (goldenFrontLeft.steeringJointId !== null) {
-      const targetAngle = m6FrontLeftSteeringAngleFromRack(
+    const frontLeftSourceRegistered = this.#runtime.corners[0]!;
+    if (frontLeftSourceRegistered.steeringJointId !== null) {
+      const targetAngle = m6FrontLeftProvisionalSteeringAngleFromRack(
         this.#config,
         liveRack,
       );
       this.#b3.b3RevoluteJoint_SetLimits(
-        goldenFrontLeft.steeringJointId,
+        frontLeftSourceRegistered.steeringJointId,
         targetAngle,
         targetAngle,
       );
-      this.#b3.b3Joint_WakeBodies(goldenFrontLeft.steeringJointId);
+      this.#b3.b3Joint_WakeBodies(frontLeftSourceRegistered.steeringJointId);
+
+      // TEMPORARY_SYMMETRIC_KINEMATIC_FRONT: FR receives the same rack
+      // command through its existing twist coordinates after its historical
+      // physical tie rod is removed. This is a product bridge only: it has no
+      // contact->rack back-drive claim and it does not bless the FR legacy
+      // steering axis/hardpoints as final JV geometry.
+      const frontRight = this.#runtime.corners[1]!;
+      if (frontRight.steeringLinkJointId !== null) {
+        throw new Error(
+          "Temporary symmetric front expected FR physical steering link to be absent.",
+        );
+      }
+      this.#b3.b3SphericalJoint_SetTwistLimits(
+        frontRight.upperBallId,
+        targetAngle,
+        targetAngle,
+      );
+      this.#b3.b3SphericalJoint_SetTwistLimits(
+        frontRight.lowerBallId,
+        targetAngle,
+        targetAngle,
+      );
+      this.#b3.b3Joint_WakeBodies(frontRight.upperBallId);
+      this.#b3.b3Joint_WakeBodies(frontRight.lowerBallId);
     }
 
     this.#b3.b3Joint_WakeBodies(rackJointId);

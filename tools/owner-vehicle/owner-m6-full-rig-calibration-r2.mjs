@@ -12,7 +12,7 @@ export const OWNER_M6_R2_SOURCE_SHA256 = Object.freeze({
 
 export const OWNER_M6_R2_CONTRACT_SHA256 = Object.freeze({
   wheel: '24cf7d68bff367a6fcf267dd5efd841e13658736693881099fd52b2e7c613bfb',
-  frontSuspension: '2085a5429ae3c1f20c74250ec9e0e29aec70c992679a1537ea9cae28b1d709bd',
+  frontSuspension: '86da0ce06730317b1274d7a03079044c89cac15ea825b088772b7188028717ed',
   rearSuspension: '110e71595ba88dff11d4a29be533616b54980bcb25f035d9a0531a587e8dce01',
   damper: '6dfae948e67e9e5e73aaead3811a5f1105358ebf1d5418e87e523e45865e0812',
   cardan: '72c65b9e1527e69aac20b17d6ce305d9f808564bd71f7d17ea7984f95961919c',

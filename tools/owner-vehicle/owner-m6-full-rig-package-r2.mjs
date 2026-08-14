@@ -150,6 +150,7 @@ export function buildOwnerM6FullRigPackageR2({
     report:Object.freeze({
       schema:'JV_WEB_OWNER_M6_FULL_RIG_R2',
       sourceAuthority:{sourceSha256:OWNER_M6_R2_SOURCE_SHA256,contractSha256:OWNER_M6_R2_CONTRACT_SHA256},
+      sourceAuthorityInterpretation:'LEGACY_REPORT_FIELD_NAME_HASH_PINNED_INPUTS_NOT_PROJECT_AUTHORITY',
       sources:{chassis:sourceReport(chassis),wheel:sourceReport(wheel),frontSuspension:sourceReport(front.source),rearSuspension:sourceReport(rear.source),damper:sourceReport(damper.source),cardan:sourceReport(cardan.source)},
       wheelCalibration:calibratedWheel.report,
       calibration:calibrationReport,
