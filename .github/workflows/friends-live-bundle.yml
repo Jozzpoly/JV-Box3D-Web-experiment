@@ -1,0 +1,70 @@
+name: Friends Live Bundle
+
+on:
+  push:
+    branches:
+      - work/friends-r1-live-perf
+
+concurrency:
+  group: friends-live-bundle
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    if: contains(github.event.head_commit.message, '[live]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup canonical Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Report toolchain
+        run: |
+          node --version
+          npm --version
+
+      - name: Install exact lockfile
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build browser bundle
+        env:
+          JV_BUILD_SOURCE_COMMIT: ${{ github.sha }}
+        run: npm run build:bundle
+
+      - name: Stage narrow live artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf friends-live-bundle
+          mkdir -p friends-live-bundle/assets
+          cp dist/index.html friends-live-bundle/index.html
+          cp -R dist/assets/. friends-live-bundle/assets/
+          cat > friends-live-bundle/LIVE_BUILD.json <<EOF
+          {"schema":"JV_WEB_FRIENDS_LIVE_BUNDLE_V1","sourceCommit":"${GITHUB_SHA}","scope":"index-and-vite-assets","preservePublicScan":true}
+          EOF
+          find friends-live-bundle -type f ! -name SHA256SUMS.txt -print0 \
+            | sort -z \
+            | xargs -0 sha256sum > live-sums.tmp
+          mv live-sums.tmp friends-live-bundle/SHA256SUMS.txt
+
+      - name: Upload live bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: friends-live-bundle
+          path: friends-live-bundle
+          if-no-files-found: error
+          retention-days: 7
