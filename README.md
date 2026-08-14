@@ -29,7 +29,7 @@ The current vehicle uses an owner-accepted temporary coherent-front bridge. It i
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
-  private source / development
+  private source / development / accepted main
 
 Jozzpoly/JV-Box3D-Web-Public
   public build artifacts / GitHub Pages
@@ -81,13 +81,15 @@ A fresh agent should read:
 
 ## Current direction
 
-Near-term order is intentionally product-led:
+Foundation normalization pass 1 is complete: accepted Friends source is integrated into private `main`, stale steering/transaction instructions are inactive, and focused tests are supported.
 
-1. finish foundation cleanup and keep private `main` equal to accepted product truth;
-2. make release/update diagnosis cheap (including visible build identity);
-3. improve phone camera/layout without changing vehicle mechanics;
-4. measure scan bottlenecks, then take the simplest high-value performance wins before considering advanced LOD;
-5. integrate better authored rig data from JURE when it is ready;
-6. only then revisit final steering/handling work from better geometry.
+Near-term order is now intentionally product-led:
+
+1. make build/release/cache identity visible so deployment state is obvious;
+2. improve phone camera/framing and responsive controls without changing vehicle mechanics;
+3. measure scan bottlenecks on real desktop/phone behavior;
+4. take the simplest high-value scan wins before considering advanced LOD;
+5. integrate better authored rig data from JURE when its output contract is ready;
+6. only then revisit final steering/handling from better geometry.
 
 Third-party notices are in `THIRD_PARTY_NOTICES.md`.

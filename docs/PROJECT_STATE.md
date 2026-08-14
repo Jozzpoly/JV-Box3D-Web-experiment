@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 Owner: Jozz
-Status: `FRIENDS R1 LIVE / FOUNDATION BASELINE ACCEPTED / CLEANUP + PRODUCTIZATION NEXT`
+Status: `FRIENDS R1 LIVE / FOUNDATION NORMALIZATION PASS 1 COMPLETE / USABILITY + MEASURED PERFORMANCE NEXT`
 
 ## 1. Current release
 
@@ -18,6 +18,8 @@ private source used by live hotfix: 0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb
 ```
 
 The live Friends artifact contains 54 files / 114,496,451 bytes and the exact approved JSPREV2 scan. Pages has built the hotfix successfully.
+
+Private accepted source has since advanced only through foundation documentation/workflow normalization; no vehicle/render/scan product behavior was changed by that normalization.
 
 ## 2. Owner-validated product baseline
 
@@ -71,51 +73,57 @@ The browser loader validates decoded tile body bytes and JSPREV2 structure. It i
 
 Current renderer uploads all scan groups and draws all of them every frame. There is no tile/frustum culling, streaming, mipmapped texture pipeline or scan LOD yet. The loader also keeps render geometry and builds a merged collision representation. These are optimization opportunities, not current release blockers.
 
-## 5. Current foundation task
+## 5. Foundation normalization pass 1 — complete
 
-The next work is not another vehicle-mechanics expedition. Foundation work should make the accepted product cheap to continue:
+Completed on private `main`:
 
-1. make private `main` match accepted Friends source truth;
-2. remove stale transaction/steering instructions from active docs;
-3. keep ordinary dev loops targeted and cheap;
-4. keep public release/hotfix identity easy to diagnose;
-5. keep JURE as the rig-authoring boundary rather than duplicating it here.
+- accepted Friends source line integrated by normal fast-forward;
+- stale front-corner transaction/steering-next-step instructions removed from active authority;
+- no active implementer task remains;
+- active docs now describe Friends/JURE/current product truth rather than the old recovery campaign;
+- ordinary test runner supports focused test files while preserving full-suite behavior with no arguments;
+- historical recovery/protocol material is cold evidence rather than required boot context.
 
-No active implementer research task exists after this cleanup.
+The completed `work/friends-pages-r1` transaction is no longer parallel product authority.
 
-## 6. Planned product phases
+## 6. Next foundation/product iterations
 
-### Phase A — foundation normalization
+### Iteration 2 — release/build observability
 
-Current phase. Documentation/workflow/main integration only; do not change vehicle feel or scan rendering.
+Make it trivial to know which build the browser is running and whether a Pages update/cache transition happened. Keep this owner-visible and tiny; do not build a telemetry platform.
 
-### Phase B — Friends usability
+### Iteration 3 — mobile camera/framing
 
-Small owner-visible slices:
+Make chase camera composition aspect-aware for portrait and landscape while preserving desktop behavior and vehicle mechanics.
 
-- visible build/release identity so cache/deploy state is obvious;
-- mobile camera/framing;
-- responsive control layout and orientation behavior;
-- clearer scan loading/startup feedback if needed.
+### Iteration 4 — responsive controls
 
-### Phase C — scan performance
+Reduce obstruction and improve reachable layout/safe-area behavior on phone without redesigning the whole UI.
 
-Measure before architecture. Start with the cheapest proven bottlenecks: memory copies, visibility/tile culling, draw workload and texture behavior. Only introduce geometric LOD/decimation/streaming when measurement shows simpler steps are insufficient.
+### Iteration 5 — performance observability
 
-Desktop scan quality/performance is the reference. Phone scan remains available throughout optimization rather than being silently disabled.
+Measure frame time/FPS, draw workload, scan group/chunk counts, load timing and useful memory proxies on real desktop/phone paths. Debug-only instrumentation is sufficient.
 
-### Phase D — JURE integration
+### Iteration 6 — simple scan wins
 
-Consume explicit owner-authored rig/frame data when JURE is ready. Revalidate lower suspension/mating and only then decide what physical steering geometry is justified.
+Start from measured bottlenecks: remove avoidable memory duplication, preserve/use spatial tile bounds, add visibility/tile culling, reduce draw workload and improve texture sampling behavior. Re-measure after each small change.
 
-### Phase E — driving/physics refinement
+### Iteration 7 — LOD decision
 
-Final steering response, self-align/back-drive, handling and feel come after better rig evidence. Owner driving remains the final gate for feel.
+Only if simple wins are insufficient, prototype the smallest useful geometric/texture LOD or streaming scheme. Desktop quality remains the reference and full phone scan stays available during experiments.
+
+### Iteration 8 — JURE integration readiness
+
+When JURE stabilizes its authored output contract, define a small JV-Web adapter/fixture. Do not import JURE UI/ontology wholesale and do not create cross-repo runtime coupling.
+
+### Later — rig + driving refinement
+
+Use improved authored rig evidence to repair lower suspension/mating and then revisit physical steering response, self-align/back-drive, handling and feel. Owner driving remains the final gate for feel.
 
 ## 7. Explicitly deferred
 
 - old-build archaeology for a remembered driving feel;
 - final physical steering experiments against the provisional rig;
-- advanced mobile scan LOD before basic profiling/simple wins;
+- advanced mobile scan LOD before profiling/simple wins;
 - large documentation or process frameworks;
 - rewriting native JV or JURE from this repo.

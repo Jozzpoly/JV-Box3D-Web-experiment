@@ -1,15 +1,15 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-14
-Status: `FRIENDS R1 LIVE / FOUNDATION NORMALIZATION / RIG + FINAL STEERING DEFERRED TO JURE`
+Status: `FRIENDS R1 LIVE / FOUNDATION NORMALIZATION PASS 1 COMPLETE / USABILITY + MEASURED PERFORMANCE NEXT`
 
 This file is only a router. Current Git, runtime evidence and direct owner observation outrank it.
 
 ## Current product truth
 
-- accepted private source line: `main` after Friends foundation integration;
-- current Friends source baseline before documentation/tooling normalization: `0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb`;
+- accepted private source authority: current `main`;
 - live public Friends: `release/friends-r1@7161215e47f00573b8c1b5c31e5931c89f9d709a`;
+- private source used by that live hotfix: `0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb`;
 - immutable rollback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`.
 
 Owner validated on real devices:
@@ -34,12 +34,16 @@ The current approved Friends scan is intentionally public. Pages-safe asset URLs
 
 Current full scan metrics: 7 tiles, 25 groups/textures, 1,409,687 vertices, 1,775,775 triangles.
 
-## Next product phases
+## Current direction
 
-1. finish foundation cleanup and integrate accepted source into `main`;
-2. simplify release/update diagnosis;
-3. mobile camera/layout pass;
-4. measure scan CPU/GPU/memory/draw bottlenecks and apply simple wins first;
+Foundation normalization pass 1 is complete. Private `main` now contains the accepted Friends source line and current operating truth; the old implementer steering task is inactive.
+
+Next slices:
+
+1. release/cache/build observability;
+2. mobile camera/framing + responsive controls;
+3. targeted performance measurement;
+4. simple scan memory/culling/draw/texture wins before advanced LOD;
 5. later consume authored rig outputs from JURE;
 6. revisit final steering/feel only from improved rig evidence.
 
