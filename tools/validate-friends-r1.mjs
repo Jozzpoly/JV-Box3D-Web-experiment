@@ -401,6 +401,11 @@ export async function validateFriendsR1Candidate(
   ) {
     errors.push("Friends R1 client bundle contains a root-absolute scan index URL.");
   }
+  if (clientJavaScript.includes("HTTP bytes")) {
+    errors.push(
+      "Friends R1 client bundle still validates scan transport Content-Length instead of decoded body bytes.",
+    );
+  }
 
   let pagesSmoke = null;
   if (errors.length === 0 && httpSmoke) {
