@@ -36,9 +36,10 @@ Implemented:
 6. **PERF-S1 diagnostics** — Debug also reports visible/total scan groups and visible/total scan draw calls.
 7. **PERF-S2: render-matrix reuse** — the scan model is built once and the shared `viewProjection × scanModel` matrix is reused for culling and every visible scan draw. Identity-world draws use `viewProjection` directly instead of recomputing the same matrix per draw.
 8. **Same-build A/B controls** — default behavior stays culling ON and render-scale cap 2. Experimental query controls are `jvScanCull=0` and `jvRenderScale=1|1.5|2`; they survive Plac/Offroad/Scan navigation because location switching changes only `jvSpawn`.
-9. **Documentation reduction** — current docs describe current boundaries; Git history is the cold archive.
+9. **PERF-S3: logical-group state batching** — multi-chunk groups still issue the same draw calls, but program/uniform/color/texture state is configured once per logical group instead of once per Uint16 chunk. Mesh-specific position/normal/UV/index buffers remain bound per chunk.
+10. **Documentation reduction** — current docs describe current boundaries; Git history is the cold archive.
 
-PERF-S1/S2 are source-reviewed performance candidates, not yet a claim of measured phone improvement. Conservative culling math passed supplemental strict TypeScript 5.8 checks and perspective/clip-space cases; matrix reuse passed bit-equivalence checks. The A/B parser is fail-safe: unsupported scale values return to cap 2 and only literal `jvScanCull=0` disables culling. Canonical Node 24.16 / npm 11.13 / TypeScript 7 / Vite 8 validation and real-device measurement are still pending.
+PERF-S1/S2/S3 are source-reviewed performance candidates, not yet a claim of measured phone improvement. Conservative culling math passed supplemental strict TypeScript 5.8 checks and perspective/clip-space cases; matrix reuse passed bit-equivalence checks. The A/B parser is fail-safe: unsupported scale values return to cap 2 and only literal `jvScanCull=0` disables culling. Canonical Node 24.16 / npm 11.13 / TypeScript 7 / Vite 8 validation and real-device measurement are still pending.
 
 ## Current scan cost
 
@@ -59,7 +60,7 @@ base RGBA8 texture texels:  104,857,600 B (100 MiB)
 
 The merged ~38.2 MB collision copy is passed to Box3D and is not disposable renderer waste.
 
-Current WebGL1 Uint16 chunking makes 13/25 logical groups exceed one chunk, so the approved scan requires at least **38 scan draw calls** before other world draws. PERF-S1 can now skip whole groups and all of their chunks when offscreen; Debug exposes the actual visible counts.
+Current WebGL1 Uint16 chunking makes 13/25 logical groups exceed one chunk, so the approved scan requires at least **38 scan draw calls** before other world draws. PERF-S1 can now skip whole groups and all of their chunks when offscreen; PERF-S3 avoids repeating logical-group state setup for the extra chunks. Debug exposes the actual visible counts.
 
 All 25 scan textures are still created and loaded eagerly. Culling therefore reduces draw/triangle work only; it does **not** yet reduce scan download, texture decode, GPU texture residency or CPU collision memory.
 
@@ -103,6 +104,6 @@ Camera work stays prepared but separate from the first performance measurement s
 - do not restart old-build handling archaeology;
 - do not change final steering/rig against the provisional bridge;
 - do not hide the full scan on phone instead of optimizing/measuring it;
-- do not claim PERF-S1/S2 improved a real phone before device evidence;
+- do not claim PERF-S1/S2/S3 improved a real phone before device evidence;
 - do not introduce speculative LOD/streaming architecture;
 - do not create new orchestration/process frameworks.
