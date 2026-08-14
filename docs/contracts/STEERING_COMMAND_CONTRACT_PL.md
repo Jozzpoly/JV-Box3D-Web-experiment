@@ -1,7 +1,7 @@
 # JV — kontrakt semantyczny sterowania kierownicą
 
-Updated: 2026-08-04
-Status: `ACTIVE CONTRACT`
+Updated: 2026-08-14
+Status: `ACTIVE CURRENT SEMANTICS / FINAL FEEL NOT APPROVED`
 Owner: Jozz
 
 ## 1. Typ komendy
@@ -23,11 +23,11 @@ value * physical rack travel
 
 Rola:
 
-- bezpośredni baseline natywnego sterowania;
-- jawny hands-on target pozycji;
+- bezpośredni jawny hands-on target pozycji;
+- użyteczny mechanizm referencyjny;
 - nie rozwiązuje potrzeby bardzo krótkich, precyzyjnych tapów klawiaturą.
 
-## 3. RATE — aktywny eksperyment K2b
+## 3. RATE — bieżący mechanizm referencyjny
 
 RATE działa w fizycznym rack-space:
 
@@ -168,7 +168,7 @@ Nie może znać:
 
 Lokalny actuator może znać rack translation/speed, travel i własny target error. Każde użycie jest widoczne w trace.
 
-## 9. Profile badawcze
+## 9. Bieżące profile referencyjne
 
 ```text
 0.06 m/s -> 1.0 mm na idealny krok 1/60 s
@@ -183,62 +183,16 @@ Każdy profil:
 productDefaultApproved = false
 ```
 
-`0.21 m/s` jest historycznym punktem odniesienia, nie zatwierdzonym defaultem.
+`0.21 m/s` jest bieżącym punktem referencyjnym, nie zatwierdzonym finalnym feelingiem.
 
-Aktualny lead candidate:
+Bieżący limit lead:
 
 ```text
 maxTargetLeadMeters = 0.008
 ```
 
-## 10. Dowód istniejący
+## 10. Granica akceptacji
 
-Automatyczna macierz obejmuje:
+Automatyzacja może walidować semantykę komend, timeline, lifecycle i deterministyczność, ale nie wybiera finalnego feelingu kierownicy.
 
-- tapy `0.5 / 1 / 2 / 3 / 6` step equivalents;
-- wszystkie cztery rates;
-- monotoniczność;
-- sub-frame signed-time mapping;
-- engage/reversal rebase;
-- immediate release;
-- rack travel clamp;
-- frozen/blocked-rack lead cap;
-- left/right symmetry;
-- 15/30/60/120 FPS;
-- irregular cadence i dropped gaps;
-- profile switch i lifecycle rebuild;
-- nakładanie wielu `sourceId` na tę samą stronę;
-- source-scoped release;
-- multi-touch steering + drive;
-- pointer capture, cancel, lost capture, visibility i disposal.
-
-Dynamiczny pomiar na reference backendzie:
-
-```text
-stationary held excess: 0.000 mm
-driving held excess:    <= 0.284 mm
-post-RELEASE peak:       2.541–2.817 mm
-contacts:                4
-```
-
-Post-RELEASE peak jest obserwacją, nie zatwierdzonym defektem do force-clampowania.
-
-## 11. Owner gate
-
-Automatyzacja nie wybiera finalnego feelu. Jozz ocenia:
-
-- pojedyncze tapy;
-- serię drobnych korekt;
-- łagodny łuk;
-- zmianę kierunku;
-- postój i toczenie;
-- szybszą jazdę;
-- fizyczny ruch po RELEASE;
-- klawiaturę i touch przy identycznym timeline;
-- wygodę jednoczesnego skrętu, gazu, hamulca i kamery na realnym telefonie.
-
-## 12. Native/WASM direction
-
-Dawna koncepcja osobnego transferu behavior card do kolejnej implementacji została zastąpiona przez ADR-0003.
-
-Docelowo RATE/POSITION/RELEASE należą do wspólnego native JV Core kompilowanego do desktop i WASM. Browser host dostarcza timestamped semantic command, ale nie implementuje drugiego fizycznego aktuatora.
+Obecny browserowy mechanizm jest użytecznym referencyjnym zachowaniem JV Web. Nie ustanawia finalnej geometrii rigu, steering back-drive/self-align ani finalnego handlingu. Te elementy pozostają poza tym kontraktem i powinny być rozstrzygane dopiero na lepszych danych geometrycznych/autorskich.
