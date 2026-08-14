@@ -1,8 +1,8 @@
 # JV Web — current project state
 
-Updated: 2026-08-14
+Updated: 2026-08-15
 Owner: Jozz
-Status: `FRIENDS R1 LIVE / USABILITY + PERFORMANCE FOUNDATION CANDIDATE`
+Status: `FRIENDS R1 LIVE / PERFORMANCE CANDIDATE ACTIVE`
 
 ## Accepted/live authority
 
@@ -14,16 +14,9 @@ public rollback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 private source used by live hotfix: 0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb
 ```
 
-Owner validated on real desktop and phone:
+Owner already validated the live Friends release on real desktop and phone: Plac E2R, Offroad, driving/touch controls and the full JSPREV2 scan work. The phone scan is heavy but usable; camera/framing and phone performance remain improvement targets.
 
-- Plac E2R works;
-- Offroad works and is driveable over terrain;
-- full public JSPREV2 scan loads, renders and runs with live physics;
-- portrait and landscape both run;
-- phone scan is heavy but still usable at low speed;
-- phone camera/framing and responsive composition remain rough.
-
-The current symmetric front bridge remains a useful temporary R1 driving baseline, not final rig/steering/handling authority.
+The temporary symmetric front steering bridge remains an R1 driving baseline, not final rig/steering authority. Final rig geometry waits for better JURE-authored evidence.
 
 ## Current private candidate
 
@@ -31,37 +24,22 @@ Working branch:
 
 `work/friends-r1-usability`
 
-This branch is intentionally isolated from accepted `main` because later camera/UI changes require owner-visible validation before integration.
+Current candidate work is isolated from accepted `main` until canonical build + owner/device validation.
 
-Implemented there so far:
+Implemented:
 
-1. **Exact build identity** — Vite embeds the exact private source SHA into the client bundle. Debug shows the short source SHA; the full SHA is also present in the DOM. The Friends release gate cross-checks that the bundle marker matches `build-manifest.json`.
-2. **Debug-only frame/viewport observer** — only while Debug is open, the browser samples average frame cadence and reports backing resolution, effective canvas render scale and device DPR separately. Closing Debug stops the sampling loop. This is browser frame cadence, not a GPU profiler.
-3. **Camera viewport diagnostics** — a pure helper quantifies current 45-degree vertical-FOV framing at different aspect ratios without changing camera behavior.
-4. **JSPREV2 performance baseline** — pure helpers quantify current CPU/GPU geometry, collision duplication, WebGL1 draw-call lower bounds and base-level RGBA8 texture cost without changing scan data or rendering.
-5. **Documentation reduction** — obsolete recovery/handoff/implementer/native-port/process documents are removed from the current tree. Git history preserves cold evidence; executable format contracts remain.
+1. **Exact build identity** — release bundle carries its exact private source SHA and the Friends gate cross-checks it against `build-manifest.json`.
+2. **Debug performance readout** — while Debug is open it reports frame cadence, backing resolution, effective render scale and device DPR separately.
+3. **Camera preparation** — pure aspect-ratio math and a bounded responsive-distance candidate exist, but camera behavior is still not wired or changed.
+4. **JSPREV2 cost baseline** — current CPU/GPU geometry, texture footprint and draw-call lower bound are quantified.
+5. **PERF-S1: conservative scan frustum culling** — each scan group receives a local AABB once during renderer upload. A group is skipped only when all eight AABB corners prove it fully outside the same homogeneous clip plane. Scan geometry, textures, collision and source format are unchanged.
+6. **PERF-S1 diagnostics** — Debug now also reports visible/total scan groups and visible/total scan draw calls.
+7. **PERF-S2: render-matrix reuse** — the scan model is built once and the shared `viewProjection × scanModel` matrix is reused for culling and every visible scan draw. Identity-world draws use `viewProjection` directly instead of recomputing the same matrix per draw.
+8. **Documentation reduction** — current docs describe current boundaries; Git history is the cold archive.
 
-These candidate changes are **not live and not owner-accepted yet**. They do not change vehicle physics, scan geometry, collision, camera behavior or normal rendering behavior.
+PERF-S1/S2 are source-reviewed performance candidates, not yet a claim of measured phone improvement. Conservative culling math passed supplemental strict TypeScript 5.8 checks and perspective/clip-space cases; matrix reuse passed bit-equivalence checks. Canonical Node 24.16 / npm 11.13 / TypeScript 7 / Vite 8 validation and real-device measurement are still pending.
 
-## Validation checkpoint
-
-The candidate remains a normal descendant of accepted `main`; no vehicle/physics/rig/scan-geometry paths were changed by the usability work.
-
-Targeted review found and corrected one interpretation bug before device testing: raw `devicePixelRatio` is not the effective render scale because the renderer already caps canvas scaling at 2x. Debug now reports the actual canvas-derived render scale separately from device DPR.
-
-Supplemental syntax/type/math checks have passed in the available Node 22 / TypeScript 5.8 environment. This is **not** canonical Node 24.16 / npm 11.13 / TypeScript 7 / Vite 8 release validation and is not browser/device acceptance.
-
-## Camera facts before tuning
-
-Current camera uses a fixed 45-degree vertical FOV and a 16:9-like desktop composition with fixed chase distance.
-
-At 9:16 portrait, the available horizontal coverage is only `81/256 ~= 31.64%` of the 16:9 reference. Fully preserving horizontal framing would require roughly `3.16x` chase distance, which is intentionally treated as an over-aggressive diagnostic rather than a product setting.
-
-Preserving projected object area gives a softer geometric-mean candidate of `16/9 ~= 1.78x` at 9:16. This is still **not accepted tuning** and is not wired into the renderer. The next camera slice should be bounded, reversible and judged on a real phone while preserving normal desktop composition.
-
-## Scan performance facts before optimization
-
-Current approved scan:
+## Current scan cost
 
 ```text
 7 tiles
@@ -70,66 +48,51 @@ Current approved scan:
 5,327,325 indices
 1,775,775 triangles
 111,288,484 B source payload
+
+render typed arrays:        66,419,284 B
+collision typed arrays:     38,225,544 B
+total typed-array geometry: 104,644,828 B
+estimated GPU geometry:     55,764,634 B
+base RGBA8 texture texels:  104,857,600 B (100 MiB)
 ```
 
-Current parsed geometry baseline:
+The merged ~38.2 MB collision copy is passed to Box3D and is not disposable renderer waste.
+
+Current WebGL1 Uint16 chunking makes 13/25 logical groups exceed one chunk, so the approved scan requires at least **38 scan draw calls** before other world draws. PERF-S1 can now skip whole groups and all of their chunks when offscreen; Debug exposes the actual visible counts.
+
+All 25 scan textures are still created and loaded eagerly. Culling therefore reduces draw/triangle work only; it does **not** yet reduce scan download, texture decode, GPU texture residency or CPU collision memory.
+
+## Performance direction
+
+Do not add geometric LOD or rewrite collision before simpler evidence-backed levers are exhausted.
+
+The next useful device candidate should let us measure:
 
 ```text
-render typed arrays:       66,419,284 B
-collision typed arrays:    38,225,544 B
-total typed-array geometry:104,644,828 B
-estimated GPU geometry:    55,764,634 B
+exact build SHA
+frame ms / fps
+canvas backing resolution
+effective render scale / device DPR
+visible scan groups / total groups
+visible scan draws / total draws
 ```
 
-The collision copy is not merely renderer waste: it is the merged mesh passed to Box3D as the scan collision. Removing it therefore crosses the physics boundary and is not an automatic first optimization.
+From that one device pass choose the next lever:
 
-Current renderer behavior:
+1. **render/backing scale** if fps tracks pixel workload;
+2. **texture resolution or visibility-driven texture residency** if memory/upload pressure dominates;
+3. **Uint32 index fast path** only if draw-call pressure remains high and the phone supports it — it trades fewer draws for larger index buffers;
+4. **bounded scan-load pipelining** if startup/download/parse time is the main problem;
+5. collision-memory restructuring only with physics/memory evidence;
+6. geometric LOD/streaming only if the simpler changes are insufficient.
 
-- all scan groups are uploaded when the world renderer is created;
-- all scan groups are drawn every frame;
-- WebGL1-compatible meshes are split to Uint16 chunks;
-- 13 of the 25 current groups exceed 65,535 vertices;
-- therefore the scan requires **at least 38 WebGL draw calls** before Offroad and other static world draws;
-- there is no frustum/tile culling, streaming or geometric LOD.
+Camera work stays prepared but separate from the first performance measurement so performance and composition changes are not mixed unnecessarily.
 
-All 25 approved scan textures are 1024x1024 RGBA and the renderer uploads them as `RGBA / UNSIGNED_BYTE` without mipmaps. Their base-level texel payload is therefore 104,857,600 B (100 MiB). Combined with the current geometry estimate, base scan GPU geometry + texels are about 160,622,234 B (~153.2 MiB), before driver/implementation overhead. Encoded PNG bytes are not GPU texture residency.
+## Explicit boundaries now
 
-## Optimization order from current evidence
-
-Do not pick one bottleneck before the real device measurement. Use the first candidate build to record frame cadence, backing resolution and effective render scale on Plac, Offroad and Scan.
-
-Then prefer the cheapest evidence-backed lever:
-
-1. **backing resolution / render scale** if fill/pixel workload dominates;
-2. **texture footprint** if memory/upload pressure dominates — current 100 MiB base texels make this a serious candidate;
-3. **visibility/group culling** if draw/triangle workload dominates — current scan has at least 38 draw calls and no culling;
-4. **CPU collision-memory restructuring** only if memory evidence justifies crossing the physics boundary;
-5. geometric LOD/streaming only if simpler measured wins are insufficient.
-
-Current scan data retains only global `worldBounds`; render groups do not preserve individual bounds/tile identity in `JvWorldData`. The loader already visits every vertex, so later culling can preserve group bounds during parsing without changing the JSPREV2 source format. Do not add that contract until measurement selects culling as the next real lever.
-
-## Rig/JURE boundary
-
-Do not restart manual hardpoint reconstruction or the old steering-coupling expedition as the default next step.
-
-FL lower placement, wishbone<->knuckle mating and final spatial steering geometry wait for better authored evidence from JURE. JV Web should later consume a small explicit authored-output contract rather than grow a second rig editor.
-
-## Next sequence
-
-1. Keep the current instrumentation/preparation candidate isolated from `main`.
-2. Add one small bounded aspect-aware camera implementation without changing vehicle mechanics or desktop defaults unnecessarily.
-3. Build canonically once the candidate has enough owner-visible value to justify one device/public test.
-4. On desktop and phone, record exact build identity plus Plac/Offroad/Scan frame cadence, backing resolution and effective render scale.
-5. Accept/reject/tune the camera from the real device result.
-6. Select exactly one first scan optimization from measured evidence and remeasure before adding another.
-7. Consider responsive-control refinements after camera composition is understood.
-
-## Explicit non-goals now
-
-- old-build archaeology for remembered handling;
-- final steering/handling work against the provisional rig;
-- hiding/disabling the scan on phone instead of measuring it;
-- speculative scan LOD architecture;
-- changing scan collision just to save memory without physics evidence;
-- another rig workbench inside JV Web;
-- new process/documentation frameworks.
+- do not restart old-build handling archaeology;
+- do not change final steering/rig against the provisional bridge;
+- do not hide the full scan on phone instead of optimizing/measuring it;
+- do not claim PERF-S1/S2 improved a real phone before device evidence;
+- do not introduce speculative LOD/streaming architecture;
+- do not create new orchestration/process frameworks.
