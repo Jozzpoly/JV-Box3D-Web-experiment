@@ -33,11 +33,12 @@ Implemented:
 3. **Camera preparation** — pure aspect-ratio math and a bounded responsive-distance candidate exist, but camera behavior is still not wired or changed.
 4. **JSPREV2 cost baseline** — current CPU/GPU geometry, texture footprint and draw-call lower bound are quantified.
 5. **PERF-S1: conservative scan frustum culling** — each scan group receives a local AABB once during renderer upload. A group is skipped only when all eight AABB corners prove it fully outside the same homogeneous clip plane. Scan geometry, textures, collision and source format are unchanged.
-6. **PERF-S1 diagnostics** — Debug now also reports visible/total scan groups and visible/total scan draw calls.
+6. **PERF-S1 diagnostics** — Debug also reports visible/total scan groups and visible/total scan draw calls.
 7. **PERF-S2: render-matrix reuse** — the scan model is built once and the shared `viewProjection × scanModel` matrix is reused for culling and every visible scan draw. Identity-world draws use `viewProjection` directly instead of recomputing the same matrix per draw.
-8. **Documentation reduction** — current docs describe current boundaries; Git history is the cold archive.
+8. **Same-build A/B controls** — default behavior stays culling ON and render-scale cap 2. Experimental query controls are `jvScanCull=0` and `jvRenderScale=1|1.5|2`; they survive Plac/Offroad/Scan navigation because location switching changes only `jvSpawn`.
+9. **Documentation reduction** — current docs describe current boundaries; Git history is the cold archive.
 
-PERF-S1/S2 are source-reviewed performance candidates, not yet a claim of measured phone improvement. Conservative culling math passed supplemental strict TypeScript 5.8 checks and perspective/clip-space cases; matrix reuse passed bit-equivalence checks. Canonical Node 24.16 / npm 11.13 / TypeScript 7 / Vite 8 validation and real-device measurement are still pending.
+PERF-S1/S2 are source-reviewed performance candidates, not yet a claim of measured phone improvement. Conservative culling math passed supplemental strict TypeScript 5.8 checks and perspective/clip-space cases; matrix reuse passed bit-equivalence checks. The A/B parser is fail-safe: unsupported scale values return to cap 2 and only literal `jvScanCull=0` disables culling. Canonical Node 24.16 / npm 11.13 / TypeScript 7 / Vite 8 validation and real-device measurement are still pending.
 
 ## Current scan cost
 
@@ -66,7 +67,16 @@ All 25 scan textures are still created and loaded eagerly. Culling therefore red
 
 Do not add geometric LOD or rewrite collision before simpler evidence-backed levers are exhausted.
 
-The next useful device candidate should let us measure:
+One future device build can now compare the same exact source SHA with:
+
+```text
+default: culling ON, render cap 2
+A/B:     jvScanCull=0
+A/B:     jvRenderScale=1.5
+A/B:     jvRenderScale=1
+```
+
+For each case record:
 
 ```text
 exact build SHA
@@ -77,7 +87,7 @@ visible scan groups / total groups
 visible scan draws / total draws
 ```
 
-From that one device pass choose the next lever:
+Then choose the next measured lever:
 
 1. **render/backing scale** if fps tracks pixel workload;
 2. **texture resolution or visibility-driven texture residency** if memory/upload pressure dominates;
