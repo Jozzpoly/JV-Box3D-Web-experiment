@@ -2,128 +2,90 @@
 
 Updated: 2026-08-14
 Owner: Jozz
-Status: `FRIENDS R1 LIVE / FOUNDATION NORMALIZATION PASS 1 COMPLETE / USABILITY + MEASURED PERFORMANCE NEXT`
+Status: `FRIENDS R1 LIVE / USABILITY FOUNDATION CANDIDATE IN PROGRESS`
 
-## 1. Current release
-
-Public site: `https://jozzpoly.github.io/JV-Box3D-Web-Public/`
+## Accepted/live authority
 
 ```text
-public repo: Jozzpoly/JV-Box3D-Web-Public
-live branch: release/friends-r1
-live commit: 7161215e47f00573b8c1b5c31e5931c89f9d709a
-live tree: 73fe33de5d0ed62953e6e1493a4d47676507c809
+private accepted source: main@f8eb0908f5934aed2d504f34ce483a02754039ec
+public live branch: release/friends-r1
+public live commit: 7161215e47f00573b8c1b5c31e5931c89f9d709a
 public rollback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 private source used by live hotfix: 0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb
 ```
 
-The live Friends artifact contains 54 files / 114,496,451 bytes and the exact approved JSPREV2 scan. Pages has built the hotfix successfully.
+Owner validated on real desktop and phone:
 
-Private accepted source has since advanced only through foundation documentation/workflow normalization; no vehicle/render/scan product behavior was changed by that normalization.
+- Plac E2R works;
+- Offroad works and is driveable over terrain;
+- full public JSPREV2 scan loads, renders and runs with live physics;
+- portrait and landscape both run;
+- phone scan is heavy but still usable at low speed;
+- phone camera/framing and responsive composition remain rough.
 
-## 2. Owner-validated product baseline
+The current symmetric front bridge remains a useful temporary R1 driving baseline, not final rig/steering/handling authority.
 
-Direct owner testing on 2026-08-14 established:
+## Current private candidate
 
-### Desktop
+Working branch:
 
-- normal entry starts at Plac E2R;
-- vehicle loads, drives and basic camera/UI work;
-- Offroad loads and is driveable over terrain;
-- full JSPREV2 scan loads, renders and runs with live physics;
-- the Pages/CDN `Content-Length` startup failure is resolved.
+`work/friends-r1-usability`
 
-### Phone
+This branch is intentionally isolated from accepted `main` because later camera/UI changes require owner-visible validation before integration.
 
-- Plac E2R and Offroad work;
-- full JSPREV2 scan also loads and runs;
-- scan performance is noticeably slow/heavy, but driving remains possible at low speed;
-- portrait and landscape both render the product;
-- camera framing and responsive composition are visibly rough and need a later UX pass.
+Implemented there so far:
 
-This is the first accepted end-to-end Friends foundation. Automated PASSes support it but do not replace the owner/device evidence.
+1. **Exact build identity** — Vite embeds the exact private source SHA into the client bundle. Debug shows the short source SHA; the full SHA is also present in the DOM. The Friends release gate cross-checks that the bundle marker matches `build-manifest.json`.
+2. **Debug-only frame/viewport observer** — only while Debug is open, the browser samples average frame time/FPS and reports the actual WebGL canvas resolution and device pixel ratio. Closing Debug stops the sampling loop.
+3. **Documentation reduction** — obsolete recovery/handoff/implementer/native-port documents are removed from the current tree rather than kept as competing inactive authorities. Git history preserves them.
 
-## 3. Vehicle boundary
+These candidate changes are **not live and not owner-accepted yet**. They do not change vehicle physics, scan geometry, collision or normal rendering behavior.
 
-The current symmetric temporary front bridge remains accepted only as an R1 product intermediate:
+## Performance facts established before optimization
 
-- straight driving and left/right steering are coherent enough to continue;
-- final steering feedback/back-drive/self-align is not accepted;
-- residual asymmetry/feel issues remain;
-- FL lower wishbone and wishbone<->knuckle mating remain unresolved;
-- no current caster/KPI/trail/tie-rod/rack geometry is final authority.
-
-Do not spend the next JV Web phase guessing those details. Authoring of reliable mating points/frames belongs in JURE.
-
-## 4. Scan/runtime boundary
-
-Current approved Friends scan:
+Current approved scan:
 
 ```text
-preview SHA-256: aee5242a208482944666b56bcc7ddfe66cbd4e72dc9da99199fbe667bd578146
-COMPLETE.json SHA-256: a0f3bc792f0a273c18fb00117deafdec95959f8f7e9f2a0bb85af34c8c2e29fb
-tiles: 7
-groups/textures: 25 / 25
-vertices: 1,409,687
-triangles: 1,775,775
-source payload: ~111 MB
+7 tiles
+25 render groups / 25 textures
+1,409,687 vertices
+1,775,775 triangles
+~111 MB source payload
 ```
 
-The browser loader validates decoded tile body bytes and JSPREV2 structure. It intentionally ignores compressed transport `Content-Length` as a logical file-integrity signal.
+Current renderer behavior:
 
-Current renderer uploads all scan groups and draws all of them every frame. There is no tile/frustum culling, streaming, mipmapped texture pipeline or scan LOD yet. The loader also keeps render geometry and builds a merged collision representation. These are optimization opportunities, not current release blockers.
+- all scan groups are uploaded when the world renderer is created;
+- all scan groups are drawn every frame;
+- there is no frustum/tile culling, streaming or geometric LOD;
+- WebGL1-compatible meshes are split into Uint16 chunks;
+- texture policy currently provides nearest/linear filtering only.
 
-## 5. Foundation normalization pass 1 — complete
+Current scan data path retains only global `worldBounds`; individual render groups do not preserve their own bounds/tile identity in `JvWorldData`. The loader already visits every vertex and later creates a merged collision mesh plus another full bounds pass.
 
-Completed on private `main`:
+Therefore future culling does **not** require a new JSPREV2 source format. If measurement justifies it, group bounds can be preserved during existing parsing with little extra work. Do not add that contract until measurement shows it is useful.
 
-- accepted Friends source line integrated by normal fast-forward;
-- stale front-corner transaction/steering-next-step instructions removed from active authority;
-- no active implementer task remains;
-- active docs now describe Friends/JURE/current product truth rather than the old recovery campaign;
-- ordinary test runner supports focused test files while preserving full-suite behavior with no arguments;
-- historical recovery/protocol material is cold evidence rather than required boot context.
+## Rig/JURE boundary
 
-The completed `work/friends-pages-r1` transaction is no longer parallel product authority.
+Do not restart manual hardpoint reconstruction or the old steering-coupling expedition as the default next step.
 
-## 6. Next foundation/product iterations
+FL lower placement, wishbone<->knuckle mating and final spatial steering geometry wait for better authored evidence from JURE. JV Web should later consume a small explicit authored-output contract rather than grow a second rig editor.
 
-### Iteration 2 — release/build observability
+## Next sequence
 
-Make it trivial to know which build the browser is running and whether a Pages update/cache transition happened. Keep this owner-visible and tiny; do not build a telemetry platform.
+1. Finish the usability candidate without touching vehicle mechanics.
+2. Build it canonically once there is enough owner-visible value to justify one device/public test.
+3. In that test use Debug to identify the exact build and record desktop/phone frame time, FPS, backing resolution and DPR.
+4. Tune aspect-aware mobile camera/framing as a separate reversible commit; preserve normal desktop behavior.
+5. Improve responsive controls only after camera composition is understood.
+6. Use measured scan cost to choose the cheapest optimization: resolution/DPR, memory duplication, visibility/group culling, draw workload or texture path.
+7. Consider geometric LOD/streaming only if simpler measured wins are insufficient.
 
-### Iteration 3 — mobile camera/framing
+## Explicit non-goals now
 
-Make chase camera composition aspect-aware for portrait and landscape while preserving desktop behavior and vehicle mechanics.
-
-### Iteration 4 — responsive controls
-
-Reduce obstruction and improve reachable layout/safe-area behavior on phone without redesigning the whole UI.
-
-### Iteration 5 — performance observability
-
-Measure frame time/FPS, draw workload, scan group/chunk counts, load timing and useful memory proxies on real desktop/phone paths. Debug-only instrumentation is sufficient.
-
-### Iteration 6 — simple scan wins
-
-Start from measured bottlenecks: remove avoidable memory duplication, preserve/use spatial tile bounds, add visibility/tile culling, reduce draw workload and improve texture sampling behavior. Re-measure after each small change.
-
-### Iteration 7 — LOD decision
-
-Only if simple wins are insufficient, prototype the smallest useful geometric/texture LOD or streaming scheme. Desktop quality remains the reference and full phone scan stays available during experiments.
-
-### Iteration 8 — JURE integration readiness
-
-When JURE stabilizes its authored output contract, define a small JV-Web adapter/fixture. Do not import JURE UI/ontology wholesale and do not create cross-repo runtime coupling.
-
-### Later — rig + driving refinement
-
-Use improved authored rig evidence to repair lower suspension/mating and then revisit physical steering response, self-align/back-drive, handling and feel. Owner driving remains the final gate for feel.
-
-## 7. Explicitly deferred
-
-- old-build archaeology for a remembered driving feel;
-- final physical steering experiments against the provisional rig;
-- advanced mobile scan LOD before profiling/simple wins;
-- large documentation or process frameworks;
-- rewriting native JV or JURE from this repo.
+- old-build archaeology for remembered handling;
+- final steering/handling work against the provisional rig;
+- hiding/disabling the scan on phone instead of measuring it;
+- speculative scan LOD architecture;
+- another rig workbench inside JV Web;
+- new process/documentation frameworks.
