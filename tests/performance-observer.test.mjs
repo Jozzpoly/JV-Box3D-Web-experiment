@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { summarizeJvFrameWindow } from "../.test-dist/runtime/performance-observer.js";
+import {
+  summarizeJvCanvasResolution,
+  summarizeJvFrameWindow,
+} from "../.test-dist/runtime/performance-observer.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -14,6 +17,24 @@ test("frame window summary reports stable average frame time and FPS", () => {
   assert.ok(Math.abs(summary.fps - 60) < 1e-9);
   assert.equal(summarizeJvFrameWindow(0, 30), null);
   assert.equal(summarizeJvFrameWindow(500, 0), null);
+});
+
+test("canvas summary distinguishes effective render scale from device DPR", () => {
+  const summary = summarizeJvCanvasResolution(
+    2160,
+    3840,
+    1080,
+    1920,
+    3,
+  );
+  assert.ok(summary);
+  assert.equal(summary.renderScaleX, 2);
+  assert.equal(summary.renderScaleY, 2);
+  assert.equal(summary.devicePixelRatio, 3);
+  assert.equal(
+    summarizeJvCanvasResolution(0, 3840, 1080, 1920, 3),
+    null,
+  );
 });
 
 test("performance sampling is Debug-only and exposes real canvas resolution", async () => {
@@ -29,5 +50,8 @@ test("performance sampling is Debug-only and exposes real canvas resolution", as
   assert.match(observer, /cancelAnimationFrame/);
   assert.match(observer, /canvas\.width/);
   assert.match(observer, /canvas\.height/);
-  assert.match(observer, /devicePixelRatio/);
+  assert.match(observer, /canvas\.clientWidth/);
+  assert.match(observer, /canvas\.clientHeight/);
+  assert.match(observer, /render \$\{renderScale\}×/);
+  assert.match(observer, /device DPR/);
 });

@@ -3,6 +3,12 @@ export interface JvFrameWindowSummary {
   readonly fps: number;
 }
 
+export interface JvCanvasResolutionSummary {
+  readonly renderScaleX: number;
+  readonly renderScaleY: number;
+  readonly devicePixelRatio: number;
+}
+
 export function summarizeJvFrameWindow(
   elapsedMs: number,
   frameCount: number,
@@ -19,6 +25,34 @@ export function summarizeJvFrameWindow(
   return {
     frameMs,
     fps: 1000 / frameMs,
+  };
+}
+
+export function summarizeJvCanvasResolution(
+  backingWidth: number,
+  backingHeight: number,
+  cssWidth: number,
+  cssHeight: number,
+  devicePixelRatio: number,
+): JvCanvasResolutionSummary | null {
+  if (
+    !Number.isFinite(backingWidth) ||
+    backingWidth <= 0 ||
+    !Number.isFinite(backingHeight) ||
+    backingHeight <= 0 ||
+    !Number.isFinite(cssWidth) ||
+    cssWidth <= 0 ||
+    !Number.isFinite(cssHeight) ||
+    cssHeight <= 0 ||
+    !Number.isFinite(devicePixelRatio) ||
+    devicePixelRatio <= 0
+  ) {
+    return null;
+  }
+  return {
+    renderScaleX: backingWidth / cssWidth,
+    renderScaleY: backingHeight / cssHeight,
+    devicePixelRatio,
   };
 }
 
@@ -66,10 +100,22 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
     if (elapsedMs >= 500) {
       const summary = summarizeJvFrameWindow(elapsedMs, frameCount);
       if (summary !== null) {
-        const ratio = window.devicePixelRatio || 1;
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        const resolution = summarizeJvCanvasResolution(
+          canvas.width,
+          canvas.height,
+          canvas.clientWidth,
+          canvas.clientHeight,
+          devicePixelRatio,
+        );
+        const renderScale = resolution === null
+          ? "?"
+          : ((resolution.renderScaleX + resolution.renderScaleY) / 2)
+              .toFixed(2);
         value.textContent =
           `${summary.frameMs.toFixed(1)} ms · ${summary.fps.toFixed(0)} fps · ` +
-          `${canvas.width}×${canvas.height} · DPR ${ratio.toFixed(2)}`;
+          `${canvas.width}×${canvas.height} · render ${renderScale}× · ` +
+          `device DPR ${devicePixelRatio.toFixed(2)}`;
       }
       elapsedMs = 0;
       frameCount = 0;
