@@ -547,6 +547,7 @@ export class JvWorldRendererMobile {
   readonly #staticGroups: GpuGroup[] = [];
   readonly #scanGroups: GpuGroup[] = [];
   readonly #pendingImages = new Set<HTMLImageElement>();
+  readonly #scanModel: JvRenderMatrix | null;
   readonly #scanDrawCallBudget: number;
   #solid: ProgramLocations | null = null;
   #textured: ProgramLocations | null = null;
@@ -556,6 +557,9 @@ export class JvWorldRendererMobile {
   constructor(gl: WebGLRenderingContext, world: JvWorldData) {
     this.#gl = gl;
     this.#world = world;
+    this.#scanModel = world.scan === null
+      ? null
+      : modelMatrix(world.scan.origin, IDENTITY_ROTATION, IDENTITY_SCALE);
     try {
       this.#solid = createProgram(
         gl,
@@ -609,13 +613,8 @@ export class JvWorldRendererMobile {
 
     let visibleScanGroups = 0;
     let visibleScanDrawCalls = 0;
-    if (this.#world.scan !== null) {
-      const scanModel = modelMatrix(
-        this.#world.scan.origin,
-        IDENTITY_ROTATION,
-        IDENTITY_SCALE,
-      );
-      const clipFromScanLocal = multiply(viewProjection, scanModel);
+    if (this.#scanModel !== null) {
+      const clipFromScanLocal = multiply(viewProjection, this.#scanModel);
       for (const group of this.#scanGroups) {
         if (
           group.bounds !== null &&
@@ -625,7 +624,7 @@ export class JvWorldRendererMobile {
         }
         visibleScanGroups += 1;
         visibleScanDrawCalls += group.meshes.length;
-        this.#drawGroup(group, viewProjection, scanModel);
+        this.#drawGroup(group, clipFromScanLocal, this.#scanModel);
       }
     }
     publishJvScanRenderStats(
@@ -728,17 +727,17 @@ export class JvWorldRendererMobile {
 
   #drawGroup(
     group: GpuGroup,
-    viewProjection: JvRenderMatrix,
+    mvp: JvRenderMatrix,
     model: JvRenderMatrix,
   ): void {
     for (const mesh of group.meshes) {
       if (group.texture === null) {
-        this.#drawSolid(mesh, viewProjection, model, group.color);
+        this.#drawSolid(mesh, mvp, model, group.color);
       } else {
         this.#drawTextured(
           mesh,
           group.texture,
-          viewProjection,
+          mvp,
           model,
           group.color,
         );
@@ -748,7 +747,7 @@ export class JvWorldRendererMobile {
 
   #drawSolid(
     mesh: GpuMesh,
-    viewProjection: JvRenderMatrix,
+    mvp: JvRenderMatrix,
     model: JvRenderMatrix,
     color: JvColor,
   ): void {
@@ -759,11 +758,7 @@ export class JvWorldRendererMobile {
     const gl = this.#gl;
     gl.useProgram(locations.program);
     this.#bindCommon(mesh, locations);
-    gl.uniformMatrix4fv(
-      locations.mvp,
-      false,
-      multiply(viewProjection, model),
-    );
+    gl.uniformMatrix4fv(locations.mvp, false, mvp);
     gl.uniformMatrix4fv(locations.model, false, model);
     gl.uniform4f(
       locations.color,
@@ -783,7 +778,7 @@ export class JvWorldRendererMobile {
   #drawTextured(
     mesh: GpuMesh,
     texture: WebGLTexture,
-    viewProjection: JvRenderMatrix,
+    mvp: JvRenderMatrix,
     model: JvRenderMatrix,
     color: JvColor,
   ): void {
@@ -802,11 +797,7 @@ export class JvWorldRendererMobile {
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.uvBuffer);
     gl.enableVertexAttribArray(locations.uv);
     gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0);
-    gl.uniformMatrix4fv(
-      locations.mvp,
-      false,
-      multiply(viewProjection, model),
-    );
+    gl.uniformMatrix4fv(locations.mvp, false, mvp);
     gl.uniformMatrix4fv(locations.model, false, model);
     gl.uniform4f(
       locations.color,
