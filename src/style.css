@@ -67,6 +67,16 @@ details { margin-top: 4px; border-top: 1px solid rgba(255,255,255,.08); border-b
 summary { padding: 12px 0; cursor: pointer; color: #c7d0dc; font-size: .74rem; font-weight: 700; }
 .telemetry-grid { padding-bottom: 12px; }
 .hint { margin: 14px 0 0; color: #aab3c0; font-size: .7rem; line-height: 1.5; }
+/* Friends R1 keeps the legacy diagnostics wired but exposes only the few
+   readouts that are useful during ordinary browser/device checks. */
+.panel-heading > div,
+.profile-control,
+.primary-metrics > div:nth-child(1),
+.primary-metrics > div:nth-child(2),
+.primary-metrics > div:nth-child(3),
+.primary-metrics > div:nth-child(5),
+.panel details,
+.panel .hint { display: none; }
 
 .mobile-controls { position: absolute; z-index: 5; left: max(14px, env(safe-area-inset-left)); right: max(14px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); display: none; align-items: end; justify-content: space-between; gap: 18px; pointer-events: none; }
 .mobile-control-cluster { display: grid; gap: 8px; pointer-events: auto; }
@@ -100,6 +110,7 @@ summary { padding: 12px 0; cursor: pointer; color: #c7d0dc; font-size: .74rem; f
   .product-toolbar { top: calc(max(10px, env(safe-area-inset-top)) + 48px); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); max-width: none; overflow-x: auto; }
   .product-controls { width: max-content; max-width: none; padding: 6px; gap: 6px; }
   .product-control-label { display: none; }
+  .product-control-group:not(:first-child) { display: none; }
   .product-choice { min-height: 29px; padding: 6px 8px; font-size: .62rem; }
   .scene-actions { top: auto; right: max(12px, env(safe-area-inset-right)); bottom: calc(max(14px, env(safe-area-inset-bottom)) + 98px); display: grid; }
   .scene-action { min-height: 32px; padding: 6px 8px; font-size: .6rem; }
