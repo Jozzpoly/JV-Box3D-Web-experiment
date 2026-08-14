@@ -1,6 +1,7 @@
 import type { JvWorldData } from "../scene/jv-world-contract.js";
 import type { M6TraceFrame } from "../vehicle/m6/m6-topology-world.js";
 import { JvWorldRenderer } from "./jv-world-renderer.js";
+import { getJvPerformanceExperimentSettings } from "./jv-performance-experiment-settings.js";
 import { getJvProductViewSettings } from "./jv-product-view-settings.js";
 import { M6OwnerVehicleLayer } from "./m6-owner-vehicle-layer.js";
 import {
@@ -363,6 +364,7 @@ export class M6WorldRenderer {
   readonly #line: Mesh;
   readonly #ownerVehicle: M6OwnerVehicleLayer;
   readonly #events = new AbortController();
+  readonly #renderScaleCap: number;
   #world: JvWorldRenderer | null = null;
   #diagnosticsVisible = false;
   #orbitYaw: number = DEFAULT_M6_CHASE_CAMERA.orbitYaw;
@@ -380,6 +382,7 @@ export class M6WorldRenderer {
 
   constructor(canvas: HTMLCanvasElement) {
     this.#canvas = canvas;
+    this.#renderScaleCap = getJvPerformanceExperimentSettings().renderScaleCap;
     const gl = canvas.getContext("webgl", {
       antialias: true,
       alpha: false,
@@ -733,7 +736,10 @@ export class M6WorldRenderer {
   }
 
   #resize(): void {
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const ratio = Math.min(
+      window.devicePixelRatio || 1,
+      this.#renderScaleCap,
+    );
     const width = Math.max(
       1,
       Math.floor(this.#canvas.clientWidth * ratio),
