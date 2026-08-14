@@ -31,6 +31,8 @@
     "build:portable": "npm run check:third-party && npm run build:bundle && node tools/write-portable-build-manifest.mjs && npm run check:portable",
     "build": "npm run check && npm run build:portable",
     "preview": "vite preview",
+    "export:friends-r1-scan": "node tools/product/export-friends-jsprev2.mjs",
+    "build:friends-r1": "npm run check:third-party && npm run build:bundle && npm run export:friends-r1-scan && node tools/write-portable-build-manifest.mjs && npm run check:portable",
     "check:public-r1-preview": "node tools/validate-public-r1-preview.mjs",
     "build:public-r1-preview": "npm run build:portable && npm run check:public-r1-preview",
     "generate:owner-full-rig": "npm run generate:owner-full-rig-r3",
