@@ -5,7 +5,7 @@
   "type": "module",
   "engines": {
     "node": "24.16.0",
-    "npm": "11.13.0"
+    "npm": ">=11.13.0 <12"
   },
   "scripts": {
     "generate:vehicle-fixture": "tsc -p tsconfig.test.json && node tools/write-tiny-vehicle-visual-fixture.mjs",
@@ -56,7 +56,7 @@
     },
     "packageManager": {
       "name": "npm",
-      "version": "11.13.0",
+      "version": ">=11.13.0 <12",
       "onFail": "error"
     }
   }
