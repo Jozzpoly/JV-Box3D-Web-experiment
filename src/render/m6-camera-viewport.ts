@@ -9,6 +9,7 @@ export interface M6CameraViewportMetrics {
   readonly horizontalFovRadians: number;
   readonly horizontalCoverageVsReference: number;
   readonly equalHorizontalFramingDistanceMultiplier: number;
+  readonly equalProjectedAreaDistanceMultiplier: number;
 }
 
 function positiveFinite(value: number, label: string): number {
@@ -43,6 +44,8 @@ export function inspectM6CameraViewport(
   const horizontalFovRadians =
     2 * Math.atan(halfVerticalTangent * aspect);
   const horizontalCoverageVsReference = aspect / safeReferenceAspect;
+  const equalHorizontalFramingDistanceMultiplier =
+    1 / horizontalCoverageVsReference;
 
   return {
     width: safeWidth,
@@ -51,7 +54,11 @@ export function inspectM6CameraViewport(
     verticalFovRadians,
     horizontalFovRadians,
     horizontalCoverageVsReference,
-    equalHorizontalFramingDistanceMultiplier:
-      1 / horizontalCoverageVsReference,
+    equalHorizontalFramingDistanceMultiplier,
+    // Preserving projected object area is the geometric-mean compromise
+    // between unchanged vertical framing (1x) and full horizontal framing.
+    // It is a diagnostic candidate, not an accepted product tuning value.
+    equalProjectedAreaDistanceMultiplier:
+      Math.sqrt(equalHorizontalFramingDistanceMultiplier),
   };
 }

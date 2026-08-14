@@ -17,6 +17,7 @@ test("16:9 viewport is the neutral current camera framing reference", () => {
   approximately(metrics.aspect, M6_CAMERA_REFERENCE_ASPECT);
   approximately(metrics.horizontalCoverageVsReference, 1);
   approximately(metrics.equalHorizontalFramingDistanceMultiplier, 1);
+  approximately(metrics.equalProjectedAreaDistanceMultiplier, 1);
 });
 
 test("portrait viewport quantifies why the fixed-distance camera feels much tighter", () => {
@@ -27,13 +28,19 @@ test("portrait viewport quantifies why the fixed-distance camera feels much tigh
     metrics.equalHorizontalFramingDistanceMultiplier,
     256 / 81,
   );
+  approximately(metrics.equalProjectedAreaDistanceMultiplier, 16 / 9);
   assert.ok(metrics.horizontalFovRadians < Math.PI / 4);
+  assert.ok(
+    metrics.equalProjectedAreaDistanceMultiplier <
+      metrics.equalHorizontalFramingDistanceMultiplier,
+  );
 });
 
 test("wide landscape has more horizontal coverage than the 16:9 reference", () => {
   const metrics = inspectM6CameraViewport(2520, 1080);
   assert.ok(metrics.horizontalCoverageVsReference > 1);
   assert.ok(metrics.equalHorizontalFramingDistanceMultiplier < 1);
+  assert.ok(metrics.equalProjectedAreaDistanceMultiplier < 1);
 });
 
 test("camera viewport diagnostics reject invalid dimensions and FOV", () => {

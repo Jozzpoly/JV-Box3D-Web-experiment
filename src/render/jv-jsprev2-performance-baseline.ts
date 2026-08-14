@@ -26,11 +26,53 @@ export interface JvJsprev2PerformanceBaseline {
   readonly gpuEstimateMatchesContract: boolean;
 }
 
+const WEBGL1_MAX_UINT16_VERTICES = 65_535;
+
 function count(value: number, label: string): number {
   if (!Number.isSafeInteger(value) || value < 0) {
     throw new Error(`${label} must be a non-negative safe integer.`);
   }
   return value;
+}
+
+export function minimumJvUint16DrawCalls(
+  groupVertexCounts: readonly number[],
+  maxVertices = WEBGL1_MAX_UINT16_VERTICES,
+): number {
+  if (
+    !Number.isSafeInteger(maxVertices) ||
+    maxVertices < 3 ||
+    maxVertices > WEBGL1_MAX_UINT16_VERTICES
+  ) {
+    throw new Error("JSPREV2 maxVertices must be an integer from 3 to 65535.");
+  }
+  let result = 0;
+  for (const [index, value] of groupVertexCounts.entries()) {
+    const vertices = count(value, `JSPREV2 group ${index} vertexCount`);
+    if (vertices === 0) {
+      throw new Error(`JSPREV2 group ${index} vertexCount must be > 0.`);
+    }
+    result += Math.ceil(vertices / maxVertices);
+  }
+  return result;
+}
+
+export function estimateRgba8TextureBaseLevelBytes(
+  textureCount: number,
+  width: number,
+  height: number,
+): number {
+  const textures = count(textureCount, "JSPREV2 textureCount");
+  const textureWidth = count(width, "JSPREV2 texture width");
+  const textureHeight = count(height, "JSPREV2 texture height");
+  if (textures === 0 || textureWidth === 0 || textureHeight === 0) {
+    return 0;
+  }
+  const bytes = textures * textureWidth * textureHeight * 4;
+  if (!Number.isSafeInteger(bytes)) {
+    throw new Error("JSPREV2 RGBA8 texture estimate exceeds safe integer range.");
+  }
+  return bytes;
 }
 
 export function summarizeJvJsprev2PerformanceBaseline(
@@ -70,8 +112,8 @@ export function summarizeJvJsprev2PerformanceBaseline(
     renderTypedArrayBytes + collisionTypedArrayBytes;
 
   // Current WebGL geometry uploads use the same 32-byte vertex payload and
-  // Uint16 chunk indices. Texture residency is deliberately NOT estimated
-  // here because encoded PNG bytes are not GPU texture memory.
+  // Uint16 chunk indices. Texture residency is deliberately separate because
+  // encoded PNG bytes are not GPU texture memory.
   const estimatedGpuGeometryBytes = vertexCount * 32 + indexCount * 2;
 
   return {
