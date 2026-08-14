@@ -69,3 +69,25 @@ test("narrow mobile layout retains two non-overlapping control clusters", async 
     `minimum mobile layout requires ${requiredWidth}px, exceeding 320px`,
   );
 });
+
+
+test("Friends UI keeps debug closed, concise, and mobile chrome focused on locations", async () => {
+  const [main, css] = await Promise.all([
+    read("src/main.ts"),
+    read("src/style.css"),
+  ]);
+
+  assert.match(main, /data-debug-toggle aria-expanded="false"/);
+  assert.match(main, /data-debug-panel aria-hidden="true"/);
+  assert.match(main, /setDebugPanelOpen\(false\)/);
+
+  assert.match(css, /\.panel-heading > div,[\s\S]*?\.profile-control,[\s\S]*?\.panel details,[\s\S]*?\.panel \.hint \{ display: none; \}/);
+  assert.match(css, /\.primary-metrics > div:nth-child\(1\)/);
+  assert.match(css, /\.primary-metrics > div:nth-child\(2\)/);
+  assert.match(css, /\.primary-metrics > div:nth-child\(3\)/);
+  assert.match(css, /\.primary-metrics > div:nth-child\(5\)/);
+  assert.match(
+    css,
+    /@media \(hover: none\)[\s\S]*?\.product-control-group:not\(:first-child\) \{ display: none; \}/,
+  );
+});
