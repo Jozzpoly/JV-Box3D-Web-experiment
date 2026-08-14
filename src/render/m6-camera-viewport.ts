@@ -1,5 +1,6 @@
 export const M6_CAMERA_VERTICAL_FOV_RADIANS = Math.PI / 4;
 export const M6_CAMERA_REFERENCE_ASPECT = 16 / 9;
+export const M6_CAMERA_MAX_RESPONSIVE_DISTANCE_MULTIPLIER = 1.8;
 
 export interface M6CameraViewportMetrics {
   readonly width: number;
@@ -61,4 +62,41 @@ export function inspectM6CameraViewport(
     equalProjectedAreaDistanceMultiplier:
       Math.sqrt(equalHorizontalFramingDistanceMultiplier),
   };
+}
+
+export function resolveM6ResponsiveDistanceMultiplier(
+  width: number,
+  height: number,
+  maxMultiplier = M6_CAMERA_MAX_RESPONSIVE_DISTANCE_MULTIPLIER,
+): number {
+  const safeMaximum = positiveFinite(
+    maxMultiplier,
+    "Camera responsive distance maximum",
+  );
+  if (safeMaximum < 1) {
+    throw new Error("Camera responsive distance maximum must be >= 1.");
+  }
+  const metrics = inspectM6CameraViewport(width, height);
+
+  // Wide/desktop viewports retain the current chase distance. Narrower
+  // viewports use only the geometric-mean compensation and are hard bounded;
+  // this avoids the ~3.16x full-horizontal correction at 9:16 portrait.
+  return Math.min(
+    safeMaximum,
+    Math.max(1, metrics.equalProjectedAreaDistanceMultiplier),
+  );
+}
+
+export function resolveM6ResponsiveChaseDistance(
+  baseDistance: number,
+  width: number,
+  height: number,
+  maxMultiplier = M6_CAMERA_MAX_RESPONSIVE_DISTANCE_MULTIPLIER,
+): number {
+  const safeBaseDistance = positiveFinite(
+    baseDistance,
+    "Camera base chase distance",
+  );
+  return safeBaseDistance *
+    resolveM6ResponsiveDistanceMultiplier(width, height, maxMultiplier);
 }

@@ -2,7 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   inspectM6CameraViewport,
+  M6_CAMERA_MAX_RESPONSIVE_DISTANCE_MULTIPLIER,
   M6_CAMERA_REFERENCE_ASPECT,
+  resolveM6ResponsiveChaseDistance,
+  resolveM6ResponsiveDistanceMultiplier,
 } from "../.test-dist/render/m6-camera-viewport.js";
 
 function approximately(actual, expected, epsilon = 1e-9) {
@@ -18,6 +21,8 @@ test("16:9 viewport is the neutral current camera framing reference", () => {
   approximately(metrics.horizontalCoverageVsReference, 1);
   approximately(metrics.equalHorizontalFramingDistanceMultiplier, 1);
   approximately(metrics.equalProjectedAreaDistanceMultiplier, 1);
+  approximately(resolveM6ResponsiveDistanceMultiplier(1920, 1080), 1);
+  approximately(resolveM6ResponsiveChaseDistance(9.5, 1920, 1080), 9.5);
 });
 
 test("portrait viewport quantifies why the fixed-distance camera feels much tighter", () => {
@@ -29,6 +34,11 @@ test("portrait viewport quantifies why the fixed-distance camera feels much tigh
     256 / 81,
   );
   approximately(metrics.equalProjectedAreaDistanceMultiplier, 16 / 9);
+  approximately(resolveM6ResponsiveDistanceMultiplier(1080, 1920), 16 / 9);
+  approximately(
+    resolveM6ResponsiveChaseDistance(9.5, 1080, 1920),
+    9.5 * 16 / 9,
+  );
   assert.ok(metrics.horizontalFovRadians < Math.PI / 4);
   assert.ok(
     metrics.equalProjectedAreaDistanceMultiplier <
@@ -36,14 +46,23 @@ test("portrait viewport quantifies why the fixed-distance camera feels much tigh
   );
 });
 
-test("wide landscape has more horizontal coverage than the 16:9 reference", () => {
+test("wide landscape preserves the existing desktop chase distance", () => {
   const metrics = inspectM6CameraViewport(2520, 1080);
   assert.ok(metrics.horizontalCoverageVsReference > 1);
   assert.ok(metrics.equalHorizontalFramingDistanceMultiplier < 1);
   assert.ok(metrics.equalProjectedAreaDistanceMultiplier < 1);
+  approximately(resolveM6ResponsiveDistanceMultiplier(2520, 1080), 1);
+  approximately(resolveM6ResponsiveChaseDistance(9.5, 2520, 1080), 9.5);
 });
 
-test("camera viewport diagnostics reject invalid dimensions and FOV", () => {
+test("extreme portrait compensation is bounded instead of preserving full horizontal FOV", () => {
+  const multiplier = resolveM6ResponsiveDistanceMultiplier(360, 1000);
+  approximately(multiplier, M6_CAMERA_MAX_RESPONSIVE_DISTANCE_MULTIPLIER);
+  assert.ok(multiplier < inspectM6CameraViewport(360, 1000)
+    .equalHorizontalFramingDistanceMultiplier);
+});
+
+test("camera viewport diagnostics reject invalid dimensions and tuning bounds", () => {
   assert.throws(
     () => inspectM6CameraViewport(0, 1080),
     /width must be finite and > 0/,
@@ -51,5 +70,13 @@ test("camera viewport diagnostics reject invalid dimensions and FOV", () => {
   assert.throws(
     () => inspectM6CameraViewport(1920, 1080, Math.PI),
     /vertical FOV/,
+  );
+  assert.throws(
+    () => resolveM6ResponsiveDistanceMultiplier(1920, 1080, 0.9),
+    /maximum must be >= 1/,
+  );
+  assert.throws(
+    () => resolveM6ResponsiveChaseDistance(0, 1920, 1080),
+    /base chase distance must be finite and > 0/,
   );
 });
