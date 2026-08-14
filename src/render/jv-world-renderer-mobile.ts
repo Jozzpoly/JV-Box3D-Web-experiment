@@ -734,9 +734,10 @@ export class JvWorldRendererMobile {
     mvp: JvRenderMatrix,
     model: JvRenderMatrix,
   ): void {
+    let configureGroup = true;
     for (const mesh of group.meshes) {
       if (group.texture === null) {
-        this.#drawSolid(mesh, mvp, model, group.color);
+        this.#drawSolid(mesh, mvp, model, group.color, configureGroup);
       } else {
         this.#drawTextured(
           mesh,
@@ -744,8 +745,10 @@ export class JvWorldRendererMobile {
           mvp,
           model,
           group.color,
+          configureGroup,
         );
       }
+      configureGroup = false;
     }
   }
 
@@ -754,23 +757,26 @@ export class JvWorldRendererMobile {
     mvp: JvRenderMatrix,
     model: JvRenderMatrix,
     color: JvColor,
+    configureGroup: boolean,
   ): void {
     const locations = this.#solid;
     if (locations === null) {
       throw new Error("JV solid renderer is unavailable.");
     }
     const gl = this.#gl;
-    gl.useProgram(locations.program);
+    if (configureGroup) {
+      gl.useProgram(locations.program);
+      gl.uniformMatrix4fv(locations.mvp, false, mvp);
+      gl.uniformMatrix4fv(locations.model, false, model);
+      gl.uniform4f(
+        locations.color,
+        color[0],
+        color[1],
+        color[2],
+        color[3],
+      );
+    }
     this.#bindCommon(mesh, locations);
-    gl.uniformMatrix4fv(locations.mvp, false, mvp);
-    gl.uniformMatrix4fv(locations.model, false, model);
-    gl.uniform4f(
-      locations.color,
-      color[0],
-      color[1],
-      color[2],
-      color[3],
-    );
     gl.drawElements(
       gl.TRIANGLES,
       mesh.indexCount,
@@ -785,6 +791,7 @@ export class JvWorldRendererMobile {
     mvp: JvRenderMatrix,
     model: JvRenderMatrix,
     color: JvColor,
+    configureGroup: boolean,
   ): void {
     const locations = this.#textured;
     if (
@@ -796,23 +803,25 @@ export class JvWorldRendererMobile {
       throw new Error("Textured JV mesh has an incomplete GPU binding.");
     }
     const gl = this.#gl;
-    gl.useProgram(locations.program);
+    if (configureGroup) {
+      gl.useProgram(locations.program);
+      gl.uniformMatrix4fv(locations.mvp, false, mvp);
+      gl.uniformMatrix4fv(locations.model, false, model);
+      gl.uniform4f(
+        locations.color,
+        color[0],
+        color[1],
+        color[2],
+        color[3],
+      );
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.uniform1i(locations.sampler, 0);
+    }
     this.#bindCommon(mesh, locations);
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.uvBuffer);
     gl.enableVertexAttribArray(locations.uv);
     gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0);
-    gl.uniformMatrix4fv(locations.mvp, false, mvp);
-    gl.uniformMatrix4fv(locations.model, false, model);
-    gl.uniform4f(
-      locations.color,
-      color[0],
-      color[1],
-      color[2],
-      color[3],
-    );
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.uniform1i(locations.sampler, 0);
     gl.drawElements(
       gl.TRIANGLES,
       mesh.indexCount,
