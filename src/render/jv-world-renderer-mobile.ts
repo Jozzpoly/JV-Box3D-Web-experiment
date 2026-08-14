@@ -15,6 +15,7 @@ import {
   splitJvIndexedMeshForUint16,
   type JvUint16MeshChunk,
 } from "./jv-mesh-chunker.js";
+import { getJvPerformanceExperimentSettings } from "./jv-performance-experiment-settings.js";
 import {
   clearJvScanRenderStats,
   publishJvScanRenderStats,
@@ -548,6 +549,7 @@ export class JvWorldRendererMobile {
   readonly #scanGroups: GpuGroup[] = [];
   readonly #pendingImages = new Set<HTMLImageElement>();
   readonly #scanModel: JvRenderMatrix | null;
+  readonly #scanCullingEnabled: boolean;
   readonly #scanDrawCallBudget: number;
   #solid: ProgramLocations | null = null;
   #textured: ProgramLocations | null = null;
@@ -560,6 +562,7 @@ export class JvWorldRendererMobile {
     this.#scanModel = world.scan === null
       ? null
       : modelMatrix(world.scan.origin, IDENTITY_ROTATION, IDENTITY_SCALE);
+    this.#scanCullingEnabled = getJvPerformanceExperimentSettings().scanCulling;
     try {
       this.#solid = createProgram(
         gl,
@@ -617,6 +620,7 @@ export class JvWorldRendererMobile {
       const clipFromScanLocal = multiply(viewProjection, this.#scanModel);
       for (const group of this.#scanGroups) {
         if (
+          this.#scanCullingEnabled &&
           group.bounds !== null &&
           !isJvBoundsVisibleInClipSpace(group.bounds, clipFromScanLocal)
         ) {
