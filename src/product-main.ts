@@ -22,6 +22,7 @@ import {
   replaceJvProductViewSettings,
   type JvTextureFilterMode,
 } from "./render/jv-product-view-settings.js";
+import { installJvBuildIdentity } from "./runtime/build-identity.js";
 import { installProductControls } from "./product-controls.js";
 
 function requestUrl(input: RequestInfo | URL): string {
@@ -102,6 +103,7 @@ if (spawnTarget !== "map") {
 }
 
 await import("./main.js");
+installJvBuildIdentity();
 installProductControls({
   capabilities: {
     locationChoices: [
