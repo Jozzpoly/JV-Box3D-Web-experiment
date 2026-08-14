@@ -148,6 +148,34 @@ test("JSPREV2 loader keeps exact render/collision metrics and resolves assets un
   }
 });
 
+test("JSPREV2 loader validates decoded body bytes instead of transport Content-Length", async () => {
+  const previousFetch = globalThis.fetch;
+  const tile = minimalTile();
+  globalThis.fetch = async (input) => {
+    const url = String(input);
+    if (url.endsWith("/index.json")) {
+      return indexResponse();
+    }
+    if (url.endsWith("/asset/1")) {
+      return new Response(tile, {
+        status: 200,
+        headers: { "Content-Length": "1" },
+      });
+    }
+    return new Response(new Uint8Array([1]), { status: 200 });
+  };
+
+  try {
+    const scan = await loadLocalJsprev2Scan();
+    assert.ok(scan !== null);
+    assert.equal(scan.vertexCount, VERTEX_COUNT);
+    assert.equal(scan.indexCount, INDEX_COUNT);
+    assert.equal(scan.triangleCount, TRIANGLE_COUNT);
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
 test("JSPREV2 loader rejects a stale JSPREV1-style binary", async () => {
   const previousFetch = globalThis.fetch;
   globalThis.fetch = async (input) => {
