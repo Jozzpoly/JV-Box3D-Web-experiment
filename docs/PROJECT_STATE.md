@@ -2,23 +2,25 @@
 
 Updated: 2026-08-15
 Owner: Jozz
-Status: `PERFORMANCE FOUNDATION V1 CLOSED / MOBILE USABILITY NEXT`
+Status: `CAMERA 1B OWNER-VALIDATED / PRIVATE ABSORPTION NEXT`
 
 ## Authority and active lane
 
 ```text
 accepted private source: main@f8eb0908f5934aed2d504f34ce483a02754039ec
 single active work lane: work/friends-r1-usability
+current private lane source before Camera 1B absorption: dc8eab1ef3a24dcaab4b8fdff61da020c2518d5e
 closed performance checkpoint: checkpoint/perf-foundation-v1-closed-2026-08-15
 owner-tested performance code: checkpoint/perf-foundation-a53-validated-2026-08-15@f42e16321d9edb26e10f44ab7c9eeda3c646291c
 public A53 proof: checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0
+public Camera 1B owner-device gate: release/friends-r1@4768abedaa67b7505ca963a0836879e42590b67d
 public known-good rollback: checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a
 public R0 fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
 Current Git, reproducible execution evidence and direct owner observation outrank this file. `main` remains accepted authority until the canonical promotion gate is completed.
 
-`work/friends-r1-usability` is the only ordinary active lane ahead of `main`. Old `work/*`, `candidate/*`, `repair/*` and `checkpoint/*` refs are historical/evidence unless this section explicitly activates them.
+`work/friends-r1-usability` is the only ordinary active lane ahead of `main`. Old `work/*`, `candidate/*`, `repair/*` and `checkpoint/*` refs are historical/evidence unless this section explicitly activates them. Do not encode transient ahead-counts here; derive them from Git when needed.
 
 ## Working product boundary
 
@@ -48,9 +50,29 @@ This closes lightweight optimization for the present stress case. It does **not*
 
 One warm/cache scan sample reported `world 1337 ms`, `tiles 1127 ms` including `parse 268 ms`, `merge 53 ms`, `b3-world 3418 ms` and 25/25 textures ready with 776.2 ms cumulative synchronous texture-upload call time. Do not add nested timers or treat texture call time as GPU completion/residency.
 
-## Remaining formal promotion gate
+## Camera usability — current boundary
 
-The device proof used an isolated native-ESM Pages gate with real `box3d.js@0.0.2`, not the normal canonical Friends artifact.
+Private `work/friends-r1-usability` currently contains Camera 1A at `dc8eab1...`: responsive framing, free-range zoom and distance-aware clipping while retaining the existing single-pointer orbit/wheel input path.
+
+Camera 1B was built and owner-tested through the public noncanonical device gate after two publication-harness recoveries. Recovery V3 fixed only Pass2 overlay semantics in the gate; Camera 1B source/patch itself was unchanged by that recovery.
+
+Exact public device evidence:
+
+```text
+public gate head: 4768abedaa67b7505ca963a0836879e42590b67d
+private base named by gate: dc8eab1ef3a24dcaab4b8fdff61da020c2518d5e
+local camera candidate named by gate: fde0127aa726bd57a97b5815572a4067e94c3807
+camera patch SHA-256: fcc82118d607bed941b487d1f8222d291882c8f5ea51b600ade5b8ee04f1be78
+camera runtime modules: 3
+```
+
+Owner verdict is `ACCEPTED — NARROW DEVICE/FEEL SCOPE`: focus/navigation around scan details worked well, Shift+scroll navigation improved usability, and approaching/inspecting a wall or corner and jumping to another scan area was no longer a fight with the camera. This does not accept every future gesture combination, presets/persistence, advanced assists, HUD/input redesign or automatic terrain/obstacle behavior.
+
+**Important recovery boundary:** Camera 1B is not yet part of private source authority. The previous conversation ended immediately after the successful owner retest, before clean source absorption, canonical build/release promotion or the final durable checkpoint. The next task is to recover/verify the exact owner-tested camera slice and absorb only that slice into the existing active lane.
+
+The public `release/friends-r1@4768abed...` head contains the Camera device-gate harness under `/camera-test/`; it is device evidence, not proof that the ordinary Friends root is a canonical Camera 1B release.
+
+## Remaining formal promotion gate
 
 Before advancing `main` / ordinary Friends release, run in the exact repo toolchain:
 
@@ -60,20 +82,27 @@ Before advancing `main` / ordinary Friends release, run in the exact repo toolch
 4. rendered browser smoke of the resulting canonical artifact;
 5. exact source/artifact/rollback identity verification.
 
-The current agent environment remains blocked by Node/npm mismatch plus registry DNS, so lack of this gate is infrastructure evidence, not a known product failure.
-
-The active lane is currently a linear 42 commits ahead of `main`, with no divergence. Prefer clearing this promotion boundary before any new multi-slice or foundation-scale campaign. If the infrastructure blocker persists, keep interim work to small independently reviewable usability slices on the single active lane rather than allowing another long-lived product branch to form.
+Whether the current agent environment can execute this gate is session-specific and must be checked at execution time; do not preserve old environment failures as project truth.
 
 ## Next product phase
 
-Performance is no longer the dominant owner-observed A53 problem. Continue on `work/friends-r1-usability` with small owner-visible slices focused on:
+Immediate priority:
 
-1. mobile camera/framing and easy navigation;
-2. touch-control ergonomics;
-3. steering/joystick interaction;
-4. responsive layout/visual clarity.
+1. exact Camera 1B recovery/identity check;
+2. clean Camera 1B absorption into `work/friends-r1-usability` with vehicle mechanics/performance/scan unchanged;
+3. smallest relevant source checks plus rendered integration proof;
+4. durable Camera 1B checkpoint and project-state update.
 
-Keep vehicle mechanics unchanged unless a slice explicitly targets them. For each UI slice: targeted tests first, then rendered desktop/mobile browser validation, then owner/device judgement when feel matters.
+Only after that boundary is closed continue mobile usability with small owner-visible slices. Current candidate order:
+
+1. camera persistence/presets;
+2. immersive/fullscreen capability;
+3. fresh HUD/settings review using current screenshots/build;
+4. touch-control ergonomics and analog input foundation;
+5. steering/joystick interaction;
+6. advanced speed/turn/terrain/obstacle camera assists only after the manual foundation remains stable.
+
+Keep vehicle mechanics unchanged unless a slice explicitly targets them. Automatic camera behavior must remain additive to manual user calibration.
 
 Do not resume current-JSPREV2 micro-optimization by default. Future scaling work should be triggered by evidence and should prefer separate collision representation, texture scheduling/residency, safe world-data lifetime reduction and a better VAW/JSPREV3 asset representation before LOD/world partitioning.
 

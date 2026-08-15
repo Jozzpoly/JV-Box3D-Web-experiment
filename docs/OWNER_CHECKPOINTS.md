@@ -126,6 +126,42 @@ Not accepted by this checkpoint:
 
 Protected meaning: for the present 1x A53 stress case, the lightweight performance foundation has achieved its product purpose. Future agents should not reopen endless micro-optimization of this exact JSPREV2 without new evidence. Scaling work should instead target dedicated collision data, texture/residency policy and future VAW/JSPREV3 spatial asset structure when larger worlds justify it.
 
+## CAMERA-1B-NAV-01 — manual inspection/navigation foundation
+
+Date: 2026-08-15
+Classification: `OWNER ACCEPTED — NARROW DEVICE/FEEL SCOPE`
+
+Exact evidence boundary:
+
+```text
+private source base: work/friends-r1-usability@dc8eab1ef3a24dcaab4b8fdff61da020c2518d5e (Camera 1A)
+public Camera gate: release/friends-r1@4768abedaa67b7505ca963a0836879e42590b67d
+camera patch SHA-256: fcc82118d607bed941b487d1f8222d291882c8f5ea51b600ade5b8ee04f1be78
+public gate classification: noncanonical owner-device gate
+```
+
+Owner directly confirmed after Recovery V3:
+
+- focusing on a school wall with `F` worked very well for inspection;
+- Shift+scroll navigation worked and made navigation immediately better;
+- approaching and inspecting a wall/corner and then jumping to another part of the school/scan had decisively stopped being a fight with the camera;
+- the current interaction set is sufficient for this stage even though more combinations may be useful later;
+- overall Camera 1B achieved in large part the intended manual-navigation result.
+
+Not accepted by this checkpoint:
+
+- every possible desktop/touch gesture combination;
+- camera persistence or presets;
+- immersive/fullscreen behavior;
+- advanced automatic speed/turn/terrain/obstacle assists;
+- final HUD/settings/input/mobile steering UX;
+- any change to vehicle mechanics;
+- canonical Friends release packaging or promotion to `main`.
+
+**Source-state caveat:** the previous conversation ended immediately after this owner success. Camera 1B has not yet been cleanly absorbed into private `work/friends-r1-usability`; the private lane still contains Camera 1A source. Preserve this checkpoint as device/feel evidence and recover/verify the exact tested Camera 1B slice before source absorption.
+
+Protected meaning: the manual camera is now good enough to serve as the interaction foundation for further JV-Web usability work. Future automatic assists must remain additive and must not silently overwrite manual user calibration.
+
 ## Durable method
 
 When a later slice changes owner-visible behavior, record only the new durable verdict. Do not append test logs or rebuild the entire project chronology here.
