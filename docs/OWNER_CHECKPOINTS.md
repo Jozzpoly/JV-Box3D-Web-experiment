@@ -1,6 +1,6 @@
 # JV Web — owner checkpoints
 
-Updated: 2026-08-15
+Updated: 2026-08-16
 
 This is a compact ledger of owner-visible facts that future work must not silently overwrite. Detailed historical evidence remains in Git history and cold campaign/baseline documents.
 
@@ -200,6 +200,41 @@ Not accepted by this checkpoint:
 - final vehicle mechanics, steering physics or handling.
 
 Protected meaning: explicit fullscreen is now a usable, owner-validated presentation capability. Future usability work should preserve it rather than reopening the capability without new evidence.
+
+## STEERING-CONTROL-V2 — mobile steering foundation
+
+Date: 2026-08-16
+Classification: `OWNER ACCEPTED — MOBILE CONTROL FOUNDATION, DESIGN OPEN`
+
+Exact evidence boundary:
+
+```text
+private UX/debug candidate: b9dd4f98ecee192af3302150c95542c772033949
+private temporary 35-degree bridge: d6c646b65a0d57306e138175209c0f652bdbfbda
+public owner-device gate: release/friends-r1@2acd652f68d57497c8ce8886b2875789a70f4be3
+public gate classification: noncanonical owner-device proof
+```
+
+Owner directly confirmed on phone, with supplied portrait and landscape screenshots:
+
+- the V2 steering control works and is materially better than the previous circular V1 control;
+- the new steering design is liked as a useful direction, although it is not considered final;
+- the steering problem targeted by this slice is fixed well enough to continue product refinement;
+- mobile Debug open/close behavior is fixed;
+- the resulting mobile driving experience is promising enough that the owner explicitly wants to keep refining touch driving and noted it may become more pleasant than keyboard driving.
+
+The screenshots also show the Steering V2 rack control in both portrait and landscape and the debug overlay with the Debug action still available as an exit path.
+
+Not accepted by this checkpoint:
+
+- the rack visual language as final steering UI;
+- a final steering wheel/yoke interaction model;
+- final steering sensitivity curves, haptics, speed adaptation or self-centering feel;
+- analog throttle/brake/reverse design;
+- final vehicle steering geometry, Ackermann/tie-rod authority or handling;
+- the temporary 35-degree product bridge as final rig truth.
+
+Protected meaning: X-only analog `POSITION` touch steering, the V2 mobile control placement, usable steering range and recoverable mobile Debug are now a stable product foundation. Future work should iterate the driving feel and control language without regressing these capabilities. The next steering experiments may replace the V2 visual/control metaphor if they demonstrably improve driving.
 
 ## Durable method
 
