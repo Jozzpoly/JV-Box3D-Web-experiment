@@ -1,171 +1,148 @@
 # JV Web — current project state
 
-Updated: 2026-08-15
+Updated: 2026-08-16
 Owner: Jozz
-Status: `ANALOG STEERING V1 DEVICE GATE / OWNER VALIDATION PENDING`
+Status: `MOBILE DRIVING V3 DEVICE GATE / OWNER VALIDATION PENDING`
 
 ## Authority and active lane
 
 ```text
 accepted private source: main@f8eb0908f5934aed2d504f34ce483a02754039ec
 single active work lane: work/friends-r1-usability
-Camera Manual Rig V1 source absorption: 997c9a34ea429220dbdb4f5408a0ac37200bd712
+current private lane before V3 source absorption: d768a82efd7d57d94bbaef98fc16fcced1160287
+Camera Manual Rig V1 absorption: 997c9a34ea429220dbdb4f5408a0ac37200bd712
 fullscreen source checkpoint: checkpoint/fullscreen-v1-owner-validated-2026-08-15@db55501342feacfb0f82099d7f47afe3a9756143
-analog steering V1 source candidate: d80d4636a1327c3aaf9e6689a95a7cb1d91f98b2
-analog steering POSITION timeline foundation: 30a00ab861f9c93150f426d5d06a01e7b86dda46
-analog pointer joystick adapter: 2fc8babbf22f239e27e625e5d174fae18d7ce616
-closed performance checkpoint: checkpoint/perf-foundation-v1-closed-2026-08-15
-owner-tested performance code: checkpoint/perf-foundation-a53-validated-2026-08-15@f42e16321d9edb26e10f44ab7c9eeda3c646291c
-public A53 proof: checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0
-public Camera 1B owner-device proof: release/friends-r1@4768abedaa67b7505ca963a0836879e42590b67d
-public fullscreen owner-device proof: checkpoint/pages-fullscreen-v1-owner-validated-2026-08-15@8fe52a73554273fa710d2be2fdaf3a144d9056ba
-public analog steering device-gate candidate: release/friends-r1@b6b91cad54966944af47f31d11721d2695066992
-public known-good rollback: checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a
+Analog Steering V1 source: d80d4636a1327c3aaf9e6689a95a7cb1d91f98b2
+Steering Control V2 UX/debug source: b9dd4f98ecee192af3302150c95542c772033949
+temporary 35-degree drive bridge: d6c646b65a0d57306e138175209c0f652bdbfbda
+public Steering V2 owner-device proof: release/friends-r1@2acd652f68d57497c8ce8886b2875789a70f4be3
+public Mobile Driving V3 candidate: release/friends-r1@fba33f2e3f51228773ce96e49f03d9f4f12b0a83
+public A53 performance proof: checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0
+public known-good Friends rollback: checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a
 public R0 fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-Current Git, reproducible execution evidence and direct owner observation outrank this file. `main` remains accepted authority until the canonical promotion gate is completed.
+Current Git, reproducible execution evidence and direct owner observation outrank this file. `main` remains accepted source authority until the canonical promotion gate is completed. `work/friends-r1-usability` is the only ordinary active product lane ahead of `main`.
 
-`work/friends-r1-usability` is the only ordinary active lane ahead of `main`. Old `work/*`, `candidate/*`, `repair/*` and `checkpoint/*` refs are historical/evidence unless this section explicitly activates them. Derive transient ahead-counts from Git when needed instead of recording them here.
+## Protected working foundation
 
-## Working product boundary
+Friends currently includes Plac E2R, Offroad, the owner vehicle and full JSPREV2 scan on desktop/phone.
 
-Friends currently includes Plac E2R, Offroad, the owner vehicle and the complete JSPREV2 scan on desktop/phone. Manual Camera Rig V1 and explicit fullscreen form part of the owner-validated usability foundation. Analog Steering V1 is implemented in the active private lane and has an isolated public device-gate candidate, but it is **not owner-accepted yet**. The current vehicle's coherent-front bridge remains a temporary product intermediate; final rig, steering feedback/back-drive and handling are open. JURE owns future rig authoring.
+The following owner-visible foundations are closed unless new evidence demonstrates regression:
 
-Current JSPREV2 stress case:
+- **Performance foundation v1:** Galaxy A53 / normal Chrome / current full textured JSPREV2 / render scale 1x / culling ON reached stable 60 scene presents/s at about 16.7 ms. This does not generalize to every device, 2x or future larger worlds.
+- **Camera Manual Rig V1:** responsive framing/reset, broad manual distance/clipping range, orbit, vehicle-local pan, touch pinch+pan and desktop pan form the accepted manual camera baseline. Future automatic assists must remain additive to user calibration.
+- **Fullscreen V1:** owner-validated on mobile and desktop; preserve explicit enter/exit behavior.
+- **Steering Control V2:** owner-accepted as the mobile control foundation, with visual design intentionally still open. Preserve X-only analog `POSITION` semantics, neutral/release behavior, usable mobile placement and recoverable Debug.
+- **Temporary steering range:** native full rack travel is mapped to approximately +/-35 degrees for JV-Web driving while the pinned receipt/native rack and JURE/final-rig authority remain unchanged.
 
-```text
-7 tiles / 25 groups / 25 textures
-1,409,687 vertices
-5,327,325 indices
-1,775,775 triangles
-111,288,484 B published scan payload
-```
+Final rig geometry, Ackermann/tie-rod authority, steering feedback/back-drive and final handling remain open. JURE owns rig authoring.
 
-Physics remains fixed 60 Hz with the existing solver/substeps and vehicle complexity.
+## Current experiment — Mobile Driving V3
 
-## Performance foundation v1 — closed scope
+The product question is now: **can touch driving become deliberately enjoyable rather than merely functional?**
 
-The active source contains the owner-validated low/medium-cost foundation: scan-group culling/state reuse, direct Uint32 upload with safe WebGL1 fallbacks, parser-pass bounds/validation, bounded two-way tile loading, physics/presentation decoupling, deferred rich trace, hidden-debug suppression, startup/runtime telemetry and the lightweight mobile compositor policy.
+The current V3 is deliberately a **public noncanonical device experiment**, not private source authority. The private active lane still ends at the V2/mobile-driving planning state while V3 is judged on the real phone.
 
-Owner scope: Galaxy A53, normal Chrome, render scale 1x, DPR about 2.81, culling ON, current full textured JSPREV2.
+### Steering Hybrid V3
 
-Settled evidence reached 60 browser RAF/s and 60 scene presents/s at 16.7 ms average / 16.8 ms p95, including a scan view with 19/25 groups visible. This closes lightweight optimization for the present stress case; it does not prove 60 fps at 2x, universal cold-cache startup, other phones or future larger/multiple worlds.
-
-Do not resume current-JSPREV2 micro-optimization by default. Future scaling work should be triggered by evidence and should prefer separate collision representation, texture scheduling/residency, safe world-data lifetime reduction and a better VAW/JSPREV3 asset representation before LOD/world partitioning.
-
-## Camera Manual Rig V1 — closed scope
-
-Camera 1A established responsive framing/reset, a 0.35–2000 m manual distance range and distance-aware near/far clipping. Camera 1B added the accepted manual interaction layer and has now been absorbed into private `work/friends-r1-usability`.
-
-Current manual camera behavior:
-
-- one pointer / normal mouse drag: orbit;
-- two-touch gesture: pinch zoom plus centroid pan;
-- desktop Shift+left-drag or middle-drag: pan;
-- wheel: zoom;
-- manual focus offset is stored in the vehicle-local frame and follows the vehicle;
-- reset clears manual orbit/pan/zoom and returns to the responsive viewport default;
-- automatic camera assists are not implemented and must remain additive to manual calibration when introduced later.
-
-Owner-visible validation on 2026-08-15 demonstrated the intended wide manual range: close and inside/under-vehicle inspection, far/aerial scan views, portrait and landscape phone use, normal Chrome phone use and desktop use. Messenger in-app WebView evidence is supplemental. The owner explicitly judged that the stage had largely achieved the intended result.
-
-Exact device-gate evidence:
+The proven V2 input contract is unchanged:
 
 ```text
-Camera 1A private base: dc8eab1ef3a24dcaab4b8fdff61da020c2518d5e
-Camera 1B private absorption: 997c9a34ea429220dbdb4f5408a0ac37200bd712
-public owner-device gate: 4768abedaa67b7505ca963a0836879e42590b67d
-camera runtime patch SHA-256: fcc82118d607bed941b487d1f8222d291882c8f5ea51b600ade5b8ee04f1be78
-runtime modules in patch: 3
+one thumb
+X-only gesture
+normalized POSITION [-1, +1]
+release -> neutral 0
+35-degree temporary full-lock bridge
 ```
 
-Source provenance was re-established before absorption: the local Camera 1A parent matched the three relevant remote blobs exactly, and the reconstructed Camera 1B TypeScript emitted byte-identical tested `m6-chase-camera.js` and `m6-world-renderer.js` modules after the deterministic device-payload import rewrite. Scoped Camera tests passed 17/17. This is strong source/device evidence, not a canonical Node24/TS7/Vite build.
+Only the interaction language changes. The control presents a shallow, very wide steering-wheel arc / ellipse viewed from a steep angle. The internal wheel visual rotates with command while the physical thumb gesture remains linear X-only. This intentionally separates **comfortable touch acquisition** from **automotive visual feedback**.
 
-Not accepted by this closure:
+The hitbox/layout geometry must not resize during the gesture. Visual active-state growth is implemented on internal layers only so it cannot alter steering command under the finger.
 
-- camera persistence/presets;
-- automatic speed/turn/slope/terrain/obstacle assists;
-- final HUD/settings/input/mobile steering UX;
-- canonical Friends packaging or promotion to `main`;
-- any new authority over vehicle mechanics.
+### Analog Pedals A1
 
-## Fullscreen V1 — closed scope
+The vehicle drive command already supports analog throttle/brake values, so this experiment adds an input layer rather than changing Box3D or the drive model.
 
-Private source commit `db55501342feacfb0f82099d7f47afe3a9756143` adds an explicit standard Fullscreen API capability without changing camera, renderer, physics or CSS. Unsupported contexts omit the control and rejected requests fail closed with a product-level message.
-
-The owner validated the isolated Pages gate on 2026-08-15 in mobile Chrome portrait/landscape and on desktop. Enter/exit state worked correctly and several minutes of driving after fullscreen transitions revealed no observed camera/control regression. The supplied screenshots visibly show the active fullscreen state with the scan, vehicle and mobile controls rendered.
-
-Exact proof boundary:
+Two independent vertical pedals are exposed:
 
 ```text
-private checkpoint: checkpoint/fullscreen-v1-owner-validated-2026-08-15@db55501342feacfb0f82099d7f47afe3a9756143
-public checkpoint: checkpoint/pages-fullscreen-v1-owner-validated-2026-08-15@8fe52a73554273fa710d2be2fdaf3a144d9056ba
-public gate base: Camera 1B proof 4768abedaa67b7505ca963a0836879e42590b67d
+THROTTLE: relative upward thumb travel -> 0..1
+BRAKE:    relative upward thumb travel -> 0..1
 ```
 
-The public fullscreen gate is noncanonical owner-device evidence layered over Camera 1B. It is not a canonical Node24/npm11/TypeScript7/Vite Friends build and does not by itself promote `main` or bless other browser fullscreen implementations.
+The control freezes `originY` and usable travel distance at pointer-down. Therefore active-pedal enlargement and neighbor shrink are visual feedback only and cannot change command geometry mid-gesture.
 
-## Analog Steering V1 — device gate pending
+Expected interaction properties:
 
-The active private lane now contains a deliberately separated analog-input stack without changing vehicle mechanics:
+- touching a pedal starts at 0 rather than jumping to a value based on absolute screen position;
+- sliding upward progressively increases command to 100%;
+- sliding back down reduces it;
+- release/cancel/blur/visibility/pagehide returns that pedal to 0;
+- steering and one pedal can be owned simultaneously by separate pointers;
+- throttle and brake have separate pointer ownership;
+- existing keyboard/binary longitudinal demand remains a fallback and has priority when explicitly active;
+- existing binary reverse is preserved for this slice.
 
-- `SteeringPositionTimeline` carries normalized timestamped `POSITION [-1,1]` commands through the same fixed-step boundary discipline as existing input;
-- pointer joystick ownership is source-scoped, pointer-captured, dead-zoned and fail-safe;
-- releasing the joystick commands neutral `POSITION 0`, giving mobile steering an explicit self-centering behavior;
-- explicit digital `RATE` input retains priority for a step, so keyboard/binary controls remain usable;
-- dropped fixed-step intervals advance digital, analog and longitudinal timelines together;
-- the visible mobile LEFT/RIGHT pair is replaced by one analog steering control while DRIVE/BRAKE/REVERSE remain unchanged;
-- hidden legacy left/right DOM targets are preserved temporarily as a compatibility boundary rather than forcing an unrelated longitudinal-input rewrite.
+A D/R direction selector is deliberately deferred. Direction switching while throttle/brake is active needs a separate semantic decision rather than being smuggled into the pedal experiment.
 
-Scoped noncanonical development checks completed before publication:
+### V3 evidence boundary
 
 ```text
-position timeline isolated tests: 6/6 pass
-position timeline + joystick adapter isolated tests: 10/10 pass
-private UI source candidate: d80d4636a1327c3aaf9e6689a95a7cb1d91f98b2
-public device-gate candidate: b6b91cad54966944af47f31d11721d2695066992
-Pages publication for candidate: built
+public candidate: release/friends-r1@fba33f2e3f51228773ce96e49f03d9f4f12b0a83
+public diff from V2 proof: only driving-v3-test/*
+Pages publication: built for exact candidate SHA
+local noncanonical module syntax + focused timeline smoke checks: passed
+owner/mobile runtime + driving feel: PENDING
+private V3 source absorption: NOT DONE
 ```
 
-These checks do **not** equal the canonical repo `npm run check`, do not prove the composed browser patch booted correctly, and do not establish good driving feel. Owner/device validation is the current gate.
+The public gate preserves the tested V1/V2/Camera/fullscreen basis and layers the V3 experiment over it. It must fail closed if required runtime patch points do not match. The gate is evidence only; it is not the canonical Friends build.
 
-The public gate composes the already-tested Camera 1B runtime, accepted fullscreen overlay and the Analog Steering V1 POSITION path. Its loader fails closed if expected runtime transformation points are missing instead of silently falling back to old steering.
+## What owner validation should answer
 
-Not accepted yet:
+Judge steering and pedals independently:
 
-- joystick ergonomics, size, dead zone or steering feel;
-- analog steering behavior on the real phone/browser runtime;
-- final steering geometry, self-aligning/back-drive behavior or handling;
-- analog throttle/brake or gamepad input;
-- canonical Friends build or promotion to `main`.
+1. Does the wheel-arc remain as precise and easy to grab as V2 while providing better automotive feedback?
+2. Is full lock quick to reach without excessive thumb travel?
+3. Can the steering control be released and recaptured without unexpected jumps?
+4. Do portrait and landscape layouts keep the controls reachable without obscuring too much world view?
+5. Can throttle be held around low/medium/high values rather than behaving like another button?
+6. Can brake pressure be modulated meaningfully?
+7. Does active-pedal growth plus neighbor shrink communicate control state without moving the effective gesture underneath the finger?
+8. Does simultaneous steer + throttle/brake feel natural during sustained driving?
+
+One half of V3 may pass while the other fails. Do not couple their acceptance artificially.
+
+## Next actions after the device gate
+
+If a V3 interaction is owner-accepted, absorb its **exact tested behavior** into private source as small commits with focused tests. Do not copy the public harness wholesale.
+
+Likely sequence after acceptance:
+
+1. steering hybrid source absorption if it beats V2;
+2. analog longitudinal timeline + pedal adapter + host integration if pedals beat binary controls;
+3. polish sensitivity/visual feedback only from demonstrated feel problems;
+4. separate D/R selector experiment;
+5. optional haptic feedback where browser/device capability allows it;
+6. only after the driving-control language stabilizes, revisit additive dynamic camera assists.
+
+If either part does not beat V2/binary controls, keep the known-good foundation and iterate only the failed interaction.
 
 ## Remaining formal promotion gate
 
-Before advancing `main` / ordinary Friends release, run in the exact repo toolchain:
+Before advancing `main` / ordinary Friends release, run the exact repository toolchain:
 
 1. Node 24.16.0 + npm 11.13.x + lockfile dependencies;
 2. `npm run check` with real Box3D coverage;
 3. `npm run build:friends-r1` and portable checks;
-4. rendered browser smoke of the resulting canonical artifact;
+4. rendered browser smoke of the canonical artifact;
 5. exact source/artifact/rollback identity verification.
 
-Whether a particular agent environment can execute this gate is session-specific and must be checked at execution time.
-
-## Next product phase
-
-Do not start another feature before the current device gate answers the input question. Current priority is:
-
-1. owner/device validation of Analog Steering V1 on mobile, preferably Offroad first and then the scan;
-2. classify any problem as joystick ergonomics/input mapping versus temporary steering/handling mechanics;
-3. iterate the smallest proven problem until analog steering is genuinely useful;
-4. then choose the next small usability slice from camera persistence/HUD friction or additive dynamic camera assists;
-5. broaden analog/gamepad/longitudinal input only after the first steering path proves useful.
-
-Keep vehicle mechanics unchanged unless evidence from the driving gate specifically justifies a mechanics slice. Automatic camera behavior must never silently overwrite manual user calibration.
+The public V3 gate does not satisfy this boundary.
 
 ## Documentation/workflow hygiene
 
-Default context is `AGENTS.md` + this file + current source/tests. Use `ARCHITECTURE.md`, `OWNER_CHECKPOINTS.md`, contracts or baselines only for the specific question they answer.
+Default context is `AGENTS.md` + this file + current source/tests. Use `docs/OWNER_CHECKPOINTS.md` for durable owner acceptance, `docs/ARCHITECTURE.md` for stable boundaries, and Git history for detailed archaeology.
 
-Do not create per-agent handoffs, branch-role tables, campaign journals or duplicate roadmaps. When current truth changes, edit the existing living document and let Git preserve the previous version.
+Do not create per-agent handoffs, campaign journals or duplicate roadmaps. Do not record V3 in `OWNER_CHECKPOINTS.md` until the owner actually tests it.
