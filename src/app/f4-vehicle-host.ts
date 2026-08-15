@@ -88,6 +88,8 @@ interface F4WorldRuntime {
     generation?: number,
   ): F4VehicleControllerRuntime;
   step(stepCount?: number): readonly M6TraceFrame[];
+  stepPhysics(stepCount?: number): void;
+  captureLatestTrace(): readonly M6TraceFrame[];
   dispose(): M6TopologyDisposalReceipt;
 }
 
@@ -189,7 +191,6 @@ export class F4VehicleHost {
         step: FixedStepInterval;
         steering: SteeringTimelineSample;
         longitudinal: LongitudinalTimelineSample;
-        trace: M6TraceFrame;
       }> | null = null;
       let physicsStepMs = 0;
 
@@ -212,18 +213,12 @@ export class F4VehicleHost {
           vehicle.setSteering(steering.command);
           vehicle.setDrive(longitudinal.command);
           const stepStartedAt = options.now();
-          const trace = world.step(1)[0];
+          world.stepPhysics(1);
           physicsStepMs += Math.max(0, options.now() - stepStartedAt);
-          if (trace === undefined) {
-            throw new Error(
-              "M6 world produced no trace for its owned vehicle.",
-            );
-          }
           pendingPresentation = {
             step,
             steering,
             longitudinal,
-            trace,
           };
         },
         onFrame: (report) => {
@@ -232,11 +227,17 @@ export class F4VehicleHost {
           let presentationMs = 0;
           if (presentation !== null) {
             const presentationStartedAt = options.now();
+            const trace = world.captureLatestTrace()[0];
+            if (trace === undefined) {
+              throw new Error(
+                "M6 world produced no trace for its owned vehicle.",
+              );
+            }
             options.onVehicleStep(
               presentation.step,
               presentation.steering,
               presentation.longitudinal,
-              presentation.trace,
+              trace,
             );
             presentationMs = Math.max(
               0,

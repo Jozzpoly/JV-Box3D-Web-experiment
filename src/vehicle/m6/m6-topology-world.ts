@@ -82,6 +82,7 @@ export class M6TopologyWorld {
   readonly #worldMeshes: JvWorldMeshOwner;
   readonly #vehicles: M6VehicleController[] = [];
   #stepIndex = 0;
+  #pendingContactBegins = 0;
   #disposed = false;
 
   constructor(
@@ -226,7 +227,7 @@ export class M6TopologyWorld {
     return vehicle;
   }
 
-  step(stepCount = 1): readonly M6TraceFrame[] {
+  stepPhysics(stepCount = 1): void {
     this.#assertActive();
     if (!Number.isInteger(stepCount) || stepCount < 1) {
       throw new RangeError(
@@ -234,7 +235,6 @@ export class M6TopologyWorld {
       );
     }
 
-    let traces: readonly M6TraceFrame[] = [];
     for (let index = 0; index < stepCount; index += 1) {
       const activeVehicles = this.#vehicles.filter(
         (vehicle) => !vehicle.disposed,
@@ -247,19 +247,41 @@ export class M6TopologyWorld {
       );
       this.#stepIndex += 1;
       this.#b3.getEvents(this.#events, this.#worldId);
-      const contactBegins =
+      this.#pendingContactBegins +=
         this.#b3.getNumContactBeginEvents(this.#events);
-      const worldContacts =
-        this.#b3.b3World_GetCounters(
-          this.#worldId,
-        ).contactCount;
-      traces = activeVehicles.map((vehicle) =>
-        vehicle.captureTrace(
-          this.#stepIndex,
-          worldContacts,
-          contactBegins,
-        ),
+    }
+  }
+
+  captureLatestTrace(): readonly M6TraceFrame[] {
+    this.#assertActive();
+    const activeVehicles = this.#vehicles.filter(
+      (vehicle) => !vehicle.disposed,
+    );
+    const worldContacts =
+      this.#b3.b3World_GetCounters(this.#worldId).contactCount;
+    const contactBegins = this.#pendingContactBegins;
+    this.#pendingContactBegins = 0;
+    return activeVehicles.map((vehicle) =>
+      vehicle.captureTrace(
+        this.#stepIndex,
+        worldContacts,
+        contactBegins,
+      ),
+    );
+  }
+
+  step(stepCount = 1): readonly M6TraceFrame[] {
+    this.#assertActive();
+    if (!Number.isInteger(stepCount) || stepCount < 1) {
+      throw new RangeError(
+        "M6 stepCount must be a positive integer.",
       );
+    }
+
+    let traces: readonly M6TraceFrame[] = [];
+    for (let index = 0; index < stepCount; index += 1) {
+      this.stepPhysics(1);
+      traces = this.captureLatestTrace();
     }
     return traces;
   }

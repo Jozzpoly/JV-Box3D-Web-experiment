@@ -192,7 +192,7 @@ const RATE_PROFILE = Object.freeze({
   maxTargetLeadMeters: 0.008,
 });
 
-test("F4 startup validates receipt and presents only the latest catch-up step once per browser frame", async () => {
+test("F4 startup validates receipt and captures only the latest catch-up state once per browser frame", async () => {
   const order = [];
   let browserOptions = null;
   let browserDisposals = 0;
@@ -250,8 +250,14 @@ test("F4 startup validates receipt and presents only the latest catch-up step on
                   },
                 };
               },
-              step(stepCount) {
+              step() {
+                throw new Error("product host must use deferred trace path");
+              },
+              stepPhysics(stepCount) {
                 order.push(`world-step:${stepCount}`);
+              },
+              captureLatestTrace() {
+                order.push("world-capture");
                 return [trace];
               },
               dispose() {
@@ -313,6 +319,7 @@ test("F4 startup validates receipt and presents only the latest catch-up step on
   assert.equal(presentationCallbacks, 0);
   assert.equal(vehicleTrace, null);
   assert.equal(order.filter((entry) => entry === "world-step:1").length, 4);
+  assert.equal(order.filter((entry) => entry === "world-capture").length, 0);
 
   browserOptions.onFrame(frameReport(4));
   assert.equal(presentationCallbacks, 1);
@@ -320,10 +327,12 @@ test("F4 startup validates receipt and presents only the latest catch-up step on
   assert.equal(vehicleTrace, trace);
   assert.equal(vehicleTrace.visualFrame.parts.length, 18);
   assert.equal(vehicleTrace.visualFrame.segments.length, 8);
+  assert.equal(order.filter((entry) => entry === "world-capture").length, 1);
   assert.equal(order.at(-1), "callback:4:POSITION:0.5");
 
   browserOptions.onFrame(frameReport(0));
   assert.equal(presentationCallbacks, 1);
+  assert.equal(order.filter((entry) => entry === "world-capture").length, 1);
 
   host.dispose();
   host.dispose();
@@ -393,6 +402,10 @@ test("runtime fault stops browser ownership and destroys M6 world", async () => 
               };
             },
             step() {
+              return [];
+            },
+            stepPhysics() {},
+            captureLatestTrace() {
               return [];
             },
             dispose() {
