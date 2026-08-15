@@ -5,6 +5,7 @@ import type {
   PointerVehicleControlTargets,
 } from "./input/pointer-vehicle-control-adapter.js";
 import type { SteeringCommand } from "./input/steering-command.js";
+import { MobileDrivingV3Ui } from "./mobile-driving-v3-ui.js";
 import { M6ProductRenderer } from "./render/m6-product-renderer.js";
 import {
   formatBrowserRuntimeReport,
@@ -239,13 +240,21 @@ const pointerControls: PointerVehicleControlTargets = {
   brake: pointerControlButtons.BRAKE,
 };
 
+const mobileDrivingV3Ui = new MobileDrivingV3Ui({
+  steeringJoystick,
+  steerLeft: pointerControlButtons.STEER_LEFT,
+  steerRight: pointerControlButtons.STEER_RIGHT,
+  throttle: pointerControlButtons.FORWARD,
+  brake: pointerControlButtons.BRAKE,
+  direction: pointerControlButtons.REVERSE,
+});
+
 function setPointerControlState(
   control: PointerVehicleControlId,
   active: boolean,
+  value?: number,
 ): void {
-  const button = pointerControlButtons[control];
-  button.setAttribute("aria-pressed", String(active));
-  button.toggleAttribute("data-active", active);
+  mobileDrivingV3Ui.setPointerControlState(control, active, value);
 }
 
 function resetPointerControlStates(): void {
@@ -257,25 +266,7 @@ function resetPointerControlStates(): void {
 }
 
 function setSteeringJoystickState(value: number, active: boolean): void {
-  const normalized = Math.max(-1, Math.min(1, value));
-  steeringJoystick.style.setProperty(
-    "--steering-x",
-    `${(-normalized * 34).toFixed(2)}%`,
-  );
-  steeringJoystick.toggleAttribute("data-active", active);
-  steeringJoystick.setAttribute(
-    "aria-valuenow",
-    String(Math.round(normalized * 100)),
-  );
-  const magnitude = Math.round(Math.abs(normalized) * 100);
-  steeringJoystick.setAttribute(
-    "aria-valuetext",
-    normalized > 0
-      ? `LEFT ${magnitude}%`
-      : normalized < 0
-        ? `RIGHT ${magnitude}%`
-        : "CENTER",
-  );
+  mobileDrivingV3Ui.setSteeringJoystickState(value, active);
 }
 
 function setDebugPanelOpen(open: boolean): void {
@@ -595,7 +586,7 @@ async function startHost(): Promise<void> {
       `Running — ${scene.id}; ${backend.id}; ` +
       `${box3dReceipt.identity.packageName}@${box3dReceipt.identity.packageVersion}; ` +
       `RATE/POSITION steering + reference wheel drive; ` +
-      `keyboard + pointer + analog joystick; generation ${generation}`;
+      `keyboard + analog steering + analog pedals + D/R selector; generation ${generation}`;
   } catch (error: unknown) {
     if (generation !== startupGeneration) {
       return;
