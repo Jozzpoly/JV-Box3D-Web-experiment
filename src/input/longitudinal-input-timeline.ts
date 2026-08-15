@@ -18,6 +18,16 @@ export interface LongitudinalButtonEvent extends LongitudinalEventBase {
   readonly pressed: boolean;
 }
 
+export interface LongitudinalAnalogThrottleEvent extends LongitudinalEventBase {
+  readonly kind: "LONGITUDINAL_ANALOG_THROTTLE";
+  readonly value: number;
+}
+
+export interface LongitudinalAnalogBrakeEvent extends LongitudinalEventBase {
+  readonly kind: "LONGITUDINAL_ANALOG_BRAKE";
+  readonly value: number;
+}
+
 export interface LongitudinalReleaseAllEvent extends LongitudinalEventBase {
   readonly kind: "RELEASE_ALL";
   readonly reason: InputReleaseReason;
@@ -25,6 +35,8 @@ export interface LongitudinalReleaseAllEvent extends LongitudinalEventBase {
 
 export type RawLongitudinalEvent =
   | LongitudinalButtonEvent
+  | LongitudinalAnalogThrottleEvent
+  | LongitudinalAnalogBrakeEvent
   | LongitudinalReleaseAllEvent;
 
 export interface LongitudinalTimelineSample {
@@ -37,6 +49,11 @@ export interface LongitudinalTimelineSample {
   readonly reversePressedAtEnd: boolean;
   readonly brakePressedAtEnd: boolean;
   readonly consumedEvents: readonly RawLongitudinalEvent[];
+}
+
+interface AnalogThrottleState {
+  readonly value: number;
+  readonly sequence: number;
 }
 
 function compareEvents(
@@ -55,11 +72,29 @@ function assertFiniteTimestamp(timestampMs: number): void {
   }
 }
 
+function assertNormalizedThrottle(value: number): void {
+  if (!Number.isFinite(value) || value < -1 || value > 1) {
+    throw new RangeError(
+      "Analog throttle must be finite and normalized to [-1, 1].",
+    );
+  }
+}
+
+function assertNormalizedBrake(value: number): void {
+  if (!Number.isFinite(value) || value < 0 || value > 1) {
+    throw new RangeError(
+      "Analog brake must be finite and normalized to [0, 1].",
+    );
+  }
+}
+
 export class LongitudinalInputTimeline {
   readonly #events: RawLongitudinalEvent[] = [];
   readonly #forwardSources = new Set<string>();
   readonly #reverseSources = new Set<string>();
   readonly #brakeSources = new Set<string>();
+  readonly #analogThrottleSources = new Map<string, AnalogThrottleState>();
+  readonly #analogBrakeSources = new Map<string, number>();
   #nextSequence = 0;
   #cursorTimeMs: number;
 
@@ -83,6 +118,38 @@ export class LongitudinalInputTimeline {
       kind: "LONGITUDINAL_BUTTON",
       control,
       pressed,
+      timestampMs,
+      sourceId,
+      sequence: this.#nextSequence++,
+    });
+  }
+
+  enqueueAnalogThrottle(
+    value: number,
+    timestampMs: number,
+    sourceId: string,
+  ): void {
+    assertFiniteTimestamp(timestampMs);
+    assertNormalizedThrottle(value);
+    this.#insertEvent({
+      kind: "LONGITUDINAL_ANALOG_THROTTLE",
+      value,
+      timestampMs,
+      sourceId,
+      sequence: this.#nextSequence++,
+    });
+  }
+
+  enqueueAnalogBrake(
+    value: number,
+    timestampMs: number,
+    sourceId: string,
+  ): void {
+    assertFiniteTimestamp(timestampMs);
+    assertNormalizedBrake(value);
+    this.#insertEvent({
+      kind: "LONGITUDINAL_ANALOG_BRAKE",
+      value,
       timestampMs,
       sourceId,
       sequence: this.#nextSequence++,
@@ -191,6 +258,29 @@ export class LongitudinalInputTimeline {
       this.#forwardSources.delete(event.sourceId);
       this.#reverseSources.delete(event.sourceId);
       this.#brakeSources.delete(event.sourceId);
+      this.#analogThrottleSources.delete(event.sourceId);
+      this.#analogBrakeSources.delete(event.sourceId);
+      return;
+    }
+
+    if (event.kind === "LONGITUDINAL_ANALOG_THROTTLE") {
+      if (Math.abs(event.value) <= 1e-12) {
+        this.#analogThrottleSources.delete(event.sourceId);
+      } else {
+        this.#analogThrottleSources.set(event.sourceId, {
+          value: event.value,
+          sequence: event.sequence,
+        });
+      }
+      return;
+    }
+
+    if (event.kind === "LONGITUDINAL_ANALOG_BRAKE") {
+      if (event.value <= 1e-12) {
+        this.#analogBrakeSources.delete(event.sourceId);
+      } else {
+        this.#analogBrakeSources.set(event.sourceId, event.value);
+      }
       return;
     }
 
@@ -216,10 +306,28 @@ export class LongitudinalInputTimeline {
   #currentThrottle(): number {
     const forward = this.#forwardSources.size > 0 ? 1 : 0;
     const reverse = this.#reverseSources.size > 0 ? 1 : 0;
-    return forward - reverse;
+    if (forward !== 0 || reverse !== 0) {
+      return forward - reverse;
+    }
+
+    let selected: AnalogThrottleState | null = null;
+    for (const state of this.#analogThrottleSources.values()) {
+      if (selected === null || state.sequence > selected.sequence) {
+        selected = state;
+      }
+    }
+    return selected?.value ?? 0;
   }
 
   #currentBrake(): number {
-    return this.#brakeSources.size > 0 ? 1 : 0;
+    if (this.#brakeSources.size > 0) {
+      return 1;
+    }
+
+    let strongest = 0;
+    for (const value of this.#analogBrakeSources.values()) {
+      strongest = Math.max(strongest, value);
+    }
+    return strongest;
   }
 }

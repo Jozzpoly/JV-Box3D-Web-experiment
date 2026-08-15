@@ -109,3 +109,62 @@ test("release-all only clears longitudinal controls owned by its source", () => 
   assert.equal(sample.forwardPressedAtEnd, false);
   assert.equal(sample.brakePressedAtEnd, false);
 });
+
+test("analog throttle integrates piecewise on the existing fixed-step timeline", () => {
+  const timeline = new LongitudinalInputTimeline(0);
+  timeline.enqueueAnalogThrottle(0.5, 2, "touch");
+  timeline.enqueueAnalogThrottle(0, 8, "touch");
+
+  assert.deepEqual(timeline.consumeInterval(0, 10).command, {
+    throttle: 0.3,
+    brake: 0,
+  });
+});
+
+test("digital throttle remains authoritative while an analog source is active", () => {
+  const timeline = new LongitudinalInputTimeline(0);
+  timeline.enqueueAnalogThrottle(0.7, 0, "touch");
+  timeline.enqueueButton("FORWARD", true, 2, "keyboard:w");
+  timeline.enqueueButton("REVERSE", true, 4, "keyboard:s");
+  timeline.enqueueButton("FORWARD", false, 6, "keyboard:w");
+  timeline.enqueueButton("REVERSE", false, 8, "keyboard:s");
+
+  const command = timeline.consumeInterval(0, 10).command;
+  assert.ok(Math.abs(command.throttle - 0.28) < 1e-12);
+  assert.equal(command.brake, 0);
+});
+
+test("latest active analog throttle source owns direction and previous source resumes after release", () => {
+  const timeline = new LongitudinalInputTimeline(0);
+  timeline.enqueueAnalogThrottle(0.4, 0, "touch");
+  timeline.enqueueAnalogThrottle(-0.6, 2, "gamepad");
+  timeline.enqueueAnalogThrottle(0, 6, "gamepad");
+
+  const command = timeline.consumeInterval(0, 10).command;
+  assert.ok(Math.abs(command.throttle) < 1e-12);
+  assert.equal(command.brake, 0);
+});
+
+test("analog brake uses the strongest active source and digital brake stays authoritative", () => {
+  const timeline = new LongitudinalInputTimeline(0);
+  timeline.enqueueAnalogBrake(0.3, 0, "touch");
+  timeline.enqueueAnalogBrake(0.7, 2, "gamepad");
+  timeline.enqueueButton("BRAKE", true, 4, "keyboard");
+  timeline.enqueueButton("BRAKE", false, 8, "keyboard");
+
+  assert.deepEqual(timeline.consumeInterval(0, 10).command, {
+    throttle: 0,
+    brake: 0.74,
+  });
+});
+
+test("release-all removes only the matching analog source", () => {
+  const timeline = new LongitudinalInputTimeline(0);
+  timeline.enqueueAnalogThrottle(0.4, 0, "touch-a");
+  timeline.enqueueAnalogThrottle(0.8, 2, "touch-b");
+  timeline.enqueueReleaseAll(5, "BLUR", "touch-b");
+
+  const command = timeline.consumeInterval(0, 10).command;
+  assert.ok(Math.abs(command.throttle - 0.6) < 1e-12);
+  assert.equal(command.brake, 0);
+});

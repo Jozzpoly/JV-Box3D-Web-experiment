@@ -1,5 +1,4 @@
 import type {
-  LongitudinalControl,
   LongitudinalInputTimeline,
 } from "./longitudinal-input-timeline.js";
 import type { InputReleaseReason, SteeringSide } from "./raw-device-event.js";
@@ -12,10 +11,13 @@ export type PointerVehicleControlId =
   | "REVERSE"
   | "BRAKE";
 
+export type PointerDriveDirection = "D" | "R";
+
 export interface PointerControlTarget extends EventTarget {
   setPointerCapture(pointerId: number): void;
   releasePointerCapture(pointerId: number): void;
   hasPointerCapture(pointerId: number): boolean;
+  getBoundingClientRect(): Readonly<{ height: number }>;
 }
 
 export interface PointerVehicleControlTargets {
@@ -38,23 +40,32 @@ export interface PointerVehicleControlAdapterOptions {
   readonly onControlStateChange?: (
     control: PointerVehicleControlId,
     active: boolean,
+    value?: number,
   ) => void;
 }
 
-type ControlBinding = Readonly<
-  | {
-      id: "STEER_LEFT" | "STEER_RIGHT";
-      kind: "STEERING";
-      value: SteeringSide;
-      target: PointerControlTarget;
-    }
-  | {
-      id: "FORWARD" | "REVERSE" | "BRAKE";
-      kind: "LONGITUDINAL";
-      value: LongitudinalControl;
-      target: PointerControlTarget;
-    }
->;
+type SteeringBinding = Readonly<{
+  id: "STEER_LEFT" | "STEER_RIGHT";
+  kind: "STEERING";
+  value: SteeringSide;
+  target: PointerControlTarget;
+}>;
+
+type PedalBinding = Readonly<{
+  id: "FORWARD" | "BRAKE";
+  kind: "PEDAL";
+  pedal: "THROTTLE" | "BRAKE";
+  target: PointerControlTarget;
+}>;
+
+type DirectionBinding = Readonly<{
+  id: "REVERSE";
+  kind: "DIRECTION";
+  target: PointerControlTarget;
+}>;
+
+type ControlBinding = SteeringBinding | PedalBinding | DirectionBinding;
+type CapturedBinding = SteeringBinding | PedalBinding;
 
 interface InstalledListener {
   readonly target: EventTarget;
@@ -62,8 +73,65 @@ interface InstalledListener {
   readonly listener: EventListener;
 }
 
+interface ActivePedalPointer {
+  readonly binding: PedalBinding;
+  readonly originY: number;
+  readonly travelPx: number;
+  value: number;
+}
+
+const PEDAL_TRAVEL_RATIO = 0.86;
+const MIN_PEDAL_TRAVEL_PX = 64;
+const MAX_PEDAL_TRAVEL_PX = 120;
+const DEFAULT_PEDAL_START_SLOP_PX = 6;
+
 function pointerButtonIsSupported(event: PointerEvent): boolean {
   return event.button === 0 || event.button === -1;
+}
+
+export function resolvePointerPedalTravelPx(height: number): number {
+  if (!Number.isFinite(height) || height <= 0) {
+    throw new RangeError("Pedal target height must be finite and positive.");
+  }
+  return Math.max(
+    MIN_PEDAL_TRAVEL_PX,
+    Math.min(MAX_PEDAL_TRAVEL_PX, height * PEDAL_TRAVEL_RATIO),
+  );
+}
+
+export function resolvePointerPedalValue(
+  clientY: number,
+  originY: number,
+  travelPx: number,
+  startSlopPx = DEFAULT_PEDAL_START_SLOP_PX,
+): number {
+  if (
+    !Number.isFinite(clientY) ||
+    !Number.isFinite(originY) ||
+    !Number.isFinite(travelPx) ||
+    travelPx <= 0
+  ) {
+    throw new RangeError("Pedal gesture geometry must be finite and positive.");
+  }
+  if (
+    !Number.isFinite(startSlopPx) ||
+    startSlopPx < 0 ||
+    startSlopPx >= travelPx
+  ) {
+    throw new RangeError("Pedal start slop must be in [0, travelPx).");
+  }
+
+  const upwardTravelPx = originY - clientY;
+  if (upwardTravelPx <= startSlopPx) {
+    return 0;
+  }
+  return Math.max(
+    0,
+    Math.min(
+      1,
+      (upwardTravelPx - startSlopPx) / (travelPx - startSlopPx),
+    ),
+  );
 }
 
 export class PointerVehicleControlAdapter {
@@ -75,15 +143,21 @@ export class PointerVehicleControlAdapter {
   readonly #now: () => number;
   readonly #sourceIdPrefix: string;
   readonly #onControlStateChange:
-    | ((control: PointerVehicleControlId, active: boolean) => void)
+    | ((
+        control: PointerVehicleControlId,
+        active: boolean,
+        value?: number,
+      ) => void)
     | undefined;
   readonly #bindings: readonly ControlBinding[];
   readonly #listeners: InstalledListener[] = [];
-  readonly #pointerOwners = new Map<number, ControlBinding>();
+  readonly #pointerOwners = new Map<number, CapturedBinding>();
+  readonly #pedalPointers = new Map<number, ActivePedalPointer>();
   readonly #activePointersByControl = new Map<
     PointerVehicleControlId,
     Set<number>
   >();
+  #driveDirection: PointerDriveDirection = "D";
   #disposed = false;
 
   readonly #onBlur: EventListener = () => {
@@ -124,21 +198,20 @@ export class PointerVehicleControlAdapter {
       },
       {
         id: "FORWARD",
-        kind: "LONGITUDINAL",
-        value: "FORWARD",
+        kind: "PEDAL",
+        pedal: "THROTTLE",
         target: options.controls.forward,
       },
       {
-        id: "REVERSE",
-        kind: "LONGITUDINAL",
-        value: "REVERSE",
-        target: options.controls.reverse,
+        id: "BRAKE",
+        kind: "PEDAL",
+        pedal: "BRAKE",
+        target: options.controls.brake,
       },
       {
-        id: "BRAKE",
-        kind: "LONGITUDINAL",
-        value: "BRAKE",
-        target: options.controls.brake,
+        id: "REVERSE",
+        kind: "DIRECTION",
+        target: options.controls.reverse,
       },
     ] satisfies readonly ControlBinding[]);
 
@@ -174,8 +247,25 @@ export class PointerVehicleControlAdapter {
   }
 
   #installControl(binding: ControlBinding): void {
+    if (binding.kind === "DIRECTION") {
+      const onPointerDown: EventListener = (event) => {
+        event.stopPropagation();
+      };
+      const onClick: EventListener = (event) => {
+        this.#toggleDirection(event);
+      };
+      this.#listen(binding.target, "pointerdown", onPointerDown);
+      this.#listen(binding.target, "click", onClick);
+      return;
+    }
+
     const onPointerDown: EventListener = (event) => {
       this.#handlePointerDown(binding, event as PointerEvent);
+    };
+    const onPointerMove: EventListener = (event) => {
+      if (binding.kind === "PEDAL") {
+        this.#handlePedalMove(binding, event as PointerEvent);
+      }
     };
     const onPointerUp: EventListener = (event) => {
       this.#releasePointer(event as PointerEvent, true);
@@ -188,6 +278,9 @@ export class PointerVehicleControlAdapter {
     };
 
     this.#listen(binding.target, "pointerdown", onPointerDown);
+    if (binding.kind === "PEDAL") {
+      this.#listen(binding.target, "pointermove", onPointerMove);
+    }
     this.#listen(binding.target, "pointerup", onPointerUp);
     this.#listen(binding.target, "pointercancel", onPointerCancel);
     this.#listen(
@@ -202,13 +295,32 @@ export class PointerVehicleControlAdapter {
     this.#listeners.push({ target, type, listener });
   }
 
-  #handlePointerDown(binding: ControlBinding, event: PointerEvent): void {
+  #handlePointerDown(binding: CapturedBinding, event: PointerEvent): void {
     if (
       this.#disposed ||
       !pointerButtonIsSupported(event) ||
       this.#pointerOwners.has(event.pointerId)
     ) {
       return;
+    }
+
+    let pedalState: ActivePedalPointer | null = null;
+    if (binding.kind === "PEDAL") {
+      if (this.#activePointers(binding.id).size > 0) {
+        return;
+      }
+      try {
+        pedalState = {
+          binding,
+          originY: event.clientY,
+          travelPx: resolvePointerPedalTravelPx(
+            binding.target.getBoundingClientRect().height,
+          ),
+          value: 0,
+        };
+      } catch {
+        return;
+      }
     }
 
     event.preventDefault();
@@ -224,15 +336,62 @@ export class PointerVehicleControlAdapter {
     const activePointers = this.#activePointers(binding.id);
     const wasActive = activePointers.size > 0;
     activePointers.add(event.pointerId);
-    this.#enqueueButton(
+
+    if (binding.kind === "STEERING") {
+      this.#steeringTimeline.enqueueButton(
+        binding.value,
+        true,
+        this.#safeTimestamp(binding),
+        this.#sourceId(event.pointerId),
+      );
+      if (!wasActive) {
+        this.#onControlStateChange?.(binding.id, true);
+      }
+      return;
+    }
+
+    if (pedalState !== null) {
+      this.#pedalPointers.set(event.pointerId, pedalState);
+      this.#onControlStateChange?.(binding.id, true, 0);
+    }
+  }
+
+  #handlePedalMove(binding: PedalBinding, event: PointerEvent): void {
+    if (
+      this.#disposed ||
+      this.#pointerOwners.get(event.pointerId) !== binding
+    ) {
+      return;
+    }
+    const state = this.#pedalPointers.get(event.pointerId);
+    if (state === undefined) {
+      return;
+    }
+
+    let value: number;
+    try {
+      value = resolvePointerPedalValue(
+        event.clientY,
+        state.originY,
+        state.travelPx,
+      );
+    } catch {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (Math.abs(value - state.value) <= 1e-6) {
+      return;
+    }
+
+    state.value = value;
+    this.#enqueuePedalValue(
       binding,
-      true,
+      value,
       this.#safeTimestamp(binding),
       this.#sourceId(event.pointerId),
     );
-    if (!wasActive) {
-      this.#onControlStateChange?.(binding.id, true);
-    }
+    this.#onControlStateChange?.(binding.id, true, value);
   }
 
   #releasePointer(event: PointerEvent, releaseCapture: boolean): void {
@@ -246,12 +405,20 @@ export class PointerVehicleControlAdapter {
     this.#pointerOwners.delete(event.pointerId);
     const activePointers = this.#activePointers(binding.id);
     activePointers.delete(event.pointerId);
-    this.#enqueueButton(
-      binding,
-      false,
-      this.#safeTimestamp(binding),
-      this.#sourceId(event.pointerId),
-    );
+
+    const timestampMs = this.#safeTimestamp(binding);
+    const sourceId = this.#sourceId(event.pointerId);
+    if (binding.kind === "STEERING") {
+      this.#steeringTimeline.enqueueButton(
+        binding.value,
+        false,
+        timestampMs,
+        sourceId,
+      );
+    } else {
+      this.#pedalPointers.delete(event.pointerId);
+      this.#enqueuePedalValue(binding, 0, timestampMs, sourceId);
+    }
 
     if (releaseCapture) {
       try {
@@ -259,14 +426,49 @@ export class PointerVehicleControlAdapter {
           binding.target.releasePointerCapture(event.pointerId);
         }
       } catch {
-        // The semantic release is already queued. Browser capture teardown may
-        // race with pointercancel/lostpointercapture and must not re-arm input.
+        // Semantic release is already queued. Browser capture teardown may race
+        // with pointercancel/lostpointercapture and must not re-arm input.
       }
     }
 
     if (activePointers.size === 0) {
-      this.#onControlStateChange?.(binding.id, false);
+      this.#onControlStateChange?.(
+        binding.id,
+        false,
+        binding.kind === "PEDAL" ? 0 : undefined,
+      );
     }
+  }
+
+  #toggleDirection(event: Event): void {
+    if (this.#disposed) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    this.#driveDirection = this.#driveDirection === "D" ? "R" : "D";
+    const timestampMs = Math.max(
+      this.#now(),
+      this.#longitudinalTimeline.cursorTimeMs,
+    );
+
+    for (const [pointerId, state] of this.#pedalPointers) {
+      if (state.binding.pedal !== "THROTTLE" || state.value <= 1e-12) {
+        continue;
+      }
+      this.#enqueuePedalValue(
+        state.binding,
+        state.value,
+        timestampMs,
+        this.#sourceId(pointerId),
+      );
+    }
+
+    this.#onControlStateChange?.(
+      "REVERSE",
+      this.#driveDirection === "R",
+      this.#driveDirection === "R" ? 1 : 0,
+    );
   }
 
   #releaseAll(reason: InputReleaseReason): void {
@@ -274,17 +476,23 @@ export class PointerVehicleControlAdapter {
       return;
     }
 
-    const timestampByKind = new Map<ControlBinding["kind"], number>();
+    const timestampByKind = new Map<"STEERING" | "LONGITUDINAL", number>();
     for (const [pointerId, binding] of this.#pointerOwners) {
+      const timelineKind =
+        binding.kind === "STEERING" ? "STEERING" : "LONGITUDINAL";
       const timestamp =
-        timestampByKind.get(binding.kind) ?? this.#safeTimestamp(binding);
-      timestampByKind.set(binding.kind, timestamp);
-      this.#enqueueReleaseAll(
-        binding,
-        timestamp,
-        reason,
-        this.#sourceId(pointerId),
-      );
+        timestampByKind.get(timelineKind) ?? this.#safeTimestamp(binding);
+      timestampByKind.set(timelineKind, timestamp);
+      const sourceId = this.#sourceId(pointerId);
+      if (binding.kind === "STEERING") {
+        this.#steeringTimeline.enqueueReleaseAll(timestamp, reason, sourceId);
+      } else {
+        this.#longitudinalTimeline.enqueueReleaseAll(
+          timestamp,
+          reason,
+          sourceId,
+        );
+      }
       try {
         if (binding.target.hasPointerCapture(pointerId)) {
           binding.target.releasePointerCapture(pointerId);
@@ -295,60 +503,46 @@ export class PointerVehicleControlAdapter {
     }
 
     this.#pointerOwners.clear();
+    this.#pedalPointers.clear();
     for (const binding of this.#bindings) {
+      if (binding.kind === "DIRECTION") {
+        continue;
+      }
       const activePointers = this.#activePointers(binding.id);
       if (activePointers.size > 0) {
         activePointers.clear();
-        this.#onControlStateChange?.(binding.id, false);
+        this.#onControlStateChange?.(
+          binding.id,
+          false,
+          binding.kind === "PEDAL" ? 0 : undefined,
+        );
       }
     }
   }
 
-  #enqueueButton(
-    binding: ControlBinding,
-    pressed: boolean,
+  #enqueuePedalValue(
+    binding: PedalBinding,
+    value: number,
     timestampMs: number,
     sourceId: string,
   ): void {
-    if (binding.kind === "STEERING") {
-      this.#steeringTimeline.enqueueButton(
-        binding.value,
-        pressed,
+    if (binding.pedal === "THROTTLE") {
+      const direction = this.#driveDirection === "D" ? 1 : -1;
+      this.#longitudinalTimeline.enqueueAnalogThrottle(
+        value * direction,
         timestampMs,
         sourceId,
       );
     } else {
-      this.#longitudinalTimeline.enqueueButton(
-        binding.value,
-        pressed,
+      this.#longitudinalTimeline.enqueueAnalogBrake(
+        value,
         timestampMs,
         sourceId,
       );
     }
   }
 
-  #enqueueReleaseAll(
-    binding: ControlBinding,
-    timestampMs: number,
-    reason: InputReleaseReason,
-    sourceId: string,
-  ): void {
-    if (binding.kind === "STEERING") {
-      this.#steeringTimeline.enqueueReleaseAll(
-        timestampMs,
-        reason,
-        sourceId,
-      );
-    } else {
-      this.#longitudinalTimeline.enqueueReleaseAll(
-        timestampMs,
-        reason,
-        sourceId,
-      );
-    }
-  }
-
-  #safeTimestamp(binding: ControlBinding): number {
+  #safeTimestamp(binding: CapturedBinding): number {
     const cursorTimeMs =
       binding.kind === "STEERING"
         ? this.#steeringTimeline.cursorTimeMs
