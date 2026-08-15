@@ -2,7 +2,7 @@
 
 Updated: 2026-08-15
 Owner: Jozz
-Status: `FULLSCREEN V1 CLOSED / ANALOG STEERING NEXT`
+Status: `ANALOG STEERING V1 DEVICE GATE / OWNER VALIDATION PENDING`
 
 ## Authority and active lane
 
@@ -11,11 +11,15 @@ accepted private source: main@f8eb0908f5934aed2d504f34ce483a02754039ec
 single active work lane: work/friends-r1-usability
 Camera Manual Rig V1 source absorption: 997c9a34ea429220dbdb4f5408a0ac37200bd712
 fullscreen source checkpoint: checkpoint/fullscreen-v1-owner-validated-2026-08-15@db55501342feacfb0f82099d7f47afe3a9756143
+analog steering V1 source candidate: d80d4636a1327c3aaf9e6689a95a7cb1d91f98b2
+analog steering POSITION timeline foundation: 30a00ab861f9c93150f426d5d06a01e7b86dda46
+analog pointer joystick adapter: 2fc8babbf22f239e27e625e5d174fae18d7ce616
 closed performance checkpoint: checkpoint/perf-foundation-v1-closed-2026-08-15
 owner-tested performance code: checkpoint/perf-foundation-a53-validated-2026-08-15@f42e16321d9edb26e10f44ab7c9eeda3c646291c
 public A53 proof: checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0
 public Camera 1B owner-device proof: release/friends-r1@4768abedaa67b7505ca963a0836879e42590b67d
 public fullscreen owner-device proof: checkpoint/pages-fullscreen-v1-owner-validated-2026-08-15@8fe52a73554273fa710d2be2fdaf3a144d9056ba
+public analog steering device-gate candidate: release/friends-r1@b6b91cad54966944af47f31d11721d2695066992
 public known-good rollback: checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a
 public R0 fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
@@ -26,7 +30,7 @@ Current Git, reproducible execution evidence and direct owner observation outran
 
 ## Working product boundary
 
-Friends currently includes Plac E2R, Offroad, the owner vehicle and the complete JSPREV2 scan on desktop/phone. Manual Camera Rig V1 and explicit fullscreen now form part of the owner-validated usability foundation. The current vehicle's coherent-front bridge remains a temporary product intermediate; final rig, steering feedback/back-drive and handling are open. JURE owns future rig authoring.
+Friends currently includes Plac E2R, Offroad, the owner vehicle and the complete JSPREV2 scan on desktop/phone. Manual Camera Rig V1 and explicit fullscreen form part of the owner-validated usability foundation. Analog Steering V1 is implemented in the active private lane and has an isolated public device-gate candidate, but it is **not owner-accepted yet**. The current vehicle's coherent-front bridge remains a temporary product intermediate; final rig, steering feedback/back-drive and handling are open. JURE owns future rig authoring.
 
 Current JSPREV2 stress case:
 
@@ -102,11 +106,39 @@ public gate base: Camera 1B proof 4768abedaa67b7505ca963a0836879e42590b67d
 
 The public fullscreen gate is noncanonical owner-device evidence layered over Camera 1B. It is not a canonical Node24/npm11/TypeScript7/Vite Friends build and does not by itself promote `main` or bless other browser fullscreen implementations.
 
-## Current input boundary
+## Analog Steering V1 — device gate pending
 
-Keyboard and current touch buttons feed timestamped fixed-step input timelines. Steering commands already support normalized `RATE` and `POSITION` modes, and the M6 controller can turn `POSITION [-1,1]` into a rack target. The missing product layer is therefore analog device input and ergonomic joystick interaction, not a new steering-mechanics model.
+The active private lane now contains a deliberately separated analog-input stack without changing vehicle mechanics:
 
-The next slice must preserve event ordering, fixed-step behavior, source ownership and fail-safe release semantics. Do not bury joystick logic in physics or silently convert the temporary steering geometry into final authority.
+- `SteeringPositionTimeline` carries normalized timestamped `POSITION [-1,1]` commands through the same fixed-step boundary discipline as existing input;
+- pointer joystick ownership is source-scoped, pointer-captured, dead-zoned and fail-safe;
+- releasing the joystick commands neutral `POSITION 0`, giving mobile steering an explicit self-centering behavior;
+- explicit digital `RATE` input retains priority for a step, so keyboard/binary controls remain usable;
+- dropped fixed-step intervals advance digital, analog and longitudinal timelines together;
+- the visible mobile LEFT/RIGHT pair is replaced by one analog steering control while DRIVE/BRAKE/REVERSE remain unchanged;
+- hidden legacy left/right DOM targets are preserved temporarily as a compatibility boundary rather than forcing an unrelated longitudinal-input rewrite.
+
+Scoped noncanonical development checks completed before publication:
+
+```text
+position timeline isolated tests: 6/6 pass
+position timeline + joystick adapter isolated tests: 10/10 pass
+private UI source candidate: d80d4636a1327c3aaf9e6689a95a7cb1d91f98b2
+public device-gate candidate: b6b91cad54966944af47f31d11721d2695066992
+Pages publication for candidate: built
+```
+
+These checks do **not** equal the canonical repo `npm run check`, do not prove the composed browser patch booted correctly, and do not establish good driving feel. Owner/device validation is the current gate.
+
+The public gate composes the already-tested Camera 1B runtime, accepted fullscreen overlay and the Analog Steering V1 POSITION path. Its loader fails closed if expected runtime transformation points are missing instead of silently falling back to old steering.
+
+Not accepted yet:
+
+- joystick ergonomics, size, dead zone or steering feel;
+- analog steering behavior on the real phone/browser runtime;
+- final steering geometry, self-aligning/back-drive behavior or handling;
+- analog throttle/brake or gamepad input;
+- canonical Friends build or promotion to `main`.
 
 ## Remaining formal promotion gate
 
@@ -122,15 +154,15 @@ Whether a particular agent environment can execute this gate is session-specific
 
 ## Next product phase
 
-Continue small owner-visible usability slices rather than starting another broad foundation campaign. Current priority is:
+Do not start another feature before the current device gate answers the input question. Current priority is:
 
-1. analog steering input foundation and a mobile steering joystick;
-2. owner/device driving-feel validation, separating input ergonomics from temporary steering/handling debt;
-3. camera persistence/presets or a focused HUD/settings pass where they remove real friction;
-4. advanced camera speed/turn/environment assists, additive to manual calibration;
-5. broader analog/gamepad/longitudinal input after the first steering path proves useful.
+1. owner/device validation of Analog Steering V1 on mobile, preferably Offroad first and then the scan;
+2. classify any problem as joystick ergonomics/input mapping versus temporary steering/handling mechanics;
+3. iterate the smallest proven problem until analog steering is genuinely useful;
+4. then choose the next small usability slice from camera persistence/HUD friction or additive dynamic camera assists;
+5. broaden analog/gamepad/longitudinal input only after the first steering path proves useful.
 
-Keep vehicle mechanics unchanged unless a slice explicitly targets them. Automatic camera behavior must never silently overwrite manual user calibration.
+Keep vehicle mechanics unchanged unless evidence from the driving gate specifically justifies a mechanics slice. Automatic camera behavior must never silently overwrite manual user calibration.
 
 ## Documentation/workflow hygiene
 

@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-15
-Status: `FULLSCREEN V1 CLOSED / ANALOG STEERING NEXT`
+Status: `ANALOG STEERING V1 DEVICE GATE / OWNER VALIDATION PENDING`
 
 This file is a router only. Current Git, reproducible execution evidence and direct owner observation outrank it.
 
@@ -11,6 +11,8 @@ This file is a router only. Current Git, reproducible execution evidence and dir
 - single active product lane: `work/friends-r1-usability`;
 - Camera Manual Rig V1 absorbed at `997c9a34ea429220dbdb4f5408a0ac37200bd712`;
 - fullscreen source checkpoint: `checkpoint/fullscreen-v1-owner-validated-2026-08-15@db55501342feacfb0f82099d7f47afe3a9756143`;
+- analog steering V1 source candidate: `d80d4636a1327c3aaf9e6689a95a7cb1d91f98b2`;
+- public analog steering device-gate candidate: `release/friends-r1@b6b91cad54966944af47f31d11721d2695066992`;
 - owner-tested performance code: `checkpoint/perf-foundation-a53-validated-2026-08-15@f42e16321d9edb26e10f44ab7c9eeda3c646291c`;
 - public A53 performance proof: `checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0`;
 - public Camera 1B device proof: `release/friends-r1@4768abedaa67b7505ca963a0836879e42590b67d`;
@@ -28,7 +30,9 @@ Camera Manual Rig V1 is private source and owner-accepted as the manual navigati
 
 Fullscreen V1 is owner-validated on mobile Chrome and desktop through the isolated Pages gate. Enter/exit state worked correctly and several minutes of driving after transitions exposed no observed control/camera regression. The public proof is noncanonical device evidence, not ordinary Friends release promotion.
 
-Current steering input is still predominantly digital at the device layer, but the mechanics contract already supports normalized `POSITION` steering in addition to `RATE`. The M6 controller maps `POSITION [-1,1]` to a rack target. The next product slice is therefore analog steering input + mobile joystick ergonomics while preserving fixed-step event ordering, source ownership and fail-safe release behavior.
+Analog Steering V1 is implemented but **not owner-accepted yet**. Private source now has a timestamped `POSITION` steering timeline, pointer joystick adapter, deterministic RATE/POSITION arbitration and a mobile analog steering control while keeping vehicle mechanics unchanged. Releasing the joystick commands neutral `POSITION 0`; explicit digital RATE commands retain step priority. Scoped noncanonical timeline/adapter checks passed before publication, and the isolated Pages candidate `b6b91cad54966944af47f31d11721d2695066992` built successfully. The current gate is real phone/browser boot + driving feel, not more infrastructure.
+
+The public joystick gate composes the accepted Camera 1B runtime and fullscreen overlay, injects the POSITION/joystick modules before the import map, and fails closed if expected runtime patch points do not match. It is still noncanonical owner-device evidence and must not be mistaken for the exact Node24/npm11/TypeScript7/Vite build.
 
 Final rig/steering feedback/back-drive/handling remain open; JURE owns rig authoring. Do not treat joystick work as authority for final steering geometry or handling.
 
@@ -36,12 +40,13 @@ The remaining formal promotion boundary is canonical repo execution/build with N
 
 ## Next direction
 
-1. analog steering input foundation and mobile joystick;
-2. owner/device feel validation that separates input ergonomics from steering/handling debt;
-3. then choose the next small usability slice from camera persistence/HUD friction or additive dynamic camera assists;
-4. expand to broader analog/gamepad/longitudinal input only after the first steering path proves useful.
+1. owner/device test Analog Steering V1 on mobile, Offroad first and then JSPREV2 if the control behaves correctly;
+2. separate joystick ergonomics/input mapping defects from temporary steering/handling defects;
+3. iterate only the smallest demonstrated problem until analog steering is genuinely useful;
+4. after that choose between camera persistence/HUD friction and additive dynamic camera assists;
+5. broaden to gamepad or analog longitudinal input only after the first steering path proves useful.
 
-Do not resume micro-optimizing current JSPREV2 by default.
+Do not resume micro-optimizing current JSPREV2 by default. Do not start another large workflow/documentation campaign while the current owner-visible gate is unresolved.
 
 ## Read order
 
