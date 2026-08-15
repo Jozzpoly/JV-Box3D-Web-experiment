@@ -1,0 +1,142 @@
+onst pending = new Map();
++  const requested = [];
++  let active = 0;
++  let maximumActive = 0;
++
++  globalThis.fetch = async (input) => {
++    const url = String(input);
++    if (url.endsWith("/index.json")) {
++      return new Response(JSON.stringify(index), {
++        status: 200,
++        headers: { "Content-Type": "application/json" },
++      });
++    }
++    const tile = index.tiles.find((candidate) =>
++      url.endsWith(`/tile/${candidate.tileId}.bin`)
++    );
++    if (tile === undefined) {
++      return new Response(new Uint8Array([1]), { status: 200 });
++    }
++    requested.push(tile.tileId);
++    active += 1;
++    maximumActive = Math.max(maximumActive, active);
++    return await new Promise((resolve) => {
++      pending.set(tile.tileId, () => {
++        pending.delete(tile.tileId);
++        active -= 1;
++        resolve(new Response(tileFixture(tile.tileId, tile.groups.length), {
++          status: 200,
++        }));
++      });
++    });
++  };
++
++  try {
++    const loading = loadLocalJsprev2Scan();
++    await waitUntil(() => pending.size === 2);
++    assert.deepEqual(requested, [0, 1]);
++    assert.equal(maximumActive, 2);
++
++    pending.get(1)();
++    await waitUntil(() => pending.has(2));
++    assert.deepEqual(requested, [0, 1, 2]);
++    assert.equal(active, 2);
++    assert.equal(maximumActive, 2);
++
++    pending.get(2)();
++    pending.get(0)();
++    const scan = await loading;
++    assert.ok(scan !== null);
++    assert.equal(scan.groups.length, 25);
++    assert.ok(scan.groups[0].textureUrl.endsWith("/texture/0-0.png"));
++    assert.ok(scan.groups[9].textureUrl.endsWith("/texture/1-0.png"));
++    assert.ok(scan.groups[17].textureUrl.endsWith("/texture/2-0.png"));
++  } finally {
++    globalThis.fetch = previousFetch;
++  }
++});
++
++test("JSPREV2 loader rejects non-finite position and attribute payloads during the parse pass", async () => {
++  const previousFetch = globalThis.fetch;
++  try {
++    for (const byteOffset of [20 + GROUP_COUNT * 8, 20 + GROUP_COUNT * 8 + 12]) {
++      const tile = minimalTile();
++      new DataView(tile).setFloat32(byteOffset, Number.NaN, true);
++      globalThis.fetch = async (input) => {
++        const url = String(input);
++        return url.endsWith("/index.json")
++          ? indexResponse()
++          : new Response(tile, { status: 200 });
++      };
++      await assert.rejects(
++        loadLocalJsprev2Scan(),
++        /finite values/,
++      );
++    }
++  } finally {
++    globalThis.fetch = previousFetch;
++  }
++});
++
++test("JSPREV2 parser rejects an index outside its declared vertex stream", async () => {
++  const previousFetch = globalThis.fetch;
++  const tile = minimalTile();
++  const firstIndexOffset = 20 + GROUP_COUNT * 8 + 3 * 32;
++  new DataView(tile).setUint32(firstIndexOffset, 3, true);
++  globalThis.fetch = async (input) => {
++    const url = String(input);
++    return url.endsWith("/index.json")
++      ? indexResponse()
++      : new Response(tile, { status: 200 });
++  };
++  try {
++    await assert.rejects(
++      loadLocalJsprev2Scan(),
++      /outside its vertex stream/,
++    );
++  } finally {
++    globalThis.fetch = previousFetch;
++  }
++});
+diff --git a/tests/jv-index-upload-plan.test.mjs b/tests/jv-index-upload-plan.test.mjs
+new file mode 100644
+index 0000000..cb37cc1
+--- /dev/null
++++ b/tests/jv-index-upload-plan.test.mjs
+@@ -0,0 +1,36 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import {
++  selectJvIndexUploadPlan,
++} from "../.test-dist/render/jv-index-upload-plan.js";
++
++function mesh(vertexCount, indices, normals = true) {
++  return {
++    positions: new Float32Array(vertexCount * 3),
++    indices: new Uint32Array(indices),
++    ...(normals ? { normals: new Float32Array(vertexCount * 3) } : {}),
++    color: [1, 1, 1, 1],
++  };
++}
++
++test("scan upload uses the narrowest direct index type without rescanning indices", () => {
++  assert.equal(
++    selectJvIndexUploadPlan(mesh(65_536, [0, 65_535, 1]), true),
++    "UINT16_DIRECT",
++  );
++  assert.equal(
++    selectJvIndexUploadPlan(mesh(65_537, [0, 65_536, 1]), true),
++    "UINT32_DIRECT",
++  );
++});
++
++test("missing Uint32 support or generated normals preserve the legacy chunk fallback", () => {
++  assert.equal(
++    selectJvIndexUploadPlan(mesh(70_000, [0, 69_999, 1]), false),
++    "UINT16_CHUNKED",
++  );
++  assert.equal(
++    selectJvIndexUploadPlan(mesh(3, [0, 1, 2], false), true),
++    "UINT16_CHUNKED",
++  );
++});
