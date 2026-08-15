@@ -13,11 +13,11 @@ function canonicalText(value) {
   return value.replace(/\r\n?/g, "\n");
 }
 
-test("canonical package metadata pins the current repository toolchain", async () => {
+test("canonical package metadata pins Node and the supported npm 11 line", async () => {
   const packageJson = await json("package.json");
   assert.deepEqual(packageJson.engines, {
     node: "24.16.0",
-    npm: "11.13.0",
+    npm: ">=11.13.0 <12",
   });
   assert.equal(packageJson.packageManager, "npm@11.13.0");
   assert.equal(Object.hasOwn(packageJson, "os"), false);
@@ -33,7 +33,7 @@ test("devEngines fails closed on runtime or package-manager drift", async () => 
     },
     packageManager: {
       name: "npm",
-      version: "11.13.0",
+      version: ">=11.13.0 <12",
       onFail: "error",
     },
   });
