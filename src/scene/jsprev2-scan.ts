@@ -52,6 +52,7 @@ const GROUP_DESCRIPTOR_BYTES = 8;
 const VERTEX_BYTES = 32;
 const REQUIRED_GROUPS = 25;
 const REQUIRED_TEXTURES = 25;
+const TILE_LOAD_CONCURRENCY = 2;
 const MAX_TILES = 64;
 const MAX_VERTICES = 10_000_000;
 const MAX_INDICES = 24_000_000;
@@ -553,14 +554,53 @@ function translateBounds(bounds: JvBounds, origin: JvVec3): JvBounds {
   };
 }
 
+async function loadTileGroups(
+  index: ScanIndex,
+  signal?: AbortSignal,
+): Promise<readonly JvIndexedMesh[]> {
+  const tileGroups: Array<readonly JvIndexedMesh[] | undefined> =
+    new Array(index.tiles.length);
+  const fetchInit = signal === undefined ? undefined : { signal };
+  let nextTileIndex = 0;
+
+  const worker = async (): Promise<void> => {
+    while (true) {
+      const tileIndex = nextTileIndex;
+      nextTileIndex += 1;
+      if (tileIndex >= index.tiles.length) {
+        return;
+      }
+      const tile = index.tiles[tileIndex]!;
+      const tileResponse = await fetch(tile.binaryUrl, fetchInit);
+      if (!tileResponse.ok) {
+        throw new Error(`Scan tile failed with HTTP ${tileResponse.status}.`);
+      }
+      tileGroups[tileIndex] = parseTile(await tileResponse.arrayBuffer(), tile);
+    }
+  };
+
+  const workerCount = Math.min(TILE_LOAD_CONCURRENCY, index.tiles.length);
+  await Promise.all(
+    Array.from({ length: workerCount }, () => worker()),
+  );
+
+  const groups: JvIndexedMesh[] = [];
+  for (let tileIndex = 0; tileIndex < tileGroups.length; tileIndex += 1) {
+    const parsed = tileGroups[tileIndex];
+    if (parsed === undefined) {
+      throw new Error(`Scan tile ${tileIndex} did not finish loading.`);
+    }
+    groups.push(...parsed);
+  }
+  return groups;
+}
+
 export async function loadLocalJsprev2Scan(
   signal?: AbortSignal,
 ): Promise<JvScanWorld | null> {
   const scanRoot = scanRootUrl();
-  const response = await fetch(new URL("index.json", scanRoot), {
-    cache: "no-store",
-    ...(signal === undefined ? {} : { signal }),
-  });
+  const fetchInit = signal === undefined ? undefined : { signal };
+  const response = await fetch(new URL("index.json", scanRoot), fetchInit);
   if (response.status === 404) {
     return null;
   }
@@ -568,17 +608,7 @@ export async function loadLocalJsprev2Scan(
     throw new Error(`Local scan index failed with HTTP ${response.status}.`);
   }
   const index = parseIndex(await response.json(), scanRoot);
-  const groups: JvIndexedMesh[] = [];
-  for (const tile of index.tiles) {
-    const tileResponse = await fetch(tile.binaryUrl, {
-      cache: "no-store",
-      ...(signal === undefined ? {} : { signal }),
-    });
-    if (!tileResponse.ok) {
-      throw new Error(`Scan tile failed with HTTP ${tileResponse.status}.`);
-    }
-    groups.push(...parseTile(await tileResponse.arrayBuffer(), tile));
-  }
+  const groups = await loadTileGroups(index, signal);
 
   const actualVertices = groups.reduce(
     (sum, group) => sum + group.positions.length / 3,
