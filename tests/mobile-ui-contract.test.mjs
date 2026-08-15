@@ -35,6 +35,35 @@ test("mobile UI exposes each semantic vehicle control exactly once", async () =>
   }
 });
 
+test("mobile steering exposes one analog joystick while legacy binary targets stay hidden", async () => {
+  const [main, css] = await Promise.all([
+    read("src/main.ts"),
+    read("src/style.css"),
+  ]);
+
+  assert.match(
+    main,
+    /<div class="mobile-steering-joystick" data-steering-joystick\b/,
+  );
+  assert.match(
+    main,
+    /<button hidden aria-hidden="true" tabindex="-1"[^>]*data-pointer-control="STEER_LEFT"/,
+  );
+  assert.match(
+    main,
+    /<button hidden aria-hidden="true" tabindex="-1"[^>]*data-pointer-control="STEER_RIGHT"/,
+  );
+  assert.match(
+    main,
+    /steeringJoystick,\s*onSteeringJoystickStateChange:\s*setSteeringJoystickState/,
+  );
+  assert.match(
+    css,
+    /\.mobile-steering-joystick\s*\{[^}]*touch-action:\s*none;/s,
+  );
+  assert.match(css, /\.mobile-steering-thumb\s*\{/);
+});
+
 test("mobile viewport and controls preserve safe areas and local gesture ownership", async () => {
   const [html, css] = await Promise.all([
     read("index.html"),
@@ -51,25 +80,33 @@ test("mobile viewport and controls preserve safe areas and local gesture ownersh
   assert.match(css, /\.mobile-controls\s*\{[^}]*bottom:\s*max\(14px,\s*env\(safe-area-inset-bottom\)\)/s);
 });
 
-test("narrow mobile layout retains two non-overlapping control clusters", async () => {
+test("narrow mobile layout fits joystick and drive cluster without overlap", async () => {
   const css = await read("src/style.css");
-  const size = css.match(
+  const controlSize = css.match(
     /\.mobile-control\s*\{[^}]*width:\s*clamp\((\d+)px,\s*(\d+)vw,\s*(\d+)px\)/s,
   );
-  assert.ok(size, "mobile control width clamp is required");
+  const joystickSize = css.match(
+    /\.mobile-steering-joystick\s*\{[^}]*width:\s*clamp\((\d+)px,\s*(\d+)vw,\s*(\d+)px\)/s,
+  );
+  assert.ok(controlSize, "mobile control width clamp is required");
+  assert.ok(joystickSize, "mobile joystick width clamp is required");
 
-  const minimum = Number(size[1]);
-  const clusterGap = 9;
+  const controlMinimum = Number(controlSize[1]);
+  const joystickMinimum = Number(joystickSize[1]);
+  const driveClusterGap = 8;
   const interClusterGap = 18;
   const horizontalInsets = 32;
   const requiredWidth =
-    4 * minimum + 2 * clusterGap + interClusterGap + horizontalInsets;
+    joystickMinimum +
+    2 * controlMinimum +
+    driveClusterGap +
+    interClusterGap +
+    horizontalInsets;
   assert.ok(
     requiredWidth <= 320,
     `minimum mobile layout requires ${requiredWidth}px, exceeding 320px`,
   );
 });
-
 
 test("Friends UI keeps debug closed, concise, and mobile chrome focused on locations", async () => {
   const [main, css] = await Promise.all([
@@ -103,4 +140,5 @@ test("mobile UI avoids live backdrop compositing over the WebGL canvas", async (
     css,
     /\.product-controls,[\s\S]*?\.panel,[\s\S]*?\.mobile-control \{ box-shadow:\s*none; \}/,
   );
+  assert.match(css, /\.mobile-steering-joystick \{ box-shadow:\s*none; \}/);
 });

@@ -13,6 +13,7 @@ import {
   type NativeFactorySnapshot,
 } from "../config/native-factory-receipt.js";
 import type { LongitudinalTimelineSample } from "../input/longitudinal-input-timeline.js";
+import type { PointerSteeringJoystickTarget } from "../input/pointer-steering-joystick-adapter.js";
 import type {
   PointerVehicleControlId,
   PointerVehicleControlTargets,
@@ -55,6 +56,11 @@ export interface F4VehicleHostOptions {
   readonly pointerControls?: PointerVehicleControlTargets;
   readonly onPointerControlStateChange?: (
     control: PointerVehicleControlId,
+    active: boolean,
+  ) => void;
+  readonly steeringJoystick?: PointerSteeringJoystickTarget;
+  readonly onSteeringJoystickStateChange?: (
+    value: number,
     active: boolean,
   ) => void;
   readonly generation?: number;
@@ -222,6 +228,15 @@ export class F4VehicleHost {
           : {
               onPointerControlStateChange:
                 options.onPointerControlStateChange,
+            }),
+        ...(options.steeringJoystick === undefined
+          ? {}
+          : { steeringJoystick: options.steeringJoystick }),
+        ...(options.onSteeringJoystickStateChange === undefined
+          ? {}
+          : {
+              onSteeringJoystickStateChange:
+                options.onSteeringJoystickStateChange,
             }),
         onStep: (step, steering, longitudinal) => {
           vehicle.setSteering(steering.command);

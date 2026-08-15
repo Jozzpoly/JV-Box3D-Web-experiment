@@ -50,7 +50,16 @@ function pointerTarget() {
   };
 }
 
-test("vehicle host forwards pointer controls and state callback unchanged", async () => {
+function joystickTarget() {
+  return {
+    ...pointerTarget(),
+    getBoundingClientRect() {
+      return { left: 0, width: 100 };
+    },
+  };
+}
+
+test("vehicle host forwards pointer controls, joystick, and state callbacks unchanged", async () => {
   const pointerControls = {
     steerLeft: pointerTarget(),
     steerRight: pointerTarget(),
@@ -58,7 +67,9 @@ test("vehicle host forwards pointer controls and state callback unchanged", asyn
     reverse: pointerTarget(),
     brake: pointerTarget(),
   };
+  const steeringJoystick = joystickTarget();
   const onPointerControlStateChange = () => {};
+  const onSteeringJoystickStateChange = () => {};
   let browserOptions = null;
   let browserDisposals = 0;
   let worldDisposals = 0;
@@ -75,6 +86,8 @@ test("vehicle host forwards pointer controls and state callback unchanged", asyn
       isDocumentHidden: () => false,
       pointerControls,
       onPointerControlStateChange,
+      steeringJoystick,
+      onSteeringJoystickStateChange,
       onVehicleStep() {},
     },
     {
@@ -129,6 +142,11 @@ test("vehicle host forwards pointer controls and state callback unchanged", asyn
   assert.equal(
     browserOptions.onPointerControlStateChange,
     onPointerControlStateChange,
+  );
+  assert.equal(browserOptions.steeringJoystick, steeringJoystick);
+  assert.equal(
+    browserOptions.onSteeringJoystickStateChange,
+    onSteeringJoystickStateChange,
   );
 
   host.dispose();

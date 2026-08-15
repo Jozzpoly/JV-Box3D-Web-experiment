@@ -66,8 +66,14 @@ app.innerHTML = `
 
       <div class="mobile-controls" aria-label="Touch vehicle controls">
         <div class="mobile-control-cluster mobile-steering-controls" aria-label="Steering controls">
-          <button type="button" class="mobile-control mobile-control-steer" data-pointer-control="STEER_LEFT" aria-label="Steer left" aria-pressed="false"><span aria-hidden="true">◀</span><small>LEFT</small></button>
-          <button type="button" class="mobile-control mobile-control-steer" data-pointer-control="STEER_RIGHT" aria-label="Steer right" aria-pressed="false"><span aria-hidden="true">▶</span><small>RIGHT</small></button>
+          <button hidden aria-hidden="true" tabindex="-1" type="button" class="mobile-control mobile-control-steer" data-pointer-control="STEER_LEFT" aria-label="Steer left" aria-pressed="false"><span aria-hidden="true">◀</span><small>LEFT</small></button>
+          <button hidden aria-hidden="true" tabindex="-1" type="button" class="mobile-control mobile-control-steer" data-pointer-control="STEER_RIGHT" aria-label="Steer right" aria-pressed="false"><span aria-hidden="true">▶</span><small>RIGHT</small></button>
+          <div class="mobile-steering-joystick" data-steering-joystick role="slider" aria-label="Analog steering joystick" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0" aria-valuetext="CENTER">
+            <span class="mobile-steering-axis" aria-hidden="true">
+              <span class="mobile-steering-thumb"></span>
+            </span>
+            <small>STEER</small>
+          </div>
         </div>
         <div class="mobile-control-cluster mobile-drive-controls" aria-label="Drive controls">
           <button type="button" class="mobile-control mobile-control-drive" data-pointer-control="FORWARD" aria-label="Drive forward" aria-pressed="false"><span aria-hidden="true">▲</span><small>DRIVE</small></button>
@@ -202,6 +208,7 @@ const restartButton = requireElement<HTMLButtonElement>("[data-restart]");
 const cameraResetButton = requireElement<HTMLButtonElement>("[data-camera-reset]");
 const debugToggleButton = requireElement<HTMLButtonElement>("[data-debug-toggle]");
 const debugPanel = requireElement<HTMLElement>("[data-debug-panel]");
+const steeringJoystick = requireElement<HTMLElement>("[data-steering-joystick]");
 
 const pointerControlButtons: Record<
   PointerVehicleControlId,
@@ -247,6 +254,28 @@ function resetPointerControlStates(): void {
   ) as PointerVehicleControlId[]) {
     setPointerControlState(control, false);
   }
+}
+
+function setSteeringJoystickState(value: number, active: boolean): void {
+  const normalized = Math.max(-1, Math.min(1, value));
+  steeringJoystick.style.setProperty(
+    "--steering-x",
+    `${(-normalized * 34).toFixed(2)}%`,
+  );
+  steeringJoystick.toggleAttribute("data-active", active);
+  steeringJoystick.setAttribute(
+    "aria-valuenow",
+    String(Math.round(normalized * 100)),
+  );
+  const magnitude = Math.round(Math.abs(normalized) * 100);
+  steeringJoystick.setAttribute(
+    "aria-valuetext",
+    normalized > 0
+      ? `LEFT ${magnitude}%`
+      : normalized < 0
+        ? `RIGHT ${magnitude}%`
+        : "CENTER",
+  );
 }
 
 function setDebugPanelOpen(open: boolean): void {
@@ -442,6 +471,7 @@ function renderTrace(trace: M6TraceFrame): void {
 
 function resetDisplay(): void {
   resetPointerControlStates();
+  setSteeringJoystickState(0, false);
   runtimeBackendElement.textContent = "PENDING";
   scenePackageElement.textContent = "PENDING";
   nativeSourceElement.textContent = "PENDING";
@@ -502,6 +532,8 @@ async function startHost(): Promise<void> {
       isDocumentHidden: () => document.visibilityState === "hidden",
       pointerControls,
       onPointerControlStateChange: setPointerControlState,
+      steeringJoystick,
+      onSteeringJoystickStateChange: setSteeringJoystickState,
       generation,
       spawn: { x: spawnX, y: spawnY, z: spawnZ },
       rateProfileId,
@@ -562,8 +594,8 @@ async function startHost(): Promise<void> {
     statusElement.textContent =
       `Running — ${scene.id}; ${backend.id}; ` +
       `${box3dReceipt.identity.packageName}@${box3dReceipt.identity.packageVersion}; ` +
-      `RATE ${profile.rackRateMetersPerSecond.toFixed(2)} m/s + reference wheel drive; ` +
-      `keyboard + pointer controls; generation ${generation}`;
+      `RATE/POSITION steering + reference wheel drive; ` +
+      `keyboard + pointer + analog joystick; generation ${generation}`;
   } catch (error: unknown) {
     if (generation !== startupGeneration) {
       return;
@@ -627,4 +659,5 @@ window.addEventListener(
 );
 
 setDebugPanelOpen(false);
+setSteeringJoystickState(0, false);
 void startHost();
