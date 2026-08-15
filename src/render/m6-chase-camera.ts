@@ -6,10 +6,17 @@ export type M6CameraRotation = Readonly<{
   w: number;
 }>;
 
+export interface M6CameraFocusOffset {
+  readonly forward: number;
+  readonly right: number;
+  readonly up: number;
+}
+
 export interface M6ChaseCameraState {
   readonly orbitYaw: number;
   readonly pitch: number;
   readonly distance: number;
+  readonly focusOffset: M6CameraFocusOffset;
 }
 
 export interface M6CameraInteractionPolicy {
@@ -40,6 +47,7 @@ export const DEFAULT_M6_CHASE_CAMERA = Object.freeze({
   orbitYaw: 0,
   pitch: 0.34,
   distance: 9.5,
+  focusOffset: Object.freeze({ forward: 0, right: 0, up: 0 }),
   lookAhead: 1.35,
   targetLift: 0.55,
 } as const);
@@ -49,6 +57,7 @@ export function createDefaultM6ChaseCameraState(): M6ChaseCameraState {
     orbitYaw: DEFAULT_M6_CHASE_CAMERA.orbitYaw,
     pitch: DEFAULT_M6_CHASE_CAMERA.pitch,
     distance: DEFAULT_M6_CHASE_CAMERA.distance,
+    focusOffset: { ...DEFAULT_M6_CHASE_CAMERA.focusOffset },
   };
 }
 
@@ -71,21 +80,46 @@ export function orbitM6ChaseCameraState(
   };
 }
 
+export function scaleM6ChaseCameraDistance(
+  state: M6ChaseCameraState,
+  scale: number,
+  policy: M6CameraInteractionPolicy = DEFAULT_M6_CAMERA_INTERACTION_POLICY,
+): M6ChaseCameraState {
+  if (!Number.isFinite(scale) || scale <= 0) {
+    throw new RangeError("Camera distance scale must be finite and > 0.");
+  }
+  return {
+    ...state,
+    distance: Math.max(
+      policy.minDistance,
+      Math.min(policy.maxDistance, state.distance * scale),
+    ),
+  };
+}
+
 export function zoomM6ChaseCameraState(
   state: M6ChaseCameraState,
   wheelDeltaY: number,
   policy: M6CameraInteractionPolicy = DEFAULT_M6_CAMERA_INTERACTION_POLICY,
 ): M6ChaseCameraState {
+  return scaleM6ChaseCameraDistance(
+    state,
+    Math.exp(wheelDeltaY * policy.wheelZoomExponentPerDelta),
+    policy,
+  );
+}
+
+export function translateM6ChaseCameraFocus(
+  state: M6ChaseCameraState,
+  delta: M6CameraFocusOffset,
+): M6ChaseCameraState {
   return {
     ...state,
-    distance: Math.max(
-      policy.minDistance,
-      Math.min(
-        policy.maxDistance,
-        state.distance *
-          Math.exp(wheelDeltaY * policy.wheelZoomExponentPerDelta),
-      ),
-    ),
+    focusOffset: {
+      forward: state.focusOffset.forward + delta.forward,
+      right: state.focusOffset.right + delta.right,
+      up: state.focusOffset.up + delta.up,
+    },
   };
 }
 
@@ -128,6 +162,29 @@ function rotateVector(
   };
 }
 
+function normalizeVector(value: M6CameraVec3): M6CameraVec3 {
+  const length = Math.hypot(value.x, value.y, value.z);
+  if (length <= 1e-12) {
+    return { x: 0, y: 0, z: 0 };
+  }
+  return { x: value.x / length, y: value.y / length, z: value.z / length };
+}
+
+function crossVector(
+  left: M6CameraVec3,
+  right: M6CameraVec3,
+): M6CameraVec3 {
+  return {
+    x: left.y * right.z - left.z * right.y,
+    y: left.z * right.x - left.x * right.z,
+    z: left.x * right.y - left.y * right.x,
+  };
+}
+
+function dotVector(left: M6CameraVec3, right: M6CameraVec3): number {
+  return left.x * right.x + left.y * right.y + left.z * right.z;
+}
+
 export function computeM6ChaseCameraPose(
   chassisPosition: M6CameraVec3,
   chassisRotation: M6CameraRotation,
@@ -148,10 +205,22 @@ export function computeM6ChaseCameraPose(
       : { x: 1, y: 0, z: 0 };
   const heading = Math.atan2(forward.z, forward.x);
   const cameraAngle = heading + Math.PI + state.orbitYaw;
+  const right = { x: -forward.z, y: 0, z: forward.x };
+  const targetForward =
+    DEFAULT_M6_CHASE_CAMERA.lookAhead + state.focusOffset.forward;
   const target = {
-    x: chassisPosition.x + forward.x * DEFAULT_M6_CHASE_CAMERA.lookAhead,
-    y: chassisPosition.y + DEFAULT_M6_CHASE_CAMERA.targetLift,
-    z: chassisPosition.z + forward.z * DEFAULT_M6_CHASE_CAMERA.lookAhead,
+    x:
+      chassisPosition.x +
+      forward.x * targetForward +
+      right.x * state.focusOffset.right,
+    y:
+      chassisPosition.y +
+      DEFAULT_M6_CHASE_CAMERA.targetLift +
+      state.focusOffset.up,
+    z:
+      chassisPosition.z +
+      forward.z * targetForward +
+      right.z * state.focusOffset.right,
   };
   const horizontal = Math.cos(state.pitch) * state.distance;
   return {
@@ -162,5 +231,61 @@ export function computeM6ChaseCameraPose(
       y: target.y + Math.sin(state.pitch) * state.distance,
       z: target.z + Math.sin(cameraAngle) * horizontal,
     },
+  };
+}
+
+export function resolveM6ChaseCameraPanDelta(
+  chassisRotation: M6CameraRotation,
+  state: M6ChaseCameraState,
+  deltaX: number,
+  deltaY: number,
+  viewportHeight: number,
+  verticalFovRadians: number,
+): M6CameraFocusOffset {
+  if (!Number.isFinite(viewportHeight) || viewportHeight <= 0) {
+    throw new RangeError(
+      "Camera pan viewport height must be finite and > 0.",
+    );
+  }
+  if (
+    !Number.isFinite(verticalFovRadians) ||
+    verticalFovRadians <= 0 ||
+    verticalFovRadians >= Math.PI
+  ) {
+    throw new RangeError(
+      "Camera pan FOV must be finite and between 0 and PI.",
+    );
+  }
+  const pose = computeM6ChaseCameraPose(
+    { x: 0, y: 0, z: 0 },
+    chassisRotation,
+    state,
+  );
+  const viewForward = normalizeVector({
+    x: pose.target.x - pose.eye.x,
+    y: pose.target.y - pose.eye.y,
+    z: pose.target.z - pose.eye.z,
+  });
+  const cameraRight = normalizeVector(
+    crossVector(viewForward, { x: 0, y: 1, z: 0 }),
+  );
+  const cameraUp = normalizeVector(crossVector(cameraRight, viewForward));
+  const worldUnitsPerPixel = (2 * state.distance * Math.tan(verticalFovRadians / 2)) / viewportHeight;
+  const worldDelta = {
+    x:
+      cameraRight.x * -deltaX * worldUnitsPerPixel +
+      cameraUp.x * deltaY * worldUnitsPerPixel,
+    y:
+      cameraRight.y * -deltaX * worldUnitsPerPixel +
+      cameraUp.y * deltaY * worldUnitsPerPixel,
+    z:
+      cameraRight.z * -deltaX * worldUnitsPerPixel +
+      cameraUp.z * deltaY * worldUnitsPerPixel,
+  };
+  const vehicleRight = { x: -pose.forward.z, y: 0, z: pose.forward.x };
+  return {
+    forward: dotVector(worldDelta, pose.forward),
+    right: dotVector(worldDelta, vehicleRight),
+    up: worldDelta.y,
   };
 }

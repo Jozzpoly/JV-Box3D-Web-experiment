@@ -9,6 +9,9 @@ import {
   createDefaultM6ChaseCameraState,
   DEFAULT_M6_CHASE_CAMERA,
   orbitM6ChaseCameraState,
+  resolveM6ChaseCameraPanDelta,
+  scaleM6ChaseCameraDistance,
+  translateM6ChaseCameraFocus,
   zoomM6ChaseCameraState,
 } from "./m6-chase-camera.js";
 import {
@@ -377,11 +380,16 @@ export class M6WorldRenderer {
   #diagnosticsVisible = false;
   #cameraState = createDefaultM6ChaseCameraState();
   #cameraUsesViewportDefaultDistance = true;
-  #pointer: Readonly<{
-    id: number;
-    x: number;
-    y: number;
-  }> | null = null;
+  #cameraPointers = new Map<
+    number,
+    {
+      x: number;
+      y: number;
+      pointerType: string;
+      mode: "ORBIT" | "PAN";
+    }
+  >();
+  #cameraReferenceRotation: Rotation = { x: 0, y: 0, z: 0, w: 1 };
   #origin: Vec3 | null = null;
   #generation = 0;
   #disposed = false;
@@ -483,6 +491,7 @@ export class M6WorldRenderer {
       this.#generation = trace.generation;
       this.#origin = { ...trace.chassisPosition };
     }
+    this.#cameraReferenceRotation = trace.chassisRotation;
     this.#resize();
     const gl = this.#gl;
     gl.viewport(0, 0, this.#canvas.width, this.#canvas.height);
@@ -648,13 +657,12 @@ export class M6WorldRenderer {
     this.#events.abort();
     this.#world?.dispose();
     this.#world = null;
-    if (
-      this.#pointer !== null &&
-      this.#canvas.hasPointerCapture(this.#pointer.id)
-    ) {
-      this.#canvas.releasePointerCapture(this.#pointer.id);
+    for (const pointerId of this.#cameraPointers.keys()) {
+      if (this.#canvas.hasPointerCapture(pointerId)) {
+        this.#canvas.releasePointerCapture(pointerId);
+      }
     }
-    this.#pointer = null;
+    this.#cameraPointers.clear();
     const gl = this.#gl;
     this.#ownerVehicle.dispose();
     gl.deleteBuffer(this.#box.vertexBuffer);
@@ -784,15 +792,61 @@ export class M6WorldRenderer {
     );
   }
 
+  #panCameraByPixels(deltaX: number, deltaY: number): void {
+    const height = this.#canvas.clientHeight;
+    if (height <= 0) {
+      return;
+    }
+    const delta = resolveM6ChaseCameraPanDelta(
+      this.#cameraReferenceRotation,
+      this.#cameraState,
+      deltaX,
+      deltaY,
+      height,
+      M6_CAMERA_VERTICAL_FOV_RADIANS,
+    );
+    this.#cameraState = translateM6ChaseCameraFocus(
+      this.#cameraState,
+      delta,
+    );
+  }
+
+  #touchGestureMetrics(): Readonly<{
+    centroidX: number;
+    centroidY: number;
+    span: number;
+  }> | null {
+    const touches = Array.from(this.#cameraPointers.values()).filter(
+      (pointer) => pointer.pointerType === "touch",
+    );
+    if (touches.length < 2) {
+      return null;
+    }
+    const [first, second] = touches;
+    if (first === undefined || second === undefined) {
+      return null;
+    }
+    return {
+      centroidX: (first.x + second.x) / 2,
+      centroidY: (first.y + second.y) / 2,
+      span: Math.hypot(second.x - first.x, second.y - first.y),
+    };
+  }
+
   #installCameraControls(): void {
     this.#canvas.addEventListener(
       "pointerdown",
       (event) => {
-        this.#pointer = {
-          id: event.pointerId,
+        event.preventDefault();
+        const pan =
+          event.pointerType === "mouse" &&
+          (event.button === 1 || (event.button === 0 && event.shiftKey));
+        this.#cameraPointers.set(event.pointerId, {
           x: event.clientX,
           y: event.clientY,
-        };
+          pointerType: event.pointerType,
+          mode: pan ? "PAN" : "ORBIT",
+        });
         this.#canvas.setPointerCapture(event.pointerId);
       },
       { signal: this.#events.signal },
@@ -800,30 +854,55 @@ export class M6WorldRenderer {
     this.#canvas.addEventListener(
       "pointermove",
       (event) => {
-        if (
-          this.#pointer === null ||
-          event.pointerId !== this.#pointer.id
-        ) {
+        const pointer = this.#cameraPointers.get(event.pointerId);
+        if (pointer === undefined) {
           return;
         }
-        const dx = event.clientX - this.#pointer.x;
-        const dy = event.clientY - this.#pointer.y;
-        this.#cameraState = orbitM6ChaseCameraState(
-          this.#cameraState,
-          dx,
-          dy,
-        );
-        this.#pointer = {
-          id: event.pointerId,
+        const previousTouchGesture = this.#touchGestureMetrics();
+        const dx = event.clientX - pointer.x;
+        const dy = event.clientY - pointer.y;
+        this.#cameraPointers.set(event.pointerId, {
+          ...pointer,
           x: event.clientX,
           y: event.clientY,
-        };
+        });
+        const nextTouchGesture = this.#touchGestureMetrics();
+        if (
+          previousTouchGesture !== null &&
+          nextTouchGesture !== null &&
+          previousTouchGesture.span > 1e-6 &&
+          nextTouchGesture.span > 1e-6
+        ) {
+          this.#cameraUsesViewportDefaultDistance = false;
+          this.#cameraState = scaleM6ChaseCameraDistance(
+            this.#cameraState,
+            previousTouchGesture.span / nextTouchGesture.span,
+          );
+          this.#panCameraByPixels(
+            nextTouchGesture.centroidX - previousTouchGesture.centroidX,
+            nextTouchGesture.centroidY - previousTouchGesture.centroidY,
+          );
+          return;
+        }
+        if (pointer.mode === "PAN") {
+          this.#panCameraByPixels(dx, dy);
+        } else {
+          this.#cameraState = orbitM6ChaseCameraState(
+            this.#cameraState,
+            dx,
+            dy,
+          );
+        }
       },
       { signal: this.#events.signal },
     );
     const release = (event: PointerEvent) => {
-      if (this.#pointer?.id === event.pointerId) {
-        this.#pointer = null;
+      if (!this.#cameraPointers.has(event.pointerId)) {
+        return;
+      }
+      this.#cameraPointers.delete(event.pointerId);
+      if (this.#canvas.hasPointerCapture(event.pointerId)) {
+        this.#canvas.releasePointerCapture(event.pointerId);
       }
     };
     this.#canvas.addEventListener(
@@ -847,6 +926,11 @@ export class M6WorldRenderer {
         );
       },
       { passive: false, signal: this.#events.signal },
+    );
+    this.#canvas.addEventListener(
+      "contextmenu",
+      (event) => event.preventDefault(),
+      { signal: this.#events.signal },
     );
   }
 }

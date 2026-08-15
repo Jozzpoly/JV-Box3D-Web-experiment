@@ -6,6 +6,9 @@ import {
   DEFAULT_M6_CAMERA_INTERACTION_POLICY,
   DEFAULT_M6_CHASE_CAMERA,
   orbitM6ChaseCameraState,
+  resolveM6ChaseCameraPanDelta,
+  scaleM6ChaseCameraDistance,
+  translateM6ChaseCameraFocus,
   zoomM6ChaseCameraState,
 } from "../.test-dist/render/m6-chase-camera.js";
 
@@ -60,6 +63,7 @@ test("manual camera state reset reproduces the current chase defaults", () => {
     orbitYaw: DEFAULT_M6_CHASE_CAMERA.orbitYaw,
     pitch: DEFAULT_M6_CHASE_CAMERA.pitch,
     distance: DEFAULT_M6_CHASE_CAMERA.distance,
+    focusOffset: { ...DEFAULT_M6_CHASE_CAMERA.focusOffset },
   });
 });
 
@@ -103,7 +107,6 @@ test("manual wheel zoom preserves current exponential response and distance boun
   );
 });
 
-
 test("manual distance policy supports inspection-scale views far beyond legacy chase limits", () => {
   const initial = createDefaultM6ChaseCameraState();
   const targetDistance = 500;
@@ -114,4 +117,46 @@ test("manual distance policy supports inspection-scale views far beyond legacy c
   assert.ok(Math.abs(zoomed.distance - targetDistance) < 1e-9);
   assert.ok(DEFAULT_M6_CAMERA_INTERACTION_POLICY.minDistance < 1);
   assert.ok(DEFAULT_M6_CAMERA_INTERACTION_POLICY.maxDistance >= 500);
+});
+
+test("pinch distance scaling is bounded and rejects invalid scales", () => {
+  const initial = createDefaultM6ChaseCameraState();
+  assert.equal(scaleM6ChaseCameraDistance(initial, 2).distance, initial.distance * 2);
+  assert.equal(
+    scaleM6ChaseCameraDistance(initial, 1e-9).distance,
+    DEFAULT_M6_CAMERA_INTERACTION_POLICY.minDistance,
+  );
+  assert.throws(() => scaleM6ChaseCameraDistance(initial, 0), /scale must be finite/);
+  assert.throws(() => scaleM6ChaseCameraDistance(initial, Number.NaN), /scale must be finite/);
+});
+
+test("manual focus offset remains vehicle-local when chassis heading changes", () => {
+  const state = translateM6ChaseCameraFocus(createDefaultM6ChaseCameraState(), {
+    forward: 3,
+    right: 2,
+    up: 1,
+  });
+  const xPose = computeM6ChaseCameraPose(origin, yawQuaternion(0), state);
+  const zPose = computeM6ChaseCameraPose(origin, yawQuaternion(-Math.PI / 2), state);
+  assert.ok(xPose.target.x > origin.x + 3);
+  assert.ok(xPose.target.z > origin.z + 1.9);
+  assert.ok(zPose.target.z > origin.z + 3);
+  assert.ok(zPose.target.x < origin.x - 1.9);
+  assert.equal(xPose.target.y, zPose.target.y);
+});
+
+test("screen-space pan scales with camera distance and maps into vehicle-local focus", () => {
+  const rotation = yawQuaternion(0);
+  const nearState = createDefaultM6ChaseCameraState();
+  const farState = { ...nearState, distance: nearState.distance * 10 };
+  const near = resolveM6ChaseCameraPanDelta(rotation, nearState, 100, 0, 1000, Math.PI / 4);
+  const far = resolveM6ChaseCameraPanDelta(rotation, farState, 100, 0, 1000, Math.PI / 4);
+  assert.ok(Math.abs(near.right) > 0);
+  assert.ok(Math.abs(near.forward) < 1e-12);
+  assert.ok(Math.abs(near.up) < 1e-12);
+  assert.ok(Math.abs(far.right / near.right - 10) < 1e-12);
+  assert.throws(
+    () => resolveM6ChaseCameraPanDelta(rotation, nearState, 1, 1, 0, Math.PI / 4),
+    /viewport height/,
+  );
 });
