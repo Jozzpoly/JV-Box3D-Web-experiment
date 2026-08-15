@@ -62,7 +62,7 @@ Public release evidence:
 ```text
 public branch: release/friends-r1
 public commit: 7161215e47f00573b8c1b5c31e5931c89f9d709a
-private source used by live hotfix: 0657e5ecbc4081e8ad75ce4b00c5ba54f94cc04
+private source used by live hotfix: 0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb
 scan preview SHA-256: aee5242a208482944666b56bcc7ddfe66cbd4e72dc9da99199fbe667bd578146
 ```
 
