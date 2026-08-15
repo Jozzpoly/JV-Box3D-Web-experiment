@@ -151,6 +151,7 @@ installProductControls({
     ],
     textureFilter: true,
     grid: true,
+    fullscreen: true,
   },
 });
 

@@ -18,6 +18,7 @@ export interface ProductControlCapabilities {
   readonly locationChoices?: readonly ProductLocationChoice[];
   readonly textureFilter: boolean;
   readonly grid: boolean;
+  readonly fullscreen?: boolean;
 }
 
 export interface InstallProductControlsOptions {
@@ -67,6 +68,12 @@ function isAvailableScanIndex(value: unknown): boolean {
     value !== null &&
     !Array.isArray(value) &&
     (value as Record<string, unknown>)["available"] === true;
+}
+
+function fullscreenAvailable(): boolean {
+  return document.fullscreenEnabled === true &&
+    typeof document.documentElement.requestFullscreen === "function" &&
+    typeof document.exitFullscreen === "function";
 }
 
 export function installProductControls(
@@ -184,6 +191,43 @@ export function installProductControls(
     controls.append(viewGroup);
   }
 
+  let fullscreenButton: HTMLButtonElement | null = null;
+  let syncFullscreenButton: (() => void) | null = null;
+  if (capabilities.fullscreen === true && fullscreenAvailable()) {
+    fullscreenButton = document.createElement("button");
+    fullscreenButton.type = "button";
+    fullscreenButton.className = "product-choice";
+    fullscreenButton.setAttribute("aria-label", "Przełącz pełny ekran");
+    syncFullscreenButton = () => {
+      const active = document.fullscreenElement !== null;
+      fullscreenButton!.textContent = active
+        ? "Wyjdź z pełnego"
+        : "Pełny ekran";
+      setChoiceActive(fullscreenButton!, active);
+    };
+    fullscreenButton.addEventListener("click", async () => {
+      fullscreenButton!.disabled = true;
+      notice.hidden = true;
+      try {
+        if (document.fullscreenElement === null) {
+          await document.documentElement.requestFullscreen();
+        } else {
+          await document.exitFullscreen();
+        }
+      } catch {
+        notice.textContent =
+          "Pełny ekran jest niedostępny w tej przeglądarce lub kontekście.";
+        notice.hidden = false;
+      } finally {
+        fullscreenButton!.disabled = false;
+        syncFullscreenButton!();
+      }
+    });
+    document.addEventListener("fullscreenchange", syncFullscreenButton);
+    syncFullscreenButton();
+    controls.append(fullscreenButton);
+  }
+
   controls.append(notice);
   mount.append(controls);
 
@@ -196,5 +240,14 @@ export function installProductControls(
       setChoiceActive(gridButton, settings.gridVisible);
     }
   });
-  window.addEventListener("pagehide", unsubscribe, { once: true });
+  window.addEventListener(
+    "pagehide",
+    () => {
+      unsubscribe();
+      if (syncFullscreenButton !== null) {
+        document.removeEventListener("fullscreenchange", syncFullscreenButton);
+      }
+    },
+    { once: true },
+  );
 }
