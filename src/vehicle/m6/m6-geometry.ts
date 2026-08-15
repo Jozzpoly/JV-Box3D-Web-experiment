@@ -2,6 +2,7 @@ import type { b3Vec3 } from "../../physics/box3d-runtime-contract.js";
 import type { M6TopologyConfig } from "./m6-topology-config.js";
 
 export const M6_DEGREES_TO_RADIANS = Math.PI / 180;
+export const JV_WEB_TEMPORARY_DRIVE_FULL_LOCK_DEGREES = 35;
 
 export interface M6WishboneHardpoints {
   readonly upperBallJoint: b3Vec3;
@@ -250,24 +251,14 @@ export type M6FrontLeftGoldenHardpoints = M6FrontLeftSourceRegisteredHardpoints;
 export const M6_FRONT_LEFT_GOLDEN_SOURCE = M6_FRONT_LEFT_SOURCE_REFERENCE;
 export const m6FrontLeftGoldenHardpoints = m6FrontLeftSourceRegisteredHardpoints;
 
-export function m6FrontLeftProvisionalSteeringAngleFromRack(
+function m6FrontLeftSourceRackAngle(
   config: M6TopologyConfig,
   rackTranslation: number,
 ): number {
-  const clampedRack = clampNumber(
-    rackTranslation,
-    -config.rackTravel,
-    config.rackTravel,
-  );
-  if (Math.abs(clampedRack) <= 1e-12) {
+  if (Math.abs(rackTranslation) <= 1e-12) {
     return 0;
   }
 
-  // Provisional S2 rack->angle mapping used by the current bridge. The rack
-  // remains the input coordinate, but this mapping is NOT owner-accepted
-  // steering physics and has no contact->rack back-drive claim. It reconstructs
-  // the rest-pose #7 geometric relation only to provide a stable temporary
-  // steering command while physical steering/rack geometry remains research.
   const outboard = frontLeftSourceDeltaMeters(
     M6_FRONT_LEFT_SOURCE_REFERENCE.steeringRodOutboardFromWheelCenterBU,
   );
@@ -282,11 +273,14 @@ export function m6FrontLeftProvisionalSteeringAngleFromRack(
   );
 
   const rack = clone3(rackRestFromWheelCenter);
-  rack.z += clampedRack;
-  const maxAngle =
-    (config.maxSteeringAngleDegrees + 10) * M6_DEGREES_TO_RADIANS;
-  let low = clampedRack > 0 ? 0 : -maxAngle;
-  let high = clampedRack > 0 ? maxAngle : 0;
+  rack.z += rackTranslation;
+  const searchDegrees = Math.max(
+    config.maxSteeringAngleDegrees,
+    JV_WEB_TEMPORARY_DRIVE_FULL_LOCK_DEGREES,
+  ) + 10;
+  const maxAngle = searchDegrees * M6_DEGREES_TO_RADIANS;
+  let low = rackTranslation > 0 ? 0 : -maxAngle;
+  let high = rackTranslation > 0 ? maxAngle : 0;
 
   const residual = (angle: number): number => {
     const cosine = Math.cos(angle);
@@ -310,7 +304,7 @@ export function m6FrontLeftProvisionalSteeringAngleFromRack(
   }
   if (Math.sign(lowResidual) === Math.sign(highResidual)) {
     throw new Error(
-      `FL provisional rack mapping has no steering root inside the configured search fence for rack=${clampedRack}.`,
+      `FL provisional rack mapping has no steering root inside the configured search fence for rack=${rackTranslation}.`,
     );
   }
 
@@ -329,6 +323,51 @@ export function m6FrontLeftProvisionalSteeringAngleFromRack(
     }
   }
   return 0.5 * (low + high);
+}
+
+export function m6JvWebTemporaryFullLockRadians(
+  config: M6TopologyConfig,
+): number {
+  return (
+    Math.max(
+      config.maxSteeringAngleDegrees,
+      JV_WEB_TEMPORARY_DRIVE_FULL_LOCK_DEGREES,
+    ) * M6_DEGREES_TO_RADIANS
+  );
+}
+
+export function m6FrontLeftProvisionalSteeringAngleFromRack(
+  config: M6TopologyConfig,
+  rackTranslation: number,
+): number {
+  const clampedRack = clampNumber(
+    rackTranslation,
+    -config.rackTravel,
+    config.rackTravel,
+  );
+  if (Math.abs(clampedRack) <= 1e-12) {
+    return 0;
+  }
+
+  // Preserve the current source-derived rack->angle curve, but normalize its
+  // amplitude to the JV-Web owner driving requirement. The native receipt and
+  // physical rack travel remain untouched. This is a temporary product bridge,
+  // not authority for final steering geometry, Ackermann, tie rods or JURE rig
+  // authoring.
+  const sourceAngle = m6FrontLeftSourceRackAngle(config, clampedRack);
+  const signedFullRack = clampedRack > 0
+    ? config.rackTravel
+    : -config.rackTravel;
+  const sourceFullLock = m6FrontLeftSourceRackAngle(config, signedFullRack);
+  const sourceFullMagnitude = Math.abs(sourceFullLock);
+  if (!(sourceFullMagnitude > 1e-8)) {
+    throw new Error("FL provisional rack mapping produced a zero full-lock angle.");
+  }
+
+  return (
+    sourceAngle *
+    (m6JvWebTemporaryFullLockRadians(config) / sourceFullMagnitude)
+  );
 }
 
 /** Legacy compatibility alias; the rack mapping remains provisional. */
