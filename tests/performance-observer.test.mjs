@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   summarizeJvCanvasResolution,
+  summarizeJvFrameSamples,
   summarizeJvFrameWindow,
 } from "../.test-dist/runtime/performance-observer.js";
 
@@ -17,6 +18,17 @@ test("frame window summary reports stable average frame time and FPS", () => {
   assert.ok(Math.abs(summary.fps - 60) < 1e-9);
   assert.equal(summarizeJvFrameWindow(0, 30), null);
   assert.equal(summarizeJvFrameWindow(500, 0), null);
+});
+
+test("rolling frame summary exposes average, FPS and conservative p95", () => {
+  const summary = summarizeJvFrameSamples([10, 20, 30, 40]);
+  assert.ok(summary);
+  assert.equal(summary.frameMs, 25);
+  assert.equal(summary.fps, 40);
+  assert.equal(summary.p95FrameMs, 40);
+  assert.equal(summary.sampleCount, 4);
+  assert.equal(summarizeJvFrameSamples([]), null);
+  assert.equal(summarizeJvFrameSamples([16, Number.NaN]), null);
 });
 
 test("canvas summary distinguishes effective render scale from device DPR", () => {
@@ -37,17 +49,20 @@ test("canvas summary distinguishes effective render scale from device DPR", () =
   );
 });
 
-test("performance sampling is Debug-only and exposes viewport plus scan visibility", async () => {
+test("performance sampling stays Debug-scoped unless explicit live HUD is requested", async () => {
   const [entry, observer] = await Promise.all([
     readFile(path.resolve(root, "src/product-main.ts"), "utf8"),
     readFile(path.resolve(root, "src/runtime/performance-observer.ts"), "utf8"),
   ]);
 
   assert.match(entry, /installJvPerformanceObserver\(\)/);
+  assert.match(observer, /jvPerfHud/);
   assert.match(observer, /panel\.hasAttribute\("data-open"\)/);
   assert.match(observer, /MutationObserver/);
   assert.match(observer, /requestAnimationFrame/);
   assert.match(observer, /cancelAnimationFrame/);
+  assert.match(observer, /ROLLING_WINDOW_MS = 2_000/);
+  assert.match(observer, /p95FrameMs/);
   assert.match(observer, /canvas\.width/);
   assert.match(observer, /canvas\.height/);
   assert.match(observer, /canvas\.clientWidth/);
@@ -57,4 +72,6 @@ test("performance sampling is Debug-only and exposes viewport plus scan visibili
   assert.match(observer, /readJvScanRenderStats\(canvas\)/);
   assert.match(observer, /scan \$\{scan\.visibleGroups\}\/\$\{scan\.totalGroups\} groups/);
   assert.match(observer, /\$\{scan\.visibleDrawCalls\}\/\$\{scan\.totalDrawCalls\} draws/);
+  assert.match(observer, /cull \$\{culling\}/);
+  assert.match(observer, /data-jv-perf-hud/);
 });
