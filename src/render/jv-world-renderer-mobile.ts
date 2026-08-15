@@ -42,6 +42,7 @@ type GpuMesh = Readonly<{
   uvBuffer: WebGLBuffer | null;
   indexBuffer: WebGLBuffer;
   indexCount: number;
+  indexType: number;
 }>;
 
 type GpuGroup = Readonly<{
@@ -494,19 +495,24 @@ function buildStaticBatchMeshes(world: JvWorldData): readonly JvIndexedMesh[] {
   }));
 }
 
-function uploadChunk(
+function allocateGpuMeshBuffers(
   gl: WebGLRenderingContext,
-  chunk: JvUint16MeshChunk,
-): GpuMesh {
+  hasUvs: boolean,
+): Readonly<{
+  positionBuffer: WebGLBuffer;
+  normalBuffer: WebGLBuffer;
+  uvBuffer: WebGLBuffer | null;
+  indexBuffer: WebGLBuffer;
+}> {
   const positionBuffer = gl.createBuffer();
   const normalBuffer = gl.createBuffer();
   const indexBuffer = gl.createBuffer();
-  const uvBuffer = chunk.uvs === undefined ? null : gl.createBuffer();
+  const uvBuffer = hasUvs ? gl.createBuffer() : null;
   if (
     positionBuffer === null ||
     normalBuffer === null ||
     indexBuffer === null ||
-    (chunk.uvs !== undefined && uvBuffer === null)
+    (hasUvs && uvBuffer === null)
   ) {
     if (positionBuffer !== null) gl.deleteBuffer(positionBuffer);
     if (normalBuffer !== null) gl.deleteBuffer(normalBuffer);
@@ -514,43 +520,94 @@ function uploadChunk(
     if (uvBuffer !== null) gl.deleteBuffer(uvBuffer);
     throw new Error("JV world GPU buffer allocation failed.");
   }
+  return { positionBuffer, normalBuffer, uvBuffer, indexBuffer };
+}
 
+function uploadStreams(
+  gl: WebGLRenderingContext,
+  positions: Float32Array,
+  normals: Float32Array,
+  uvs: Float32Array | undefined,
+  indices: Uint16Array | Uint32Array,
+  indexType: number,
+): GpuMesh {
+  const buffers = allocateGpuMeshBuffers(gl, uvs !== undefined);
   try {
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, chunk.positions, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, chunk.normals, gl.STATIC_DRAW);
-    if (uvBuffer !== null && chunk.uvs !== undefined) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, chunk.uvs, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+    if (buffers.uvBuffer !== null && uvs !== undefined) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.uvBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
     }
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, chunk.indices, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
     return {
-      positionBuffer,
-      normalBuffer,
-      uvBuffer,
-      indexBuffer,
-      indexCount: chunk.indices.length,
+      ...buffers,
+      indexCount: indices.length,
+      indexType,
     };
   } catch (error: unknown) {
-    gl.deleteBuffer(positionBuffer);
-    gl.deleteBuffer(normalBuffer);
-    gl.deleteBuffer(indexBuffer);
-    if (uvBuffer !== null) gl.deleteBuffer(uvBuffer);
+    gl.deleteBuffer(buffers.positionBuffer);
+    gl.deleteBuffer(buffers.normalBuffer);
+    gl.deleteBuffer(buffers.indexBuffer);
+    if (buffers.uvBuffer !== null) gl.deleteBuffer(buffers.uvBuffer);
     throw error;
   }
 }
 
+function uploadChunk(
+  gl: WebGLRenderingContext,
+  chunk: JvUint16MeshChunk,
+): GpuMesh {
+  return uploadStreams(
+    gl,
+    chunk.positions,
+    chunk.normals,
+    chunk.uvs,
+    chunk.indices,
+    gl.UNSIGNED_SHORT,
+  );
+}
+
+function uploadUint32Mesh(
+  gl: WebGLRenderingContext,
+  source: JvIndexedMesh,
+): GpuMesh {
+  if (source.normals === undefined) {
+    throw new Error("JV Uint32 fast path requires an explicit normal stream.");
+  }
+  const vertexCount = source.positions.length / 3;
+  if (
+    source.positions.length === 0 ||
+    source.positions.length % 3 !== 0 ||
+    source.normals.length !== source.positions.length ||
+    source.indices.length === 0 ||
+    source.indices.length % 3 !== 0 ||
+    (source.uvs !== undefined && source.uvs.length !== vertexCount * 2)
+  ) {
+    throw new Error("JV Uint32 fast path received inconsistent mesh streams.");
+  }
+  return uploadStreams(
+    gl,
+    source.positions,
+    source.normals,
+    source.uvs,
+    source.indices,
+    gl.UNSIGNED_INT,
+  );
+}
+
 export class JvWorldRendererMobile {
   readonly #gl: WebGLRenderingContext;
-  readonly #world: JvWorldData;
   readonly #staticGroups: GpuGroup[] = [];
   readonly #scanGroups: GpuGroup[] = [];
   readonly #pendingImages = new Set<HTMLImageElement>();
   readonly #scanModel: JvRenderMatrix | null;
   readonly #scanCullingEnabled: boolean;
   readonly #scanDrawCallBudget: number;
+  readonly #uint32ElementIndices: boolean;
   #solid: ProgramLocations | null = null;
   #textured: ProgramLocations | null = null;
   #offroad: GpuGroup | null = null;
@@ -558,7 +615,7 @@ export class JvWorldRendererMobile {
 
   constructor(gl: WebGLRenderingContext, world: JvWorldData) {
     this.#gl = gl;
-    this.#world = world;
+    this.#uint32ElementIndices = gl.getExtension("OES_element_index_uint") !== null;
     this.#scanModel = world.scan === null
       ? null
       : modelMatrix(world.scan.origin, IDENTITY_ROTATION, IDENTITY_SCALE);
@@ -656,8 +713,16 @@ export class JvWorldRendererMobile {
     const meshes: GpuMesh[] = [];
     let texture: WebGLTexture | null = null;
     try {
-      for (const chunk of splitJvIndexedMeshForUint16(source)) {
-        meshes.push(uploadChunk(this.#gl, chunk));
+      if (
+        captureBounds &&
+        this.#uint32ElementIndices &&
+        source.normals !== undefined
+      ) {
+        meshes.push(uploadUint32Mesh(this.#gl, source));
+      } else {
+        for (const chunk of splitJvIndexedMeshForUint16(source)) {
+          meshes.push(uploadChunk(this.#gl, chunk));
+        }
       }
       if (source.textureUrl !== undefined) {
         if (source.uvs === undefined) {
@@ -780,7 +845,7 @@ export class JvWorldRendererMobile {
     gl.drawElements(
       gl.TRIANGLES,
       mesh.indexCount,
-      gl.UNSIGNED_SHORT,
+      mesh.indexType,
       0,
     );
   }
@@ -825,7 +890,7 @@ export class JvWorldRendererMobile {
     gl.drawElements(
       gl.TRIANGLES,
       mesh.indexCount,
-      gl.UNSIGNED_SHORT,
+      mesh.indexType,
       0,
     );
   }
