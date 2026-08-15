@@ -1,0 +1,187 @@
+readonly JvIndexedMesh[]): JvIndexedMesh {
+   let vertexCount = 0;
+   let indexCount = 0;
+@@ -509,36 +563,12 @@ function mergeCollision(groups: readonly JvIndexedMesh[]): JvIndexedMesh {
+   return {
+     positions,
+     indices,
++    bounds: mergeGroupBounds(groups),
+     color: [0.6, 0.6, 0.6, 1],
+     doubleSided: true,
+   };
+ }
+ 
+-function calculateBounds(positions: Float32Array): JvBounds {
+-  const minimum = { x: Infinity, y: Infinity, z: Infinity };
+-  const maximum = { x: -Infinity, y: -Infinity, z: -Infinity };
+-  for (let offset = 0; offset < positions.length; offset += 3) {
+-    minimum.x = Math.min(minimum.x, positions[offset]!);
+-    minimum.y = Math.min(minimum.y, positions[offset + 1]!);
+-    minimum.z = Math.min(minimum.z, positions[offset + 2]!);
+-    maximum.x = Math.max(maximum.x, positions[offset]!);
+-    maximum.y = Math.max(maximum.y, positions[offset + 1]!);
+-    maximum.z = Math.max(maximum.z, positions[offset + 2]!);
+-  }
+-  return {
+-    minimum: {
+-      x: canonicalFinite(minimum.x, "Scan minimum x"),
+-      y: canonicalFinite(minimum.y, "Scan minimum y"),
+-      z: canonicalFinite(minimum.z, "Scan minimum z"),
+-    },
+-    maximum: {
+-      x: canonicalFinite(maximum.x, "Scan maximum x"),
+-      y: canonicalFinite(maximum.y, "Scan maximum y"),
+-      z: canonicalFinite(maximum.z, "Scan maximum z"),
+-    },
+-  };
+-}
+-
+ function translateBounds(bounds: JvBounds, origin: JvVec3): JvBounds {
+   return {
+     minimum: {
+@@ -629,7 +659,10 @@ export async function loadLocalJsprev2Scan(
+   }
+ 
+   const collision = mergeCollision(groups);
+-  const localBounds = calculateBounds(collision.positions);
++  const localBounds = collision.bounds;
++  if (localBounds === undefined) {
++    throw new Error("Scan collision is missing its validated local bounds.");
++  }
+   const origin = {
+     x: canonicalFinite(
+       -(localBounds.minimum.x + localBounds.maximum.x) * 0.5,
+diff --git a/src/scene/jv-world-contract.ts b/src/scene/jv-world-contract.ts
+index e53fb5c..823b147 100644
+--- a/src/scene/jv-world-contract.ts
++++ b/src/scene/jv-world-contract.ts
+@@ -28,6 +28,7 @@ export interface JvStaticCapsule {
+ export interface JvIndexedMesh {
+   readonly positions: Float32Array;
+   readonly indices: Uint32Array;
++  readonly bounds?: JvBounds;
+   readonly normals?: Float32Array;
+   readonly uvs?: Float32Array;
+   readonly textureUrl?: string;
+diff --git a/tests/jsprev2-scan.test.mjs b/tests/jsprev2-scan.test.mjs
+index 4afd42f..9625290 100644
+--- a/tests/jsprev2-scan.test.mjs
++++ b/tests/jsprev2-scan.test.mjs
+@@ -134,6 +134,15 @@ test("JSPREV2 loader keeps exact render/collision metrics and resolves assets un
+     assert.deepEqual(scan.origin, { x: 0, y: -2, z: 317 });
+     assert.equal(Object.is(scan.origin.x, -0), false);
+     assert.deepEqual([...scan.groups[0].uvs], [0, 0, 1, 0, 0.5, 1]);
++    assert.deepEqual(scan.groups[0].bounds, {
++      minimum: { x: -1, y: 2, z: 3 },
++      maximum: { x: 1, y: 4, z: 5 },
++    });
++    assert.deepEqual(scan.collision.bounds, scan.groups[0].bounds);
++    assert.deepEqual(scan.worldBounds, {
++      minimum: { x: -1, y: 0, z: 320 },
++      maximum: { x: 1, y: 2, z: 322 },
++    });
+     assert.equal(
+       requests[0],
+       `${TEST_BASE_URI}__jv_scan__/index.json`,
+@@ -260,3 +269,200 @@ test("JSPREV2 loader rejects asset references outside the site-relative scan roo
+     globalThis.fetch = previousFetch;
+   }
+ });
++
++function tileFixture(tileId, groupCount) {
++  const descriptorBytes = groupCount * 8;
++  const groupPayloadBytes = 3 * 32 + 3 * 4;
++  const buffer = new ArrayBuffer(
++    20 + descriptorBytes + groupCount * groupPayloadBytes,
++  );
++  const bytes = new Uint8Array(buffer);
++  for (let index = 0; index < 8; index += 1) {
++    bytes[index] = "JSPREV2\0".charCodeAt(index) || 0;
++  }
++  const view = new DataView(buffer);
++  view.setUint32(8, 2, true);
++  view.setUint32(12, tileId, true);
++  view.setUint32(16, groupCount, true);
++  let offset = 20;
++  for (let group = 0; group < groupCount; group += 1) {
++    view.setUint32(offset, 3, true);
++    view.setUint32(offset + 4, 3, true);
++    offset += 8;
++  }
++  for (let group = 0; group < groupCount; group += 1) {
++    for (const vertex of [
++      [-1, 2, 3, 0, 1, 0, 0, 0],
++      [1, 2, 3, 0, 1, 0, 1, 0],
++      [0, 4, 5, 0, 1, 0, 0.5, 1],
++    ]) {
++      for (const value of vertex) {
++        view.setFloat32(offset, value, true);
++        offset += 4;
++      }
++    }
++    for (const index of [0, 1, 2]) {
++      view.setUint32(offset, index, true);
++      offset += 4;
++    }
++  }
++  return buffer;
++}
++
++function multiTileIndexDocument() {
++  const counts = [9, 8, 8];
++  const tiles = counts.map((groupCount, tileId) => {
++    const binary = tileFixture(tileId, groupCount);
++    return {
++      tileId,
++      binaryUrl: `tile/${tileId}.bin`,
++      binaryBytes: binary.byteLength,
++      vertexCount: groupCount * 3,
++      indexCount: groupCount * 3,
++      triangleCount: groupCount,
++      groups: Array.from({ length: groupCount }, (_, group) => ({
++        textureUrl: `texture/${tileId}-${group}.png`,
++        textureBytes: 1,
++        vertexCount: 3,
++        indexCount: 3,
++        triangleCount: 1,
++      })),
++    };
++  });
++  const groupCount = counts.reduce((sum, count) => sum + count, 0);
++  const vertexCount = groupCount * 3;
++  const indexCount = groupCount * 3;
++  const manifestBytes = 100;
++  const binaryBytes = tiles.reduce((sum, tile) => sum + tile.binaryBytes, 0);
++  const textureBytes = groupCount;
++  return {
++    schema: "JV_WEB_JSPREV2_INDEX_V2",
++    available: true,
++    packId: "fixture-multi-tile",
++    tileCount: tiles.length,
++    groupCount,
++    textureCount: groupCount,
++    vertexCount,
++    indexCount,
++    triangleCount: groupCount,
++    manifestBytes,
++    binaryBytes,
++    textureBytes,
++    totalBytes: manifestBytes + binaryBytes + textureBytes,
++    estimatedCpuGeometryBytes: vertexCount * 44 + indexCount * 8,
++    estimatedGpuGeometryBytes: vertexCount * 32 + indexCount * 2,
++    tiles,
++  };
++}
++
++async function waitUntil(predicate) {
++  for (let attempt = 0; attempt < 50; attempt += 1) {
++    if (predicate()) return;
++    await new Promise((resolve) => setTimeout(resolve, 0));
++  }
++  throw new Error("Timed out waiting for the synthetic fetch state.");
++}
++
++test("JSPREV2 loader limits tile fetches to two in flight and preserves index order", async () => {
++  const previousFetch = globalThis.fetch;
++  const index = multiTileIndexDocument();
++  c
