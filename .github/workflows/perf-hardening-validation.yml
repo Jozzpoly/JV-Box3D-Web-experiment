@@ -1,0 +1,86 @@
+name: JV perf hardening canonical validation
+
+on:
+  push:
+    branches:
+      - work/friends-r1-live-perf-hardening
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact staging branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install canonical Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Install canonical npm
+        run: npm install --global npm@11.13.0
+
+      - name: Verify canonical toolchain
+        run: |
+          node --version
+          npm --version
+          test "$(node --version)" = "v24.16.0"
+          test "$(npm --version)" = "11.13.0"
+
+      - name: Reconstruct and verify reviewed patch
+        run: |
+          cat .perf-hardening/part-* > /tmp/perf-hardening.patch
+          echo "df5fae5b0508ddd85b4eeb9a55cb3b8c2b713ecaf6beb20a05070704822fb7ec  /tmp/perf-hardening.patch" | sha256sum --check --strict
+          git apply --check /tmp/perf-hardening.patch
+          git apply /tmp/perf-hardening.patch
+          rm -rf .perf-hardening
+          rm .github/workflows/perf-hardening-validation.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+          git diff --check
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Full source validation
+        run: npm run check
+
+      - name: Materialize clean tested source commit locally
+        run: |
+          git config user.name "JV Web validation agent"
+          git config user.email "100104127+Jozzpoly@users.noreply.github.com"
+          git add -A
+          git commit -m "perf: harden low-level browser path"
+          echo "VALIDATED_SOURCE_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          git status --short
+
+      - name: Build and validate portable artifact
+        run: npm run build:portable
+
+      - name: Record validation receipt
+        run: |
+          {
+            echo "source=$VALIDATED_SOURCE_COMMIT"
+            echo "node=$(node --version)"
+            echo "npm=$(npm --version)"
+            echo "utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > dist/PERF_HARDENING_VALIDATION.txt
+
+      - name: Upload tested dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: jv-perf-hardening-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Push tested source tree to hardening branch
+        run: git push origin HEAD:work/friends-r1-live-perf-hardening
