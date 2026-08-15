@@ -1,52 +1,45 @@
 # AI project memory — JV Web
 
-Updated: 2026-08-14
-Status: `FRIENDS R1 LIVE / USABILITY FOUNDATION CANDIDATE IN PROGRESS`
+Updated: 2026-08-15
+Status: `FRIENDS R1 LIVE / LOW-LEVEL PERFORMANCE SOURCE CANDIDATE`
 
-This file is only a router. Current Git, runtime evidence and direct owner observation outrank it.
+This file is a router only. Current Git, reproducible runtime evidence and direct owner observation outrank it.
 
-## Current product truth
+## Current authority
 
-- accepted private source authority: `main@f8eb0908f5934aed2d504f34ce483a02754039ec`;
-- live public Friends: `release/friends-r1@7161215e47f00573b8c1b5c31e5931c89f9d709a`;
-- private source used by that live hotfix: `0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb`;
-- immutable rollback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`;
-- current non-accepted usability/foundation candidate: `work/friends-r1-usability`.
+- accepted private source: `main@f8eb0908f5934aed2d504f34ce483a02754039ec`;
+- active private performance work: `work/friends-r1-live-perf`;
+- S1-S3 performance checkpoint: `checkpoint/perf-foundation-s3-2026-08-15@20eca0451c81581649e061c8bc61d45001e32601`;
+- low-level pre-execution checkpoint: `checkpoint/perf-lowlevel-preexec-2026-08-15@05b0a6cbc275a9ac0f044c547fb90a277c06cecb`;
+- live public Friends lane: `release/friends-r1` (moving; resolve its current SHA from Git);
+- immutable known-good Friends rollback: `checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a`;
+- immutable R0 fallback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`.
 
-Owner validated on real devices:
+## Durable product truth
 
-- Plac E2R works on desktop and phone;
-- Offroad works and the car drives over terrain;
-- full JSPREV2 scan works on desktop and phone after the Pages/CDN transport-length fix;
-- phone scan is noticeably slow/heavy but still usable at low speed;
-- phone camera/framing and parts of responsive UI remain rough.
+Plac E2R, Offroad, the current owner vehicle and full JSPREV2 scan form the owner-validated Friends browser foundation on desktop and phone. Phone performance/loading and mobile camera/control UX are still open.
 
-## Vehicle truth
+Keep the temporary coherent-front drive bridge as the R1 product intermediate only. Final rig, steering back-drive/self-align and handling remain separate later work, with authored rig geometry expected from JURE.
 
-Keep the current temporary coherent-front bridge as the R1 baseline. It materially fixed the previous mixed left/right front mechanism.
+Current scan stress case: 7 tiles, 25 groups/textures, 1,409,687 vertices and 1,775,775 triangles. Do not hide or simplify it merely because the phone is slow.
 
-Do **not** promote it to final steering architecture. Final rig, FL lower placement, wishbone/knuckle mating, steering back-drive/self-align and final handling remain open.
+## Current performance direction
 
-Do not resume the old bilateral steering-coupling experiment by default. Better rig geometry/frames are expected from JURE first.
+Render-scale A/B on the Galaxy A53 showed that pixel count is not the sole/main explanation for the poor cadence. The active source candidate attacks lower-level avoidable work first:
 
-## Scan truth
+- fixed-step physics catch-up is decoupled from presentation so several required Box3D steps do not cause several full renders in one browser frame;
+- rich vehicle/visual trace materialization is deferred to the final presented state rather than repeated for intermediate catch-up steps;
+- scan rendering has a direct Uint32 index fast path when supported, with Uint16 fallback retained;
+- hidden Debug DOM work is suppressed;
+- scan loading uses normal browser caching and bounded two-way tile pipelining;
+- runtime telemetry separates simulation-step count, physics time and presentation time.
 
-The current approved Friends scan is intentionally public. Pages-safe asset URLs are relative to the site base. Runtime integrity is based on decoded body bytes + JSPREV2 structure, not compressed HTTP `Content-Length`.
+Physics remains 60 Hz with the existing solver/substeps and current vehicle complexity. No LOD/world partitioning is part of this phase.
 
-Current full scan metrics: 7 tiles, 25 groups/textures, 1,409,687 vertices, 1,775,775 triangles.
+## Validation boundary / next gate
 
-## Current direction
+The current low-level stack is source/diff reviewed but **not executed in this environment**: there is no usable private-repo checkout and no CI workflow/status proving the candidate. Do not claim build/test success or performance gains.
 
-Foundation normalization pass 1 is complete on accepted `main`. The isolated usability candidate adds exact build identity, Debug-only frame/viewport observability and further documentation reduction without changing vehicle mechanics or scan geometry.
+Next: obtain the exact active-branch ZIP/check-out, run the canonical install/tests/build locally, correct any execution issues, then publish only to the moving Friends lane and measure in Chrome on the Samsung Galaxy A53. Use the new telemetry to choose the next low-level bottleneck before considering heavier architecture.
 
-Next slices:
-
-1. canonically build enough owner-visible usability work to justify one device test;
-2. use the new Debug readouts to measure desktop/phone frame time, FPS, backing resolution and DPR;
-3. tune mobile camera/framing as a separate reversible slice;
-4. improve responsive controls after camera composition is understood;
-5. choose simple measured scan wins before advanced LOD;
-6. later consume authored rig outputs from JURE;
-7. revisit final steering/feel only from improved rig evidence.
-
-Read `docs/PROJECT_STATE.md` for the current boundary. Historical campaigns, handoffs, ADRs and orchestration proposals are recoverable from Git history only when a specific historical question requires them.
+Read `docs/PROJECT_STATE.md` for the current technical boundary and immediate gate. Historical campaigns/handoffs remain in Git history unless a named historical question requires them.
