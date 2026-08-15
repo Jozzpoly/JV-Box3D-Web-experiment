@@ -9,20 +9,21 @@ Status: `MOBILE DRIVING V3 DEVICE GATE / OWNER VALIDATION PENDING`
 ```text
 accepted private source: main@f8eb0908f5934aed2d504f34ce483a02754039ec
 single active work lane: work/friends-r1-usability
-current private lane before V3 source absorption: d768a82efd7d57d94bbaef98fc16fcced1160287
 Camera Manual Rig V1 absorption: 997c9a34ea429220dbdb4f5408a0ac37200bd712
 fullscreen source checkpoint: checkpoint/fullscreen-v1-owner-validated-2026-08-15@db55501342feacfb0f82099d7f47afe3a9756143
 Analog Steering V1 source: d80d4636a1327c3aaf9e6689a95a7cb1d91f98b2
 Steering Control V2 UX/debug source: b9dd4f98ecee192af3302150c95542c772033949
 temporary 35-degree drive bridge: d6c646b65a0d57306e138175209c0f652bdbfbda
 public Steering V2 owner-device proof: release/friends-r1@2acd652f68d57497c8ce8886b2875789a70f4be3
-public Mobile Driving V3 candidate: release/friends-r1@fba33f2e3f51228773ce96e49f03d9f4f12b0a83
+public Mobile Driving V3 candidate: release/friends-r1@e94ab696d05b4a976a2673a69e40d5ddffea94d7
 public A53 performance proof: checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0
 public known-good Friends rollback: checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a
 public R0 fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
 Current Git, reproducible execution evidence and direct owner observation outrank this file. `main` remains accepted source authority until the canonical promotion gate is completed. `work/friends-r1-usability` is the only ordinary active product lane ahead of `main`.
+
+**V3 private source absorption is intentionally NOT DONE.** The active private lane contains the accepted V2/35-degree foundation and living documentation for the V3 experiment; the new V3 input/runtime behavior currently exists only in the isolated public owner-device gate.
 
 ## Protected working foundation
 
@@ -42,7 +43,7 @@ Final rig geometry, Ackermann/tie-rod authority, steering feedback/back-drive an
 
 The product question is now: **can touch driving become deliberately enjoyable rather than merely functional?**
 
-The current V3 is deliberately a **public noncanonical device experiment**, not private source authority. The private active lane still ends at the V2/mobile-driving planning state while V3 is judged on the real phone.
+The current V3 is deliberately a **public noncanonical device experiment**, not private source authority. Steering and pedals are separate acceptance questions even though they share one device gate.
 
 ### Steering Hybrid V3
 
@@ -58,7 +59,7 @@ release -> neutral 0
 
 Only the interaction language changes. The control presents a shallow, very wide steering-wheel arc / ellipse viewed from a steep angle. The internal wheel visual rotates with command while the physical thumb gesture remains linear X-only. This intentionally separates **comfortable touch acquisition** from **automotive visual feedback**.
 
-The hitbox/layout geometry must not resize during the gesture. Visual active-state growth is implemented on internal layers only so it cannot alter steering command under the finger.
+The hitbox/layout geometry does not resize during the gesture. Visual active-state growth is applied to internal layers so it cannot alter steering command under the finger.
 
 ### Analog Pedals A1
 
@@ -89,13 +90,19 @@ A D/R direction selector is deliberately deferred. Direction switching while thr
 ### V3 evidence boundary
 
 ```text
-public candidate: release/friends-r1@fba33f2e3f51228773ce96e49f03d9f4f12b0a83
-public diff from V2 proof: only driving-v3-test/*
-Pages publication: built for exact candidate SHA
-local noncanonical module syntax + focused timeline smoke checks: passed
+initial public V3 experiment: fba33f2e3f51228773ce96e49f03d9f4f12b0a83
+post-publication loader repair: f4edea437b5f40700bbf98521fffd9690ecfb493
+current public gate/cache-bust: e94ab696d05b4a976a2673a69e40d5ddffea94d7
+public diff from V2 proof: only driving-v3-test/* plus the V3 loader repair/cache-bust chain
+Pages publication: built for exact current candidate SHA
+corrected loader Git blob: 406eb7a62c50d3e761dbc603d48838d45b482b41
+local corrected loader `node --check`: pass and Git blob identity matches published blob
+local noncanonical analog timeline/pedal focused smoke checks: pass
 owner/mobile runtime + driving feel: PENDING
 private V3 source absorption: NOT DONE
 ```
+
+The first V3 publication was not handed to the owner: a final post-publication sanity check found a one-line loader transport corruption. The loader was repaired and cache-busted before owner testing. This is publication-harness evidence, not a product regression.
 
 The public gate preserves the tested V1/V2/Camera/fullscreen basis and layers the V3 experiment over it. It must fail closed if required runtime patch points do not match. The gate is evidence only; it is not the canonical Friends build.
 
