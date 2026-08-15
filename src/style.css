@@ -101,6 +101,23 @@ summary { padding: 12px 0; cursor: pointer; color: #c7d0dc; font-size: .74rem; f
 }
 
 @media (hover: none) and (pointer: coarse), (max-width: 620px) {
+  /* Dynamic backdrop blur over the continuously changing WebGL canvas was
+     owner-measured as a major A53 compositor bottleneck. Keep the mobile
+     hierarchy/opacity, but avoid expensive live backdrop filtering. */
+  .brand-lockup,
+  .scene-state,
+  .product-controls,
+  .scene-action,
+  .scene-readouts div,
+  .panel,
+  .mobile-control {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .product-controls,
+  .panel,
+  .mobile-control { box-shadow: none; }
+
   body { overflow: hidden; }
   .scene-header { top: max(10px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); }
   .brand-lockup { padding: 7px 9px; }

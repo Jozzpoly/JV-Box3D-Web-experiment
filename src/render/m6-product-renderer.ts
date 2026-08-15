@@ -1,5 +1,6 @@
 import { subscribeProductWorld } from "../scene/product-world.js";
 import type { JvWorldData } from "../scene/jv-world-contract.js";
+import { publishJvStartupPerformance } from "../runtime/startup-performance.js";
 import { M6WorldRenderer } from "./m6-world-renderer.js";
 
 export const M6_OWNER_VISUAL_PACKAGE_URL =
@@ -13,7 +14,11 @@ export class M6ProductRenderer extends M6WorldRenderer {
     super(canvas);
     this.#unsubscribeWorld = subscribeProductWorld(
       (world: JvWorldData) => {
+        const startedAt = performance.now();
         this.setWorld(world);
+        publishJvStartupPerformance({
+          worldGpuSetupMs: Math.max(0, performance.now() - startedAt),
+        });
       },
     );
     void this.loadOwnerVehicle(

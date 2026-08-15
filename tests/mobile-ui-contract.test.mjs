@@ -91,3 +91,16 @@ test("Friends UI keeps debug closed, concise, and mobile chrome focused on locat
     /@media \(hover: none\)[\s\S]*?\.product-control-group:not\(:first-child\) \{ display: none; \}/,
   );
 });
+
+test("mobile UI avoids live backdrop compositing over the WebGL canvas", async () => {
+  const css = await read("src/style.css");
+
+  assert.match(
+    css,
+    /@media \(hover: none\) and \(pointer: coarse\), \(max-width: 620px\)[\s\S]*?\.brand-lockup,[\s\S]*?\.mobile-control \{[\s\S]*?-webkit-backdrop-filter:\s*none;[\s\S]*?backdrop-filter:\s*none;/,
+  );
+  assert.match(
+    css,
+    /\.product-controls,[\s\S]*?\.panel,[\s\S]*?\.mobile-control \{ box-shadow:\s*none; \}/,
+  );
+});

@@ -3,6 +3,7 @@ import type {
   JvColor,
   JvIndexedMesh,
   JvQuat,
+  JvScanRenderGroup,
   JvStaticCapsule,
   JvVec3,
   JvWorldData,
@@ -16,6 +17,7 @@ import {
   type JvUint16MeshChunk,
 } from "./jv-mesh-chunker.js";
 import { getJvPerformanceExperimentSettings } from "./jv-performance-experiment-settings.js";
+import { selectJvScanIndexUploadPlan } from "./jv-scan-index-upload-plan.js";
 import {
   clearJvScanRenderStats,
   publishJvScanRenderStats,
@@ -50,6 +52,13 @@ type GpuGroup = Readonly<{
   meshes: readonly GpuMesh[];
   texture: WebGLTexture | null;
   bounds: JvBounds | null;
+}>;
+
+type GpuScanGroup = Readonly<{
+  color: JvColor;
+  meshes: readonly GpuMesh[];
+  texture: WebGLTexture;
+  bounds: JvBounds;
 }>;
 
 type ProgramLocations = Readonly<{
@@ -571,38 +580,38 @@ function uploadChunk(
   );
 }
 
-function uploadUint32Mesh(
+function uploadDirectScanMesh(
   gl: WebGLRenderingContext,
-  source: JvIndexedMesh,
+  source: JvScanRenderGroup,
+  indices: Uint16Array | Uint32Array,
+  indexType: number,
 ): GpuMesh {
-  if (source.normals === undefined) {
-    throw new Error("JV Uint32 fast path requires an explicit normal stream.");
-  }
   const vertexCount = source.positions.length / 3;
   if (
     source.positions.length === 0 ||
     source.positions.length % 3 !== 0 ||
     source.normals.length !== source.positions.length ||
+    source.uvs.length !== vertexCount * 2 ||
     source.indices.length === 0 ||
     source.indices.length % 3 !== 0 ||
-    (source.uvs !== undefined && source.uvs.length !== vertexCount * 2)
+    indices.length !== source.indices.length
   ) {
-    throw new Error("JV Uint32 fast path received inconsistent mesh streams.");
+    throw new Error("JV direct scan upload received inconsistent mesh streams.");
   }
   return uploadStreams(
     gl,
     source.positions,
     source.normals,
     source.uvs,
-    source.indices,
-    gl.UNSIGNED_INT,
+    indices,
+    indexType,
   );
 }
 
 export class JvWorldRendererMobile {
   readonly #gl: WebGLRenderingContext;
   readonly #staticGroups: GpuGroup[] = [];
-  readonly #scanGroups: GpuGroup[] = [];
+  readonly #scanGroups: GpuScanGroup[] = [];
   readonly #pendingImages = new Set<HTMLImageElement>();
   readonly #scanModel: JvRenderMatrix | null;
   readonly #scanCullingEnabled: boolean;
@@ -611,6 +620,9 @@ export class JvWorldRendererMobile {
   #solid: ProgramLocations | null = null;
   #textured: ProgramLocations | null = null;
   #offroad: GpuGroup | null = null;
+  #scanTexturesReady = 0;
+  #scanTexturesFailed = 0;
+  #scanTextureUploadMs = 0;
   #disposed = false;
 
   constructor(gl: WebGLRenderingContext, world: JvWorldData) {
@@ -639,7 +651,7 @@ export class JvWorldRendererMobile {
       this.#offroad = this.#uploadGroup(world.offroad);
       if (world.scan !== null) {
         for (const source of world.scan.groups) {
-          this.#scanGroups.push(this.#uploadGroup(source, true));
+          this.#scanGroups.push(this.#uploadScanGroup(source));
         }
       }
     } catch (error: unknown) {
@@ -675,17 +687,23 @@ export class JvWorldRendererMobile {
     let visibleScanDrawCalls = 0;
     if (this.#scanModel !== null) {
       const clipFromScanLocal = multiply(viewProjection, this.#scanModel);
+      let scanPassConfigured = false;
       for (const group of this.#scanGroups) {
         if (
           this.#scanCullingEnabled &&
-          group.bounds !== null &&
           !isJvBoundsVisibleInClipSpace(group.bounds, clipFromScanLocal)
         ) {
           continue;
         }
         visibleScanGroups += 1;
         visibleScanDrawCalls += group.meshes.length;
-        this.#drawGroup(group, clipFromScanLocal, this.#scanModel);
+        this.#drawGroup(
+          group,
+          clipFromScanLocal,
+          this.#scanModel,
+          !scanPassConfigured,
+        );
+        scanPassConfigured = true;
       }
     }
     publishJvScanRenderStats(
@@ -694,6 +712,9 @@ export class JvWorldRendererMobile {
       this.#scanGroups.length,
       visibleScanDrawCalls,
       this.#scanDrawCallBudget,
+      this.#scanTexturesReady,
+      this.#scanTexturesFailed,
+      this.#scanTextureUploadMs,
     );
   }
 
@@ -706,23 +727,12 @@ export class JvWorldRendererMobile {
     this.#releaseResources();
   }
 
-  #uploadGroup(source: JvIndexedMesh, captureBounds = false): GpuGroup {
-    const bounds = captureBounds
-      ? calculateJvMeshBounds(source.positions)
-      : null;
+  #uploadGroup(source: JvIndexedMesh): GpuGroup {
     const meshes: GpuMesh[] = [];
     let texture: WebGLTexture | null = null;
     try {
-      if (
-        captureBounds &&
-        this.#uint32ElementIndices &&
-        source.normals !== undefined
-      ) {
-        meshes.push(uploadUint32Mesh(this.#gl, source));
-      } else {
-        for (const chunk of splitJvIndexedMeshForUint16(source)) {
-          meshes.push(uploadChunk(this.#gl, chunk));
-        }
+      for (const chunk of splitJvIndexedMeshForUint16(source)) {
+        meshes.push(uploadChunk(this.#gl, chunk));
       }
       if (source.textureUrl !== undefined) {
         if (source.uvs === undefined) {
@@ -730,7 +740,7 @@ export class JvWorldRendererMobile {
         }
         texture = this.#createTexture(source.textureUrl);
       }
-      return { color: source.color, meshes, texture, bounds };
+      return { color: source.color, meshes, texture, bounds: null };
     } catch (error: unknown) {
       for (const mesh of meshes) this.#deleteMesh(mesh);
       if (texture !== null) this.#gl.deleteTexture(texture);
@@ -738,7 +748,52 @@ export class JvWorldRendererMobile {
     }
   }
 
-  #createTexture(url: string): WebGLTexture {
+  #uploadScanGroup(source: JvScanRenderGroup): GpuScanGroup {
+    const meshes: GpuMesh[] = [];
+    let texture: WebGLTexture | null = null;
+    try {
+      const uploadPlan = selectJvScanIndexUploadPlan(
+        source.positions.length / 3,
+        this.#uint32ElementIndices,
+      );
+      if (uploadPlan === "UINT16_DIRECT") {
+        meshes.push(
+          uploadDirectScanMesh(
+            this.#gl,
+            source,
+            new Uint16Array(source.indices),
+            this.#gl.UNSIGNED_SHORT,
+          ),
+        );
+      } else if (uploadPlan === "UINT32_DIRECT") {
+        meshes.push(
+          uploadDirectScanMesh(
+            this.#gl,
+            source,
+            source.indices,
+            this.#gl.UNSIGNED_INT,
+          ),
+        );
+      } else {
+        for (const chunk of splitJvIndexedMeshForUint16(source)) {
+          meshes.push(uploadChunk(this.#gl, chunk));
+        }
+      }
+      texture = this.#createTexture(source.textureUrl, true);
+      return {
+        color: source.color,
+        meshes,
+        texture,
+        bounds: source.bounds,
+      };
+    } catch (error: unknown) {
+      for (const mesh of meshes) this.#deleteMesh(mesh);
+      if (texture !== null) this.#gl.deleteTexture(texture);
+      throw error;
+    }
+  }
+
+  #createTexture(url: string, trackScanTexture = false): WebGLTexture {
     const gl = this.#gl;
     const texture = gl.createTexture();
     if (texture === null) {
@@ -771,6 +826,7 @@ export class JvWorldRendererMobile {
     image.decoding = "async";
     image.onload = () => {
       if (!this.#disposed) {
+        const uploadStartedAt = performance.now();
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
         gl.texImage2D(
@@ -782,10 +838,20 @@ export class JvWorldRendererMobile {
           image,
         );
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+        if (trackScanTexture) {
+          this.#scanTexturesReady += 1;
+          this.#scanTextureUploadMs += Math.max(
+            0,
+            performance.now() - uploadStartedAt,
+          );
+        }
       }
       releaseImage();
     };
     image.onerror = () => {
+      if (!this.#disposed && trackScanTexture) {
+        this.#scanTexturesFailed += 1;
+      }
       console.error(`JV scan texture failed to load: ${url}`);
       releaseImage();
     };
@@ -798,11 +864,19 @@ export class JvWorldRendererMobile {
     group: GpuGroup,
     mvp: JvRenderMatrix,
     model: JvRenderMatrix,
+    configurePass = true,
   ): void {
     let configureGroup = true;
     for (const mesh of group.meshes) {
       if (group.texture === null) {
-        this.#drawSolid(mesh, mvp, model, group.color, configureGroup);
+        this.#drawSolid(
+          mesh,
+          mvp,
+          model,
+          group.color,
+          configureGroup,
+          configurePass,
+        );
       } else {
         this.#drawTextured(
           mesh,
@@ -811,6 +885,7 @@ export class JvWorldRendererMobile {
           model,
           group.color,
           configureGroup,
+          configurePass,
         );
       }
       configureGroup = false;
@@ -823,6 +898,7 @@ export class JvWorldRendererMobile {
     model: JvRenderMatrix,
     color: JvColor,
     configureGroup: boolean,
+    configurePass: boolean,
   ): void {
     const locations = this.#solid;
     if (locations === null) {
@@ -830,9 +906,11 @@ export class JvWorldRendererMobile {
     }
     const gl = this.#gl;
     if (configureGroup) {
-      gl.useProgram(locations.program);
-      gl.uniformMatrix4fv(locations.mvp, false, mvp);
-      gl.uniformMatrix4fv(locations.model, false, model);
+      if (configurePass) {
+        gl.useProgram(locations.program);
+        gl.uniformMatrix4fv(locations.mvp, false, mvp);
+        gl.uniformMatrix4fv(locations.model, false, model);
+      }
       gl.uniform4f(
         locations.color,
         color[0],
@@ -857,6 +935,7 @@ export class JvWorldRendererMobile {
     model: JvRenderMatrix,
     color: JvColor,
     configureGroup: boolean,
+    configurePass: boolean,
   ): void {
     const locations = this.#textured;
     if (
@@ -869,9 +948,13 @@ export class JvWorldRendererMobile {
     }
     const gl = this.#gl;
     if (configureGroup) {
-      gl.useProgram(locations.program);
-      gl.uniformMatrix4fv(locations.mvp, false, mvp);
-      gl.uniformMatrix4fv(locations.model, false, model);
+      if (configurePass) {
+        gl.useProgram(locations.program);
+        gl.uniformMatrix4fv(locations.mvp, false, mvp);
+        gl.uniformMatrix4fv(locations.model, false, model);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.uniform1i(locations.sampler, 0);
+      }
       gl.uniform4f(
         locations.color,
         color[0],
@@ -879,9 +962,7 @@ export class JvWorldRendererMobile {
         color[2],
         color[3],
       );
-      gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.uniform1i(locations.sampler, 0);
     }
     this.#bindCommon(mesh, locations);
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.uvBuffer);

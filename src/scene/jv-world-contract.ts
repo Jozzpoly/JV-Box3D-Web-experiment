@@ -35,13 +35,33 @@ export interface JvIndexedMesh {
   readonly doubleSided?: boolean;
 }
 
+/**
+ * Indexed mesh whose local-space bounds were validated while the source data
+ * was already being traversed. Keeping this distinct from JvIndexedMesh makes
+ * bounds an explicit invariant only where the runtime can actually rely on it.
+ */
+export interface JvBoundedIndexedMesh extends JvIndexedMesh {
+  readonly bounds: JvBounds;
+}
+
+/**
+ * JSPREV2 render groups are fully-authored textured meshes with validated
+ * bounds. Index-width policy stays a renderer/export concern rather than
+ * becoming persistent world metadata.
+ */
+export interface JvScanRenderGroup extends JvBoundedIndexedMesh {
+  readonly normals: Float32Array;
+  readonly uvs: Float32Array;
+  readonly textureUrl: string;
+}
+
 export interface JvScanWorld {
   readonly source: "JSPREV2";
   readonly packId: string;
   readonly origin: JvVec3;
   readonly worldBounds: JvBounds;
-  readonly collision: JvIndexedMesh;
-  readonly groups: readonly JvIndexedMesh[];
+  readonly collision: JvBoundedIndexedMesh;
+  readonly groups: readonly JvScanRenderGroup[];
   readonly tileCount: number;
   readonly groupCount: number;
   readonly textureCount: number;

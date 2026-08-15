@@ -1,6 +1,8 @@
 import { getJvPerformanceExperimentSettings } from "../render/jv-performance-experiment-settings.js";
 import { readJvScanRenderStats } from "../render/jv-scan-render-stats.js";
+import { readJvJsprev2LoadingStats } from "../scene/jsprev2-loading-stats.js";
 import { readJvRuntimePerformanceFrame } from "./runtime-performance-frame.js";
+import { readJvStartupPerformance } from "./startup-performance.js";
 
 export interface JvFrameWindowSummary {
   readonly frameMs: number;
@@ -110,6 +112,9 @@ function performanceHudRequested(): boolean {
 }
 
 function createPerformanceHud(): HTMLElement {
+  const avoidBackdropFx = window.matchMedia(
+    "(hover: none) and (pointer: coarse), (max-width: 620px)",
+  ).matches;
   const hud = document.createElement("div");
   hud.setAttribute("data-jv-perf-hud", "");
   hud.setAttribute("aria-live", "off");
@@ -129,7 +134,8 @@ function createPerformanceHud(): HTMLElement {
     textAlign: "right",
     whiteSpace: "pre-line",
     pointerEvents: "none",
-    backdropFilter: "blur(4px)",
+    backdropFilter: avoidBackdropFx ? "none" : "blur(4px)",
+    WebkitBackdropFilter: avoidBackdropFx ? "none" : "blur(4px)",
   });
   hud.textContent = "LIVE PERF · warming…";
   document.body.append(hud);
@@ -161,7 +167,9 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
   let previousTimestamp: number | null = null;
   let samplingStartedAt: number | null = null;
   let lastHudUpdateAt = -Infinity;
-  const frameSamples: TimedFrameSample[] = [];
+  const browserFrameSamples: TimedFrameSample[] = [];
+  const presentationFrameSamples: TimedFrameSample[] = [];
+  let lastObservedRuntimeFrame = readJvRuntimePerformanceFrame();
 
   const shouldSample = (): boolean =>
     hudEnabled || panel.hasAttribute("data-open");
@@ -170,14 +178,16 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
     previousTimestamp = null;
     samplingStartedAt = null;
     lastHudUpdateAt = -Infinity;
-    frameSamples.length = 0;
+    browserFrameSamples.length = 0;
+    presentationFrameSamples.length = 0;
+    lastObservedRuntimeFrame = readJvRuntimePerformanceFrame();
   };
 
   const updateReadout = (timestamp: number): void => {
-    const summary = summarizeJvFrameSamples(
-      frameSamples.map((sample) => sample.frameMs),
+    const browserSummary = summarizeJvFrameSamples(
+      browserFrameSamples.map((sample) => sample.frameMs),
     );
-    if (summary === null) {
+    if (browserSummary === null) {
       return;
     }
 
@@ -193,34 +203,107 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
       ? "?"
       : ((resolution.renderScaleX + resolution.renderScaleY) / 2).toFixed(2);
     const scan = readJvScanRenderStats(canvas);
+    const texturePending = scan === null
+      ? 0
+      : Math.max(
+        0,
+        scan.totalGroups - scan.readyTextures - scan.failedTextures,
+      );
     const scanText = scan === null || scan.totalGroups === 0
       ? "scan waiting"
       : `scan ${scan.visibleGroups}/${scan.totalGroups} groups · ` +
-        `${scan.visibleDrawCalls}/${scan.totalDrawCalls} draws`;
+        `${scan.visibleDrawCalls}/${scan.totalDrawCalls} draws · ` +
+        `tex ${scan.readyTextures}/${scan.totalGroups} ready · ` +
+        `${texturePending} pending` +
+        (scan.failedTextures === 0 ? "" : ` · ${scan.failedTextures} failed`) +
+        ` · upload ${scan.textureUploadMs.toFixed(1)} ms`;
+    const presentationSummary = summarizeJvFrameSamples(
+      presentationFrameSamples.map((sample) => sample.frameMs),
+    );
     const runtime = readJvRuntimePerformanceFrame();
+    const presentationText = presentationSummary === null
+      ? "scene cadence warming"
+      : `scene ${presentationSummary.fps.toFixed(0)} present/s · ` +
+        `${presentationSummary.frameMs.toFixed(1)} ms avg · ` +
+        `p95 ${presentationSummary.p95FrameMs.toFixed(1)} ms`;
     const runtimeText = runtime === null
-      ? "runtime waiting"
-      : `sim ${runtime.executedSteps} · phys ${runtime.physicsStepMs.toFixed(1)} ms · ` +
-        `present ${runtime.presented ? `${runtime.presentationMs.toFixed(1)} ms` : "—"}`;
+      ? "scene timing waiting"
+      : `scene sim ${runtime.executedSteps} · phys ${runtime.physicsStepMs.toFixed(1)} ms · ` +
+        `trace ${runtime.traceCaptureMs.toFixed(1)} ms · ` +
+        `render+ui ${runtime.renderUiMs.toFixed(1)} ms`;
+    const startup = readJvStartupPerformance();
+    const startupParts: string[] = [];
+    if (startup?.productWorldLoadMs !== undefined) {
+      startupParts.push(`world ${startup.productWorldLoadMs.toFixed(0)} ms`);
+    }
+    if (startup?.worldGpuSetupMs !== undefined) {
+      startupParts.push(`gpu-sync ${startup.worldGpuSetupMs.toFixed(0)} ms`);
+    }
+    if (startup?.box3dBoundaryLoadMs !== undefined) {
+      startupParts.push(`b3-load ${startup.box3dBoundaryLoadMs.toFixed(0)} ms`);
+    }
+    if (startup?.box3dWorldCreateMs !== undefined) {
+      startupParts.push(`b3-world ${startup.box3dWorldCreateMs.toFixed(0)} ms`);
+    }
+    if (startup?.vehicleCreateMs !== undefined) {
+      startupParts.push(`vehicle ${startup.vehicleCreateMs.toFixed(0)} ms`);
+    }
+    const startupText = startupParts.length === 0
+      ? "startup timing waiting"
+      : `startup ${startupParts.join(" · ")}`;
+    const scanLoading = readJvJsprev2LoadingStats();
+    const scanLoadParts: string[] = [];
+    if (scanLoading?.indexLoadMs !== undefined) {
+      scanLoadParts.push(`index ${scanLoading.indexLoadMs.toFixed(0)} ms`);
+    }
+    if (scanLoading?.tilePipelineMs !== undefined) {
+      scanLoadParts.push(`tiles ${scanLoading.tilePipelineMs.toFixed(0)} ms`);
+    }
+    if (scanLoading?.tileParseCpuMs !== undefined) {
+      scanLoadParts.push(`parse ${scanLoading.tileParseCpuMs.toFixed(0)} ms`);
+    }
+    if (scanLoading?.collisionMergeMs !== undefined) {
+      scanLoadParts.push(`merge ${scanLoading.collisionMergeMs.toFixed(0)} ms`);
+    }
+    const scanLoadText = scanLoadParts.length === 0
+      ? null
+      : `scan-load ${scanLoadParts.join(" · ")}`;
     const culling = experiment.scanCulling ? "ON" : "OFF";
-    const settled = samplingStartedAt !== null &&
+    const cadenceSettled = samplingStartedAt !== null &&
       timestamp - samplingStartedAt >= HUD_SETTLE_MS;
+    const texturesSettled = scan === null ||
+      scan.totalGroups === 0 ||
+      texturePending === 0;
+    const settled = cadenceSettled && texturesSettled;
 
     value.textContent =
-      `${summary.frameMs.toFixed(1)} ms avg · ${summary.fps.toFixed(0)} fps · ` +
-      `p95 ${summary.p95FrameMs.toFixed(1)} ms · ${canvas.width}×${canvas.height} · ` +
+      `browser ${browserSummary.frameMs.toFixed(1)} ms avg · ` +
+      `${browserSummary.fps.toFixed(0)} RAF/s · ` +
+      `p95 ${browserSummary.p95FrameMs.toFixed(1)} ms · ` +
+      `${presentationText} · ${canvas.width}×${canvas.height} · ` +
       `render ${renderScale}× · device DPR ${devicePixelRatio.toFixed(2)} · ` +
-      `${scanText} · ${runtimeText} · cull ${culling}`;
+      `${scanText} · ${runtimeText} · ${startupText}` +
+      (scanLoadText === null ? "" : ` · ${scanLoadText}`) +
+      ` · cull ${culling}`;
 
     if (hud !== null) {
-      const state = settled ? "SETTLED" : "WARMING";
+      const state = settled
+        ? "SETTLED"
+        : cadenceSettled && !texturesSettled
+        ? "TEXTURES"
+        : "WARMING";
       hud.textContent =
-        `LIVE PERF · ${state} · ${summary.fps.toFixed(0)} fps · ` +
-        `${summary.frameMs.toFixed(1)} ms avg · p95 ${summary.p95FrameMs.toFixed(1)} ms\n` +
+        `LIVE PERF · ${state}\n` +
+        `browser ${browserSummary.fps.toFixed(0)} RAF/s · ` +
+        `${browserSummary.frameMs.toFixed(1)} ms avg · ` +
+        `p95 ${browserSummary.p95FrameMs.toFixed(1)} ms\n` +
+        `${presentationText}\n` +
         `${canvas.width}×${canvas.height} · render ${renderScale}× · ` +
         `DPR ${devicePixelRatio.toFixed(2)} · cap ${experiment.renderScaleCap}×\n` +
         `${scanText} · cull ${culling}\n` +
-        runtimeText;
+        `${runtimeText}\n` +
+        startupText +
+        (scanLoadText === null ? "" : `\n${scanLoadText}`);
     }
   };
 
@@ -237,14 +320,42 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
     if (previousTimestamp !== null) {
       const frameMs = timestamp - previousTimestamp;
       if (Number.isFinite(frameMs) && frameMs > 0) {
-        frameSamples.push({ timestamp, frameMs });
+        browserFrameSamples.push({ timestamp, frameMs });
       }
     }
     previousTimestamp = timestamp;
 
+    const latestRuntimeFrame = readJvRuntimePerformanceFrame();
+    if (
+      latestRuntimeFrame !== null &&
+      latestRuntimeFrame !== lastObservedRuntimeFrame
+    ) {
+      lastObservedRuntimeFrame = latestRuntimeFrame;
+      const presentationIntervalMs = latestRuntimeFrame.presentationIntervalMs;
+      if (
+        presentationIntervalMs !== null &&
+        Number.isFinite(presentationIntervalMs) &&
+        presentationIntervalMs > 0
+      ) {
+        presentationFrameSamples.push({
+          timestamp,
+          frameMs: presentationIntervalMs,
+        });
+      }
+    }
+
     const cutoff = timestamp - ROLLING_WINDOW_MS;
-    while (frameSamples.length > 0 && frameSamples[0]!.timestamp < cutoff) {
-      frameSamples.shift();
+    while (
+      browserFrameSamples.length > 0 &&
+      browserFrameSamples[0]!.timestamp < cutoff
+    ) {
+      browserFrameSamples.shift();
+    }
+    while (
+      presentationFrameSamples.length > 0 &&
+      presentationFrameSamples[0]!.timestamp < cutoff
+    ) {
+      presentationFrameSamples.shift();
     }
 
     if (timestamp - lastHudUpdateAt >= HUD_UPDATE_MS) {

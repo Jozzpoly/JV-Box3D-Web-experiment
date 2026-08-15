@@ -5,6 +5,7 @@ import {
 import {
   configureProductWorldLoader,
   loadProductWorld,
+  type ProductWorldLoader,
 } from "./scene/product-world.js";
 import {
   loadLocalFullProductWorld,
@@ -24,6 +25,7 @@ import {
 } from "./render/jv-product-view-settings.js";
 import { installJvBuildIdentity } from "./runtime/build-identity.js";
 import { installJvPerformanceObserver } from "./runtime/performance-observer.js";
+import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
 import { installProductControls } from "./product-controls.js";
 
 function requestUrl(input: RequestInfo | URL): string {
@@ -64,10 +66,26 @@ function selectedGridVisible(): boolean {
 }
 
 const spawnTarget = parseProductSpawnTarget(window.location.search);
+
+function timedProductWorldLoader(loader: ProductWorldLoader): ProductWorldLoader {
+  return async () => {
+    const startedAt = performance.now();
+    try {
+      return await loader();
+    } finally {
+      publishJvStartupPerformance({
+        productWorldLoadMs: Math.max(0, performance.now() - startedAt),
+      });
+    }
+  };
+}
+
 configureProductWorldLoader(
-  spawnTarget === "scan"
-    ? loadLocalFullProductWorld
-    : loadMapOnlyProductWorld,
+  timedProductWorldLoader(
+    spawnTarget === "scan"
+      ? loadLocalFullProductWorld
+      : loadMapOnlyProductWorld,
+  ),
 );
 
 const initialSettings = {

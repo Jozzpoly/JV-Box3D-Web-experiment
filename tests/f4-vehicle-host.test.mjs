@@ -2,6 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { F4VehicleHost } from "../.test-dist/app/f4-vehicle-host.js";
 import {
+  clearJvRuntimePerformanceFrame,
+  readJvRuntimePerformanceFrame,
+} from "../.test-dist/runtime/runtime-performance-frame.js";
+import {
+  clearJvStartupPerformance,
+  readJvStartupPerformance,
+} from "../.test-dist/runtime/startup-performance.js";
+import {
   M6_VISUAL_PART_IDS,
   M6_VISUAL_SEGMENT_IDS,
 } from "../.test-dist/vehicle/m6/m6-visual-contract.js";
@@ -174,10 +182,10 @@ function hostOptions(onVehicleStep = () => {}) {
   };
 }
 
-function frameReport(executedSteps) {
+function frameReport(executedSteps, frameTimeMs = 100, rawFrameDeltaMs = 100) {
   return {
-    frameTimeMs: 100,
-    rawFrameDeltaMs: 100,
+    frameTimeMs,
+    rawFrameDeltaMs,
     acceptedFrameDeltaMs: 100,
     executedSteps,
     droppedTimeMs: 0,
@@ -193,6 +201,8 @@ const RATE_PROFILE = Object.freeze({
 });
 
 test("F4 startup validates receipt and captures only the latest catch-up state once per browser frame", async () => {
+  clearJvRuntimePerformanceFrame();
+  clearJvStartupPerformance();
   const order = [];
   let browserOptions = null;
   let browserDisposals = 0;
@@ -322,6 +332,21 @@ test("F4 startup validates receipt and captures only the latest catch-up state o
   assert.equal(order.filter((entry) => entry === "world-capture").length, 0);
 
   browserOptions.onFrame(frameReport(4));
+  assert.deepEqual(readJvRuntimePerformanceFrame(), {
+    browserFrameDeltaMs: 100,
+    presentationIntervalMs: null,
+    executedSteps: 4,
+    droppedTimeMs: 0,
+    physicsStepMs: 0,
+    traceCaptureMs: 0,
+    renderUiMs: 0,
+  });
+  assert.deepEqual(readJvStartupPerformance(), {
+    box3dBoundaryLoadMs: 0,
+    box3dWorldCreateMs: 0,
+    vehicleCreateMs: 0,
+  });
+  const presentedPerformance = readJvRuntimePerformanceFrame();
   assert.equal(presentationCallbacks, 1);
   assert.equal(presentedStepIndex, 4);
   assert.equal(vehicleTrace, trace);
@@ -330,9 +355,27 @@ test("F4 startup validates receipt and captures only the latest catch-up state o
   assert.equal(order.filter((entry) => entry === "world-capture").length, 1);
   assert.equal(order.at(-1), "callback:4:POSITION:0.5");
 
-  browserOptions.onFrame(frameReport(0));
+  browserOptions.onFrame(frameReport(0, 110, 10));
+  assert.equal(
+    readJvRuntimePerformanceFrame(),
+    presentedPerformance,
+    "a later zero-step browser RAF must not erase or advance scene cadence",
+  );
   assert.equal(presentationCallbacks, 1);
   assert.equal(order.filter((entry) => entry === "world-capture").length, 1);
+
+  browserOptions.onStep(
+    { index: 5, startTimeMs: 4 * (1000 / 60), endTimeMs: 5 * (1000 / 60) },
+    { command: { mode: "RELEASE" }, integratedDirectionMs: 0 },
+    {
+      command: { throttle: 0, brake: 0 },
+      integratedThrottleMs: 0,
+      integratedBrakeMs: 0,
+    },
+  );
+  browserOptions.onFrame(frameReport(1, 120, 10));
+  assert.equal(readJvRuntimePerformanceFrame().presentationIntervalMs, 20);
+  assert.equal(presentationCallbacks, 2);
 
   host.dispose();
   host.dispose();
@@ -436,5 +479,92 @@ test("runtime fault stops browser ownership and destroys M6 world", async () => 
   assert.equal(worldDisposals, 1);
   assert.equal(host.fatalError, fault);
   assert.throws(() => host.trace, /faulted/);
+  host.dispose();
+});
+
+test("F4 timing separates physics, final trace capture and render/UI with one presented snapshot", async () => {
+  clearJvRuntimePerformanceFrame();
+  clearJvStartupPerformance();
+  let tick = 0;
+  let browserOptions = null;
+  const trace = traceStub();
+
+  const host = await F4VehicleHost.start(
+    {
+      ...hostOptions(),
+      now: () => tick++,
+    },
+    {
+      loadReceipt: async () => nativeReceiptStub(),
+      loadBoundary: async () => ({
+        receipt: box3dReceiptStub(),
+        createM6TopologyWorld() {
+          return {
+            rateProfile: RATE_PROFILE,
+            counters: {
+              bodyCount: 19,
+              shapeCount: 10,
+              contactCount: 0,
+              jointCount: 29,
+            },
+            createVehicle() {
+              return {
+                lastTrace: trace,
+                setSteering() {},
+                setDrive() {},
+              };
+            },
+            step() {
+              throw new Error("product host must use deferred trace path");
+            },
+            stepPhysics() {},
+            captureLatestTrace() {
+              return [trace];
+            },
+            dispose() {
+              return {
+                disposed: true,
+                worldValidAfterDestroy: false,
+              };
+            },
+          };
+        },
+      }),
+      startBrowserHost(options) {
+        browserOptions = options;
+        return { dispose() {} };
+      },
+    },
+  );
+
+  assert.deepEqual(readJvStartupPerformance(), {
+    box3dBoundaryLoadMs: 1,
+    box3dWorldCreateMs: 1,
+    vehicleCreateMs: 1,
+  });
+
+  browserOptions.onStep(
+    { index: 1, startTimeMs: 0, endTimeMs: 1000 / 60 },
+    {
+      command: { mode: "RELEASE" },
+      integratedDirectionMs: 0,
+    },
+    {
+      command: { throttle: 0, brake: 0 },
+      integratedThrottleMs: 0,
+      integratedBrakeMs: 0,
+    },
+  );
+  browserOptions.onFrame(frameReport(1));
+
+  assert.deepEqual(readJvRuntimePerformanceFrame(), {
+    browserFrameDeltaMs: 100,
+    presentationIntervalMs: null,
+    executedSteps: 1,
+    droppedTimeMs: 0,
+    physicsStepMs: 1,
+    traceCaptureMs: 1,
+    renderUiMs: 1,
+  });
   host.dispose();
 });

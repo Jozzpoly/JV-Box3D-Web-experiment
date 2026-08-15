@@ -6,7 +6,9 @@ export interface JvJsprev2PerformanceInput {
   readonly textureCount: number;
   readonly totalBytes: number;
   readonly textureBytes: number;
+  /** Exporter/manifest estimate retained for contract auditing only. */
   readonly estimatedCpuGeometryBytes: number;
+  /** Exporter/manifest estimate retained for contract auditing only. */
   readonly estimatedGpuGeometryBytes: number;
 }
 
@@ -21,12 +23,21 @@ export interface JvJsprev2PerformanceBaseline {
   readonly renderTypedArrayBytes: number;
   readonly collisionTypedArrayBytes: number;
   readonly totalTypedArrayGeometryBytes: number;
-  readonly estimatedGpuGeometryBytes: number;
+  /** Bytes submitted by the current all-Uint32 direct scan path when supported. */
+  readonly directUint32UploadBytes: number;
+  /** Theoretical no-duplication floor for a fully Uint16 index representation. */
+  readonly uint16UploadFloorBytes: number;
+  /** Value declared by the JSPREV2 manifest/exporter, not measured GPU residency. */
+  readonly declaredGpuGeometryEstimateBytes: number;
   readonly cpuEstimateMatchesContract: boolean;
-  readonly gpuEstimateMatchesContract: boolean;
+  readonly declaredGpuEstimateMatchesUint16Floor: boolean;
 }
 
-const WEBGL1_MAX_UINT16_VERTICES = 65_535;
+const WEBGL1_UINT16_INDEX_CAPACITY = 65_536;
+const BYTES_PER_RENDER_VERTEX = 32;
+const BYTES_PER_COLLISION_VERTEX = 12;
+const BYTES_PER_UINT16_INDEX = 2;
+const BYTES_PER_UINT32_INDEX = 4;
 
 function count(value: number, label: string): number {
   if (!Number.isSafeInteger(value) || value < 0) {
@@ -35,16 +46,21 @@ function count(value: number, label: string): number {
   return value;
 }
 
-export function minimumJvUint16DrawCalls(
+/**
+ * Vertex-count-only lower bound for legacy Uint16 chunking. The real chunker
+ * must preserve triangle topology and can duplicate/remap vertices, so this is
+ * deliberately not presented as an exact draw count.
+ */
+export function minimumJvUint16ChunkDrawLowerBound(
   groupVertexCounts: readonly number[],
-  maxVertices = WEBGL1_MAX_UINT16_VERTICES,
+  maxVertices = WEBGL1_UINT16_INDEX_CAPACITY,
 ): number {
   if (
     !Number.isSafeInteger(maxVertices) ||
     maxVertices < 3 ||
-    maxVertices > WEBGL1_MAX_UINT16_VERTICES
+    maxVertices > WEBGL1_UINT16_INDEX_CAPACITY
   ) {
-    throw new Error("JSPREV2 maxVertices must be an integer from 3 to 65535.");
+    throw new Error("JSPREV2 maxVertices must be an integer from 3 to 65536.");
   }
   let result = 0;
   for (const [index, value] of groupVertexCounts.entries()) {
@@ -92,7 +108,7 @@ export function summarizeJvJsprev2PerformanceBaseline(
     input.estimatedCpuGeometryBytes,
     "JSPREV2 estimatedCpuGeometryBytes",
   );
-  const declaredGpuGeometryBytes = count(
+  const declaredGpuGeometryEstimateBytes = count(
     input.estimatedGpuGeometryBytes,
     "JSPREV2 estimatedGpuGeometryBytes",
   );
@@ -101,20 +117,28 @@ export function summarizeJvJsprev2PerformanceBaseline(
     throw new Error("JSPREV2 triangle count does not match its index count.");
   }
 
-  // Parsed render groups keep POSITION + NORMAL + UV as Float32 and indices
-  // as Uint32 before WebGL1 chunking.
-  const renderTypedArrayBytes = vertexCount * 32 + indexCount * 4;
+  // Parsed render groups keep POSITION + NORMAL + UV as Float32 and the source
+  // index stream as Uint32, independent of the eventual WebGL upload strategy.
+  const renderTypedArrayBytes =
+    vertexCount * BYTES_PER_RENDER_VERTEX +
+    indexCount * BYTES_PER_UINT32_INDEX;
 
-  // The current collision merge duplicates POSITION as Float32 and indices
-  // as Uint32 in one additional mesh.
-  const collisionTypedArrayBytes = vertexCount * 12 + indexCount * 4;
+  // The current collision merge duplicates POSITION as Float32 and indices as
+  // Uint32 in one additional JS mesh.
+  const collisionTypedArrayBytes =
+    vertexCount * BYTES_PER_COLLISION_VERTEX +
+    indexCount * BYTES_PER_UINT32_INDEX;
   const totalTypedArrayGeometryBytes =
     renderTypedArrayBytes + collisionTypedArrayBytes;
 
-  // Current WebGL geometry uploads use the same 32-byte vertex payload and
-  // Uint16 chunk indices. Texture residency is deliberately separate because
-  // encoded PNG bytes are not GPU texture memory.
-  const estimatedGpuGeometryBytes = vertexCount * 32 + indexCount * 2;
+  // These are upload-payload calculations, NOT driver/GPU residency claims.
+  // Current 5eeb uses one direct Uint32 EBO per scan group when the WebGL1
+  // extension exists. The manifest's historical GPU estimate instead matches
+  // the no-duplication Uint16 floor used by the older export model.
+  const directUint32UploadBytes = renderTypedArrayBytes;
+  const uint16UploadFloorBytes =
+    vertexCount * BYTES_PER_RENDER_VERTEX +
+    indexCount * BYTES_PER_UINT16_INDEX;
 
   return {
     vertexCount,
@@ -127,10 +151,12 @@ export function summarizeJvJsprev2PerformanceBaseline(
     renderTypedArrayBytes,
     collisionTypedArrayBytes,
     totalTypedArrayGeometryBytes,
-    estimatedGpuGeometryBytes,
+    directUint32UploadBytes,
+    uint16UploadFloorBytes,
+    declaredGpuGeometryEstimateBytes,
     cpuEstimateMatchesContract:
       totalTypedArrayGeometryBytes === declaredCpuGeometryBytes,
-    gpuEstimateMatchesContract:
-      estimatedGpuGeometryBytes === declaredGpuGeometryBytes,
+    declaredGpuEstimateMatchesUint16Floor:
+      uint16UploadFloorBytes === declaredGpuGeometryEstimateBytes,
   };
 }

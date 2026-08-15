@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   estimateRgba8TextureBaseLevelBytes,
-  minimumJvUint16DrawCalls,
+  minimumJvUint16ChunkDrawLowerBound,
   summarizeJvJsprev2PerformanceBaseline,
 } from "../.test-dist/render/jv-jsprev2-performance-baseline.js";
 
@@ -34,26 +34,28 @@ test("current JSPREV2 scan exposes its real geometry duplication baseline", () =
   assert.equal(baseline.renderTypedArrayBytes, 66_419_284);
   assert.equal(baseline.collisionTypedArrayBytes, 38_225_544);
   assert.equal(baseline.totalTypedArrayGeometryBytes, 104_644_828);
-  assert.equal(baseline.estimatedGpuGeometryBytes, 55_764_634);
+  assert.equal(baseline.directUint32UploadBytes, 66_419_284);
+  assert.equal(baseline.uint16UploadFloorBytes, 55_764_634);
+  assert.equal(baseline.declaredGpuGeometryEstimateBytes, 55_764_634);
   assert.equal(baseline.cpuEstimateMatchesContract, true);
-  assert.equal(baseline.gpuEstimateMatchesContract, true);
+  assert.equal(baseline.declaredGpuEstimateMatchesUint16Floor, true);
 });
 
-test("current group sizes imply at least 38 WebGL1 scan draw calls", () => {
+test("current group sizes imply only a 38-draw lower bound for legacy Uint16 chunking", () => {
   assert.equal(CURRENT_GROUP_VERTICES.length, CURRENT_SCAN.groupCount);
   assert.equal(
     CURRENT_GROUP_VERTICES.reduce((sum, value) => sum + value, 0),
     CURRENT_SCAN.vertexCount,
   );
-  assert.equal(minimumJvUint16DrawCalls(CURRENT_GROUP_VERTICES), 38);
+  assert.equal(minimumJvUint16ChunkDrawLowerBound(CURRENT_GROUP_VERTICES), 38);
 });
 
 test("current 25 RGBA8 1024 textures imply a 100 MiB base-level texel payload", () => {
   const textureBaseBytes = estimateRgba8TextureBaseLevelBytes(25, 1024, 1024);
   assert.equal(textureBaseBytes, 104_857_600);
   assert.equal(
-    textureBaseBytes + CURRENT_SCAN.estimatedGpuGeometryBytes,
-    160_622_234,
+    textureBaseBytes + summarizeJvJsprev2PerformanceBaseline(CURRENT_SCAN).directUint32UploadBytes,
+    171_276_884,
   );
 });
 

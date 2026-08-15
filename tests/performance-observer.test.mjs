@@ -63,6 +63,10 @@ test("performance sampling stays Debug-scoped unless explicit live HUD is reques
   assert.match(observer, /cancelAnimationFrame/);
   assert.match(observer, /ROLLING_WINDOW_MS = 2_000/);
   assert.match(observer, /p95FrameMs/);
+  assert.match(observer, /RAF\/s/);
+  assert.match(observer, /present\/s/);
+  assert.match(observer, /presentationIntervalMs/);
+  assert.match(observer, /presentationFrameSamples/);
   assert.match(observer, /canvas\.width/);
   assert.match(observer, /canvas\.height/);
   assert.match(observer, /canvas\.clientWidth/);
@@ -72,6 +76,17 @@ test("performance sampling stays Debug-scoped unless explicit live HUD is reques
   assert.match(observer, /readJvScanRenderStats\(canvas\)/);
   assert.match(observer, /scan \$\{scan\.visibleGroups\}\/\$\{scan\.totalGroups\} groups/);
   assert.match(observer, /\$\{scan\.visibleDrawCalls\}\/\$\{scan\.totalDrawCalls\} draws/);
+  assert.match(observer, /tex \$\{scan\.readyTextures\}\/\$\{scan\.totalGroups\} ready/);
+  assert.match(observer, /texturePending/);
+  assert.match(observer, /TEXTURES/);
+  assert.match(observer, /readJvJsprev2LoadingStats/);
+  assert.match(observer, /scan-load/);
   assert.match(observer, /cull \$\{culling\}/);
   assert.match(observer, /data-jv-perf-hud/);
+  assert.match(observer, /matchMedia/);
+  assert.match(observer, /backdropFilter: avoidBackdropFx \? "none" : "blur\(4px\)"/);
+  assert.match(observer, /trace \$\{runtime\.traceCaptureMs/);
+  assert.match(observer, /render\+ui \$\{runtime\.renderUiMs/);
+  assert.match(observer, /startupParts/);
+  assert.match(observer, /gpu-sync/);
 });

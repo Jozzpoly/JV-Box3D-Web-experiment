@@ -1,9 +1,14 @@
 import type {
+  JvBoundedIndexedMesh,
   JvBounds,
-  JvIndexedMesh,
+  JvScanRenderGroup,
   JvScanWorld,
   JvVec3,
 } from "./jv-world-contract.js";
+import {
+  clearJvJsprev2LoadingStats,
+  publishJvJsprev2LoadingStats,
+} from "./jsprev2-loading-stats.js";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -129,13 +134,6 @@ function canonicalFinite(value: number, label: string): number {
   return value === 0 ? 0 : value;
 }
 
-function assertFiniteStream(stream: Float32Array, label: string): void {
-  for (const value of stream) {
-    if (!Number.isFinite(value)) {
-      throw new Error(`${label} contains a non-finite value.`);
-    }
-  }
-}
 
 function parseIndex(value: unknown, scanRoot: URL): ScanIndex {
   const source = record(value, "Local scan index");
@@ -387,10 +385,33 @@ function parseIndex(value: unknown, scanRoot: URL): ScanIndex {
   return result;
 }
 
+function bounded(
+  minimumX: number,
+  minimumY: number,
+  minimumZ: number,
+  maximumX: number,
+  maximumY: number,
+  maximumZ: number,
+  label: string,
+): JvBounds {
+  return {
+    minimum: {
+      x: canonicalFinite(minimumX, `${label} minimum x`),
+      y: canonicalFinite(minimumY, `${label} minimum y`),
+      z: canonicalFinite(minimumZ, `${label} minimum z`),
+    },
+    maximum: {
+      x: canonicalFinite(maximumX, `${label} maximum x`),
+      y: canonicalFinite(maximumY, `${label} maximum y`),
+      z: canonicalFinite(maximumZ, `${label} maximum z`),
+    },
+  };
+}
+
 function parseTile(
   buffer: ArrayBuffer,
   tile: ScanIndexTile,
-): readonly JvIndexedMesh[] {
+): readonly JvScanRenderGroup[] {
   if (buffer.byteLength !== tile.binaryBytes) {
     throw new Error(
       `Scan tile ${tile.tileId} bytes ${buffer.byteLength} != index ${tile.binaryBytes}.`,
@@ -439,29 +460,63 @@ function parseTile(
     );
   }
 
-  const result: JvIndexedMesh[] = [];
+  const result: JvScanRenderGroup[] = [];
   for (let groupIndex = 0; groupIndex < groupCount; groupIndex += 1) {
     const descriptor = descriptors[groupIndex]!;
     const indexed = tile.groups[groupIndex]!;
     const positions = new Float32Array(descriptor.vertexCount * 3);
     const normals = new Float32Array(descriptor.vertexCount * 3);
     const uvs = new Float32Array(descriptor.vertexCount * 2);
+    let minimumX = Infinity;
+    let minimumY = Infinity;
+    let minimumZ = Infinity;
+    let maximumX = -Infinity;
+    let maximumY = -Infinity;
+    let maximumZ = -Infinity;
+
     for (let vertex = 0; vertex < descriptor.vertexCount; vertex += 1) {
       const positionOffset = vertex * 3;
       const uvOffset = vertex * 2;
-      positions[positionOffset] = view.getFloat32(offset, true);
-      positions[positionOffset + 1] = view.getFloat32(offset + 4, true);
-      positions[positionOffset + 2] = view.getFloat32(offset + 8, true);
-      normals[positionOffset] = view.getFloat32(offset + 12, true);
-      normals[positionOffset + 1] = view.getFloat32(offset + 16, true);
-      normals[positionOffset + 2] = view.getFloat32(offset + 20, true);
-      uvs[uvOffset] = view.getFloat32(offset + 24, true);
-      uvs[uvOffset + 1] = view.getFloat32(offset + 28, true);
+      const x = view.getFloat32(offset, true);
+      const y = view.getFloat32(offset + 4, true);
+      const z = view.getFloat32(offset + 8, true);
+      const normalX = view.getFloat32(offset + 12, true);
+      const normalY = view.getFloat32(offset + 16, true);
+      const normalZ = view.getFloat32(offset + 20, true);
+      const u = view.getFloat32(offset + 24, true);
+      const v = view.getFloat32(offset + 28, true);
       offset += VERTEX_BYTES;
+
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
+        throw new Error("Scan positions contain a non-finite value.");
+      }
+      if (
+        !Number.isFinite(normalX) ||
+        !Number.isFinite(normalY) ||
+        !Number.isFinite(normalZ)
+      ) {
+        throw new Error("Scan normals contain a non-finite value.");
+      }
+      if (!Number.isFinite(u) || !Number.isFinite(v)) {
+        throw new Error("Scan UVs contain a non-finite value.");
+      }
+
+      positions[positionOffset] = x;
+      positions[positionOffset + 1] = y;
+      positions[positionOffset + 2] = z;
+      normals[positionOffset] = normalX;
+      normals[positionOffset + 1] = normalY;
+      normals[positionOffset + 2] = normalZ;
+      uvs[uvOffset] = u;
+      uvs[uvOffset + 1] = v;
+
+      if (x < minimumX) minimumX = x;
+      if (y < minimumY) minimumY = y;
+      if (z < minimumZ) minimumZ = z;
+      if (x > maximumX) maximumX = x;
+      if (y > maximumY) maximumY = y;
+      if (z > maximumZ) maximumZ = z;
     }
-    assertFiniteStream(positions, "Scan positions");
-    assertFiniteStream(normals, "Scan normals");
-    assertFiniteStream(uvs, "Scan UVs");
 
     const indices = new Uint32Array(descriptor.indexCount);
     for (let index = 0; index < descriptor.indexCount; index += 1) {
@@ -472,11 +527,21 @@ function parseTile(
       }
       indices[index] = value;
     }
+
     result.push({
       positions,
       normals,
       uvs,
       indices,
+      bounds: bounded(
+        minimumX,
+        minimumY,
+        minimumZ,
+        maximumX,
+        maximumY,
+        maximumZ,
+        `Scan tile ${tile.tileId} group ${groupIndex}`,
+      ),
       textureUrl: indexed.textureUrl,
       color: [0.68, 0.68, 0.64, 1],
       doubleSided: true,
@@ -485,7 +550,40 @@ function parseTile(
   return result;
 }
 
-function mergeCollision(groups: readonly JvIndexedMesh[]): JvIndexedMesh {
+function mergeGroupBounds(groups: readonly JvScanRenderGroup[]): JvBounds {
+  if (groups.length === 0) {
+    throw new Error("Scan collision requires at least one render group.");
+  }
+
+  let minimumX = Infinity;
+  let minimumY = Infinity;
+  let minimumZ = Infinity;
+  let maximumX = -Infinity;
+  let maximumY = -Infinity;
+  let maximumZ = -Infinity;
+  for (const group of groups) {
+    minimumX = Math.min(minimumX, group.bounds.minimum.x);
+    minimumY = Math.min(minimumY, group.bounds.minimum.y);
+    minimumZ = Math.min(minimumZ, group.bounds.minimum.z);
+    maximumX = Math.max(maximumX, group.bounds.maximum.x);
+    maximumY = Math.max(maximumY, group.bounds.maximum.y);
+    maximumZ = Math.max(maximumZ, group.bounds.maximum.z);
+  }
+
+  return bounded(
+    minimumX,
+    minimumY,
+    minimumZ,
+    maximumX,
+    maximumY,
+    maximumZ,
+    "Scan collision",
+  );
+}
+
+function mergeCollision(
+  groups: readonly JvScanRenderGroup[],
+): JvBoundedIndexedMesh {
   let vertexCount = 0;
   let indexCount = 0;
   for (const group of groups) {
@@ -509,33 +607,9 @@ function mergeCollision(groups: readonly JvIndexedMesh[]): JvIndexedMesh {
   return {
     positions,
     indices,
+    bounds: mergeGroupBounds(groups),
     color: [0.6, 0.6, 0.6, 1],
     doubleSided: true,
-  };
-}
-
-function calculateBounds(positions: Float32Array): JvBounds {
-  const minimum = { x: Infinity, y: Infinity, z: Infinity };
-  const maximum = { x: -Infinity, y: -Infinity, z: -Infinity };
-  for (let offset = 0; offset < positions.length; offset += 3) {
-    minimum.x = Math.min(minimum.x, positions[offset]!);
-    minimum.y = Math.min(minimum.y, positions[offset + 1]!);
-    minimum.z = Math.min(minimum.z, positions[offset + 2]!);
-    maximum.x = Math.max(maximum.x, positions[offset]!);
-    maximum.y = Math.max(maximum.y, positions[offset + 1]!);
-    maximum.z = Math.max(maximum.z, positions[offset + 2]!);
-  }
-  return {
-    minimum: {
-      x: canonicalFinite(minimum.x, "Scan minimum x"),
-      y: canonicalFinite(minimum.y, "Scan minimum y"),
-      z: canonicalFinite(minimum.z, "Scan minimum z"),
-    },
-    maximum: {
-      x: canonicalFinite(maximum.x, "Scan maximum x"),
-      y: canonicalFinite(maximum.y, "Scan maximum y"),
-      z: canonicalFinite(maximum.z, "Scan maximum z"),
-    },
   };
 }
 
@@ -557,8 +631,10 @@ function translateBounds(bounds: JvBounds, origin: JvVec3): JvBounds {
 async function loadTileGroups(
   index: ScanIndex,
   signal?: AbortSignal,
-): Promise<readonly JvIndexedMesh[]> {
-  const tileGroups: Array<readonly JvIndexedMesh[] | undefined> =
+): Promise<readonly JvScanRenderGroup[]> {
+  const pipelineStartedAt = performance.now();
+  let parseCpuMs = 0;
+  const tileGroups: Array<readonly JvScanRenderGroup[] | undefined> =
     new Array(index.tiles.length);
   const fetchInit = signal === undefined ? undefined : { signal };
   let nextTileIndex = 0;
@@ -575,7 +651,10 @@ async function loadTileGroups(
       if (!tileResponse.ok) {
         throw new Error(`Scan tile failed with HTTP ${tileResponse.status}.`);
       }
-      tileGroups[tileIndex] = parseTile(await tileResponse.arrayBuffer(), tile);
+      const tileBytes = await tileResponse.arrayBuffer();
+      const parseStartedAt = performance.now();
+      tileGroups[tileIndex] = parseTile(tileBytes, tile);
+      parseCpuMs += Math.max(0, performance.now() - parseStartedAt);
     }
   };
 
@@ -583,8 +662,12 @@ async function loadTileGroups(
   await Promise.all(
     Array.from({ length: workerCount }, () => worker()),
   );
+  publishJvJsprev2LoadingStats({
+    tilePipelineMs: Math.max(0, performance.now() - pipelineStartedAt),
+    tileParseCpuMs: parseCpuMs,
+  });
 
-  const groups: JvIndexedMesh[] = [];
+  const groups: JvScanRenderGroup[] = [];
   for (let tileIndex = 0; tileIndex < tileGroups.length; tileIndex += 1) {
     const parsed = tileGroups[tileIndex];
     if (parsed === undefined) {
@@ -598,8 +681,10 @@ async function loadTileGroups(
 export async function loadLocalJsprev2Scan(
   signal?: AbortSignal,
 ): Promise<JvScanWorld | null> {
+  clearJvJsprev2LoadingStats();
   const scanRoot = scanRootUrl();
   const fetchInit = signal === undefined ? undefined : { signal };
+  const indexStartedAt = performance.now();
   const response = await fetch(new URL("index.json", scanRoot), fetchInit);
   if (response.status === 404) {
     return null;
@@ -608,6 +693,9 @@ export async function loadLocalJsprev2Scan(
     throw new Error(`Local scan index failed with HTTP ${response.status}.`);
   }
   const index = parseIndex(await response.json(), scanRoot);
+  publishJvJsprev2LoadingStats({
+    indexLoadMs: Math.max(0, performance.now() - indexStartedAt),
+  });
   const groups = await loadTileGroups(index, signal);
 
   const actualVertices = groups.reduce(
@@ -628,8 +716,12 @@ export async function loadLocalJsprev2Scan(
     );
   }
 
+  const collisionStartedAt = performance.now();
   const collision = mergeCollision(groups);
-  const localBounds = calculateBounds(collision.positions);
+  publishJvJsprev2LoadingStats({
+    collisionMergeMs: Math.max(0, performance.now() - collisionStartedAt),
+  });
+  const localBounds = collision.bounds;
   const origin = {
     x: canonicalFinite(
       -(localBounds.minimum.x + localBounds.maximum.x) * 0.5,

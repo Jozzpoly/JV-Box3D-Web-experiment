@@ -32,6 +32,8 @@ test("product-world fails closed until one profile loader is configured", async 
 
 test("LOCAL_FULL shares one load promise, one index request and exact published world identity", async () => {
   const previousFetch = globalThis.fetch;
+  const previousDocument = globalThis.document;
+  globalThis.document = { baseURI: "https://example.test/jv/" };
   const requests = [];
   globalThis.fetch = async (input) => {
     requests.push(String(input));
@@ -85,6 +87,11 @@ test("LOCAL_FULL shares one load promise, one index request and exact published 
     unsubscribeEarly();
   } finally {
     globalThis.fetch = previousFetch;
+    if (previousDocument === undefined) {
+      delete globalThis.document;
+    } else {
+      globalThis.document = previousDocument;
+    }
   }
 });
 
@@ -116,9 +123,11 @@ test("scan dependency is owned only by the LOCAL_FULL provider while host and re
   assert.match(localFullProvider, /loadLocalJsprev2Scan/);
   assert.match(localFullProvider, /createProductWorld\(await loadLocalJsprev2Scan\(\)\)/);
 
+  assert.match(productMain, /function timedProductWorldLoader/);
+  assert.match(productMain, /publishJvStartupPerformance/);
   assert.match(
     productMain,
-    /configureProductWorldLoader\(\s*spawnTarget === "scan"\s*\? loadLocalFullProductWorld\s*:\s*loadMapOnlyProductWorld,?\s*\);/s,
+    /configureProductWorldLoader\(\s*timedProductWorldLoader\(\s*spawnTarget === "scan"\s*\? loadLocalFullProductWorld\s*:\s*loadMapOnlyProductWorld,?\s*\),?\s*\);/s,
   );
   assert.match(productMain, /spawnTarget !== "map"/);
   assert.match(productMain, /await import\("\.\/main\.js"\)/);
@@ -130,6 +139,7 @@ test("scan dependency is owned only by the LOCAL_FULL provider while host and re
   assert.match(host, /loadWorld: \(\) => loadProductWorld\(\)/);
   assert.doesNotMatch(host, /jsprev2-scan|loadLocalJsprev2Scan/);
   assert.match(renderer, /subscribeProductWorld/);
+  assert.match(renderer, /worldGpuSetupMs/);
   assert.doesNotMatch(renderer, /jsprev2-scan|loadLocalJsprev2Scan/);
   assert.match(debugRenderer, /M6ProductRenderer as M6DebugRenderer/);
 });

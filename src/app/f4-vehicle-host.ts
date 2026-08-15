@@ -32,6 +32,7 @@ import {
   clearJvRuntimePerformanceFrame,
   publishJvRuntimePerformanceFrame,
 } from "../runtime/runtime-performance-frame.js";
+import { publishJvStartupPerformance } from "../runtime/startup-performance.js";
 import {
   assertVehicleRuntimeBackendDescriptor,
   LEGACY_TS_M6_BACKEND,
@@ -170,29 +171,42 @@ export class F4VehicleHost {
     try {
       assertVehicleRuntimeBackendDescriptor(LEGACY_TS_M6_BACKEND);
       const nativeReceipt = await dependencies.loadReceipt();
+      const boundaryStartedAt = options.now();
       const boundary = await dependencies.loadBoundary();
+      publishJvStartupPerformance({
+        box3dBoundaryLoadMs: Math.max(0, options.now() - boundaryStartedAt),
+      });
       const worldData = await (
         dependencies.loadWorld ??
         (() => Promise.resolve(createProductWorld()))
       )();
+      const worldStartedAt = options.now();
       const world = boundary.createM6TopologyWorld(
         nativeReceipt,
         options.rateProfileId ?? INITIAL_RATE_STEERING_PROFILE_ID,
         worldData,
       );
+      publishJvStartupPerformance({
+        box3dWorldCreateMs: Math.max(0, options.now() - worldStartedAt),
+      });
       resources.defer("current M6 topology world", () => {
         world.dispose();
       });
 
       const generation = options.generation ?? 1;
       const spawn = options.spawn ?? worldData.spawn;
+      const vehicleStartedAt = options.now();
       const vehicle = world.createVehicle(spawn, generation);
+      publishJvStartupPerformance({
+        vehicleCreateMs: Math.max(0, options.now() - vehicleStartedAt),
+      });
       let pendingPresentation: Readonly<{
         step: FixedStepInterval;
         steering: SteeringTimelineSample;
         longitudinal: LongitudinalTimelineSample;
       }> | null = null;
       let physicsStepMs = 0;
+      let previousPresentationFrameTimeMs: number | null = null;
 
       const browserHost = dependencies.startBrowserHost({
         now: options.now,
@@ -224,10 +238,20 @@ export class F4VehicleHost {
         onFrame: (report) => {
           const presentation = pendingPresentation;
           pendingPresentation = null;
-          let presentationMs = 0;
           if (presentation !== null) {
-            const presentationStartedAt = options.now();
+            const presentationIntervalMs =
+              previousPresentationFrameTimeMs !== null &&
+                report.droppedTimeMs === 0 &&
+                report.frameTimeMs > previousPresentationFrameTimeMs
+                ? report.frameTimeMs - previousPresentationFrameTimeMs
+                : null;
+            previousPresentationFrameTimeMs = report.frameTimeMs;
+            // Three timestamps split the final presented frame into trace
+            // materialization and actual render/UI work without double-counting
+            // either phase. Intermediate catch-up states still do no trace work.
+            const traceStartedAt = options.now();
             const trace = world.captureLatestTrace()[0];
+            const traceCapturedAt = options.now();
             if (trace === undefined) {
               throw new Error(
                 "M6 world produced no trace for its owned vehicle.",
@@ -239,19 +263,17 @@ export class F4VehicleHost {
               presentation.longitudinal,
               trace,
             );
-            presentationMs = Math.max(
-              0,
-              options.now() - presentationStartedAt,
-            );
+            const presentationFinishedAt = options.now();
+            publishJvRuntimePerformanceFrame({
+              browserFrameDeltaMs: report.rawFrameDeltaMs,
+              presentationIntervalMs,
+              executedSteps: report.executedSteps,
+              droppedTimeMs: report.droppedTimeMs,
+              physicsStepMs,
+              traceCaptureMs: Math.max(0, traceCapturedAt - traceStartedAt),
+              renderUiMs: Math.max(0, presentationFinishedAt - traceCapturedAt),
+            });
           }
-          publishJvRuntimePerformanceFrame({
-            browserFrameDeltaMs: report.rawFrameDeltaMs,
-            executedSteps: report.executedSteps,
-            droppedTimeMs: report.droppedTimeMs,
-            physicsStepMs,
-            presentationMs,
-            presented: presentation !== null,
-          });
           physicsStepMs = 0;
           options.onFrame?.(report);
         },
