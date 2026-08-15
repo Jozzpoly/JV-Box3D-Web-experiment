@@ -6,8 +6,16 @@ import { getJvProductViewSettings } from "./jv-product-view-settings.js";
 import { M6OwnerVehicleLayer } from "./m6-owner-vehicle-layer.js";
 import {
   computeM6ChaseCameraPose,
+  createDefaultM6ChaseCameraState,
   DEFAULT_M6_CHASE_CAMERA,
+  orbitM6ChaseCameraState,
+  zoomM6ChaseCameraState,
 } from "./m6-chase-camera.js";
+import {
+  M6_CAMERA_VERTICAL_FOV_RADIANS,
+  resolveM6CameraClipPlanes,
+  resolveM6ResponsiveChaseDistance,
+} from "./m6-camera-viewport.js";
 
 type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 type Rotation = Readonly<{ x: number; y: number; z: number; w: number }>;
@@ -367,9 +375,8 @@ export class M6WorldRenderer {
   readonly #renderScaleCap: number;
   #world: JvWorldRenderer | null = null;
   #diagnosticsVisible = false;
-  #orbitYaw: number = DEFAULT_M6_CHASE_CAMERA.orbitYaw;
-  #pitch: number = DEFAULT_M6_CHASE_CAMERA.pitch;
-  #distance: number = DEFAULT_M6_CHASE_CAMERA.distance;
+  #cameraState = createDefaultM6ChaseCameraState();
+  #cameraUsesViewportDefaultDistance = true;
   #pointer: Readonly<{
     id: number;
     x: number;
@@ -451,9 +458,11 @@ export class M6WorldRenderer {
     if (this.#disposed) {
       return;
     }
-    this.#orbitYaw = DEFAULT_M6_CHASE_CAMERA.orbitYaw;
-    this.#pitch = DEFAULT_M6_CHASE_CAMERA.pitch;
-    this.#distance = DEFAULT_M6_CHASE_CAMERA.distance;
+    this.#cameraUsesViewportDefaultDistance = true;
+    this.#cameraState = {
+      ...createDefaultM6ChaseCameraState(),
+      distance: this.#responsiveCameraDistance(),
+    };
   }
 
   setDiagnosticsVisible(visible: boolean): void {
@@ -484,17 +493,16 @@ export class M6WorldRenderer {
     const camera = computeM6ChaseCameraPose(
       trace.chassisPosition,
       trace.chassisRotation,
-      {
-        orbitYaw: this.#orbitYaw,
-        pitch: this.#pitch,
-        distance: this.#distance,
-      },
+      this.#cameraState,
+    );
+    const clipPlanes = resolveM6CameraClipPlanes(
+      this.#cameraState.distance,
     );
     const projection = perspective(
-      Math.PI / 4,
+      M6_CAMERA_VERTICAL_FOV_RADIANS,
       this.#canvas.width / this.#canvas.height,
-      0.05,
-      1_500,
+      clipPlanes.near,
+      clipPlanes.far,
     );
     const view = lookAt(camera.eye, camera.target, { x: 0, y: 1, z: 0 });
     const viewProjection = multiply(projection, view);
@@ -755,6 +763,25 @@ export class M6WorldRenderer {
       this.#canvas.width = width;
       this.#canvas.height = height;
     }
+    if (this.#cameraUsesViewportDefaultDistance) {
+      const distance = this.#responsiveCameraDistance();
+      if (distance !== this.#cameraState.distance) {
+        this.#cameraState = { ...this.#cameraState, distance };
+      }
+    }
+  }
+
+  #responsiveCameraDistance(): number {
+    const width = this.#canvas.clientWidth;
+    const height = this.#canvas.clientHeight;
+    if (width <= 0 || height <= 0) {
+      return DEFAULT_M6_CHASE_CAMERA.distance;
+    }
+    return resolveM6ResponsiveChaseDistance(
+      DEFAULT_M6_CHASE_CAMERA.distance,
+      width,
+      height,
+    );
   }
 
   #installCameraControls(): void {
@@ -781,10 +808,10 @@ export class M6WorldRenderer {
         }
         const dx = event.clientX - this.#pointer.x;
         const dy = event.clientY - this.#pointer.y;
-        this.#orbitYaw += dx * 0.006;
-        this.#pitch = Math.max(
-          -0.12,
-          Math.min(1.25, this.#pitch - dy * 0.006),
+        this.#cameraState = orbitM6ChaseCameraState(
+          this.#cameraState,
+          dx,
+          dy,
         );
         this.#pointer = {
           id: event.pointerId,
@@ -813,12 +840,10 @@ export class M6WorldRenderer {
       "wheel",
       (event) => {
         event.preventDefault();
-        this.#distance = Math.max(
-          3.5,
-          Math.min(
-            60,
-            this.#distance * Math.exp(event.deltaY * 0.001),
-          ),
+        this.#cameraUsesViewportDefaultDistance = false;
+        this.#cameraState = zoomM6ChaseCameraState(
+          this.#cameraState,
+          event.deltaY,
         );
       },
       { passive: false, signal: this.#events.signal },

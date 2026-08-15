@@ -102,3 +102,16 @@ test("manual wheel zoom preserves current exponential response and distance boun
     DEFAULT_M6_CAMERA_INTERACTION_POLICY.maxDistance,
   );
 });
+
+
+test("manual distance policy supports inspection-scale views far beyond legacy chase limits", () => {
+  const initial = createDefaultM6ChaseCameraState();
+  const targetDistance = 500;
+  const wheelDelta =
+    Math.log(targetDistance / initial.distance) /
+    DEFAULT_M6_CAMERA_INTERACTION_POLICY.wheelZoomExponentPerDelta;
+  const zoomed = zoomM6ChaseCameraState(initial, wheelDelta);
+  assert.ok(Math.abs(zoomed.distance - targetDistance) < 1e-9);
+  assert.ok(DEFAULT_M6_CAMERA_INTERACTION_POLICY.minDistance < 1);
+  assert.ok(DEFAULT_M6_CAMERA_INTERACTION_POLICY.maxDistance >= 500);
+});

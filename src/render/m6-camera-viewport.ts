@@ -1,6 +1,18 @@
 export const M6_CAMERA_VERTICAL_FOV_RADIANS = Math.PI / 4;
 export const M6_CAMERA_REFERENCE_ASPECT = 16 / 9;
 export const M6_CAMERA_MAX_RESPONSIVE_DISTANCE_MULTIPLIER = 1.8;
+export const M6_CAMERA_DEFAULT_NEAR_PLANE = 0.05;
+export const M6_CAMERA_DEFAULT_FAR_PLANE = 1_500;
+export const M6_CAMERA_MIN_NEAR_PLANE = 0.02;
+export const M6_CAMERA_MAX_NEAR_PLANE = 0.25;
+export const M6_CAMERA_NEAR_DISTANCE_DIVISOR = 190;
+export const M6_CAMERA_FAR_DISTANCE_MULTIPLIER = 3;
+export const M6_CAMERA_FAR_DISTANCE_PADDING = 500;
+
+export interface M6CameraClipPlanes {
+  readonly near: number;
+  readonly far: number;
+}
 
 export interface M6CameraViewportMetrics {
   readonly width: number;
@@ -99,4 +111,23 @@ export function resolveM6ResponsiveChaseDistance(
   );
   return safeBaseDistance *
     resolveM6ResponsiveDistanceMultiplier(width, height, maxMultiplier);
+}
+
+export function resolveM6CameraClipPlanes(
+  distance: number,
+): M6CameraClipPlanes {
+  const safeDistance = positiveFinite(distance, "Camera distance");
+  const near = Math.max(
+    M6_CAMERA_MIN_NEAR_PLANE,
+    Math.min(
+      M6_CAMERA_MAX_NEAR_PLANE,
+      safeDistance / M6_CAMERA_NEAR_DISTANCE_DIVISOR,
+    ),
+  );
+  const far = Math.max(
+    M6_CAMERA_DEFAULT_FAR_PLANE,
+    safeDistance * M6_CAMERA_FAR_DISTANCE_MULTIPLIER +
+      M6_CAMERA_FAR_DISTANCE_PADDING,
+  );
+  return { near, far };
 }

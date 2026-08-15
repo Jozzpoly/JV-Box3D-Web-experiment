@@ -32,8 +32,8 @@ export const DEFAULT_M6_CAMERA_INTERACTION_POLICY = Object.freeze({
   minPitch: -0.12,
   maxPitch: 1.25,
   wheelZoomExponentPerDelta: 0.001,
-  minDistance: 3.5,
-  maxDistance: 60,
+  minDistance: 0.35,
+  maxDistance: 2_000,
 } satisfies M6CameraInteractionPolicy);
 
 export const DEFAULT_M6_CHASE_CAMERA = Object.freeze({

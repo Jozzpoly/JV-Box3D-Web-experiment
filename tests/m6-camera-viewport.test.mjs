@@ -2,8 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   inspectM6CameraViewport,
+  M6_CAMERA_DEFAULT_FAR_PLANE,
+  M6_CAMERA_DEFAULT_NEAR_PLANE,
   M6_CAMERA_MAX_RESPONSIVE_DISTANCE_MULTIPLIER,
   M6_CAMERA_REFERENCE_ASPECT,
+  resolveM6CameraClipPlanes,
   resolveM6ResponsiveChaseDistance,
   resolveM6ResponsiveDistanceMultiplier,
 } from "../.test-dist/render/m6-camera-viewport.js";
@@ -79,4 +82,31 @@ test("camera viewport diagnostics reject invalid dimensions and tuning bounds", 
     () => resolveM6ResponsiveChaseDistance(0, 1920, 1080),
     /base chase distance must be finite and > 0/,
   );
+});
+
+
+test("known A53 viewports use responsive reset only where framing is narrow", () => {
+  approximately(
+    resolveM6ResponsiveChaseDistance(9.5, 384, 718),
+    9.5 * M6_CAMERA_MAX_RESPONSIVE_DISTANCE_MULTIPLIER,
+  );
+  approximately(resolveM6ResponsiveChaseDistance(9.5, 774, 304), 9.5);
+});
+
+test("camera clip planes preserve current chase projection and scale to inspection distances", () => {
+  const current = resolveM6CameraClipPlanes(9.5);
+  approximately(current.near, M6_CAMERA_DEFAULT_NEAR_PLANE);
+  approximately(current.far, M6_CAMERA_DEFAULT_FAR_PLANE);
+
+  const close = resolveM6CameraClipPlanes(0.35);
+  assert.ok(close.near < current.near);
+  assert.equal(close.far, M6_CAMERA_DEFAULT_FAR_PLANE);
+
+  const distant = resolveM6CameraClipPlanes(500);
+  assert.ok(distant.near > current.near);
+  assert.ok(distant.far > 500);
+  assert.ok(distant.far > M6_CAMERA_DEFAULT_FAR_PLANE);
+
+  const extreme = resolveM6CameraClipPlanes(2_000);
+  assert.ok(extreme.far > 2_000);
 });
