@@ -29,17 +29,17 @@ export function installJvBuildIdentity(root: ParentNode = document): void {
   }
 
   const card = document.createElement("div");
-  card.dataset.jvBuildMarker = JV_BUILD_SOURCE_MARKER;
+  card.dataset["jvBuildMarker"] = JV_BUILD_SOURCE_MARKER;
 
   const term = document.createElement("dt");
   term.textContent = "Build source";
 
   const value = document.createElement("dd");
-  value.dataset.buildSource = "";
+  value.dataset["buildSource"] = "";
   value.textContent = JV_BUILD_SOURCE_LABEL;
   value.title = JV_BUILD_SOURCE_COMMIT;
 
   card.append(term, value);
   metrics.append(card);
-  document.documentElement.dataset.jvBuildSource = JV_BUILD_SOURCE_COMMIT;
+  document.documentElement.dataset["jvBuildSource"] = JV_BUILD_SOURCE_COMMIT;
 }

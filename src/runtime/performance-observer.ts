@@ -111,7 +111,7 @@ function performanceHudRequested(): boolean {
 
 function createPerformanceHud(): HTMLElement {
   const hud = document.createElement("div");
-  hud.dataset.jvPerfHud = "";
+  hud.setAttribute("data-jv-perf-hud", "");
   hud.setAttribute("aria-live", "off");
   Object.assign(hud.style, {
     position: "fixed",
@@ -152,7 +152,7 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
   const term = document.createElement("dt");
   term.textContent = "Frame / viewport";
   const value = document.createElement("dd");
-  value.dataset.performance = "";
+  value.dataset["performance"] = "";
   value.textContent = hudEnabled ? "SAMPLING" : "OPEN DEBUG TO SAMPLE";
   card.append(term, value);
   metrics.append(card);
