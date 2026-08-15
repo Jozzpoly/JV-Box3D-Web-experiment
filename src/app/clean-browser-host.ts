@@ -14,6 +14,10 @@ import {
   type LongitudinalTimelineSample,
 } from "../input/longitudinal-input-timeline.js";
 import {
+  PointerSteeringJoystickAdapter,
+  type PointerSteeringJoystickTarget,
+} from "../input/pointer-steering-joystick-adapter.js";
+import {
   PointerVehicleControlAdapter,
   type PointerVehicleControlId,
   type PointerVehicleControlTargets,
@@ -22,6 +26,7 @@ import {
   SteeringInputTimeline,
   type SteeringTimelineSample,
 } from "../input/steering-input-timeline.js";
+import { SteeringPositionTimeline } from "../input/steering-position-timeline.js";
 
 export interface AnimationFrameDriver {
   request(callback: FrameRequestCallback): number;
@@ -37,6 +42,11 @@ export interface CleanBrowserHostOptions {
   readonly pointerControls?: PointerVehicleControlTargets;
   readonly onPointerControlStateChange?: (
     control: PointerVehicleControlId,
+    active: boolean,
+  ) => void;
+  readonly steeringJoystick?: PointerSteeringJoystickTarget;
+  readonly onSteeringJoystickStateChange?: (
+    value: number,
     active: boolean,
   ) => void;
   readonly onStep: (
@@ -72,6 +82,11 @@ export class CleanBrowserHost {
       const longitudinalTimeline = new LongitudinalInputTimeline(
         startTimeMs,
       );
+      const steeringPositionTimeline =
+        options.steeringJoystick === undefined
+          ? null
+          : new SteeringPositionTimeline(startTimeMs);
+
       const steeringKeyboard = new KeyboardSteeringAdapter({
         windowTarget: options.windowTarget,
         documentTarget: options.documentTarget,
@@ -117,6 +132,30 @@ export class CleanBrowserHost {
         );
       }
 
+      if (
+        options.steeringJoystick !== undefined &&
+        steeringPositionTimeline !== null
+      ) {
+        const steeringJoystick = new PointerSteeringJoystickAdapter({
+          windowTarget: options.windowTarget,
+          documentTarget: options.documentTarget,
+          target: options.steeringJoystick,
+          timeline: steeringPositionTimeline,
+          now: options.now,
+          isDocumentHidden: options.isDocumentHidden,
+          ...(options.onSteeringJoystickStateChange === undefined
+            ? {}
+            : {
+                onStateChange:
+                  options.onSteeringJoystickStateChange,
+              }),
+        });
+        resources.defer(
+          "pointer steering joystick adapter",
+          () => steeringJoystick.dispose(),
+        );
+      }
+
       const clock = new FixedStepClock(startTimeMs, {
         fixedStepMs: 1000 / 60,
         maxCatchUpSteps: 8,
@@ -143,10 +182,24 @@ export class CleanBrowserHost {
           const report = clock.advance(
             frameTimeMs,
             (step) => {
-              const steering = steeringTimeline.consumeInterval(
+              const digitalSteering = steeringTimeline.consumeInterval(
                 step.startTimeMs,
                 step.endTimeMs,
               );
+              const positionSteering =
+                steeringPositionTimeline?.consumeInterval(
+                  step.startTimeMs,
+                  step.endTimeMs,
+                );
+              const steering =
+                digitalSteering.command.mode !== "RELEASE" ||
+                  positionSteering === undefined ||
+                  positionSteering.command.mode === "RELEASE"
+                  ? digitalSteering
+                  : {
+                      ...digitalSteering,
+                      command: positionSteering.command,
+                    };
               const longitudinal = longitudinalTimeline.consumeInterval(
                 step.startTimeMs,
                 step.endTimeMs,
@@ -155,6 +208,10 @@ export class CleanBrowserHost {
             },
             (dropped) => {
               steeringTimeline.skipInterval(
+                dropped.startTimeMs,
+                dropped.endTimeMs,
+              );
+              steeringPositionTimeline?.skipInterval(
                 dropped.startTimeMs,
                 dropped.endTimeMs,
               );
