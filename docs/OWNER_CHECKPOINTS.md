@@ -1,6 +1,6 @@
 # JV Web — owner checkpoints
 
-Updated: 2026-08-14
+Updated: 2026-08-15
 
 This is a compact ledger of owner-visible facts that future work must not silently overwrite. Detailed historical evidence remains in Git history and cold campaign/baseline documents.
 
@@ -79,6 +79,52 @@ Owner directly confirmed:
 Protected meaning: GitHub Pages + browser runtime + public scan + current vehicle now form a real working product foundation.
 
 This does **not** accept final mobile UX/performance, final vehicle rig, final steering physics or final driving feel.
+
+## PERF-FND-A53-01 — mobile performance foundation v1
+
+Date: 2026-08-15
+Classification: `OWNER ACCEPTED — PERFORMANCE SCOPE`
+
+Exact evidence boundaries:
+
+```text
+private source checkpoint: checkpoint/perf-foundation-a53-validated-2026-08-15@f42e16321d9edb26e10f44ab7c9eeda3c646291c
+public device proof: checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0
+device/browser: Samsung Galaxy A53 / normal Chrome
+render scale: 1x
+scan culling: ON
+```
+
+Owner directly observed:
+
+- removing mobile live backdrop blur/heavy shadows over the WebGL canvas changed the Offroad control case from roughly 35 present/s to stable 60 present/s;
+- Offroad sustained 60 present/s, 16.7 ms average and p95 16.8 ms after continued use;
+- the complete textured JSPREV2 scan reached stable 60 present/s, 16.7 ms average and p95 16.8 ms while 19/25 scan groups were visible;
+- the tested warm/cache scan loaded materially faster than earlier builds, with geometry appearing in well under the previous long wait and all textures finishing shortly afterward; the owner estimated textures completed about a second after geometry;
+- performance improved enough that camera/control/other product issues became more noticeable than raw frame rate.
+
+Instrumented warm/cache sample for interpretation, not universal startup timing:
+
+```text
+world 1337 ms
+index 24 ms
+tile pipeline 1127 ms (includes parse CPU 268 ms)
+collision merge 53 ms
+Box3D world create 3418 ms
+textures 25/25 ready
+cumulative synchronous texture-upload call time 776.2 ms
+```
+
+Not accepted by this checkpoint:
+
+- stable 60 present/s at render scale 2x;
+- a universal cold-cache loading time;
+- future larger/multiple scans or other devices;
+- canonical Node/npm/TypeScript/Vite packaging and release promotion;
+- final mobile camera, joystick/steering or responsive UX;
+- final rig/JURE integration or vehicle handling.
+
+Protected meaning: for the present 1x A53 stress case, the lightweight performance foundation has achieved its product purpose. Future agents should not reopen endless micro-optimization of this exact JSPREV2 without new evidence. Scaling work should instead target dedicated collision data, texture/residency policy and future VAW/JSPREV3 spatial asset structure when larger worlds justify it.
 
 ## Durable method
 
