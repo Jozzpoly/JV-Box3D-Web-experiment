@@ -343,3 +343,37 @@
     height: 32px;
   }
 }
+
+/* Public Friends still carries a legacy short-landscape overlay with
+   !important three-button geometry. V3.1 explicitly takes authority back so
+   device validation measures the new two-pedal + D/R layout, not that legacy. */
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 980px) {
+  .mobile-drive-controls {
+    grid-template-columns: repeat(2, minmax(50px, 60px)) !important;
+    grid-template-rows: auto auto !important;
+    grid-template-areas:
+      "throttle brake"
+      "direction direction" !important;
+  }
+
+  .mobile-pedal.mobile-control {
+    width: clamp(50px, 7.4vw, 60px) !important;
+    height: clamp(86px, 22vh, 108px) !important;
+    min-height: 86px !important;
+  }
+
+  .mobile-pedal-throttle.mobile-control[data-pointer-control="FORWARD"] {
+    grid-area: throttle !important;
+  }
+
+  .mobile-pedal-brake.mobile-control {
+    grid-area: brake !important;
+  }
+
+  .mobile-direction-selector.mobile-control[data-pointer-control="REVERSE"] {
+    grid-area: direction !important;
+    width: 100% !important;
+    height: 32px !important;
+    min-height: 32px !important;
+  }
+}
