@@ -181,6 +181,12 @@ export class F4VehicleHost {
       const generation = options.generation ?? 1;
       const spawn = options.spawn ?? worldData.spawn;
       const vehicle = world.createVehicle(spawn, generation);
+      let pendingPresentation: Readonly<{
+        step: FixedStepInterval;
+        steering: SteeringTimelineSample;
+        longitudinal: LongitudinalTimelineSample;
+        trace: M6TraceFrame;
+      }> | null = null;
 
       const browserHost = dependencies.startBrowserHost({
         now: options.now,
@@ -206,16 +212,26 @@ export class F4VehicleHost {
               "M6 world produced no trace for its owned vehicle.",
             );
           }
-          options.onVehicleStep(
+          pendingPresentation = {
             step,
             steering,
             longitudinal,
             trace,
-          );
+          };
         },
-        ...(options.onFrame === undefined
-          ? {}
-          : { onFrame: options.onFrame }),
+        onFrame: (report) => {
+          const presentation = pendingPresentation;
+          pendingPresentation = null;
+          if (presentation !== null) {
+            options.onVehicleStep(
+              presentation.step,
+              presentation.steering,
+              presentation.longitudinal,
+              presentation.trace,
+            );
+          }
+          options.onFrame?.(report);
+        },
         onFatalError: (error) => {
           state.fatalError = error;
           state.disposed = true;

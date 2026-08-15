@@ -174,13 +174,25 @@ function hostOptions(onVehicleStep = () => {}) {
   };
 }
 
+function frameReport(executedSteps) {
+  return {
+    frameTimeMs: 100,
+    rawFrameDeltaMs: 100,
+    acceptedFrameDeltaMs: 100,
+    executedSteps,
+    droppedTimeMs: 0,
+    interpolationAlpha: 0,
+    simulationTimeMs: 100,
+  };
+}
+
 const RATE_PROFILE = Object.freeze({
   id: "reference_0_21",
   rackRateMetersPerSecond: 0.21,
   maxTargetLeadMeters: 0.008,
 });
 
-test("F4 startup validates receipt before creating Box3D world and dual-input browser loop", async () => {
+test("F4 startup validates receipt and presents only the latest catch-up step once per browser frame", async () => {
   const order = [];
   let browserOptions = null;
   let browserDisposals = 0;
@@ -188,10 +200,14 @@ test("F4 startup validates receipt before creating Box3D world and dual-input br
   let steeringCommand = null;
   let driveCommand = null;
   let vehicleTrace = null;
+  let presentationCallbacks = 0;
+  let presentedStepIndex = null;
   const trace = traceStub({ mode: "POSITION", value: 0.25 });
 
   const host = await F4VehicleHost.start(
     hostOptions((step, steering, longitudinal, receivedTrace) => {
+      presentationCallbacks += 1;
+      presentedStepIndex = step.index;
       order.push(
         `callback:${step.index}:${steering.command.mode}:${longitudinal.command.throttle}`,
       );
@@ -275,32 +291,39 @@ test("F4 startup validates receipt before creating Box3D world and dual-input br
   assert.equal(host.box3dReceipt.identity.packageVersion, "0.0.2");
   assert.equal(host.rateProfile.id, "reference_0_21");
 
-  browserOptions.onStep(
-    { index: 1, startTimeMs: 0, endTimeMs: 1000 / 60 },
-    {
-      command: { mode: "POSITION", value: 0.25 },
-      integratedDirectionMs: 1000 / 60,
-    },
-    {
-      command: { throttle: 0.5, brake: 0 },
-      integratedThrottleMs: (1000 / 60) * 0.5,
-      integratedBrakeMs: 0,
-    },
-  );
+  for (let index = 1; index <= 4; index += 1) {
+    browserOptions.onStep(
+      { index, startTimeMs: (index - 1) * (1000 / 60), endTimeMs: index * (1000 / 60) },
+      {
+        command: { mode: "POSITION", value: 0.25 },
+        integratedDirectionMs: 1000 / 60,
+      },
+      {
+        command: { throttle: 0.5, brake: 0 },
+        integratedThrottleMs: (1000 / 60) * 0.5,
+        integratedBrakeMs: 0,
+      },
+    );
+  }
   assert.deepEqual(steeringCommand, {
     mode: "POSITION",
     value: 0.25,
   });
   assert.deepEqual(driveCommand, { throttle: 0.5, brake: 0 });
+  assert.equal(presentationCallbacks, 0);
+  assert.equal(vehicleTrace, null);
+  assert.equal(order.filter((entry) => entry === "world-step:1").length, 4);
+
+  browserOptions.onFrame(frameReport(4));
+  assert.equal(presentationCallbacks, 1);
+  assert.equal(presentedStepIndex, 4);
   assert.equal(vehicleTrace, trace);
   assert.equal(vehicleTrace.visualFrame.parts.length, 18);
   assert.equal(vehicleTrace.visualFrame.segments.length, 8);
-  assert.deepEqual(order.slice(-4), [
-    "steering:POSITION",
-    "drive:0.5:0",
-    "world-step:1",
-    "callback:1:POSITION:0.5",
-  ]);
+  assert.equal(order.at(-1), "callback:4:POSITION:0.5");
+
+  browserOptions.onFrame(frameReport(0));
+  assert.equal(presentationCallbacks, 1);
 
   host.dispose();
   host.dispose();
