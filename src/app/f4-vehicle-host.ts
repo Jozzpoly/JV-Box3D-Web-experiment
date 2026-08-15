@@ -29,6 +29,10 @@ import {
 } from "../scene/product-world.js";
 import type { JvWorldData } from "../scene/jv-world-contract.js";
 import {
+  clearJvRuntimePerformanceFrame,
+  publishJvRuntimePerformanceFrame,
+} from "../runtime/runtime-performance-frame.js";
+import {
   assertVehicleRuntimeBackendDescriptor,
   LEGACY_TS_M6_BACKEND,
   type VehicleRuntimeBackendDescriptor,
@@ -187,6 +191,7 @@ export class F4VehicleHost {
         longitudinal: LongitudinalTimelineSample;
         trace: M6TraceFrame;
       }> | null = null;
+      let physicsStepMs = 0;
 
       const browserHost = dependencies.startBrowserHost({
         now: options.now,
@@ -206,7 +211,9 @@ export class F4VehicleHost {
         onStep: (step, steering, longitudinal) => {
           vehicle.setSteering(steering.command);
           vehicle.setDrive(longitudinal.command);
+          const stepStartedAt = options.now();
           const trace = world.step(1)[0];
+          physicsStepMs += Math.max(0, options.now() - stepStartedAt);
           if (trace === undefined) {
             throw new Error(
               "M6 world produced no trace for its owned vehicle.",
@@ -222,19 +229,35 @@ export class F4VehicleHost {
         onFrame: (report) => {
           const presentation = pendingPresentation;
           pendingPresentation = null;
+          let presentationMs = 0;
           if (presentation !== null) {
+            const presentationStartedAt = options.now();
             options.onVehicleStep(
               presentation.step,
               presentation.steering,
               presentation.longitudinal,
               presentation.trace,
             );
+            presentationMs = Math.max(
+              0,
+              options.now() - presentationStartedAt,
+            );
           }
+          publishJvRuntimePerformanceFrame({
+            browserFrameDeltaMs: report.rawFrameDeltaMs,
+            executedSteps: report.executedSteps,
+            droppedTimeMs: report.droppedTimeMs,
+            physicsStepMs,
+            presentationMs,
+            presented: presentation !== null,
+          });
+          physicsStepMs = 0;
           options.onFrame?.(report);
         },
         onFatalError: (error) => {
           state.fatalError = error;
           state.disposed = true;
+          clearJvRuntimePerformanceFrame();
           const report = resources.dispose();
           const fatal =
             report.failures.length > 0
@@ -268,6 +291,7 @@ export class F4VehicleHost {
     } catch (error: unknown) {
       state.disposed = true;
       state.fatalError = error;
+      clearJvRuntimePerformanceFrame();
       const report = resources.dispose();
       if (report.failures.length > 0) {
         throw new AggregateError(
@@ -346,6 +370,7 @@ export class F4VehicleHost {
       return;
     }
     this.#state.disposed = true;
+    clearJvRuntimePerformanceFrame();
     const report = this.#resources.dispose();
     if (report.failures.length > 0) {
       throw new AggregateError(

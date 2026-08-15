@@ -1,5 +1,6 @@
 import { getJvPerformanceExperimentSettings } from "../render/jv-performance-experiment-settings.js";
 import { readJvScanRenderStats } from "../render/jv-scan-render-stats.js";
+import { readJvRuntimePerformanceFrame } from "./runtime-performance-frame.js";
 
 export interface JvFrameWindowSummary {
   readonly frameMs: number;
@@ -196,6 +197,11 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
       ? "scan waiting"
       : `scan ${scan.visibleGroups}/${scan.totalGroups} groups · ` +
         `${scan.visibleDrawCalls}/${scan.totalDrawCalls} draws`;
+    const runtime = readJvRuntimePerformanceFrame();
+    const runtimeText = runtime === null
+      ? "runtime waiting"
+      : `sim ${runtime.executedSteps} · phys ${runtime.physicsStepMs.toFixed(1)} ms · ` +
+        `present ${runtime.presented ? `${runtime.presentationMs.toFixed(1)} ms` : "—"}`;
     const culling = experiment.scanCulling ? "ON" : "OFF";
     const settled = samplingStartedAt !== null &&
       timestamp - samplingStartedAt >= HUD_SETTLE_MS;
@@ -204,7 +210,7 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
       `${summary.frameMs.toFixed(1)} ms avg · ${summary.fps.toFixed(0)} fps · ` +
       `p95 ${summary.p95FrameMs.toFixed(1)} ms · ${canvas.width}×${canvas.height} · ` +
       `render ${renderScale}× · device DPR ${devicePixelRatio.toFixed(2)} · ` +
-      `${scanText} · cull ${culling}`;
+      `${scanText} · ${runtimeText} · cull ${culling}`;
 
     if (hud !== null) {
       const state = settled ? "SETTLED" : "WARMING";
@@ -213,7 +219,8 @@ export function installJvPerformanceObserver(root: ParentNode = document): void 
         `${summary.frameMs.toFixed(1)} ms avg · p95 ${summary.p95FrameMs.toFixed(1)} ms\n` +
         `${canvas.width}×${canvas.height} · render ${renderScale}× · ` +
         `DPR ${devicePixelRatio.toFixed(2)} · cap ${experiment.renderScaleCap}×\n` +
-        `${scanText} · cull ${culling}`;
+        `${scanText} · cull ${culling}\n` +
+        runtimeText;
     }
   };
 
