@@ -111,7 +111,7 @@ varying vec2 vUv;
 varying float vLight;
 void main() {
   vec4 texel = texture2D(uTexture, vUv);
-  gl_FragColor = vec4(texel.rgb * uColor.rgb * vLight, texel.a * uColor.a);
+  gl_FragColor = vec4(texel.rgb * uColor.rgb * vLigight, texel.a * uColor.a);
 }
 `;
 
@@ -155,7 +155,7 @@ function createProgram(
     gl.attachShader(program, vertex);
     gl.attachShader(program, fragment);
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    if (!gl.getProgramParameter(program, gl.LINK_STATUT)) {
       const message = gl.getProgramInfoLog(program) ?? "unknown link error";
       throw new Error(`JV world program link failed: ${message}`);
     }
@@ -164,7 +164,7 @@ function createProgram(
     const normal = gl.getAttribLocation(program, "aNormal");
     const uv = textured ? gl.getAttribLocation(program, "aUv") : null;
     const mvp = gl.getUniformLocation(program, "uMvp");
-    const model = gl.getUniformLocation(program, "uModel");
+  const model = gl.getUniformLocation(program, "uModel");
     const color = gl.getUniformLocation(program, "uColor");
     const sampler = textured
       ? gl.getUniformLocation(program, "uTexture")
@@ -271,675 +271,80 @@ function normalize(value: JvVec3): JvVec3 {
 }
 
 function rotationFromYAxis(direction: JvVec3): JvQuat {
-  const normalized = normalize(direction);
-  const dot = Math.max(-1, Math.min(1, normalized.y));
-  if (dot > 0.999_999) {
-    return IDENTITY_ROTATION;
-  }
-  if (dot < -0.999_999) {
-    return { x: 1, y: 0, z: 0, w: 0 };
-  }
-  const axis = normalize({ x: normalized.z, y: 0, z: -normalized.x });
-  const half = Math.acos(dot) / 2;
-  const sine = Math.sin(half);
-  return {
-    x: axis.x * sine,
-    y: axis.y * sine,
-    z: axis.z * sine,
-    w: Math.cos(half),
-  };
-}
+  const normalized = normalize(direc²È="24¹Õ±°€˜˜(€€€€€€€€€€…¥Í)Ù	½Õ¹‘ÍY¥Í¥‰±•%¹±¥ÁMÁ…”¡É½ÕÀ¹‰½Õ¹‘Ì°±¥ÁÉ½µM…¹1½…°¤(€€€€€€€€¤ì(€€€€€€€€€½¹Ñ¥¹Õ”ì(€€€€€€€ô(€€€€€€€Ù¥Í¥‰±•M…¹É½ÕÁÌ€¬ô€Äì(€€€€€€€Ù¥Í¥‰±•M…¹É…İ…±±Ì€¬ôÉ½ÕÀ¹µ•Í¡•Ì¹±•¹Ñ ì(€€€€€€€Ñ¡¥Ì¸‘É…İÉ½ÕÀ¡É½ÕÀ°±¥ÁÉ½µM…¹1½…°°Ñ¡¥Ì¸Í…¹5½‘•°¤ì(€€€€€ô(€€€ô(€€€ÁÕ‰±¥Í¡)ÙM…¹I•¹‘•ÉMÑ…ÑÌ (€€€€€Ñ¡¥Ì¸°¹…¹Ù…Ì°(€€€€€Ù¥Í¥‰±•M…¹É½ÕÁÌ°(€€€€€Ñ¡¥Ì¸Í…¹É½ÕÁÌ¹±•¹Ñ °(€€€€€Ù¥Í¥‰±•M…¹É…İ…±±Ì°(€€€€€Ñ¡¥Ì¸Í…¹É…İ…±±	Õ‘•Ğ°(€€€€¤ì(€ô((€‘¥ÍÁ½Í” ¤èÙ½¥ì(€€€¥˜€¡Ñ¡¥Ì¸‘¥ÍÁ½Í•¤ì(€€€€€É•ÑÕÉ¸ì(€€€ô(€€€Ñ¡¥Ì¸‘¥ÍÁ½Í•€ôÑÉÕ”ì(€€€±•…É)ÙM…¹I•¹‘•ÉMÑ…ÑÌ¡Ñ¡¥Ì¸°¹…¹Ù…Ì¤ì(€€€Ñ¡¥Ì¸É•±•…Í•I•Í½ÕÉ•Ì ¤ì(€ô((€€ÕÁ±½…‘É½ÕÀ¡Í½ÕÉ”è)Ù%¹‘•á•‘5•Í °…ÁÑÕÉ•	½Õ¹‘Ì€ô™…±Í”¤èÁÕÉ½ÕÀì(€€€½¹ÍĞ‰½Õ¹‘Ì€ô…ÁÑÕÉ•	½Õ¹‘Ì(€€€€€€ü…±Õ±…Ñ•)Ù5•Í¡	½Õ¹‘Ì¡Í½ÕÉ”¹Á½Í¥Ñ¥½¹Ì¤(€€€€€€è¹Õ±°ì(€€€½¹ÍĞµ•Í¡•ÌèÁÕ5•Í¡mt€ômtì(€€€±•ĞÑ•áÑÕÉ”è]•‰1Q•áÑÕÉ”ğ¹Õ±°€ô¹Õ±°ì(€€€ÑÉäì(€€€€€½¹ÍĞÙ•ÉÑ•á½Õ¹Ğ€ôÍ½ÕÉ”¹Á½Í¥Ñ¥½¹Ì¹±•¹Ñ €¼€Ìì(€€€€€¥˜€ (€€€€€€€…ÁÑÕÉ•	½Õ¹‘Ì€˜˜(€€€€€€€Ù•ÉÑ•á½Õ¹Ğ€ø€ØÕ|ÔÌÔ€˜˜(€€€€€€€Ñ¡¥Ì¸Õ¥¹ĞÌÉ±•µ•¹Ñ%¹‘¥•Ì€˜˜(€€€€€€€Í½ÕÉ”¹¹½Éµ…±Ì€„ôôÕ¹‘•™¥¹•(€€€€€€¤ì(€€€€€€€µ•Í¡•Ì¹ÁÕÍ ¡ÕÁ±½…‘U¥¹ĞÌÉ5•Í ¡Ñ¡¥Ì¸°°Í½ÕÉ”¤¤ì(€€€€€ô•±Í”ì(€€€€€€€™½È€¡½¹ÍĞ¡Õ¹¬½˜ÍÁ±¥Ñ)Ù%¹‘•á•‘5•Í¡½ÉU¥¹ĞÄØ¡Í½ÕÉ”¤¤ì(€€€€€€€€€µ•Í¡•Ì¹ÁÕÍ ¡ÕÁ±½…‘¡Õ¹¬¡Ñ¡¥Ì¸°°¡Õ¹¬¤¤ì(€€€€€€€ô(€€€€€ô(€€€€€¥˜€¡Í½ÕÉ”¹Ñ•áÑÕÉ•UÉ°€„ôôÕ¹‘•™¥¹•¤ì(€€€€€€€¥˜€¡Í½ÕÉ”¹ÕÙÌ€ôôôÕ¹‘•™¥¹•¤ì(€€€€€€€€€Ñ¡É½Ü¹•ÜÉÉ½È ‰Q•áÑÕÉ•)Xµ•Í ¡…Ì¹¼UXÍÑÉ•…´¸ˆ¤ì(€€€€€€€ô(€€€€€€€Ñ•áÑÕÉ”€ôÑ¡¥Ì¸É•…Ñ•Q•áÑÕÉ”¡Í½ÕÉ”¹Ñ•áÑÕÉ•UÉ°¤ì(€€€€€ô(€€€€€É•ÑÕÉ¸ì½±½ÈèÍ½ÕÉ”¹½±½È°µ•Í¡•Ì°Ñ•áÑÕÉ”°‰½Õ¹‘Ìôì(€€€ô…Ñ €¡•ÉÉ½ÈèÕ¹­¹½İ¸¤ì(€€€€€™½È€¡½¹ÍĞµ•Í ½˜µ•Í¡•Ì¤Ñ¡¥Ì¸‘•±•Ñ•5•Í ¡µ•Í ¤ì(€€€€€¥˜€¡Ñ•áÑÕÉ”€„ôô¹Õ±°¤Ñ¡¥Ì¸°¹‘•±•Ñ•Q•áÑÕÉ”¡Ñ•áÑÕÉ”¤ì(€€€€€Ñ¡É½Ü•ÉÉ½Èì(€€€ô(€ô((€€É•…Ñ•Q•áÑÕÉ”¡ÕÉ°èÍÑÉ¥¹œ¤è]•‰1Q•áÑÕÉ”ì(€€€½¹ÍĞ°€ôÑ¡¥Ì¸°ì(€€€½¹ÍĞÑ•áÑÕÉ”€ô°¹É•…Ñ•Q•áÑÕÉ” ¤ì(€€€¥˜€¡Ñ•áÑÕÉ”€ôôô¹Õ±°¤ì(€€€€€Ñ¡É½Ü¹•ÜÉÉ½È ‰)XÍ…¸Ñ•áÑÕÉ”…±±½…Ñ¥½¸™…¥±•¸ˆ¤ì(€€€ô(€€€°¹‰¥¹‘Q•áÑÕÉ”¡°¹QaQUI|É°Ñ•áÑÕÉ”¤ì(€€€°¹Ñ•á%µ…”É (€€€€€°¹QaQUI|É°(€€€€€€À°(€€€€€°¹I	°(€€€€€€Ä°(€€€€€€Ä°(€€€€€€À°(€€€€€°¹I	°(€€€€€°¹U9M%9}	eQ°(€€€€€¹•ÜU¥¹ĞáÉÉ…ä¡lÄäÀ°€ÄäÀ°€ÄàĞ°€ÈÔÕt¤°(€€€€¤ì(€€€°¹Ñ•áA…É…µ•Ñ•É¤¡°¹QaQUI|É°°¹QaQUI}5%9}%1QH°°¹1%9H¤ì(€€€°¹Ñ•áA…É…µ•Ñ•É¤¡°¹QaQUI|É°°¹QaQUI}5}%1QH°°¹1%9H¤ì(€€€°¹Ñ•áA…É…µ•Ñ•É¤¡°¹QaQUI|É°°¹QaQUI}]IA}L°°¹15A}Q=}¤ì(€€€°¹Ñ•áA…É…µ•Ñ•É¤¡°¹QaQUI|É°°¹QaQUI}]IA}P°°¹15A}Q=}¤ì((€€€½¹ÍĞ¥µ…”€ô¹•Ü%µ…” ¤ì(€€€½¹ÍĞÉ•±•…Í•%µ…”€ô€ ¤èÙ½¥€ôøì(€€€€€¥µ…”¹½¹±½…€ô¹Õ±°ì(€€€€€¥µ…”¹½¹•ÉÉ½È€ô¹Õ±°ì(ˆ\ËˆÜ[™[™Ò[XYÙ\Ë™[]J[XYÙJNÂˆ[XYÙKœÜ˜ÈHˆÂˆNÂˆ[XYÙK™XÛÙ[™ÈH˜\Ş[˜ÈÂˆ[XYÙK›Û›ØYH
 
-function boxPrimitive(): CpuPrimitive {
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const indices: number[] = [];
-  const faces = [
-    { normal: [0, 0, -1], corners: [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1]] },
-    { normal: [0, 0, 1], corners: [[-1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, 1]] },
-    { normal: [-1, 0, 0], corners: [[-1, -1, -1], [-1, 1, -1], [-1, 1, 1], [-1, -1, 1]] },
-    { normal: [1, 0, 0], corners: [[1, -1, -1], [1, -1, 1], [1, 1, 1], [1, 1, -1]] },
-    { normal: [0, -1, 0], corners: [[-1, -1, -1], [-1, -1, 1], [1, -1, 1], [1, -1, -1]] },
-    { normal: [0, 1, 0], corners: [[-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]] },
-  ] as const;
-  for (const face of faces) {
-    const base = positions.length / 3;
-    for (const corner of face.corners) {
-      positions.push(corner[0], corner[1], corner[2]);
-      normals.push(face.normal[0], face.normal[1], face.normal[2]);
-    }
-    indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
-  }
-  return { positions, normals, indices };
-}
+HOˆÂˆYˆ
+]\ËˆÙ\ÜÜÙY
+HÂˆÛ˜š[™^\™JÛ•VT‘WÌ‘^\™JNÂˆÛœ^[İÜ™ZJÛ•S”PÒ×Ñ“TÖWÕÑP‘ÓJNÂˆÛ^[XYÙL‘
+ˆÛ•VT‘WÌ‘ˆˆÛ”‘ĞKˆÛ”‘ĞKˆÛ•S”ÒQÓ‘QĞ–UKˆ[XYÙKˆ
+NÂˆÛœ^[İÜ™ZJÛ•S”PÒ×Ñ“TÖWÕÑP‘Ó
+NÂˆBˆ™[X\ÙR[XYÙJ
+NÂˆNÂˆ[XYÙK›Û™\œ›ÜˆH
 
-function cylinderPrimitive(segments = 16): CpuPrimitive {
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const indices: number[] = [];
-  for (let index = 0; index < segments; index += 1) {
-    const angle = (index / segments) * Math.PI * 2;
-    const x = Math.cos(angle);
-    const z = Math.sin(angle);
-    positions.push(x, -1, z, x, 1, z);
-    normals.push(x, 0, z, x, 0, z);
-  }
-  for (let index = 0; index < segments; index += 1) {
-    const next = (index + 1) % segments;
-    const bottom = index * 2;
-    const top = bottom + 1;
-    const nextBottom = next * 2;
-    const nextTop = nextBottom + 1;
-    indices.push(bottom, nextBottom, top, top, nextBottom, nextTop);
-  }
-  return { positions, normals, indices };
-}
-
-function spherePrimitive(latitude = 6, longitude = 12): CpuPrimitive {
-  const positions: number[] = [];
-  const normals: number[] = [];
-  const indices: number[] = [];
-  for (let lat = 0; lat <= latitude; lat += 1) {
-    const theta = (lat / latitude) * Math.PI;
-    const y = Math.cos(theta);
-    const radius = Math.sin(theta);
-    for (let lon = 0; lon <= longitude; lon += 1) {
-      const phi = (lon / longitude) * Math.PI * 2;
-      const x = radius * Math.cos(phi);
-      const z = radius * Math.sin(phi);
-      positions.push(x, y, z);
-      normals.push(x, y, z);
-    }
-  }
-  for (let lat = 0; lat < latitude; lat += 1) {
-    for (let lon = 0; lon < longitude; lon += 1) {
-      const a = lat * (longitude + 1) + lon;
-      const b = a + longitude + 1;
-      indices.push(a, b, a + 1, a + 1, b, b + 1);
-    }
-  }
-  return { positions, normals, indices };
-}
-
-function colorKey(color: JvColor): string {
-  return color.join(",");
-}
-
-function getBatch(
-  batches: Map<string, BatchBuilder>,
-  color: JvColor,
-): BatchBuilder {
-  const key = colorKey(color);
-  const existing = batches.get(key);
-  if (existing !== undefined) {
-    return existing;
-  }
-  const created: BatchBuilder = {
-    color,
-    positions: [],
-    normals: [],
-    indices: [],
-  };
-  batches.set(key, created);
-  return created;
-}
-
-function appendPrimitive(
-  batch: BatchBuilder,
-  primitive: CpuPrimitive,
-  position: JvVec3,
-  rotation: JvQuat,
-  scale: JvVec3,
-): void {
-  const vertexBase = batch.positions.length / 3;
-  for (let offset = 0; offset < primitive.positions.length; offset += 3) {
-    const local = {
-      x: primitive.positions[offset]! * scale.x,
-      y: primitive.positions[offset + 1]! * scale.y,
-      z: primitive.positions[offset + 2]! * scale.z,
-    };
-    const world = add(position, rotate(rotation, local));
-    batch.positions.push(world.x, world.y, world.z);
-    const normal = normalize(
-      rotate(rotation, {
-        x: primitive.normals[offset]!,
-        y: primitive.normals[offset + 1]!,
-        z: primitive.normals[offset + 2]!,
-      }),
-    );
-    batch.normals.push(normal.x, normal.y, normal.z);
-  }
-  for (const index of primitive.indices) {
-    batch.indices.push(vertexBase + index);
-  }
-}
-
-function capsuleWorldEndpoints(capsule: JvStaticCapsule) {
-  return {
-    first: add(
-      capsule.bodyCenter,
-      rotate(capsule.bodyRotation, capsule.point1),
-    ),
-    second: add(
-      capsule.bodyCenter,
-      rotate(capsule.bodyRotation, capsule.point2),
-    ),
-  };
-}
-
-function buildStaticBatchMeshes(world: JvWorldData): readonly JvIndexedMesh[] {
-  const batches = new Map<string, BatchBuilder>();
-  const box = boxPrimitive();
-  const cylinder = cylinderPrimitive();
-  const sphere = spherePrimitive();
-
-  for (const item of world.boxes) {
-    appendPrimitive(
-      getBatch(batches, item.color),
-      box,
-      item.center,
-      item.rotation,
-      item.halfExtents,
-    );
-  }
-
-  for (const capsule of world.capsules) {
-    const batch = getBatch(batches, capsule.color);
-    const endpoints = capsuleWorldEndpoints(capsule);
-    const delta = {
-      x: endpoints.second.x - endpoints.first.x,
-      y: endpoints.second.y - endpoints.first.y,
-      z: endpoints.second.z - endpoints.first.z,
-    };
-    const length = Math.hypot(delta.x, delta.y, delta.z);
-    const midpoint = {
-      x: (endpoints.first.x + endpoints.second.x) * 0.5,
-      y: (endpoints.first.y + endpoints.second.y) * 0.5,
-      z: (endpoints.first.z + endpoints.second.z) * 0.5,
-    };
-    if (length > 1e-6) {
-      appendPrimitive(
-        batch,
-        cylinder,
-        midpoint,
-        rotationFromYAxis(delta),
-        { x: capsule.radius, y: length * 0.5, z: capsule.radius },
-      );
-    }
-    const capScale = {
-      x: capsule.radius,
-      y: capsule.radius,
-      z: capsule.radius,
-    };
-    appendPrimitive(
-      batch,
-      sphere,
-      endpoints.first,
-      IDENTITY_ROTATION,
-      capScale,
-    );
-    appendPrimitive(
-      batch,
-      sphere,
-      endpoints.second,
-      IDENTITY_ROTATION,
-      capScale,
-    );
-  }
-
-  return [...batches.values()].map((batch) => ({
-    positions: new Float32Array(batch.positions),
-    normals: new Float32Array(batch.normals),
-    indices: new Uint32Array(batch.indices),
-    color: batch.color,
-  }));
-}
-
-function allocateGpuMeshBuffers(
-  gl: WebGLRenderingContext,
-  hasUvs: boolean,
-): Readonly<{
-  positionBuffer: WebGLBuffer;
-  normalBuffer: WebGLBuffer;
-  uvBuffer: WebGLBuffer | null;
-  indexBuffer: WebGLBuffer;
-}> {
-  const positionBuffer = gl.createBuffer();
-  const normalBuffer = gl.createBuffer();
-  const indexBuffer = gl.createBuffer();
-  const uvBuffer = hasUvs ? gl.createBuffer() : null;
-  if (
-    positionBuffer === null ||
-    normalBuffer === null ||
-    indexBuffer === null ||
-    (hasUvs && uvBuffer === null)
-  ) {
-    if (positionBuffer !== null) gl.deleteBuffer(positionBuffer);
-    if (normalBuffer !== null) gl.deleteBuffer(normalBuffer);
-    if (indexBuffer !== null) gl.deleteBuffer(indexBuffer);
-    if (uvBuffer !== null) gl.deleteBuffer(uvBuffer);
-    throw new Error("JV world GPU buffer allocation failed.");
-  }
-  return { positionBuffer, normalBuffer, uvBuffer, indexBuffer };
-}
-
-function uploadStreams(
-  gl: WebGLRenderingContext,
-  positions: Float32Array,
-  normals: Float32Array,
-  uvs: Float32Array | undefined,
-  indices: Uint16Array | Uint32Array,
-  indexType: number,
-): GpuMesh {
-  const buffers = allocateGpuMeshBuffers(gl, uvs !== undefined);
-  try {
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
-    if (buffers.uvBuffer !== null && uvs !== undefined) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.uvBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
-    }
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-    return {
-      ...buffers,
-      indexCount: indices.length,
-      indexType,
-    };
-  } catch (error: unknown) {
-    gl.deleteBuffer(buffers.positionBuffer);
-    gl.deleteBuffer(buffers.normalBuffer);
-    gl.deleteBuffer(buffers.indexBuffer);
-    if (buffers.uvBuffer !== null) gl.deleteBuffer(buffers.uvBuffer);
-    throw error;
-  }
-}
-
-function uploadChunk(
-  gl: WebGLRenderingContext,
-  chunk: JvUint16MeshChunk,
-): GpuMesh {
-  return uploadStreams(
-    gl,
-    chunk.positions,
-    chunk.normals,
-    chunk.uvs,
-    chunk.indices,
-    gl.UNSIGNED_SHORT,
-  );
-}
-
-function uploadUint32Mesh(
-  gl: WebGLRenderingContext,
-  source: JvIndexedMesh,
-): GpuMesh {
-  if (source.normals === undefined) {
-    throw new Error("JV Uint32 fast path requires an explicit normal stream.");
-  }
-  const vertexCount = source.positions.length / 3;
-  if (
-    source.positions.length === 0 ||
-    source.positions.length % 3 !== 0 ||
-    source.normals.length !== source.positions.length ||
-    source.indices.length === 0 ||
-    source.indices.length % 3 !== 0 ||
-    (source.uvs !== undefined && source.uvs.length !== vertexCount * 2)
-  ) {
-    throw new Error("JV Uint32 fast path received inconsistent mesh streams.");
-  }
-  return uploadStreams(
-    gl,
-    source.positions,
-    source.normals,
-    source.uvs,
-    source.indices,
-    gl.UNSIGNED_INT,
-  );
-}
-
-export class JvWorldRendererMobile {
-  readonly #gl: WebGLRenderingContext;
-  readonly #staticGroups: GpuGroup[] = [];
-  readonly #scanGroups: GpuGroup[] = [];
-  readonly #pendingImages = new Set<HTMLImageElement>();
-  readonly #scanModel: JvRenderMatrix | null;
-  readonly #scanCullingEnabled: boolean;
-  readonly #scanDrawCallBudget: number;
-  readonly #uint32ElementIndices: boolean;
-  #solid: ProgramLocations | null = null;
-  #textured: ProgramLocations | null = null;
-  #offroad: GpuGroup | null = null;
-  #disposed = false;
-
-  constructor(gl: WebGLRenderingContext, world: JvWorldData) {
-    this.#gl = gl;
-    this.#uint32ElementIndices = gl.getExtension("OES_element_index_uint") !== null;
-    this.#scanModel = world.scan === null
-      ? null
-      : modelMatrix(world.scan.origin, IDENTITY_ROTATION, IDENTITY_SCALE);
-    this.#scanCullingEnabled = getJvPerformanceExperimentSettings().scanCulling;
-    try {
-      this.#solid = createProgram(
-        gl,
-        SOLID_VERTEX,
-        SOLID_FRAGMENT,
-        false,
-      );
-      this.#textured = createProgram(
-        gl,
-        TEXTURED_VERTEX,
-        TEXTURED_FRAGMENT,
-        true,
-      );
-      for (const mesh of buildStaticBatchMeshes(world)) {
-        this.#staticGroups.push(this.#uploadGroup(mesh));
-      }
-      this.#offroad = this.#uploadGroup(world.offroad);
-      if (world.scan !== null) {
-        for (const source of world.scan.groups) {
-          this.#scanGroups.push(this.#uploadGroup(source, true));
-        }
-      }
-    } catch (error: unknown) {
-      this.#releaseResources();
-      this.#disposed = true;
-      throw error;
-    }
-    this.#scanDrawCallBudget = this.#scanGroups.reduce(
-      (sum, group) => sum + group.meshes.length,
-      0,
-    );
-  }
-
-  get drawCallBudget(): number {
-    let count = this.#offroad?.meshes.length ?? 0;
-    for (const group of this.#staticGroups) count += group.meshes.length;
-    for (const group of this.#scanGroups) count += group.meshes.length;
-    return count;
-  }
-
-  render(viewProjection: JvRenderMatrix): void {
-    if (this.#disposed) {
-      return;
-    }
-    for (const group of this.#staticGroups) {
-      this.#drawGroup(group, viewProjection, IDENTITY_MODEL);
-    }
-    if (this.#offroad !== null) {
-      this.#drawGroup(this.#offroad, viewProjection, IDENTITY_MODEL);
-    }
-
-    let visibleScanGroups = 0;
-    let visibleScanDrawCalls = 0;
-    if (this.#scanModel !== null) {
-      const clipFromScanLocal = multiply(viewProjection, this.#scanModel);
-      for (const group of this.#scanGroups) {
-        if (
-          this.#scanCullingEnabled &&
-          group.bounds !== null &&
-          !isJvBoundsVisibleInClipSpace(group.bounds, clipFromScanLocal)
-        ) {
-          continue;
-        }
-        visibleScanGroups += 1;
-        visibleScanDrawCalls += group.meshes.length;
-        this.#drawGroup(group, clipFromScanLocal, this.#scanModel);
-      }
-    }
-    publishJvScanRenderStats(
-      this.#gl.canvas,
-      visibleScanGroups,
-      this.#scanGroups.length,
-      visibleScanDrawCalls,
-      this.#scanDrawCallBudget,
-    );
-  }
-
-  dispose(): void {
-    if (this.#disposed) {
-      return;
-    }
-    this.#disposed = true;
-    clearJvScanRenderStats(this.#gl.canvas);
-    this.#releaseResources();
-  }
-
-  #uploadGroup(source: JvIndexedMesh, captureBounds = false): GpuGroup {
-    const bounds = captureBounds
-      ? calculateJvMeshBounds(source.positions)
-      : null;
-    const meshes: GpuMesh[] = [];
-    let texture: WebGLTexture | null = null;
-    try {
-      if (
-        captureBounds &&
-        this.#uint32ElementIndices &&
-        source.normals !== undefined
-      ) {
-        meshes.push(uploadUint32Mesh(this.#gl, source));
-      } else {
-        for (const chunk of splitJvIndexedMeshForUint16(source)) {
-          meshes.push(uploadChunk(this.#gl, chunk));
-        }
-      }
-      if (source.textureUrl !== undefined) {
-        if (source.uvs === undefined) {
-          throw new Error("Textured JV mesh has no UV stream.");
-        }
-        texture = this.#createTexture(source.textureUrl);
-      }
-      return { color: source.color, meshes, texture, bounds };
-    } catch (error: unknown) {
-      for (const mesh of meshes) this.#deleteMesh(mesh);
-      if (texture !== null) this.#gl.deleteTexture(texture);
-      throw error;
-    }
-  }
-
-  #createTexture(url: string): WebGLTexture {
-    const gl = this.#gl;
-    const texture = gl.createTexture();
-    if (texture === null) {
-      throw new Error("JV scan texture allocation failed.");
-    }
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      1,
-      1,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      new Uint8Array([190, 190, 184, 255]),
-    );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-    const image = new Image();
-    const releaseImage = (): void => {
-      image.onload = null;
-      image.onerror = null;
-      this.#pendingImages.delete(image);
-      image.src = "";
-    };
-    image.decoding = "async";
-    image.onload = () => {
-      if (!this.#disposed) {
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-        gl.texImage2D(
-          gl.TEXTURE_2D,
-          0,
-          gl.RGBA,
-          gl.RGBA,
-          gl.UNSIGNED_BYTE,
-          image,
-        );
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
-      }
-      releaseImage();
-    };
-    image.onerror = () => {
-      console.error(`JV scan texture failed to load: ${url}`);
-      releaseImage();
-    };
-    this.#pendingImages.add(image);
-    image.src = url;
-    return texture;
-  }
-
-  #drawGroup(
-    group: GpuGroup,
-    mvp: JvRenderMatrix,
-    model: JvRenderMatrix,
-  ): void {
-    let configureGroup = true;
-    for (const mesh of group.meshes) {
-      if (group.texture === null) {
-        this.#drawSolid(mesh, mvp, model, group.color, configureGroup);
-      } else {
-        this.#drawTextured(
-          mesh,
-          group.texture,
-          mvp,
-          model,
-          group.color,
-          configureGroup,
-        );
-      }
-      configureGroup = false;
-    }
-  }
-
-  #drawSolid(
-    mesh: GpuMesh,
-    mvp: JvRenderMatrix,
-    model: JvRenderMatrix,
-    color: JvColor,
-    configureGroup: boolean,
-  ): void {
-    const locations = this.#solid;
-    if (locations === null) {
-      throw new Error("JV solid renderer is unavailable.");
-    }
-    const gl = this.#gl;
-    if (configureGroup) {
-      gl.useProgram(locations.program);
-      gl.uniformMatrix4fv(locations.mvp, false, mvp);
-      gl.uniformMatrix4fv(locations.model, false, model);
-      gl.uniform4f(
-        locations.color,
-        color[0],
-        color[1],
-        color[2],
-        color[3],
-      );
-    }
-    this.#bindCommon(mesh, locations);
-    gl.drawElements(
-      gl.TRIANGLES,
-      mesh.indexCount,
-      mesh.indexType,
-      0,
-    );
-  }
-
-  #drawTextured(
-    mesh: GpuMesh,
-    texture: WebGLTexture,
-    mvp: JvRenderMatrix,
-    model: JvRenderMatrix,
-    color: JvColor,
-    configureGroup: boolean,
-  ): void {
-    const locations = this.#textured;
-    if (
-      locations === null ||
-      locations.uv === null ||
-      locations.sampler === null ||
-      mesh.uvBuffer === null
-    ) {
-      throw new Error("Textured JV mesh has an incomplete GPU binding.");
-    }
-    const gl = this.#gl;
-    if (configureGroup) {
-      gl.useProgram(locations.program);
-      gl.uniformMatrix4fv(locations.mvp, false, mvp);
-      gl.uniformMatrix4fv(locations.model, false, model);
-      gl.uniform4f(
-        locations.color,
-        color[0],
-        color[1],
-        color[2],
-        color[3],
-      );
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.uniform1i(locations.sampler, 0);
-    }
-    this.#bindCommon(mesh, locations);
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.uvBuffer);
-    gl.enableVertexAttribArray(locations.uv);
-    gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 0, 0);
-    gl.drawElements(
-      gl.TRIANGLES,
-      mesh.indexCount,
-      mesh.indexType,
-      0,
-    );
-  }
-
-  #bindCommon(mesh: GpuMesh, locations: ProgramLocations): void {
-    const gl = this.#gl;
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.positionBuffer);
-    gl.enableVertexAttribArray(locations.position);
-    gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
-    gl.enableVertexAttribArray(locations.normal);
-    gl.vertexAttribPointer(locations.normal, 3, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-  }
-
-  #releaseResources(): void {
-    for (const image of this.#pendingImages) {
-      image.onload = null;
-      image.onerror = null;
-      image.src = "";
-    }
-    this.#pendingImages.clear();
-    for (const group of this.#staticGroups) this.#deleteGroup(group);
-    this.#staticGroups.length = 0;
-    if (this.#offroad !== null) {
-      this.#deleteGroup(this.#offroad);
-      this.#offroad = null;
-    }
-    for (const group of this.#scanGroups) this.#deleteGroup(group);
-    this.#scanGroups.length = 0;
-    if (this.#solid !== null) {
-      this.#gl.deleteProgram(this.#solid.program);
-      this.#solid = null;
-    }
-    if (this.#textured !== null) {
-      this.#gl.deleteProgram(this.#textured.program);
-      this.#textured = null;
-    }
-  }
-
-  #deleteGroup(group: GpuGroup): void {
-    for (const mesh of group.meshes) this.#deleteMesh(mesh);
-    if (group.texture !== null) this.#gl.deleteTexture(group.texture);
-  }
-
-  #deleteMesh(mesh: GpuMesh): void {
-    this.#gl.deleteBuffer(mesh.positionBuffer);
-    this.#gl.deleteBuffer(mesh.normalBuffer);
-    if (mesh.uvBuffer !== null) this.#gl.deleteBuffer(mesh.uvBuffer);
-    this.#gl.deleteBuffer(mesh.indexBuffer);
-  }
-}
+HOˆÂˆÛÛœÛÛK™\œ›ÜŠ•ˆØØ[ˆ^\™H˜Z[YÈØYˆ	İ\›X
+NÂˆ™[X\ÙR[XYÙJ
+NÂˆNÂˆ\ËˆÜ[™[™Ò[XYÙ\Ë˜Y
+[XYÙJNÂˆ[XYÙKœÜ˜ÈH\›Âˆ™]\›ˆ^\™NÂˆB‚ˆÙ˜]ÑÜ›İ\
+ˆÜ›İ\ˆÜQÜ›İ\ˆ]œˆ”™[™\“X]š^ˆ[Ù[ˆ”™[™\“X]š^ˆ
+Nˆ›ÚYÂˆ]ÛÛ™šYİ\™QÜ›İ\HYNÂˆ›Üˆ
+ÛÛœİY\ÚÙˆÜ›İ\›Y\Ú\ÊHÂˆYˆ
+Ü›İ\^\™HOOH[
+HÂˆ\ËˆÙ˜]ÔÛÛY
+Y\Ú]œ[Ù[Ü›İ\˜ÛÛÜ‹ÛÛ™šYİ\™QÜ›İ\
+NÂˆH[ÙHÂˆ\ËˆÙ˜]Õ^\™Y
+ˆY\ÚˆÜ›İ\^\™Kˆ]œˆ[Ù[ˆÜ›İ\˜ÛÛÜ‹ˆÛÛ™šYİ\™QÜ›İ\ˆ
+NÂˆBˆÛÛ™šYİ\™QÜ›İ\H˜[ÙNÂˆBˆB‚ˆÙ˜]ÔÛÛY
+ˆY\ÚˆÜSY\Úˆ]œˆ”™[™\“X]š^ˆ[Ù[ˆ”™[™\“X]š^ˆÛÛÜˆÛÛÜ‹ˆÛÛ™šYİ\™QÜ›İ\ˆ›ÛÛX[‹ˆ
+Nˆ›ÚYÂˆÛÛœİØØ][ÛœÈH\ËˆÜÛÛYÂˆYˆ
+ØØ][ÛœÈOOH[
+HÂˆ›İÈ™]È\œ›ÜŠ’•ˆÛÛY™[™\™\ˆ\È[˜]˜Z[X›KˆŠNÂˆBˆÛÛœİÛH\ËˆÙÛÂˆYˆ
+ÛÛ™šYİ\™QÜ›İ\
+HÂˆÛ\ÙT›ÙÜ˜[JØØ][ÛœËœ›ÙÜ˜[JNÂˆÛ[šY›Ü›SX]š^ŠØØ][ÛœË›]œ˜[ÙK]œ
+NÂˆÛ[šY›Ü›SX]š^ŠØØ][ÛœË›[Ù[˜[ÙK[Ù[
+NÂˆÛ[šY›Ü›MŠˆØØ][ÛœË˜ÛÛÜ‹ˆÛÛÜ–ÌKˆÛÛÜ–ÌWKˆÛÛÜ–Ì—KˆÛÛÜ–Ì×Kˆ
+NÂˆBˆ\ËˆØš[™ÛÛ[[ÛŠY\ÚØØ][ÛœÊNÂˆÛ™˜]Ñ[[Y[ÊˆÛ•’PS‘ÓTÂˆY\Úš[™^Ûİ[ˆY\Úš[™^\Kˆˆ
+NÂˆB‚ˆÙ˜]Õ^\™Y
+ˆY\ÚˆÜSY\Úˆ^\™NˆÙX‘Ó^\™Kˆ]œˆ”™[™\“X]š^ˆ[Ù[ˆ”™[™\“X]š^ˆÛÛÜˆÛÛÜ‹ˆÛÛ™šYİ\™QÜ›İ\ˆ›ÛÛX[‹ˆ
+Nˆ›ÚYÂˆÛÛœİØØ][ÛœÈH\Ëˆİ^\™YÂˆYˆ
+ˆØØ][ÛœÈOOH[ˆØØ][ÛœË]ˆOOH[ˆØØ][ÛœËœØ[\\ˆOOH[ˆY\Ú]Y™™\ˆOOH[ˆ
+HÂˆ›İÈ™]È\œ›ÜŠ•^\™Y•ˆY\Ú\È[ˆ[˜ÛÛ\]HÔHš[™[™ËˆŠNÂˆBˆÛÛœİÛH\ËˆÙÛÂˆYˆ
+ÛÛ™šYİ\™QÜ›İ\
+HÂˆÛ\ÙT›ÙÜ˜[JØØ][ÛœËœ›ÙÜ˜[JNÂˆÛ[šY›Ü›SX]š^ŠØØ][ÛœË›]œ˜[ÙK]œ
+NÂˆÛ[šY›Ü›SX]š^ŠØØ][ÛœË›[Ù[˜[ÙK[Ù[
+NÂˆÛ[šY›Ü›MŠˆØØ][ÛœË˜ÛÛÜ‹ˆÛÛÜ–ÌKˆÛÛÜ–ÌWKˆÛÛÜ–Ì—KˆÛÛÜ–Ì×Kˆ
+NÂˆÛ˜Xİ]™U^\™JÛ•VT‘L
+NÂˆÛ˜š[™^\™JÛ•VT‘WÌ‘^\™JNÂˆÛ[šY›Ü›LZJØØ][ÛœËœØ[\\‹
+NÂˆBˆ\ËˆØš[™ÛÛ[[ÛŠY\ÚØØ][ÛœÊNÂˆÛ˜š[™Y™™\ŠÛT”VWĞ•Q‘‘T‹Y\Ú]Y™™\ŠNÂˆÛ™[˜X›U™\^]šX\œ˜^JØØ][ÛœË]ŠNÂˆÛ™\^]šX”Ú[\ŠØØ][ÛœË]‹‹Û‘“ĞU˜[ÙK
+NÂˆÛ™˜]Ñ[[Y[ÊˆÛ•’PS‘ÓTËˆY\Úš[™^Ûİ[ˆY\Úš[™^\Kˆˆ
+NÂˆB‚ˆØš[™ÛÛ[[ÛŠY\ÚˆÜSY\ÚØØ][ÛœÎˆ›ÙÜ˜[SØØ][ÛœÊNˆ›ÚYÂˆÛÛœİÛH\ËˆÙÛÂˆÛ˜š[™Y™™\ŠÛT”VWĞ•Q‘‘T‹Y\ÚœÜÚ][ÛY™™\ŠNÂˆÛ™[˜X›U™\^]šX\œ˜^JØØ][ÛœËœÜÚ][ÛŠNÂˆÛ™\^]šX”Ú[\ŠØØ][ÛœËœÜÚ][Û‹ËÛ‘“ĞU˜[ÙK
+NÂˆÛ˜š[™Y™™\ŠÛT”VWĞ•Q‘‘T‹Y\Ú››Ü›X[Y™™\ŠNÂˆÛ™[˜X›U™\^]šX\œ˜^JØØ][ÛœË››Ü›X[
+NÂˆÛ™\^]šX”Ú[\ŠØØ][ÛœË››Ü›X[ËÛ‘“ĞU˜[ÙK
+NÂˆÛ˜š[™Y™™\ŠÛ‘SSQS•ĞT”VWĞ•Q‘‘T‹Y\Úš[™^Y™™\ŠNÂˆB‚ˆÜ™[X\ÙT™\Ûİ\˜Ù\Ê
+Nˆ›ÚYÂˆ›Üˆ
+ÛÛœİ[XYÙHÙˆ\ËˆÜ[™[™Ò[XYÙ\ÊHÂˆ[XYÙK›Û›ØYH[Âˆ[XYÙK›Û™\œ›ÜˆH[Âˆ[XYÙKœÜ˜ÈHˆÂˆBˆ\ËˆÜ[™[™Ò[XYÙ\Ë˜ÛX\Š
+NÂˆ›Üˆ
+ÛÛœİÜ›İ\Ùˆ\ËˆÜİ]XÑÜ›İ\ÊH\ËˆÙ[]QÜ›İ\
+Ü›İ\
+NÂˆ\ËˆÜİ]XÑÜ›İ\Ë›[™İHÂˆYˆ
+\ËˆÛÙ™œ›ØYOOH[
+HÂˆ\ËˆÙ[]QÜ›İ\
+\ËˆÛÙ™œ›ØY
+NÂˆ\ËˆÛÙ™œ›ØYH[ÂˆBˆ›Üˆ
+ÛÛœİÜ›İ\Ùˆ\ËˆÜØØ[‘Ü›İ\ÊH\ËˆÙ[]QÜ›İ\
+Ü›İ\
+NÂˆ\ËˆÜØØ[‘Ü›İ\Ë›[™İHÂˆYˆ
+\ËˆÜÛÛYOOH[
+HÂˆ\ËˆÙÛ™[]T›ÙÜ˜[J\ËˆÜÛÛYœ›ÙÜ˜[JNÂˆ\ËˆÜÛÛYH[ÂˆBˆYˆ
+\Ëˆİ^\™YOOH[
+HÂˆ\ËˆÙÛ™[]T›ÙÜ˜[J\Ëˆİ^\™Yœ›ÙÜ˜[JNÂˆ\Ëˆİ^\™YH[ÂˆBˆB‚ˆÙ[]QÜ›İ\
+Ü›İ\ˆÜQÜ›İ\
+Nˆ›ÚYÂˆ›Üˆ
+ÛÛœİY\ÚÙˆÜ›İ\›Y\Ú\ÊH\ËˆÙ[]SY\Ú
+Y\Ú
+NÂˆYˆ
+Ü›İ\^\™HOOH[
+H\ËˆÙÛ™[]U^\™JÜ›İ\^\™JNÂˆB‚ˆÙ[]SY\Ú
+Y\ÚˆÜSY\Ú
+Nˆ›ÚYÂˆ\ËˆÙÛ™[]PY™™\ŠY\ÚœÜÚ][ÛY™™\ŠNÂˆ\ËˆÙÛ™[]PY™™\ŠY\Ú››Ü›X[Y™™\ŠNÂˆYˆ
+Y\Ú]Y™™\ˆOOH[
+H\ËˆÙÛ™[]PY™™\ŠY\Ú]Y™™\ŠNÂˆ\ËˆÙÛ™[]PY™™\ŠY\Úš[™^Y™™\ŠNÂˆBŸB
