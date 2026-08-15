@@ -162,13 +162,44 @@ Source/logic closure evidence:
 Not accepted by this checkpoint:
 
 - camera persistence or presets;
-- immersive/fullscreen behavior;
 - advanced automatic speed/turn/slope/terrain/obstacle assists;
 - final HUD/settings/input/mobile steering UX;
 - canonical Friends release packaging or promotion to `main`;
 - any change to vehicle mechanics or rig authority.
 
 Protected meaning: manual orbit/pan/zoom and broad inspection range are now a stable experience-layer baseline. Future automatic assists must remain additive and must not silently overwrite manual user calibration.
+
+## FULLSCREEN-V1 — immersive browser presentation
+
+Date: 2026-08-15
+Classification: `OWNER ACCEPTED — MOBILE + DESKTOP FULLSCREEN`
+
+Exact evidence boundary:
+
+```text
+private source: checkpoint/fullscreen-v1-owner-validated-2026-08-15@db55501342feacfb0f82099d7f47afe3a9756143
+public device proof: checkpoint/pages-fullscreen-v1-owner-validated-2026-08-15@8fe52a73554273fa710d2be2fdaf3a144d9056ba
+public gate base: Camera 1B proof 4768abedaa67b7505ca963a0836879e42590b67d
+public gate classification: noncanonical owner-device proof
+```
+
+Owner directly confirmed:
+
+- fullscreen entry works on mobile and desktop;
+- the control switches to the exit-fullscreen state and exits correctly;
+- portrait and landscape mobile fullscreen render the scan, vehicle and controls;
+- after several minutes of driving following fullscreen transitions, no camera/control regression was observed.
+
+The supplied screenshots show the active fullscreen state in both portrait and landscape mobile layouts.
+
+Not accepted by this checkpoint:
+
+- canonical Node24/npm11/TypeScript7/Vite Friends packaging or promotion to `main`;
+- universal behavior in every browser/WebView;
+- final HUD layout or mobile steering ergonomics;
+- final vehicle mechanics, steering physics or handling.
+
+Protected meaning: explicit fullscreen is now a usable, owner-validated presentation capability. Future usability work should preserve it rather than reopening the capability without new evidence.
 
 ## Durable method
 
