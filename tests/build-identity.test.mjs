@@ -37,7 +37,7 @@ test("product entry installs a concise Debug build identity", async () => {
   assert.match(entry, /installJvBuildIdentity\(\)/);
   assert.match(runtime, /Build source/);
   assert.match(runtime, /__JV_BUILD_SOURCE_MARKER__/);
-  assert.match(runtime, /dataset\.jvBuildSource/);
+  assert.match(runtime, /dataset\["jvBuildSource"\]/);
   assert.match(runtime, /slice\(0, 12\)/);
 });
 
