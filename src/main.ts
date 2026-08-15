@@ -369,11 +369,9 @@ function renderTrace(trace: M6TraceFrame): void {
   }
 
   const displacement = chassisDisplacement(trace);
-  const steering = trace.steering;
   const drive = trace.drive;
   const command = formatCommand(trace.command);
   const driveText = formatDrive(trace);
-  const speedText = formatSpeed(drive.forwardSpeedMetersPerSecond);
 
   sceneStateElement.textContent =
     renderer === null
@@ -386,6 +384,12 @@ function renderTrace(trace: M6TraceFrame): void {
   sceneDisplacementElement.textContent = `${displacement.toFixed(3)} m`;
   sceneStepElement.textContent = String(trace.stepIndex);
 
+  if (!debugPanel.hasAttribute("data-open")) {
+    return;
+  }
+
+  const steering = trace.steering;
+  const speedText = formatSpeed(drive.forwardSpeedMetersPerSecond);
   generationElement.textContent = String(trace.generation);
   stepElement.textContent = String(trace.stepIndex);
   commandElement.textContent = command;
@@ -506,7 +510,9 @@ async function startHost(): Promise<void> {
       },
       onFrame: (report) => {
         droppedTotalMs += report.droppedTimeMs;
-        droppedElement.textContent = `${droppedTotalMs.toFixed(2)} ms`;
+        if (debugPanel.hasAttribute("data-open")) {
+          droppedElement.textContent = `${droppedTotalMs.toFixed(2)} ms`;
+        }
       },
       onFatalError: (error) => {
         if (generation !== startupGeneration) {
