@@ -12,11 +12,29 @@ export interface M6ChaseCameraState {
   readonly distance: number;
 }
 
+export interface M6CameraInteractionPolicy {
+  readonly orbitRadiansPerPixel: number;
+  readonly minPitch: number;
+  readonly maxPitch: number;
+  readonly wheelZoomExponentPerDelta: number;
+  readonly minDistance: number;
+  readonly maxDistance: number;
+}
+
 export interface M6ChaseCameraPose {
   readonly eye: M6CameraVec3;
   readonly target: M6CameraVec3;
   readonly forward: M6CameraVec3;
 }
+
+export const DEFAULT_M6_CAMERA_INTERACTION_POLICY = Object.freeze({
+  orbitRadiansPerPixel: 0.006,
+  minPitch: -0.12,
+  maxPitch: 1.25,
+  wheelZoomExponentPerDelta: 0.001,
+  minDistance: 3.5,
+  maxDistance: 60,
+} satisfies M6CameraInteractionPolicy);
 
 export const DEFAULT_M6_CHASE_CAMERA = Object.freeze({
   orbitYaw: 0,
@@ -25,6 +43,51 @@ export const DEFAULT_M6_CHASE_CAMERA = Object.freeze({
   lookAhead: 1.35,
   targetLift: 0.55,
 } as const);
+
+export function createDefaultM6ChaseCameraState(): M6ChaseCameraState {
+  return {
+    orbitYaw: DEFAULT_M6_CHASE_CAMERA.orbitYaw,
+    pitch: DEFAULT_M6_CHASE_CAMERA.pitch,
+    distance: DEFAULT_M6_CHASE_CAMERA.distance,
+  };
+}
+
+export function orbitM6ChaseCameraState(
+  state: M6ChaseCameraState,
+  deltaX: number,
+  deltaY: number,
+  policy: M6CameraInteractionPolicy = DEFAULT_M6_CAMERA_INTERACTION_POLICY,
+): M6ChaseCameraState {
+  return {
+    ...state,
+    orbitYaw: state.orbitYaw + deltaX * policy.orbitRadiansPerPixel,
+    pitch: Math.max(
+      policy.minPitch,
+      Math.min(
+        policy.maxPitch,
+        state.pitch - deltaY * policy.orbitRadiansPerPixel,
+      ),
+    ),
+  };
+}
+
+export function zoomM6ChaseCameraState(
+  state: M6ChaseCameraState,
+  wheelDeltaY: number,
+  policy: M6CameraInteractionPolicy = DEFAULT_M6_CAMERA_INTERACTION_POLICY,
+): M6ChaseCameraState {
+  return {
+    ...state,
+    distance: Math.max(
+      policy.minDistance,
+      Math.min(
+        policy.maxDistance,
+        state.distance *
+          Math.exp(wheelDeltaY * policy.wheelZoomExponentPerDelta),
+      ),
+    ),
+  };
+}
 
 function rotateVector(
   rotation: M6CameraRotation,
