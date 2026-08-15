@@ -2,119 +2,81 @@
 
 Updated: 2026-08-15
 Owner: Jozz
-Status: `PERFORMANCE FOUNDATION V1 OWNER-VALIDATED / CANONICAL PROMOTION PENDING`
+Status: `PERFORMANCE FOUNDATION V1 CLOSED / MOBILE USABILITY NEXT`
 
-## Authority and rollback
+## Authority and active lane
 
 ```text
-private accepted: main@f8eb0908f5934aed2d504f34ce483a02754039ec
-private active: work/friends-r1-live-perf
-private validated source checkpoint: checkpoint/perf-foundation-a53-validated-2026-08-15@f42e16321d9edb26e10f44ab7c9eeda3c646291c
-public isolated A53 proof: checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0
-public known-good Friends rollback: checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a
+accepted private source: main@f8eb0908f5934aed2d504f34ce483a02754039ec
+single active work lane: work/friends-r1-usability
+closed performance checkpoint: checkpoint/perf-foundation-v1-closed-2026-08-15
+owner-tested performance code: checkpoint/perf-foundation-a53-validated-2026-08-15@f42e16321d9edb26e10f44ab7c9eeda3c646291c
+public A53 proof: checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0
+public known-good rollback: checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a
 public R0 fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-Current Git/ref, reproducible execution evidence and direct owner observation outrank this document. `main` remains accepted authority until the canonical promotion gate is completed.
+Current Git, reproducible execution evidence and direct owner observation outrank this file. `main` remains accepted authority until the canonical promotion gate is completed.
 
-## Product boundary
+`work/friends-r1-usability` is the only ordinary active lane ahead of `main`. Old `work/*`, `candidate/*`, `repair/*` and `checkpoint/*` refs are historical/evidence unless this section explicitly activates them.
 
-The current Friends foundation preserves Plac E2R, Offroad, the owner vehicle and the complete JSPREV2 scan. The stress scan remains:
+## Working product boundary
+
+Friends currently includes Plac E2R, Offroad, the owner vehicle and the complete JSPREV2 scan on desktop/phone. The current vehicle's coherent-front bridge is a temporary product intermediate; final rig, steering feedback/back-drive and handling remain open. JURE owns future rig authoring.
+
+Current JSPREV2 stress case:
 
 ```text
 7 tiles / 25 groups / 25 textures
 1,409,687 vertices
 5,327,325 indices
 1,775,775 triangles
-66,419,624 B binary geometry
-44,858,270 B encoded textures
 111,288,484 B published scan payload
 ```
 
-Physics remains fixed 60 Hz with the existing solver/substeps and vehicle complexity. No LOD, world partitioning, scan-content reduction or final steering/JURE work was used to obtain the current mobile result.
+Physics remains fixed 60 Hz with existing solver/substeps and vehicle complexity.
 
-## What performance foundation v1 contains
+## Performance foundation v1 — closed scope
 
-The active source absorbs the grounded and device-tested low/medium-cost stack:
+The private active source contains the validated low/medium-cost foundation: scan-group culling/state reuse, direct Uint32 index upload with safe WebGL1 fallbacks, parser-pass bounds/validation, bounded two-way tile loading, physics/presentation decoupling, deferred rich trace, hidden-debug suppression, startup/runtime telemetry and a lightweight mobile compositor policy.
 
-- scan-group frustum culling and shared scan matrix/WebGL pass state reuse;
-- physics catch-up decoupled from presentation: multiple required steps, at most one presentation per browser frame;
-- rich trace/visual materialization only for the final presented state;
-- direct Uint32 scan-index upload when supported, Uint16 direct/chunk fallback otherwise;
-- parser-pass finite validation and required scan bounds instead of later full geometry passes;
-- normal browser caching and bounded two-way tile loading;
-- hidden Debug work suppression;
-- performance/startup telemetry including scan-loader phases and texture readiness/upload;
-- mobile/coarse-pointer compositor policy that removes live backdrop blur and heavy shadows over the changing WebGL canvas.
+Owner scope: Galaxy A53, normal Chrome, render scale 1x, DPR about 2.81, culling ON, current full textured JSPREV2.
 
-The compositor change was a major measured correction, not cosmetic cleanup: on the Galaxy A53 the previous Offroad control case was around 35 present/s; with the mobile compositor policy it reached and sustained 60 present/s at 16.7 ms average / p95 16.8 ms.
+Settled evidence reached 60 browser RAF/s and 60 scene presents/s at 16.7 ms average / 16.8 ms p95, including a scan view with 19/25 groups visible. Earlier settled samples were 57–58 present/s before convergence. One captured catch-up frame showed `sim 2 / physics 9.5 ms`; later sustained driving returned to `sim 1 / physics 0.7 ms`.
 
-## Owner-observed A53 Chrome result
+This closes lightweight optimization for the present stress case. It does **not** prove 60 fps at render scale 2x, cold-cache startup, other phones or future larger/multiple worlds.
 
-Scope: Galaxy A53, normal Chrome, render scale 1x, DPR about 2.81, culling ON, current device-gate source.
+One warm/cache scan sample reported `world 1337 ms`, `tiles 1127 ms` including `parse 268 ms`, `merge 53 ms`, `b3-world 3418 ms` and 25/25 textures ready with 776.2 ms cumulative synchronous texture-upload call time. Do not add nested timers or treat texture call time as GPU completion/residency.
 
-Settled evidence:
+## Remaining formal promotion gate
 
-- Offroad: 60 browser RAF/s and 60 scene present/s, 16.7 ms average, p95 16.8 ms;
-- full textured JSPREV2 with 19/25 groups visible: 60 browser RAF/s and 60 scene present/s, 16.7 ms average, p95 16.8 ms;
-- transient earlier settled scan samples were 57–58 present/s before converging to 60;
-- one captured catch-up sample showed `sim 2 / physics 9.5 ms`; later stable driving returned to `sim 1 / physics 0.7 ms`.
+The device proof used an isolated native-ESM Pages gate with real `box3d.js@0.0.2`, not the normal canonical Friends artifact.
 
-This is sufficient evidence that the lightweight performance foundation achieved its current product goal. It is not evidence for 60 fps at render scale 2x, future larger/multiple scans, other devices or all camera views forever.
+Before advancing `main` / ordinary Friends release, run in the exact repo toolchain:
 
-## Startup evidence and interpretation
+1. Node 24.16.0 + npm 11.13.x + lockfile dependencies;
+2. `npm run check` with real Box3D coverage;
+3. `npm run build:friends-r1` and portable checks;
+4. rendered browser smoke of the resulting canonical artifact;
+5. exact source/artifact/rollback identity verification.
 
-One tested warm/cache scan run reported:
+The current agent environment remains blocked by Node/npm mismatch plus registry DNS, so lack of this gate is infrastructure evidence, not a known product failure.
 
-```text
-product world: 1337 ms
-index: 24 ms
-tile pipeline: 1127 ms
-parse CPU: 268 ms
-collision merge: 53 ms
-GPU synchronous setup/submission: 528 ms
-Box3D module/boundary load: 520 ms
-Box3D world create: 3418 ms
-vehicle create: 22 ms
-texture ready: 25/25
-cumulative synchronous texImage2D call time: 776.2 ms
-```
+## Next product phase
 
-Interpretation rules:
+Performance is no longer the dominant owner-observed A53 problem. Continue on `work/friends-r1-usability` with small owner-visible slices focused on:
 
-- `parse 268 ms` is contained inside the `tiles 1127 ms` pipeline; do not add it again when estimating loader wall time;
-- index + tile pipeline + collision merge is roughly 1204 ms and is consistent with the outer 1337 ms product-world measurement plus surrounding work;
-- compared with the Offroad sample (`b3-world 389 ms`), the scan adds roughly 3.0 s to Box3D world construction in this warm run, making collision representation the strongest obvious future startup/scaling target;
-- 776.2 ms texture upload is cumulative synchronous call time, not measured GPU completion or residency;
-- the owner observed geometry loading materially faster than earlier builds and textures completing roughly a second after geometry, but this was not a controlled cold-cache network benchmark.
+1. mobile camera/framing and easy navigation;
+2. touch-control ergonomics;
+3. steering/joystick interaction;
+4. responsive layout/visual clarity.
 
-## Decision: close lightweight optimization, preserve scaling targets
+Keep vehicle mechanics unchanged unless a slice explicitly targets them. For each UI slice: targeted tests first, then rendered desktop/mobile browser validation, then owner/device judgement when feel matters.
 
-Do not continue micro-optimizing this exact JSPREV2 by default. The remaining work is more valuable as future scaling architecture than as another benchmark pass on an asset already sustaining 60 Hz in the tested case.
+Do not resume current-JSPREV2 micro-optimization by default. Future scaling work should be triggered by evidence and should prefer separate collision representation, texture scheduling/residency, safe world-data lifetime reduction and a better VAW/JSPREV3 asset representation before LOD/world partitioning.
 
-When larger scans, multiple scans or higher render quality justify it, prefer this order:
+## Documentation/workflow hygiene
 
-1. **separate collision proxy/export** — reduce the expensive Box3D world build without changing visual scan fidelity;
-2. **texture scheduling/residency** — bounded/priority decode and upload if startup hitches become material again;
-3. **world-data lifetime** — release heavy decoded JS representations only after exact Box3D binding ownership is proven safe;
-4. **VAW/JSPREV3 asset format** — precomputed bounds/index format, GPU-friendly streams and spatial chunks with a separate collision representation;
-5. **LOD/world partitioning** — only once working-set measurements on future worlds require it.
+Default context is `AGENTS.md` + this file + current source/tests. Use `ARCHITECTURE.md`, `OWNER_CHECKPOINTS.md`, contracts or baselines only for the question they answer.
 
-Optional micro-wins such as VAO, scan-unlit or backface-culling A/B remain experiments, not current priorities.
-
-## Remaining formal gate
-
-The real A53 proof was produced by the isolated noncanonical native-ESM Pages device gate using exact `box3d.js@0.0.2`. It validates browser runtime behavior and device performance, but it is not the canonical release artifact.
-
-Before promotion to `main` / ordinary Friends release:
-
-1. run the exact repo toolchain: Node 24.16.0, npm 11.13.x, lockfile dependencies, real `box3d.js@0.0.2`, TypeScript 7 and Vite;
-2. run full `npm ci` / `npm run check`, real Box3D regression coverage and `npm run build:friends-r1` plus portable artifact checks;
-3. browser-smoke the canonical artifact without framework/runtime errors;
-4. promote only after the artifact is tied back to the validated private source and existing rollbacks remain intact.
-
-Until that gate, `main` stays untouched.
-
-## Next product direction after promotion
-
-Performance is no longer the dominant owner-observed problem on the A53. The next owner-visible phase should therefore move to mobile experience: camera/framing, touch controls, joystick/steering interaction and responsive UX. Final rig/JURE and vehicle handling remain separate later phases.
+Do not create per-agent handoffs, branch-role tables, campaign journals or duplicate roadmaps. When current truth changes, edit the existing living document and let Git preserve the previous version.

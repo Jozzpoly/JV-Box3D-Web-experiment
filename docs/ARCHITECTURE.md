@@ -1,9 +1,9 @@
 # JV Web — architecture
 
-Updated: 2026-08-14
-Status: `FRIENDS R1 CURRENT BOUNDARIES`
+Updated: 2026-08-15
+Status: `CURRENT STABLE BOUNDARIES`
 
-This document describes stable boundaries, not a roadmap and not a mechanical-history archive.
+This document describes stable system boundaries. It is not a roadmap, branch ledger or mechanical-history archive.
 
 ## 1. Product entry
 
@@ -15,109 +15,107 @@ index.html
 -> world renderer + owner vehicle layer
 ```
 
-The browser product exposes three current start surfaces: Plac E2R, Offroad and the approved JSPREV2 scan.
+The browser product currently exposes Plac E2R, Offroad and the approved JSPREV2 scan.
 
 ## 2. World boundary
 
 World data is independent from the vehicle runtime.
 
-- Plac E2R / Offroad are built product world inputs.
-- JSPREV2 is an external scan package converted to the `JvWorldData` scan contract.
-- Product selection changes spawn/world behavior without redefining vehicle mechanics.
-
-The public Friends scan is a supported release input, not private dev-only functionality.
+- Plac E2R / Offroad are built product-world inputs.
+- JSPREV2 is an external scan package decoded into the `JvWorldData` scan contract.
+- Product selection changes world/spawn behavior without redefining vehicle mechanics.
+- Render and collision representations are semantically separate even when derived from the same scan source.
 
 ## 3. JSPREV2 transport and integrity
 
-Public scan assets resolve relative to `document.baseURI` so the same build works under the GitHub Pages project path.
+Public scan assets resolve relative to `document.baseURI`, so the same build works under the GitHub Pages project path.
 
-The browser may receive compressed HTTP representations. Therefore transport `Content-Length` is not logical scan-file integrity.
-
-Runtime integrity is checked on the decoded body and format:
-
-- actual `ArrayBuffer.byteLength` must match the indexed logical bytes;
-- JSPREV2 magic/version/tile id/group descriptors must match;
-- vertex/index counts and triangle relationships must agree;
-- indices must remain inside their vertex streams;
-- numeric streams must remain finite.
+Compressed HTTP `Content-Length` is not logical scan-file integrity. Runtime validates the decoded payload/format: byte length, magic/version/tile/group descriptors, counts/triangle relationships, index range and finite numeric streams.
 
 The source/release layer additionally pins the exact approved pack identity and file hashes.
 
-## 4. Scan rendering boundary
+## 4. Scan decode and loading
 
-The current world renderer is WebGL1-compatible. Large indexed meshes are split to `Uint16` chunks before GPU upload.
+Current scan loading uses normal browser caching and a bounded two-tile fetch/parse pipeline while preserving deterministic final tile order.
 
-Current Friends behavior is intentionally simple:
+During decode, finite validation and required group bounds are produced in the parser pass rather than by later full geometry rescans. The current collision representation is still assembled as a merged mesh from scan geometry.
 
-- all scan render groups are uploaded when the world renderer is created;
-- all scan groups are drawn every frame;
-- textures are ordinary RGBA image textures with nearest/linear filtering;
-- no scan frustum/tile culling, mipmap pipeline, texture compression, streaming or geometric LOD is implemented yet.
+All current scan render groups are installed into the renderer at world creation. This is not streaming or world partitioning.
 
-This simplicity is accepted for the first Friends baseline. Future optimization should measure CPU/GPU/memory costs first and preserve desktop quality while improving phone behavior.
+## 5. Scan rendering
 
-## 5. Scan collision boundary
+The renderer remains WebGL1-compatible.
 
-The JSPREV2 loader exposes render groups and a collision representation separately. The current loader builds a merged collision mesh after parsing the groups.
+Index upload policy:
 
-Render and collision are semantically distinct even when derived from the same source. Future optimization may change representation/storage, but must not silently change driveable geometry without an explicit product/owner gate.
+- when `OES_element_index_uint` is available, scan groups use their source Uint32 index stream directly;
+- without the extension, groups fitting the 16-bit vertex range use direct Uint16 indices;
+- larger groups retain the safe Uint16 chunk fallback.
 
-## 6. Vehicle/physics boundary
+Each scan group has bounds used for conservative frustum culling. Shared scan matrices and pass-level WebGL state are reused across visible groups while per-group texture/color/buffer state remains explicit.
 
-The current browser vehicle uses `box3d.js@0.0.2` and the existing M6 Web implementation.
+Current textures are ordinary browser image textures. They load asynchronously and become resident for the current world; texture streaming/compression/residency management is not implemented.
 
-The current coherent-front driving bridge is a product baseline, not final vehicle architecture. It intentionally leaves final steering feedback/back-drive and rig geometry open.
+There is no geometric LOD or world partitioning. Those are future scaling tools, not requirements for the current Friends scan.
 
-Historical M5/M6 values, secondary contracts, generated calibration and test expectations are evidence only for the exact claims they prove. They do not become whole-vehicle authority.
+## 6. Frame/runtime boundary
 
-## 7. Owner vehicle visual boundary
+Physics keeps a fixed 60 Hz step. Browser presentation is decoupled from fixed-step catch-up: a browser frame may execute multiple required simulation steps, but it presents at most once using the final state.
 
-Owner source meshes/contracts generate the current browser visual package. Visual package generation remains deterministic.
+Rich M6 trace/visual materialization is deferred to the final presented catch-up state rather than repeated for intermediate steps.
 
-Current public/owner visual identity:
+Runtime telemetry distinguishes browser cadence, scene-presentation cadence, simulation-step count, physics time, trace-capture time and render/UI time. Startup telemetry separately covers world loading, scan-loader phases, synchronous WebGL setup/submission, Box3D boundary/world creation and texture readiness/upload calls.
 
-```text
-real bindings: 59
-GLB bytes: 829936
-SHA-256: 1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc
-```
+Telemetry is diagnostic evidence, not a substitute for owner-visible/browser validation.
 
-Visual calibration must not silently retune physics. Likewise physics convenience must not redefine authored asset semantics.
+## 7. Mobile compositor boundary
 
-## 8. JURE authoring boundary
+On coarse-pointer/mobile layouts, live backdrop blur and heavy shadow effects over the continuously changing WebGL surface are deliberately reduced. This is a presentation/compositor policy; it does not change simulation, scan geometry or render scale.
+
+Responsive UI/camera behavior may continue to evolve independently from vehicle mechanics.
+
+## 8. Vehicle/physics boundary
+
+The current browser vehicle uses pinned `box3d.js@0.0.2` and the existing M6 Web implementation.
+
+The coherent-front driving bridge is a useful product intermediate, not final rig/steering/handling architecture. Historical M5/M6 values, calibration outputs and convenience tests are evidence only for the claims they directly prove.
+
+Physics performance work must not silently reduce fixed-step rate, solver/substeps, collision semantics or vehicle complexity.
+
+## 9. Owner vehicle visual boundary
+
+Owner source meshes/contracts generate the browser visual package deterministically. Visual calibration must not silently retune physics, and physics convenience must not redefine authored asset semantics.
+
+## 10. JURE authoring boundary
 
 JURE is the intended owner-facing authoring system for rig elements, frames, mating points and later broader JV/VAW authoring needs.
 
-JV Web should eventually consume explicit JURE-authored outputs through a small adapter/contract. It should not maintain a parallel rig editor or keep fixing uncertain mating with ad-hoc offsets.
+JV Web should eventually consume explicit JURE-authored outputs through a small adapter/contract. It should not maintain a parallel rig editor or repair uncertain authored geometry with accumulating ad-hoc offsets.
 
-Until that integration exists, unresolved lower wishbone/mating and final spatial steering geometry remain explicit debt.
+## 11. Camera and input boundary
 
-## 9. Camera/input boundary
+Camera state/input belongs to the renderer/UI path. Vehicle drive/steer/brake input belongs to the product/vehicle input path. They must not steal gesture/key ownership from each other.
 
-Camera state/input belongs to the renderer/UI path; vehicle drive/steer/brake input belongs to the vehicle/product input path. They must not steal gesture/key ownership from each other.
+Phone camera/framing and touch/steering interaction are product UX surfaces and may be improved without redefining vehicle mechanics.
 
-Current desktop camera is usable. Phone portrait/landscape framing is known product UX debt and may be changed without redefining vehicle mechanics.
-
-## 10. Private source vs public artifact
+## 12. Private source vs public artifact
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
   source / development / accepted private main
 
 Jozzpoly/JV-Box3D-Web-Public
-  generated public artifacts / Pages
+  generated public artifacts / GitHub Pages
 ```
 
-`release/r0` stays immutable. `release/friends-r1` is the live Friends line.
+`release/r0` stays immutable. `release/friends-r1` is the moving Friends line. A code-only Friends release may carry forward the exact already-published scan; a scan-changing release must explicitly pin the new approved scan input.
 
-A code-only Friends hotfix may carry forward the exact already-published scan. A scan-changing release must explicitly pin the new approved scan input and reproduce the public artifact.
-
-## 11. Architecture principles
+## 13. Architecture principles
 
 - owner-visible behavior and exact source/runtime evidence outrank historical naming;
 - source, authored data, visual representation, physics and release artifact are separate layers;
 - JURE authors rig truth; JV Web consumes it later;
 - tests protect real invariants, not provisional equations or incidental counts;
 - simple product bridges may exist, but stay labeled temporary;
-- measure performance before adding architecture;
-- documentation describes current truth rather than preserving every expedition.
+- measure before adding scaling architecture;
+- documentation describes current truth; Git preserves expeditions and superseded designs.

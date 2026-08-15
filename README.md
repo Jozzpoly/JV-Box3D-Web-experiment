@@ -2,29 +2,6 @@
 
 JV Web is the browser product line for Jozz Vehicle: a driveable desktop/mobile build used both as an R&D surface and as the public Friends demo.
 
-## Live Friends R1
-
-Public site:
-
-`https://jozzpoly.github.io/JV-Box3D-Web-Public/`
-
-Current public line:
-
-- repo: `Jozzpoly/JV-Box3D-Web-Public`
-- branch: `release/friends-r1`
-- live commit: `7161215e47f00573b8c1b5c31e5931c89f9d709a`
-- rollback: immutable `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`
-
-Owner-validated on 2026-08-14:
-
-- Plac E2R works on desktop and phone;
-- Offroad works and is driveable over terrain;
-- full public JSPREV2 scan works on desktop and phone;
-- phone scan is heavy but usable at low speed and remains an intentional stress test for now;
-- phone camera/framing and some responsive UI still need a dedicated pass.
-
-The current vehicle uses an owner-accepted temporary coherent-front bridge. It is a useful product baseline, not final rig/steering/handling authority.
-
 ## Source and publication
 
 ```text
@@ -32,17 +9,16 @@ Jozzpoly/JV-Box3D-Web-experiment
   private source / development / accepted main
 
 Jozzpoly/JV-Box3D-Web-Public
-  public build artifacts / GitHub Pages
-
-Jozzpoly/Box3d_FunProject
-  native JV reference/research unless a task explicitly changes scope
+  generated public artifacts / GitHub Pages
 ```
 
-Rig authoring is moving to the separate Jozz Universal Rig Editor (JURE). JV Web should consume authored rig/frame outputs later instead of continuing to guess hardpoints or growing another temporary rig editor.
+Rig authoring belongs to the separate Jozz Universal Rig Editor (JURE). JV Web should consume authored rig/frame outputs later instead of growing a second temporary rig editor.
+
+Moving SHAs, the active work lane, rollback refs and the current validation boundary are intentionally kept out of this README. Read `docs/PROJECT_STATE.md` for current state.
 
 ## Development
 
-Canonical runtime line:
+Canonical toolchain:
 
 ```text
 Node 24.16.0
@@ -59,37 +35,39 @@ npm ci
 npm run dev -- --host 0.0.0.0
 ```
 
-For ordinary work, run the smallest relevant test rather than the whole suite:
+For normal feature work, use the smallest relevant check:
 
 ```text
 npm test -- tests/<relevant>.test.mjs
 ```
 
-Use `npm run check` for broad foundation/integration checkpoints, not automatically after every tiny feature.
+Use `npm run check` for broad foundation/integration gates. User-visible web changes also need rendered/browser validation; a passing build alone is not acceptance.
 
-A Friends build with a new scan requires `JOZZ_SCAN_PREVIEW_PACK` pointing at the exact approved source pack. Code-only public hotfixes can preserve the already-published exact scan.
+Friends release builds use `npm run build:friends-r1`. A release that changes the scan requires `JOZZ_SCAN_PREVIEW_PACK` pointing at the exact approved source pack; code-only releases may preserve the already-published scan.
 
 ## Start here
 
-A fresh agent should read:
+A fresh agent should read only:
 
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
-3. only the code/tests needed for the current task
+3. code/tests needed for the current task
 
-`AI_PROJECT_MEMORY.md` is a short router. `docs/ARCHITECTURE.md` is for stable boundaries. Historical recovery/campaign/handoff files are cold evidence, not default context.
+Then use, only when relevant:
 
-## Current direction
+- `docs/ARCHITECTURE.md` — stable system boundaries;
+- `docs/OWNER_CHECKPOINTS.md` — scoped owner acceptance;
+- `docs/contracts/` — executable/external format contracts;
+- `docs/baselines/` — reproducible historical baselines.
 
-Foundation normalization pass 1 is complete: accepted Friends source is integrated into private `main`, stale steering/transaction instructions are inactive, and focused tests are supported.
+`AI_PROJECT_MEMORY.md` is a compact router. Old branch names and Git history are not current instructions.
 
-Near-term order is now intentionally product-led:
+## Everyday workflow
 
-1. make build/release/cache identity visible so deployment state is obvious;
-2. improve phone camera/framing and responsive controls without changing vehicle mechanics;
-3. measure scan bottlenecks on real desktop/phone behavior;
-4. take the simplest high-value scan wins before considering advanced LOD;
-5. integrate better authored rig data from JURE when its output contract is ready;
-6. only then revisit final steering/handling from better geometry.
+Prefer:
+
+`small need -> small vertical slice -> targeted check -> rendered/device proof when relevant -> owner-visible result -> continue`
+
+Keep one ordinary active work lane ahead of `main`. Do not create branches, documents or validation machinery per conversation. Preserve important states with checkpoints and let Git carry the history.
 
 Third-party notices are in `THIRD_PARTY_NOTICES.md`.

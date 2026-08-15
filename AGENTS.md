@@ -1,90 +1,87 @@
 # JV Web — operating contract
 
-Updated: 2026-08-14
+Updated: 2026-08-15
 Owner: Jozz
 
-JV Web is the browser product line for Jozz Vehicle. The current product goal is simple: a public build that is useful and enjoyable to launch, drive and show on desktop and phone, while remaining a practical R&D surface for later improvements.
+JV Web is the browser product line for Jozz Vehicle. The product goal is a public build that is useful and enjoyable to launch, drive and show on desktop and phone, while remaining a practical R&D surface for later improvements.
 
-## 1. Current authority
+## 1. Authority
 
 - `main` is the accepted private source/product authority.
-- `Jozzpoly/JV-Box3D-Web-Public` is an artifact/publication repository, not the source of product semantics.
-- `release/r0` is immutable rollback/history.
-- `release/friends-r1` is the current live Friends Pages line.
-- Git/current source, reproducible runtime evidence and direct owner observation outrank stale documentation or historical branch names.
+- `Jozzpoly/JV-Box3D-Web-Public` is an artifact/publication repository, not source authority.
+- `release/r0` is immutable rollback/history; `release/friends-r1` is the moving Friends Pages line.
+- Git/current source, reproducible runtime evidence and direct owner observation outrank stale documentation or branch names.
+- `docs/PROJECT_STATE.md` names the **only active work lane** when work is intentionally ahead of `main`. Every other `work/*`, `candidate/*`, `repair/*` or `checkpoint/*` ref is historical/evidence unless that file explicitly activates it.
 
-Owner acceptance is always scoped. A working Friends build does not make provisional steering, rig geometry or handling final truth.
+Owner acceptance is scoped. A working Friends build does not make provisional steering, rig geometry or handling final truth.
 
 ## 2. Accepted Friends baseline
 
 Preserve unless the current task explicitly changes it:
 
 - default start: Plac E2R;
-- Offroad is available and driveable;
-- full approved JSPREV2 scan is public and selectable on desktop and phone;
+- Offroad and the full approved JSPREV2 scan are available on desktop and phone;
 - Pages project-path/subpath delivery works;
 - current owner vehicle visual package loads and drives;
 - debug is limited and closed by default;
 - location switching by reload is acceptable for this release;
-- the temporary symmetric front/drive bridge is good enough to keep product work moving.
+- the temporary symmetric front/drive bridge is sufficient to keep product work moving.
 
-Known debt is not a blocker for this baseline:
+Current mobile performance foundation is owner-validated for the tested Galaxy A53 / Chrome / render-1x scan case. Do not generalize that result to larger worlds, other devices or higher render scales.
 
-- phone camera/framing and some responsive UI need work;
-- full scan is heavy on phone and currently acts as an intentional stress test;
-- final rig, lower wishbone/mating, steering physics/back-drive and final handling are not accepted.
+Known product debt includes mobile camera/control UX and final rig/steering/handling.
 
 ## 3. JURE boundary
 
-Rig authoring belongs in the separate Jozz Universal Rig Editor (JURE) line. JV Web should consume explicit authored outputs later; it should not grow another temporary rig editor or keep guessing hardpoints/frames to repair current visuals.
+Rig authoring belongs in the separate Jozz Universal Rig Editor (JURE) line. JV Web should later consume explicit authored outputs; it should not grow another temporary rig editor or keep guessing hardpoints/frames to repair current visuals.
 
-Do not revive the old `R1-STEER-COUPLING-01` research task as the default next step. Final steering/rig work waits for better authored geometry unless new evidence gives a narrower reason.
+Do not revive old steering/rig campaigns by default. Final rig and steering work waits for better authored geometry unless current evidence gives a narrower reason.
 
 ## 4. Work style
 
 Jozz defines vision, priorities and owner-visible acceptance. The agent is responsible for programming, repository work, technical analysis and release mechanics.
 
-Do not ask Jozz to apply patches, run terminal commands or debug engineering machinery that the agent can handle. Ask for owner intervention only when it is genuinely irreplaceable: visual/feel/device judgement, an inaccessible file, or one unavoidable owner-side platform action.
+Do not ask Jozz to apply patches, run terminal commands or debug engineering machinery that the agent can handle. Owner intervention is for genuinely irreplaceable visual/feel/device judgement, inaccessible files or unavoidable owner-side platform actions.
 
-Prefer:
+Default loop:
 
-`small need -> small vertical slice -> smallest relevant check -> owner-visible result -> continue`
+`small need -> small vertical slice -> smallest relevant check -> rendered/device proof when relevant -> owner-visible result -> continue`
 
-Do not build process for its own sake. Tests, manifests, scripts and documentation are tools to reach product truth; they are not product value by themselves.
+For ordinary work, run only checks that cover the changed risk. Full validation is for foundation/schema/toolchain changes, major integration boundaries and public releases. A passing build does not replace browser/device validation for user-visible work.
 
-For ordinary changes run only the checks that cover the changed risk. Full validation is for foundation/schema/toolchain changes, major integration boundaries and public releases.
+Avoid speculative abstractions. Prefer one clean implementation that can be extended later over infrastructure for hypothetical variants.
 
 ## 5. Documentation discipline
 
-Fresh work should normally need only:
+A fresh agent normally needs only:
 
 1. `AGENTS.md`;
 2. `docs/PROJECT_STATE.md`;
 3. source/tests for the current task.
 
-`AI_PROJECT_MEMORY.md` is a compact router, not a second project history.
+`AI_PROJECT_MEMORY.md` is a compact router, not another project history. `docs/ARCHITECTURE.md` describes stable boundaries. `docs/OWNER_CHECKPOINTS.md` is consulted only when scoped owner acceptance matters.
 
-Historical campaign notes, old handoffs, recovery documents, ADRs and orchestration proposals are Git history, not current documentation. Recover them only for a named historical question. Do not recreate dated handoff stacks, RFC chains or parallel roadmaps for ordinary work. Update or remove stale current-state text; Git keeps history.
+Historical campaigns, handoffs, recovery notes, superseded roadmaps and old branch narratives belong in Git history. Do not recreate them for ordinary work. Update or remove stale current-state text instead.
 
-Technical format contracts and reproducible baselines may remain when they describe an external/executable boundary that source types alone do not communicate clearly.
+Keep technical contracts/baselines only when they describe a real external, executable or reproducible boundary that source types alone do not communicate clearly.
 
-## 6. Git and branch discipline
+## 6. Git discipline
 
 Resolve repo/ref before writes. Use normal fast-forward history; no routine force pushes.
 
-Temporary branches require a concrete isolation reason. Do not create branches per agent or conversation. Prefer integrating accepted work into `main` and retiring the transaction branch.
+Keep at most one ordinary active work lane ahead of `main`. Create another branch only for a concrete isolation/rollback reason, not per agent, conversation or tiny feature. Preserve valuable milestones with explicit `checkpoint/*` refs rather than multiplying active lanes.
 
-Old branch names such as `golden` do not establish authority.
+Do not infer authority from names such as `golden`, `candidate`, `repair` or `checkpoint`.
 
 ## 7. Release discipline
 
-Public releases are built artifacts from accepted private source.
+Public releases are artifacts produced from accepted private source.
 
 - Never rewrite `release/r0`.
-- Code-only Friends hotfixes may carry forward the already-published exact scan.
-- A release that changes the scan must pin and validate the new exact approved scan input.
-- Do not treat HTTP transport metadata such as compressed `Content-Length` as integrity of decoded scan bytes; validate the actual downloaded payload and format.
-- Keep rollback straightforward and verify the exact public commit after publication.
+- Code-only Friends releases may carry forward the already-published exact scan.
+- A scan-changing release must pin and validate the new exact approved scan input.
+- Compressed HTTP `Content-Length` is not decoded scan integrity; validate downloaded payload and format.
+- Keep rollback straightforward and verify exact public source/artifact identity after publication.
 
 ## 8. Product boundaries
 
@@ -92,16 +89,16 @@ The browser Box3D vehicle is the current Web implementation, not proof of native
 
 Do not silently convert visual calibration, historical M5/M6 values, secondary contracts or convenience tests into mechanical authority.
 
-Do not disable the phone scan merely because it is slow; measure first and optimize the real bottleneck. Do not add LOD, streaming or complex architecture before simpler evidence-backed wins are exhausted.
+Do not reduce phone scan content or physics quality merely for performance. Measure the real bottleneck first. LOD, streaming and world partitioning are scaling tools for evidence-backed future needs, not default fixes.
 
 ## 9. Stop conditions
 
 Stop and investigate when:
 
 - a write would modify the wrong repo/ref or overwrite rollback history;
-- a change would alter an owner-accepted visible behavior outside declared scope;
-- a task starts rebuilding rig/steering assumptions that JURE is intended to author;
-- validation/documentation machinery grows faster than product value;
+- owner-visible behavior would change outside declared scope;
+- work starts rebuilding rig/steering assumptions that JURE should author;
+- documentation/process grows faster than product value;
 - a release artifact cannot be tied to exact source and rollback;
 - third-party licensing/provenance is unclear;
-- the agent is about to push routine programming work onto Jozz.
+- routine engineering work is about to be pushed onto Jozz.
