@@ -62,6 +62,8 @@ Before advancing `main` / ordinary Friends release, run in the exact repo toolch
 
 The current agent environment remains blocked by Node/npm mismatch plus registry DNS, so lack of this gate is infrastructure evidence, not a known product failure.
 
+The active lane is currently a linear 42 commits ahead of `main`, with no divergence. Prefer clearing this promotion boundary before any new multi-slice or foundation-scale campaign. If the infrastructure blocker persists, keep interim work to small independently reviewable usability slices on the single active lane rather than allowing another long-lived product branch to form.
+
 ## Next product phase
 
 Performance is no longer the dominant owner-observed A53 problem. Continue on `work/friends-r1-usability` with small owner-visible slices focused on:
