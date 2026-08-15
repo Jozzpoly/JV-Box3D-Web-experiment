@@ -1,0 +1,195 @@
+diff --git a/src/render/jv-index-upload-plan.ts b/src/render/jv-index-upload-plan.ts
+new file mode 100644
+index 0000000..2e03273
+--- /dev/null
++++ b/src/render/jv-index-upload-plan.ts
+@@ -0,0 +1,28 @@
++import type { JvIndexedMesh } from "../scene/jv-world-contract.js";
++
++export type JvIndexUploadPlan =
++  | "UINT16_DIRECT"
++  | "UINT32_DIRECT"
++  | "UINT16_CHUNKED";
++
++const UINT16_VERTEX_CAPACITY = 65_536;
++
++export function selectJvIndexUploadPlan(
++  mesh: JvIndexedMesh,
++  uint32ElementIndicesSupported: boolean,
++): JvIndexUploadPlan {
++  if (mesh.positions.length === 0 || mesh.positions.length % 3 !== 0) {
++    throw new Error("JV index upload requires complete vec3 positions.");
++  }
++  if (mesh.indices.length === 0 || mesh.indices.length % 3 !== 0) {
++    throw new Error("JV index upload requires complete triangle indices.");
++  }
++  if (mesh.normals === undefined || !uint32ElementIndicesSupported) {
++    return "UINT16_CHUNKED";
++  }
++
++  const vertexCount = mesh.positions.length / 3;
++  return vertexCount <= UINT16_VERTEX_CAPACITY
++    ? "UINT16_DIRECT"
++    : "UINT32_DIRECT";
++}
+diff --git a/src/render/jv-world-renderer-mobile.ts b/src/render/jv-world-renderer-mobile.ts
+index 24cfcb6..ed91c3c 100644
+--- a/src/render/jv-world-renderer-mobile.ts
++++ b/src/render/jv-world-renderer-mobile.ts
+@@ -11,6 +11,9 @@ import {
+   calculateJvMeshBounds,
+   isJvBoundsVisibleInClipSpace,
+ } from "./jv-frustum-culling.js";
++import {
++  selectJvIndexUploadPlan,
++} from "./jv-index-upload-plan.js";
+ import {
+   splitJvIndexedMeshForUint16,
+   type JvUint16MeshChunk,
+@@ -571,12 +574,13 @@ function uploadChunk(
+   );
+ }
+ 
+-function uploadUint32Mesh(
++function uploadDirectMesh(
+   gl: WebGLRenderingContext,
+   source: JvIndexedMesh,
++  useUint32: boolean,
+ ): GpuMesh {
+   if (source.normals === undefined) {
+-    throw new Error("JV Uint32 fast path requires an explicit normal stream.");
++    throw new Error("JV direct index upload requires an explicit normal stream.");
+   }
+   const vertexCount = source.positions.length / 3;
+   if (
+@@ -587,15 +591,15 @@ function uploadUint32Mesh(
+     source.indices.length % 3 !== 0 ||
+     (source.uvs !== undefined && source.uvs.length !== vertexCount * 2)
+   ) {
+-    throw new Error("JV Uint32 fast path received inconsistent mesh streams.");
++    throw new Error("JV direct index upload received inconsistent mesh streams.");
+   }
+   return uploadStreams(
+     gl,
+     source.positions,
+     source.normals,
+     source.uvs,
+-    source.indices,
+-    gl.UNSIGNED_INT,
++    useUint32 ? source.indices : new Uint16Array(source.indices),
++    useUint32 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT,
+   );
+ }
+ 
+@@ -675,6 +679,7 @@ export class JvWorldRendererMobile {
+     let visibleScanDrawCalls = 0;
+     if (this.#scanModel !== null) {
+       const clipFromScanLocal = multiply(viewProjection, this.#scanModel);
++      let scanTexturedProgramConfigured = false;
+       for (const group of this.#scanGroups) {
+         if (
+           this.#scanCullingEnabled &&
+@@ -685,7 +690,15 @@ export class JvWorldRendererMobile {
+         }
+         visibleScanGroups += 1;
+         visibleScanDrawCalls += group.meshes.length;
+-        this.#drawGroup(group, clipFromScanLocal, this.#scanModel);
++        const canReuseScanPass =
++          group.texture !== null && scanTexturedProgramConfigured;
++        this.#drawGroup(
++          group,
++          clipFromScanLocal,
++          this.#scanModel,
++          !canReuseScanPass,
++        );
++        scanTexturedProgramConfigured = group.texture !== null;
+       }
+     }
+     publishJvScanRenderStats(
+@@ -708,17 +721,18 @@ export class JvWorldRendererMobile {
+ 
+   #uploadGroup(source: JvIndexedMesh, captureBounds = false): GpuGroup {
+     const bounds = captureBounds
+-      ? calculateJvMeshBounds(source.positions)
++      ? (source.bounds ?? calculateJvMeshBounds(source.positions))
+       : null;
+     const meshes: GpuMesh[] = [];
+     let texture: WebGLTexture | null = null;
+     try {
+-      if (
+-        captureBounds &&
+-        this.#uint32ElementIndices &&
+-        source.normals !== undefined
+-      ) {
+-        meshes.push(uploadUint32Mesh(this.#gl, source));
++      const uploadPlan = captureBounds
++        ? selectJvIndexUploadPlan(source, this.#uint32ElementIndices)
++        : "UINT16_CHUNKED";
++      if (uploadPlan === "UINT16_DIRECT") {
++        meshes.push(uploadDirectMesh(this.#gl, source, false));
++      } else if (uploadPlan === "UINT32_DIRECT") {
++        meshes.push(uploadDirectMesh(this.#gl, source, true));
+       } else {
+         for (const chunk of splitJvIndexedMeshForUint16(source)) {
+           meshes.push(uploadChunk(this.#gl, chunk));
+@@ -798,11 +812,19 @@ export class JvWorldRendererMobile {
+     group: GpuGroup,
+     mvp: JvRenderMatrix,
+     model: JvRenderMatrix,
++    configurePass = true,
+   ): void {
+     let configureGroup = true;
+     for (const mesh of group.meshes) {
+       if (group.texture === null) {
+-        this.#drawSolid(mesh, mvp, model, group.color, configureGroup);
++        this.#drawSolid(
++          mesh,
++          mvp,
++          model,
++          group.color,
++          configureGroup,
++          configurePass,
++        );
+       } else {
+         this.#drawTextured(
+           mesh,
+@@ -811,6 +833,7 @@ export class JvWorldRendererMobile {
+           model,
+           group.color,
+           configureGroup,
++          configurePass,
+         );
+       }
+       configureGroup = false;
+@@ -823,6 +846,7 @@ export class JvWorldRendererMobile {
+     model: JvRenderMatrix,
+     color: JvColor,
+     configureGroup: boolean,
++    configurePass: boolean,
+   ): void {
+     const locations = this.#solid;
+     if (locations === null) {
+@@ -830,9 +854,11 @@ export class JvWorldRendererMobile {
+     }
+     const gl = this.#gl;
+     if (configureGroup) {
+-      gl.useProgram(locations.program);
+-      gl.uniformMatrix4fv(locations.mvp, false, mvp);
+-      gl.uniformMatrix4fv(locations.model, false, model);
++      if (configurePass) {
++        gl.useProgram(locations.program);
++        gl.uniformMatrix4fv(locations.mvp, false, mvp);
++        gl.uniformMatrix4fv(locations.model, false, model);
++      }
+       gl.uniform4f(
+         locations.color,
+         color[0],
+@@ -857,6 +883,7 @@ export class JvWorldRendererMobile {
+     model: JvRenderMatrix,
+     color: JvColor,
+     configureGroup: boolean,
++    configurePass: boolean,
+   ): void {
+     const locations = this.#textured;
+     if (
+@@ -869,9 +896,1
