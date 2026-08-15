@@ -2,108 +2,78 @@
 
 Updated: 2026-08-15
 Owner: Jozz
-Status: `FRIENDS R1 LIVE / PERFORMANCE CANDIDATE ACTIVE`
+Status: `FRIENDS R1 LIVE / MOVING PERFORMANCE LANE`
 
-## Accepted/live authority
+## Authority and rollback
 
 ```text
-private accepted source: main@f8eb0908f5934aed2d504f34ce483a02754039ec
-public live branch: release/friends-r1
-public live commit: 7161215e47f00573b8c1b5c31e5931c89f9d709a
-public rollback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
-private source used by live hotfix: 0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb
+private accepted: main@f8eb0908f5934aed2d504f34ce483a02754039ec
+private perf foundation: checkpoint/perf-foundation-s3-2026-08-15@20eca0451c81581649e061c8bc61d45001e32601
+private active work: work/friends-r1-live-perf
+public moving Pages lane: release/friends-r1@55f607aa2ff793a63343bf1bd4b4ab99523a0ceb
+public known-good checkpoint: checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a
+public R0 fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-Owner already validated the live Friends release on real desktop and phone: Plac E2R, Offroad, driving/touch controls and the full JSPREV2 scan work. The phone scan is heavy but usable; camera/framing and phone performance remain improvement targets.
+The owner already validated the known-good Friends build on desktop and phone: Plac E2R, Offroad, driving/touch and the full JSPREV2 scan work. The scan is intentionally available on phone and remains the primary performance target.
 
-The temporary symmetric front steering bridge remains an R1 driving baseline, not final rig/steering authority. Final rig geometry waits for better JURE-authored evidence.
+`release/friends-r1` is now a moving live-test lane. Reversible experiments may be published there quickly after bounded checks. The known-good checkpoint is immutable and is the immediate rollback target.
 
-## Current private candidate
+## Performance foundation
 
-Working branch:
+Private checkpoint `20eca045...` contains:
 
-`work/friends-r1-usability`
+- PERF-S1 conservative scan-group frustum culling;
+- scan visible-group/draw diagnostics;
+- PERF-S2 shared render-matrix reuse;
+- PERF-S3 logical-group WebGL state batching;
+- same-build source controls `jvScanCull=0` and `jvRenderScale=1|1.5|2`.
 
-Current candidate work is isolated from accepted `main` until canonical build + owner/device validation.
+These source slices are reviewed candidates; they are not all deployed by the current public overlay yet.
 
-Implemented:
-
-1. **Exact build identity** — release bundle carries its exact private source SHA and the Friends gate cross-checks it against `build-manifest.json`.
-2. **Debug performance readout** — while Debug is open it reports frame cadence, backing resolution, effective render scale and device DPR separately.
-3. **Camera preparation** — pure aspect-ratio math and a bounded responsive-distance candidate exist, but camera behavior is still not wired or changed.
-4. **JSPREV2 cost baseline** — current CPU/GPU geometry, texture footprint and draw-call lower bound are quantified.
-5. **PERF-S1: conservative scan frustum culling** — each scan group receives a local AABB once during renderer upload. A group is skipped only when all eight AABB corners prove it fully outside the same homogeneous clip plane. Scan geometry, textures, collision and source format are unchanged.
-6. **PERF-S1 diagnostics** — Debug also reports visible/total scan groups and visible/total scan draw calls.
-7. **PERF-S2: render-matrix reuse** — the scan model is built once and the shared `viewProjection × scanModel` matrix is reused for culling and every visible scan draw. Identity-world draws use `viewProjection` directly instead of recomputing the same matrix per draw.
-8. **Same-build A/B controls** — default behavior stays culling ON and render-scale cap 2. Experimental query controls are `jvScanCull=0` and `jvRenderScale=1|1.5|2`; they survive Plac/Offroad/Scan navigation because location switching changes only `jvSpawn`.
-9. **PERF-S3: logical-group state batching** — multi-chunk groups still issue the same draw calls, but program/uniform/color/texture state is configured once per logical group instead of once per Uint16 chunk. Mesh-specific position/normal/UV/index buffers remain bound per chunk.
-10. **Documentation reduction** — current docs describe current boundaries; Git history is the cold archive.
-
-PERF-S1/S2/S3 are source-reviewed performance candidates, not yet a claim of measured phone improvement. Conservative culling math passed supplemental strict TypeScript 5.8 checks and perspective/clip-space cases; matrix reuse passed bit-equivalence checks. The A/B parser is fail-safe: unsupported scale values return to cap 2 and only literal `jvScanCull=0` disables culling. Canonical Node 24.16 / npm 11.13 / TypeScript 7 / Vite 8 validation and real-device measurement are still pending.
-
-## Current scan cost
+Current scan facts:
 
 ```text
-7 tiles
-25 render groups / 25 textures
+25 groups / 25 textures
 1,409,687 vertices
-5,327,325 indices
 1,775,775 triangles
-111,288,484 B source payload
-
-render typed arrays:        66,419,284 B
-collision typed arrays:     38,225,544 B
-total typed-array geometry: 104,644,828 B
-estimated GPU geometry:     55,764,634 B
-base RGBA8 texture texels:  104,857,600 B (100 MiB)
+>=38 scan draw calls from Uint16 chunking
+~55.8 MB estimated GPU geometry
+100 MiB base RGBA8 texture texels
+~38.2 MB merged collision arrays
 ```
 
-The merged ~38.2 MB collision copy is passed to Box3D and is not disposable renderer waste.
+## Current live experiment
 
-Current WebGL1 Uint16 chunking makes 13/25 logical groups exceed one chunk, so the approved scan requires at least **38 scan draw calls** before other world draws. PERF-S1 can now skip whole groups and all of their chunks when offscreen; PERF-S3 avoids repeating logical-group state setup for the extra chunks. Debug exposes the actual visible counts.
+Public commit `55f607aa...` preserves the known-good compiled app, scan, vehicles, scenes and receipts byte-for-byte. It adds only a pre-app performance overlay and removes the stale canonical build manifest from the moving test lane.
 
-All 25 scan textures are still created and loaded eagerly. Culling therefore reduces draw/triangle work only; it does **not** yet reduce scan download, texture decode, GPU texture residency or CPU collision memory.
-
-## Performance direction
-
-Do not add geometric LOD or rewrite collision before simpler evidence-backed levers are exhausted.
-
-One future device build can now compare the same exact source SHA with:
+Query controls:
 
 ```text
-default: culling ON, render cap 2
-A/B:     jvScanCull=0
-A/B:     jvRenderScale=1.5
-A/B:     jvRenderScale=1
+jvRenderScale=1
+jvRenderScale=1.5
+jvRenderScale=2
+jvPerfHud=1
 ```
 
-For each case record:
+Without these parameters behavior remains the known-good default. The overlay was checked in Chromium with forced DPR 3: default resolves to 2x backing scale, while the explicit caps resolve to 1.5x / 1x / 2x as requested.
 
-```text
-exact build SHA
-frame ms / fps
-canvas backing resolution
-effective render scale / device DPR
-visible scan groups / total groups
-visible scan draws / total draws
-```
+The public `LIVE_BUILD.json` records that this is a supplemental live experiment, not canonical release authority.
 
-Then choose the next measured lever:
+## Development loop now
 
-1. **render/backing scale** if fps tracks pixel workload;
-2. **texture resolution or visibility-driven texture residency** if memory/upload pressure dominates;
-3. **Uint32 index fast path** only if draw-call pressure remains high and the phone supports it — it trades fewer draws for larger index buffers;
-4. **bounded scan-load pipelining** if startup/download/parse time is the main problem;
-5. collision-memory restructuring only with physics/memory evidence;
-6. geometric LOD/streaming only if the simpler changes are insufficient.
+1. preserve known-good checkpoint;
+2. make one meaningful, reversible performance change;
+3. run cheap source/syntax/scope checks;
+4. publish to the moving Pages lane;
+5. measure on real desktop/phone;
+6. keep, revise or instantly roll back;
+7. update this file briefly.
 
-Camera work stays prepared but separate from the first performance measurement so performance and composition changes are not mixed unnecessarily.
+Do not require a full release ceremony for ordinary live experiments. Canonical build/release gates return when promoting a tested state to accepted authority.
 
-## Explicit boundaries now
+## Next performance decision
 
-- do not restart old-build handling archaeology;
-- do not change final steering/rig against the provisional bridge;
-- do not hide the full scan on phone instead of optimizing/measuring it;
-- do not claim PERF-S1/S2/S3 improved a real phone before device evidence;
-- do not introduce speculative LOD/streaming architecture;
-- do not create new orchestration/process frameworks.
+First measure the scan at default, 1.5x and 1x backing scale with the live HUD. If FPS strongly follows pixel count, implement a proper source-level device/backing-scale policy. If it does not, prioritize texture residency/upload, scan-group draw cost and load pipeline before geometric LOD.
+
+Boundaries remain: do not reopen final steering/JURE work, do not hide the scan on phone, and do not claim measured gains before real-device evidence.
