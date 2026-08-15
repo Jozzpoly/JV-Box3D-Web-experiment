@@ -92,11 +92,15 @@ JURE is the intended owner-facing authoring system for rig elements, frames, mat
 
 JV Web should eventually consume explicit JURE-authored outputs through a small adapter/contract. It should not maintain a parallel rig editor or repair uncertain authored geometry with accumulating ad-hoc offsets.
 
-## 11. Camera and input boundary
+## 11. Experience, camera and input boundary
 
-Camera state/input belongs to the renderer/UI path. Vehicle drive/steer/brake input belongs to the product/vehicle input path. They must not steal gesture/key ownership from each other.
+Manual camera calibration is user-owned presentation state. Automatic driving assists may derive additive camera response, but must not silently rewrite the user's manual orbit, pan, distance or saved calibration. Reset may intentionally return to the current viewport default; future presets should persist explicit user settings rather than transient assist state.
 
-Phone camera/framing and touch/steering interaction are product UX surfaces and may be improved without redefining vehicle mechanics.
+Camera gesture ownership stays in the renderer/UI path. Terrain/obstacle camera avoidance requires an explicit environment-query/probe boundary; do not infer authoritative collision or ground state from visual data just to make a camera effect work.
+
+Vehicle controls stay on the timestamped product-input path. Device-specific controls must not call M6 physics directly. Future analog steering should extend the existing `RELEASE` / `RATE` / `POSITION` command model, while analog throttle/brake should extend the normalized longitudinal path. Steering and longitudinal source ownership remain independent so simultaneous controls can coexist.
+
+Immersive/fullscreen behavior, HUD composition and user settings are presentation/capability layers. They may change how JV is operated or displayed without becoming vehicle-mechanics authority.
 
 ## 12. Private source vs public artifact
 
