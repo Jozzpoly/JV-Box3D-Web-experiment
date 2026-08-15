@@ -62,7 +62,7 @@ Public release evidence:
 ```text
 public branch: release/friends-r1
 public commit: 7161215e47f00573b8c1b5c31e5931c89f9d709a
-private source used by live hotfix: 0657e5ecbc4081e8ad75ce8b9d1a8be385c586eb
+private source used by live hotfix: 0657e5ecbc4081e8ad75ce4b00c5ba54f94cc04
 scan preview SHA-256: aee5242a208482944666b56bcc7ddfe66cbd4e72dc9da99199fbe667bd578146
 ```
 
@@ -76,7 +76,7 @@ Owner directly confirmed:
 - portrait and landscape both render the scan/vehicle;
 - phone camera/framing and some responsive UI are not yet satisfactory and are explicitly deferred.
 
-Protected meaning: GitHub Pages + browser runtime + public scan + current vehicle now form a real working product foundation.
+Protected meaning: GitHub Pages + browser runtime + public scan + current vehicle form a real working product foundation.
 
 This does **not** accept final mobile UX/performance, final vehicle rig, final steering physics or final driving feel.
 
@@ -124,43 +124,51 @@ Not accepted by this checkpoint:
 - final mobile camera, joystick/steering or responsive UX;
 - final rig/JURE integration or vehicle handling.
 
-Protected meaning: for the present 1x A53 stress case, the lightweight performance foundation has achieved its product purpose. Future agents should not reopen endless micro-optimization of this exact JSPREV2 without new evidence. Scaling work should instead target dedicated collision data, texture/residency policy and future VAW/JSPREV3 spatial asset structure when larger worlds justify it.
+Protected meaning: for the present 1x A53 stress case, the lightweight performance foundation achieved its product purpose. Future agents should not reopen endless micro-optimization of this exact JSPREV2 without new evidence.
 
-## CAMERA-1B-NAV-01 — manual inspection/navigation foundation
+## CAMERA-MANUAL-RIG-V1 — manual inspection/navigation foundation
 
 Date: 2026-08-15
-Classification: `OWNER ACCEPTED — NARROW DEVICE/FEEL SCOPE`
+Classification: `OWNER ACCEPTED — MANUAL CAMERA FOUNDATION`
 
 Exact evidence boundary:
 
 ```text
-private source base: work/friends-r1-usability@dc8eab1ef3a24dcaab4b8fdff61da020c2518d5e (Camera 1A)
-public Camera gate: release/friends-r1@4768abedaa67b7505ca963a0836879e42590b67d
-camera patch SHA-256: fcc82118d607bed941b487d1f8222d291882c8f5ea51b600ade5b8ee04f1be78
-public gate classification: noncanonical owner-device gate
+Camera 1A private base: work/friends-r1-usability@dc8eab1ef3a24dcaab4b8fdff61da020c2518d5e
+Camera 1B private absorption: 997c9a34ea429220dbdb4f5408a0ac37200bd712
+public Camera owner-device gate: release/friends-r1@4768abedaa67b7505ca963a0836879e42590b67d
+camera runtime patch SHA-256: fcc82118d607bed941b487d1f8222d291882c8f5ea51b600ade5b8ee04f1be78
+public gate classification: noncanonical owner-device proof
 ```
 
-Owner directly confirmed after Recovery V3:
+Owner directly judged that the stage had largely achieved the intended result. The supplied validation screenshots demonstrate:
 
-- focusing on a school wall with `F` worked very well for inspection;
-- Shift+scroll navigation worked and made navigation immediately better;
-- approaching and inspecting a wall/corner and then jumping to another part of the school/scan had decisively stopped being a fight with the camera;
-- the current interaction set is sufficient for this stage even though more combinations may be useful later;
-- overall Camera 1B achieved in large part the intended manual-navigation result.
+- normal Chrome phone use in landscape with the scan and vehicle rendered;
+- very close / inside-or-under-vehicle manual inspection;
+- far and aerial scan viewpoints;
+- portrait and landscape phone use;
+- desktop manual inspection inside/around the vehicle;
+- supplemental Messenger in-app WebView operation.
+
+Together with the tested interaction implementation, this accepts the current manual camera as a usable foundation for further JV-Web usability work. It does **not** turn every future camera behavior into accepted product truth.
+
+Source/logic closure evidence:
+
+- reconstructed Camera 1A source matched the relevant private remote blobs exactly before Camera 1B replay;
+- reconstructed Camera 1B TypeScript emitted byte-identical owner-tested `m6-chase-camera.js` and `m6-world-renderer.js` runtime modules after the deterministic device-payload import rewrite;
+- scoped camera/viewport tests passed 17/17 before private absorption;
+- private absorption changed only `src/render/m6-chase-camera.ts`, `src/render/m6-world-renderer.ts` and `tests/m6-chase-camera.test.mjs`.
 
 Not accepted by this checkpoint:
 
-- every possible desktop/touch gesture combination;
 - camera persistence or presets;
 - immersive/fullscreen behavior;
-- advanced automatic speed/turn/terrain/obstacle assists;
+- advanced automatic speed/turn/slope/terrain/obstacle assists;
 - final HUD/settings/input/mobile steering UX;
-- any change to vehicle mechanics;
-- canonical Friends release packaging or promotion to `main`.
+- canonical Friends release packaging or promotion to `main`;
+- any change to vehicle mechanics or rig authority.
 
-**Source-state caveat:** the previous conversation ended immediately after this owner success. Camera 1B has not yet been cleanly absorbed into private `work/friends-r1-usability`; the private lane still contains Camera 1A source. Preserve this checkpoint as device/feel evidence and recover/verify the exact tested Camera 1B slice before source absorption.
-
-Protected meaning: the manual camera is now good enough to serve as the interaction foundation for further JV-Web usability work. Future automatic assists must remain additive and must not silently overwrite manual user calibration.
+Protected meaning: manual orbit/pan/zoom and broad inspection range are now a stable experience-layer baseline. Future automatic assists must remain additive and must not silently overwrite manual user calibration.
 
 ## Durable method
 
