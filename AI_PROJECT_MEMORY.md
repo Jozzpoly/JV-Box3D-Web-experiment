@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
-Updated: 2026-08-16
-Status: `P1 ACCEPTED / MAINTENANCE VALIDATION ACTIVE / EXACT GATE PENDING / PRODUCT ROADMAP PARKED / JURE PAUSED`
+Updated: 2026-08-17
+Status: `P1 ACCEPTED / MAINTENANCE FOUNDATION CLOSED / PRODUCT ROADMAP PARKED HERE / JURE PAUSED`
 
 Compact router only. Live Git, actually executed evidence, public artifact state and direct Owner observation outrank this file.
 
@@ -11,64 +11,60 @@ Compact router only. Live Git, actually executed evidence, public artifact state
 - P1 promotion evidence: `2b12a2fa99d49ebe4d748ed851c194825129d38f`;
 - Owner-tested P1 runtime source: `c9b5990b226685abe35851fc5e9496323096ecf7`;
 - public Friends: `release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
-- private pre-P1 rollback: `rollback/main-before-p1-foundation-2026-08-16 -> f8eb0908f5934aed2d504f34ce483a02754039ec`;
-- immutable public fallback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`.
-
-Resolve moving refs before writes.
+- immutable public fallback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`;
+- exact neutral-foundation Windows PASS anchor: `3606e59368cac47d2fa7c505dbe4b5875a6a6c48`.
 
 ## Accepted P1
 
-Working foundation is Owner-accepted on desktop + Galaxy A53/Chrome: Plac E2R, Offroad, owner vehicle, approved JSPREV2, Camera Manual Rig V1, Fullscreen V1, X-only analog steering `POSITION` reference, analog pedals and established input/lifecycle behavior.
+Owner-accepted desktop + Galaxy A53/Chrome foundation includes Plac E2R, Offroad, approved JSPREV2, current owner vehicle, Camera Manual Rig V1, Fullscreen V1, X-only analog steering `POSITION`, analog pedals and established input/lifecycle behavior.
 
-Evidence anchors: 48/48 focused P1 checks + TypeScript + normal build; final promotion 444/444 complete tests + portable/build identity + 0 production dependency vulnerabilities.
+Product polish/rig/handling remain intentionally open.
 
-## Current maintenance boundary
+## Maintenance closure
 
-This conversation is maintenance/foundation-only. Do **not** advance P1.2/P2 or later product roadmap work until the Owner explicitly returns to product development.
+The neutral consumer foundation is closed at exact Windows execution anchor `3606e593...`:
 
-Allowed work: repository organization, documentation authority, validation infrastructure, invariant/provenance hardening and non-product cleanup.
+- canonical Git clone/origin and Node 24.16.0/npm 11.17.0;
+- 8/8 focused neutral tests;
+- deterministic receipt/provenance checks;
+- wrong-origin and dirty-source falsifiers;
+- 452/452 full repository tests;
+- docs + third-party PASS;
+- production bundle/leak scan PASS;
+- final clean exact HEAD;
+- receipt SHA-256 `a43d079b7803e39bfec42a6c5f15f838ef1f5b5ac5e06d7474d15493b4ed9bf0`.
 
-## Neutral rig consumer foundation
+Do not restart the V1/V2/V4 gate failures; they were harness/test defects already resolved before the final PASS.
 
-JV `main` contains a dormant/read-only consumer seam:
+The closure commit after `3606e593...` is documentation-only. Future source/test/dependency changes need their own evidence; do not transfer exact PASS across them.
 
-- `JvNeutralMechanismV1` bodies/frames/relations;
-- explicit `jv-rig-space/v1` metres/right-handed/+X forward/+Y up/+Z right/root convention;
-- current procedural M6 front-left coherent wishbone projection;
-- deterministic diagnostic receipt with exact producer/factory Git blob/SHA-256 provenance;
-- fail-closed dirty-source and wrong-origin guards;
-- geometry equivalence tests;
-- generic graph-invariant test;
-- repo-owned exact gate: `npm run gate:neutral-rig-foundation`;
-- no Box3D/runtime substitution.
+## Neutral rig consumer seam
 
-Current evidence classification: `SOURCE-VALIDATED / EXACT EXECUTION GATE PENDING`.
+JV `main` contains dormant/read-only engine-neutral bodies/frames/relations, explicit `jv-rig-space/v1`, current procedural M6 front-left wishbone projection, deterministic diagnostic receipt and graph invariants. It does not feed Box3D and is not the future JURE serialized schema.
 
-Do not treat the presence of the gate as proof it ran. Earlier `fd84fcf4...` Windows PASS does not transfer to current `main`. The 2026-08-16 owner-side attempts against `81c7c14...` failed in validation tooling before dependency installation/project tests and therefore do not constitute a neutral-rig PASS or product FAIL.
+## Security/dependency boundary
+
+V5 audit evidence:
+
+- production-only dependencies: 0 vulnerabilities;
+- all dependencies: one high-severity transitive **dev-only** `nanoid` advisory (GHSA-2v37-7h3g-55p8 / CVE-2026-67213).
+
+Treat the `nanoid` issue as deliberate dependency-maintenance debt, not a public-runtime blocker. Do not run blind `npm audit fix`.
+
+Other non-blocking debt: JS coverage gap in portable network-policy validation; redundant historical branch refs awaiting delete-ref capability; existing Vite `box3d.js` browser-externalization and large-chunk warnings.
 
 ## JURE pause
 
-JURE remains future authored-rig/Owner-authoring authority; JV remains runtime authority.
-
-Anchors:
 - accepted JURE main `d971b8bef5dd7c65b78884b6b449e1f5ab0e7425`;
 - clean foundation / closed PR #3 `4db04eee4da0216f6bd3df6b6b0c82aa20afab5a`;
 - paused real-JV authoring / closed PR #4 `checkpoint/paused-jv-authoring-2026-08-16@f0f8cd91aca583610dc2dedd34e537a145a01b61`.
 
-Never splice exact/JURE hardpoints into incompatible procedural M6 wishbone geometry. Future first coherent target remains chassis ref + upper/lower arms + carrier ref + 2 revolute + 2 spherical relations.
+Never splice exact/JURE hardpoints into incompatible procedural M6 wishbone geometry. First coherent future target remains chassis ref + upper/lower arms + carrier ref + 2 revolute + 2 spherical relations.
 
-## Publication and hygiene
+## Product direction
 
-Public repository `main` is documentation/control-plane only; Pages serves `release/friends-r1` root. Public control-plane docs were corrected on 2026-08-16 to match live Friends. Maintenance work has not moved the deployed artifact.
-
-Private steady-state target is main-only. Two old neutral/JURE refs still physically exist at `7ff1c73...` but are non-authoritative. Eight public checkpoint refs are confirmed ancestors of current Friends and are likewise redundant. Delete these refs when a delete-ref capability is available; do not preserve branch names as trophies.
-
-## Parked product direction
-
-Preserve for later Owner-directed resumption:
+This conversation remains maintenance-only. Preserve for a separate Owner-directed product continuation:
 
 `P1.2 HUD -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait`
 
-Protected foundations remain current Friends/scan, accepted A53 performance boundary, Camera/Fullscreen, fixed-step/timestamped inputs, independent pedals/lifecycle, D/R behavior, X-only steering reference and JURE/JV authority split.
-
-For takeover read `AGENTS.md -> docs/PROJECT_STATE.md`; use `docs/HANDOFF.md` only when snapshot context is useful.
+For takeover read `AGENTS.md -> docs/PROJECT_STATE.md`; use `docs/HANDOFF.md` only as snapshot context.
