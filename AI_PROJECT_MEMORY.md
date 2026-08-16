@@ -29,7 +29,7 @@ One isolated lane is active: `jure/neutral-geometry-receipt`.
 
 Purpose: expose the current legacy front-left M6 double-wishbone as a read-only `JvNeutralMechanismV1` plus deterministic receipt so JURE can compare authored truth with current JV consumer truth before runtime substitution.
 
-This lane is **not yet canonically validated**. Owner-visible product runtime remains frozen: no Box3D substitution, steering/handling change, renderer/HUD/mobile change or Friends/Public publication.
+This lane is **not yet canonically validated at its current head**. Owner-visible product runtime remains frozen: no Box3D substitution, steering/handling change, renderer/HUD/mobile change or Friends/Public publication.
 
 ## Branch policy
 
@@ -45,7 +45,9 @@ JURE is authored-rig authority; JV-Web is the first real consumer/runtime falsif
 
 Critical falsifier: procedural JV-Web M6 wishbone and exact/JURE-authored wishbone are not rigid-congruent. Never create a hybrid by replacing one authored hardpoint/relation inside an incompatible procedural shape.
 
-JURE and JV are complementary by design. JURE's primary near-term role in the JV program is to author the coherent mechanical and representation truth needed to repair the M6 rig and later create new vehicle rigs: exact part placement, frames, relations, suspension/steering geometry and representation mappings. For dampers/springs, JURE owns attachment/axis/travel geometry and representation mapping; JV owns force laws, solver state and current compression. The same architecture may later serve non-vehicle mechanisms, but do not prebuild a universal framework without a real use case.
+JURE and JV are complementary by design. JURE's primary near-term role in the JV program is to author the coherent mechanical and representation truth needed to repair the M6 rig and later create new vehicle rigs: exact part placement, frames, relations, suspension/steering geometry and representation mappings. For dampers/springs, JURE owns Owner-authored attachment/axis/travel geometry and representation mapping; JV owns force laws, solver state and current compression. The same architecture may later serve non-vehicle mechanisms, but do not prebuild a universal framework without a real use case.
+
+**Owner-authoring invariant:** JURE must become the Owner's end-to-end rigging instrument, not an agent-operated preprocessing step. For supported mechanisms the Owner should be able to inspect exact SOURCE, create and adjust authored parts/frames/relations, fit representation, inspect diagnostics, test/reset kinematics, correct the rig, save/reopen and export without agent-side coordinate editing or consumer-code changes being a mandatory step. The agent builds tooling, math and diagnostics and helps investigate failures; repeated hard rigging operations should become Owner workflows in JURE.
 
 Do not freeze a concrete JV-Web JURE import schema yet. JURE should first finish Owner-operability of the coherent four-relation wishbone and freeze its multi-relation consumer fragment.
 
@@ -57,7 +59,7 @@ No coordinate guessing, implicit identity transform, consumer dynamics in JURE, 
 
 ## Neutral receipt rule
 
-The JV neutral receipt is a diagnostic output mirror, not an authored format and not a runtime input. For cross-project use it must carry exact JV producer repository+commit, pinned factory-receipt path, exact factory-receipt Git blob, SHA-256 of canonical blob bytes, explicit `JV_RIG_SPACE_V1`, and deterministic bodies/frames/relations. Moving branch names are not provenance authority.
+The JV neutral receipt is a diagnostic output mirror, not an authored format and not a runtime input. For cross-project use it must carry exact JV producer repository+commit, pinned factory-receipt path, exact factory-receipt Git blob, SHA-256 of canonical blob bytes, explicit `JV_RIG_SPACE_V1`, and deterministic bodies/frames/relations. Moving branch names are not provenance authority. The exporter must fail closed if tracked source differs from `HEAD` before it claims that producer commit.
 
 ## Protected boundaries
 
@@ -65,6 +67,8 @@ Preserve Plac E2R, Offroad, owner vehicle, approved JSPREV2, accepted A53 render
 
 ## Next boundary
 
-Finish and canonically validate the neutral-receipt lane. If green, inspect the generated JSON itself, promote only the proven source/tool/docs slice, ground the handoff, and return to a small branch namespace.
+Finish and canonically validate the neutral-receipt lane at its **current exact head**. The earlier Windows PASS for `fd84fcf4...` remains evidence only for that older exact commit; it cannot validate later provenance/engine-neutral hardening commits.
+
+If the fresh gate is green, inspect the generated JSON itself, promote only the proven source/tool/docs slice, ground the handoff, and return to a small branch namespace.
 
 The next real JURE -> JV runtime work begins only after JURE freezes the coherent multi-relation consumer fragment. Mobile polish remains a separate lane.
