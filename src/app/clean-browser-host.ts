@@ -14,6 +14,12 @@ import {
   type LongitudinalTimelineSample,
 } from "../input/longitudinal-input-timeline.js";
 import {
+  PointerAnalogDriveAdapter,
+  type AnalogDrivePedal,
+  type PointerAnalogDriveControls,
+  type PointerDriveDirection,
+} from "../input/pointer-analog-drive-adapter.js";
+import {
   PointerSteeringJoystickAdapter,
   type PointerSteeringJoystickTarget,
 } from "../input/pointer-steering-joystick-adapter.js";
@@ -43,6 +49,15 @@ export interface CleanBrowserHostOptions {
   readonly onPointerControlStateChange?: (
     control: PointerVehicleControlId,
     active: boolean,
+  ) => void;
+  readonly analogDriveControls?: PointerAnalogDriveControls;
+  readonly onAnalogPedalStateChange?: (
+    pedal: AnalogDrivePedal,
+    value: number,
+    active: boolean,
+  ) => void;
+  readonly onDriveDirectionChange?: (
+    direction: PointerDriveDirection,
   ) => void;
   readonly steeringJoystick?: PointerSteeringJoystickTarget;
   readonly onSteeringJoystickStateChange?: (
@@ -109,6 +124,33 @@ export class CleanBrowserHost {
         "keyboard longitudinal adapter",
         () => longitudinalKeyboard.dispose(),
       );
+
+      if (options.analogDriveControls !== undefined) {
+        const analogDrive = new PointerAnalogDriveAdapter({
+          windowTarget: options.windowTarget,
+          documentTarget: options.documentTarget,
+          isDocumentHidden: options.isDocumentHidden,
+          timeline: longitudinalTimeline,
+          controls: options.analogDriveControls,
+          now: options.now,
+          ...(options.onAnalogPedalStateChange === undefined
+            ? {}
+            : {
+                onPedalStateChange:
+                  options.onAnalogPedalStateChange,
+              }),
+          ...(options.onDriveDirectionChange === undefined
+            ? {}
+            : {
+                onDirectionChange:
+                  options.onDriveDirectionChange,
+              }),
+        });
+        resources.defer(
+          "pointer analog drive adapter",
+          () => analogDrive.dispose(),
+        );
+      }
 
       if (options.pointerControls !== undefined) {
         const pointerControls = new PointerVehicleControlAdapter({
