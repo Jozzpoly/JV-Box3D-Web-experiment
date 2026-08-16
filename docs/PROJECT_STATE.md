@@ -2,123 +2,130 @@
 
 Updated: 2026-08-17
 Owner: Jozz
-Status: `P1 ACCEPTED / MAINTENANCE FOUNDATION CLOSED / PRODUCT ROADMAP PARKED IN THIS CONVERSATION / JURE PAUSED`
+Status: `P1 ACCEPTED / MAINTENANCE FOUNDATION CLOSED / HANDOFF READY / PRODUCT CONTINUATION NEXT / JURE PAUSED`
 
-## 1. Authority and durable anchors
+## 1. Authority and live anchors
 
 Private source/product authority is live `main` of `Jozzpoly/JV-Box3D-Web-experiment`. Git/current source, actually executed validation and direct Owner observation outrank documentation and branch names.
 
 ```text
 P1 promoted evidence: 2b12a2fa99d49ebe4d748ed851c194825129d38f
 Owner-tested P1 source: c9b5990b226685abe35851fc5e9496323096ecf7
-Public Friends: Jozzpoly/JV-Box3D-Web-Public release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f
-Private pre-P1 rollback: rollback/main-before-p1-foundation-2026-08-16 -> f8eb0908f5934aed2d504f34ce483a02754039ec
+Public Friends: release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f
 Immutable public fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
-Neutral-foundation exact Windows PASS anchor: 3606e59368cac47d2fa7c505dbe4b5875a6a6c48
+Historical pre-P1 private anchor: f8eb0908f5934aed2d504f34ce483a02754039ec
+Neutral-foundation exact Windows PASS: 3606e59368cac47d2fa7c505dbe4b5875a6a6c48
 ```
 
-## 2. Accepted product foundation
+The former private rollback/checkpoint branch refs have been removed by the Owner. `f8eb0908...` remains an ancestor/evidence commit, not a live branch.
 
-P1 Owner acceptance covers the working desktop/mobile foundation: Plac E2R, Offroad, owner vehicle, approved JSPREV2, Camera Manual Rig V1, Fullscreen V1, current X-only analog steering `POSITION` reference, analog pedals, fixed-step/timestamped inputs, independent throttle/brake ownership, fail-closed lifecycle handling, D/R behavior and the tested Galaxy A53 / Chrome render-1x performance boundary.
+## 2. Repository/publication state at handoff
 
-P1 is not final UX/rig/handling. This maintenance conversation does not advance P1.2/P2 or later product work.
+Verified after Owner cleanup:
 
-## 3. Neutral-rig consumer foundation — CLOSED
+- private JV-Web branch set: **`main` only**;
+- private JV-Web open PRs: **0**;
+- private JV-Web open issues: **0**;
+- public JV-Web open PRs: **0**;
+- public JV-Web open issues: **0**;
+- public Pages status: **built**, HTTPS enforced, source `release/friends-r1` `/`;
+- live Friends remains `a325c279...`;
+- public control-plane `main` remains `8f6e0e5009379423302c76b74ca189b824ce5cef`;
+- JURE accepted `main` remains `d971b8bef5dd7c65b78884b6b449e1f5ab0e7425` and JURE remains paused.
 
-JV owns a dormant/read-only consumer-side neutral rig seam:
+Public branch cleanup is not complete: eight historical `checkpoint/*` refs still exist. They were previously verified as ancestral/redundant evidence and are not active authority. Keep `main`, `release/friends-r1` and `release/r0`; do not confuse checkpoint names with active work.
 
-- `src/vehicle/neutral-mechanism.ts` — engine-neutral bodies/frames/relations and explicit `jv-rig-space/v1`;
-- `src/vehicle/m6/m6-neutral-geometry.ts` — read-only projection of the current procedural M6 front-left coherent double-wishbone;
-- geometry/provenance tests and graph invariants;
-- deterministic receipt exporter with exact producer/factory Git blob/SHA-256 provenance;
-- fail-closed canonical-origin and tracked-source guards;
-- repo-owned exact gate: `npm run gate:neutral-rig-foundation`.
+## 3. Accepted product foundation
 
-The seam does **not** feed Box3D, replace runtime hardpoints, change Friends or define the future JURE authored schema.
+P1 is Owner-accepted on desktop and Samsung Galaxy A53 / Chrome. Preserve:
 
-### Exact execution evidence
+- Plac E2R, Offroad and approved JSPREV2;
+- current owner vehicle;
+- Camera Manual Rig V1 and Fullscreen V1;
+- current X-only analog steering `POSITION` interaction as the working reference;
+- analog throttle/brake foundation;
+- independent multitouch ownership, fail-closed lifecycle behavior and D/R semantics;
+- accepted A53/Chrome render-1x performance boundary.
 
-Owner-side Windows V5 completed against exact commit:
+P1 is a foundation, not final HUD, pedal design/mapping, steering visual language, portrait composition, rig geometry or handling.
 
-```text
-3606e59368cac47d2fa7c505dbe4b5875a6a6c48
-Git 2.54.0.windows.1
-Node 24.16.0
-npm 11.17.0
-```
+## 4. Latest Owner product feedback — next problem to solve
 
-Executed evidence:
+After accepting P1, the Owner explicitly reported that the pedals work and are a major improvement over the old binary buttons, but the interface still needs substantial coordinated polishing:
 
-- exact private clone, detached checkout and canonical origin verification PASS;
-- `npm ci` PASS;
-- strict TypeScript PASS;
-- focused neutral geometry/provenance + graph-invariant tests: **8/8 PASS**;
-- deterministic double receipt export and exact provenance checks PASS;
-- wrong-origin fail-closed falsifier PASS;
-- dirty tracked-source fail-closed falsifier PASS;
-- full repository tests: **452/452 PASS**;
-- documentation link audit PASS;
-- third-party notice verification PASS;
-- production Vite bundle + neutral-seam leak scan PASS;
-- final exact HEAD preserved and Git tree clean;
-- neutral receipt SHA-256: `a43d079b7803e39bfec42a6c5f15f838ef1f5b5ac5e06d7474d15493b4ed9bf0`.
+- the UI has become visually/structurally chaotic;
+- in rotated/short landscape states parts of the interface can disappear or become poorly usable;
+- pedals can cover useful interface;
+- control placement must be reconsidered as one coordinated composition rather than accumulated offsets;
+- mechanics, visualization and feedback will be refined iteratively over multiple stages.
 
-Earlier V1/V2 failures were validation-harness defects; V4 exposed and falsified one over-broad test assertion. Do not restart those incidents as project failures.
+The current owner-intent authority is `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`.
 
-The closure documentation commit after this anchor is documentation-only. The exact execution PASS belongs to `3606e593...`; do not transfer that PASS across future source/test/dependency changes.
+## 5. Neutral-rig consumer foundation — CLOSED
 
-## 4. Security/dependency evidence
+JV contains a dormant/read-only engine-neutral consumer seam for the current procedural M6 front-left wishbone. It does not feed Box3D, replace runtime hardpoints or define the future JURE authored format.
 
-The V5 run captured npm audit evidence separately from the neutral-rig verdict:
+Owner-side Windows V5 completed against exact commit `3606e59368cac47d2fa7c505dbe4b5875a6a6c48` with:
+
+- exact clone/origin and canonical Node/npm;
+- `npm ci` and strict TypeScript PASS;
+- focused neutral tests **8/8 PASS**;
+- deterministic receipt/provenance PASS;
+- wrong-origin + dirty-source falsifiers PASS;
+- full repository suite **452/452 PASS**;
+- docs + third-party PASS;
+- production bundle + neutral-seam leak scan PASS;
+- final exact HEAD clean;
+- receipt SHA-256 `a43d079b7803e39bfec42a6c5f15f838ef1f5b5ac5e06d7474d15493b4ed9bf0`.
+
+V1/V2 were harness portability failures; V4 exposed an over-broad test assertion. They are resolved history, not project regressions. Do not restart this campaign without new evidence.
+
+The documentation-only commits after `3606e593...` do not move the execution-evidence anchor. Never transfer that exact PASS across later source/test/dependency changes.
+
+## 6. Security/dependency boundary
+
+V5 audit evidence:
 
 - production-only (`npm audit --omit=dev`): **0 vulnerabilities**;
-- all dependencies: **1 high**, transitive dev dependency `nanoid`, GHSA-2v37-7h3g-55p8 / CVE-2026-67213;
-- this finding is build/dev-toolchain debt, not current public-runtime exposure.
+- all dependencies: one high transitive dev-only `nanoid` advisory, GHSA-2v37-7h3g-55p8 / CVE-2026-67213.
 
-Do not run `npm audit fix` blindly. Resolve it during a deliberate dependency-maintenance slice and revalidate any resulting lockfile/toolchain change.
+This is dev/build-tooling debt, not demonstrated public-runtime exposure. Do not run blind `npm audit fix`; handle it during a deliberate dependency refresh and revalidate the resulting lockfile/toolchain.
 
-## 5. JURE boundary
+## 7. Non-blocking debt
 
-JURE remains intentionally paused and remains future Owner-authored rig authority; JV remains runtime physics/controls/rendering authority.
+Known but non-blocking for the next product slice:
 
-```text
-accepted JURE main: d971b8bef5dd7c65b78884b6b449e1f5ab0e7425
-clean foundation candidate / closed PR #3: 4db04eee4da0216f6bd3df6b6b0c82aa20afab5a
-paused real-JV authoring / closed PR #4: checkpoint/paused-jv-authoring-2026-08-16@f0f8cd91aca583610dc2dedd34e537a145a01b61
-```
+1. dev-only `nanoid` advisory above;
+2. portable network-policy validation formally covers HTML/CSS, not general JavaScript network behavior;
+3. eight redundant public checkpoint refs remain;
+4. current private/public branch protection is not enabled;
+5. Vite reports the existing `box3d.js` `node:module` browser-externalization warning and a >500 kB main-chunk warning.
+
+Do not turn these into an open-ended cleanup campaign unless they impede the selected product goal.
+
+## 8. JURE boundary
+
+JURE remains future Owner-authored rig authority; JV remains runtime physics/controls/rendering authority.
 
 Durable rule: procedural M6 wishbone and exact/JURE-authored wishbone are not rigid-congruent. Never build a partial hybrid. First coherent future replacement target remains chassis reference + upper/lower arms + carrier reference + 2 inboard revolutes + 2 outboard spherical relations.
 
-## 6. Publication state
+## 9. Product continuation — READY
 
-`Jozzpoly/JV-Box3D-Web-Public` is artifact-only. Its `main` is documentation/control-plane; deployed Friends remains `release/friends-r1@a325c279...`. This maintenance pass did not change the deployed product.
+The former Main Promotion Preparation / maintenance prerequisite is now closed. In a **new product conversation**, resume from P1.2 rather than restarting maintenance:
 
-## 7. Non-blocking maintenance debt
+`P1.2 coordinated HUD -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait composition`
 
-These are real findings but do **not** block resuming product development in a separate product continuation:
+First target: **P1.2 coordinated mobile HUD composition**. Preserve the working steering/pedal input foundations while solving zones, overlap, action reachability, central world visibility and short-landscape/portrait composition. Do not mix P1.2 with pedal semantic redesign or vehicle physics changes.
 
-1. transitive dev-only `nanoid` advisory described above;
-2. portable network-policy validation formally covers HTML/CSS but not general JavaScript network behavior;
-3. two redundant private neutral/JURE branch refs and eight redundant public checkpoint refs remain because current connector lacks delete-ref capability;
-4. Vite build reports the existing `box3d.js` `node:module` browser-externalization warning and a >500 kB main-chunk warning.
+## 10. Fresh-agent takeover
 
-Do not turn these into an open-ended cleanup campaign without evidence that they impede the next product goal.
+For the next conversation:
 
-## 8. Parked product direction
+1. resolve live private `main` and public `release/friends-r1`;
+2. read `AGENTS.md`;
+3. read this file;
+4. read `docs/HANDOFF.md`;
+5. read `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` for owner-intent authority;
+6. inspect only the current mobile UI/layout source and smallest relevant tests before proposing/implementing P1.2.
 
-Preserved sequence for later Owner-directed resumption:
-
-`P1.2 HUD composition -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait composition`
-
-Historical pre-P1 mobile audits remain evidence only; their old alpha refs/readiness blockers are not current state.
-
-## 9. Fresh-agent entry
-
-Read:
-
-1. `AGENTS.md`
-2. this file
-3. `docs/HANDOFF.md` only for takeover snapshot context
-4. source/tests for the explicitly selected next task
-
-Do not restart neutral-foundation gate debugging, recovery archaeology, old Camera/Fullscreen reconstruction, P1 CSS repair, old Friends-overlay repair, accepted-A53 micro-optimization or speculative JURE runtime substitution without new evidence.
+Do not restart recovery archaeology, neutral-gate debugging, old Camera/Fullscreen reconstruction, P1 CSS repair, old Friends-overlay repair, accepted-A53 micro-optimization or speculative JURE runtime substitution without new evidence.
