@@ -1,6 +1,6 @@
 # JV Web — operating contract
 
-Updated: 2026-08-15
+Updated: 2026-08-16
 Owner: Jozz
 
 JV Web is the browser product line for Jozz Vehicle. The product goal is a public build that is useful and enjoyable to launch, drive and show on desktop and phone, while remaining a practical R&D surface for later improvements.
@@ -29,7 +29,7 @@ Preserve unless the current task explicitly changes it:
 
 Current mobile performance foundation is owner-validated for the tested Galaxy A53 / Chrome / render-1x scan case. Do not generalize that result to larger worlds, other devices or higher render scales.
 
-Known product debt includes mobile camera/control UX and final rig/steering/handling.
+Known product debt includes mobile driving-control polish and final rig/steering/handling. Camera Manual Rig V1 and Fullscreen V1 are accepted foundations; future automatic camera behavior must remain additive to manual calibration.
 
 ## 3. JURE boundary
 
@@ -51,6 +51,8 @@ For ordinary work, run only checks that cover the changed risk. Full validation 
 
 Avoid speculative abstractions. Prefer one clean implementation that can be extended later over infrastructure for hypothetical variants.
 
+Do not mix product redesign, source recovery, delivery-harness invention and repository cleanup into one slice. Close the foundation boundary first, then resume product work.
+
 ## 5. Documentation discipline
 
 A fresh agent normally needs only:
@@ -63,13 +65,17 @@ A fresh agent normally needs only:
 
 Historical campaigns, handoffs, recovery notes, superseded roadmaps and old branch narratives belong in Git history. Do not recreate them for ordinary work. Update or remove stale current-state text instead.
 
-Keep technical contracts/baselines only when they describe a real external, executable or reproducible boundary that source types alone do not communicate clearly.
+Keep technical contracts/baselines only when they describe a real external, executable or reproducible boundary that source types alone do not communicate clearly. A durable interaction contract is appropriate when exact product behavior would otherwise be lost across implementation attempts.
 
 ## 6. Git discipline
 
 Resolve repo/ref before writes. Use normal fast-forward history; no routine force pushes.
 
-Keep at most one ordinary active work lane ahead of `main`. Create another branch only for a concrete isolation/rollback reason, not per agent, conversation or tiny feature. Preserve valuable milestones with explicit `checkpoint/*` refs rather than multiplying active lanes.
+Keep at most one ordinary active work lane ahead of `main`. Create another branch only for a concrete isolation/rollback reason, not per agent, conversation, failed attempt or tiny feature.
+
+A `checkpoint/*` ref requires a concrete rollback/evidence purpose. Once that checkpoint is safely ancestral to `main`, an immutable release, or a deliberately retained archive ref, retire the redundant checkpoint branch name instead of accumulating permanent refs.
+
+For large cleanups, preserve branch archaeology in **one deliberate archive ref/manifest**, then remove obsolete ordinary branch names. Git history is the archive; branch names are working/navigation state, not trophies.
 
 Do not infer authority from names such as `golden`, `candidate`, `repair` or `checkpoint`.
 
@@ -82,6 +88,7 @@ Public releases are artifacts produced from accepted private source.
 - A scan-changing release must pin and validate the new exact approved scan input.
 - Compressed HTTP `Content-Length` is not decoded scan integrity; validate downloaded payload and format.
 - Keep rollback straightforward and verify exact public source/artifact identity after publication.
+- Experimental mobile controls must be implemented in normal typed private source and built normally. Do not patch compiled `main.js` or use text-replacement loaders as a substitute for source integration.
 
 ## 8. Product boundaries
 
@@ -101,4 +108,6 @@ Stop and investigate when:
 - documentation/process grows faster than product value;
 - a release artifact cannot be tied to exact source and rollback;
 - third-party licensing/provenance is unclear;
-- routine engineering work is about to be pushed onto Jozz.
+- routine engineering work is about to be pushed onto Jozz;
+- a new branch/checkpoint is being created without a concrete isolation or rollback reason;
+- an experiment starts depending on compiled-runtime text surgery instead of normal source integration.
