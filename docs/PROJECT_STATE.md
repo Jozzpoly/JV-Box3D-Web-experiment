@@ -2,223 +2,186 @@
 
 Updated: 2026-08-16
 Owner: Jozz
-Status: `FOUNDATION CLEANUP / FINAL MOBILE-DRIVING GROUNDING COMPLETE / CANONICAL PROMOTION GATE PENDING`
+Status: `MOBILE DRIVING CONTROLS / SOURCE CANDIDATE IMPLEMENTED / CANONICAL + RENDERED GATES PENDING`
 
-## 1. Authority during cleanup
+## 1. Authority
 
 ```text
 accepted private authority: main@f8eb0908f5934aed2d504f34ce483a02754039ec
-single active cleanup lane: work/foundation-cleanup
-clean product base: e04539c5132cd67c17bcfad86b2c9ae39c07ab51
+single active work lane: work/mobile-driving-controls
+active source candidate: work/mobile-driving-controls@f56be8c85ea2b26533eee89c050b1b55cf21ec4b
+implementation base / grounding closure: b453462cb9a0cbd28aadad500016d9be70e6756d
+clean product runtime under grounding: e04539c5132cd67c17bcfad86b2c9ae39c07ab51
 public Friends branch: release/friends-r1@fa00f4c3a3c19f1319302bc1728f9cf6490ce462
-public Friends tree: byte/tree-equivalent to owner-tested Steering V2@2acd652f68d57497c8ce8886b2875789a70f4be3
 immutable public fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-`work/foundation-cleanup` is a temporary normalization/grounding transaction only. It was created directly from exact pre-V3 source `e04539c...`, not from the later V3/revert/rebuild history. The mobile-driving target is now grounded; broad product implementation should begin only after this cleanup boundary is promoted/closed, unless the canonical environment remains the sole blocker and work is kept explicitly source-level and unpromoted.
+`main` and public Friends were not changed by the mobile-driving implementation session. Only `work/mobile-driving-controls` is active ahead of the grounding closure. Historical V3/V3.1/rebuild refs are donor evidence only.
 
 Git/current source, reproducible execution evidence and direct owner observation outrank this file.
 
 ## 2. Protected product foundation
 
-The clean base already contains the owner-accepted work that must survive cleanup:
+Preserve unless explicitly changed:
 
-- Friends browser foundation: Plac E2R, Offroad, owner vehicle and full approved JSPREV2 on desktop/phone;
-- Performance foundation v1: owner-validated Galaxy A53 / normal Chrome / current full textured JSPREV2 / render scale 1x / culling ON;
-- Camera Manual Rig V1: accepted manual orbit/pan/pinch/zoom/framing/inspection foundation;
-- Fullscreen V1: owner-validated mobile + desktop;
-- Steering Control V2: owner-accepted one-thumb X-only mobile steering foundation;
-- V2 pointer lift/cancel/lifecycle neutralization is **`POSITION 0` self-centering**, not a redesign to semantic `RELEASE` during ordinary touch use;
-- keyboard/digital steering keeps its existing priority while held;
+- Plac E2R, Offroad, owner vehicle and full approved JSPREV2;
+- owner-validated A53 performance foundation for the tested Chrome/render-1x case;
+- Camera Manual Rig V1;
+- Fullscreen V1 mobile + desktop;
+- Steering V2 semantics: one-thumb X-only `POSITION [-1,+1]` and normal pointer release/cancel self-centering through `POSITION 0`;
+- keyboard/digital priority while active;
 - recoverable mobile Debug;
-- current temporary JV-Web steering range of approximately +/-35 degrees at the wheels.
+- temporary approximately +/-35-degree JV-Web steering bridge.
 
-Owner acceptance remains scoped. Final rig geometry, Ackermann/tie-rod authority, steering feedback/back-drive, handling and final steering physics are not established here. JURE remains the authoring boundary for final rig geometry.
+Final rig/steering geometry and final handling remain outside this mobile-controls slice and stay compatible with the JURE authoring boundary.
 
-See `docs/OWNER_CHECKPOINTS.md` only when a scoped acceptance claim needs the durable evidence ledger.
+## 3. Mobile driving source candidate now implemented
 
-## 3. Mobile driving target recovered and grounded
+The target remains `docs/contracts/MOBILE_DRIVING_CONTROLS_TARGET.md`.
 
-The implementation target is explicit in:
+Implemented on the active lane:
 
-`docs/contracts/MOBILE_DRIVING_CONTROLS_TARGET.md`
+### Deterministic analog longitudinal input
 
-Core target:
+- timestamped analog throttle and brake events extend the existing `LongitudinalInputTimeline`;
+- digital keyboard demand remains authoritative while held and analog demand resumes afterwards;
+- simultaneous throttle + brake input remains representable;
+- current M6 physical brake-priority behavior was not changed.
 
-```text
-STEERING
-- preserve V2 one-thumb X-only POSITION [-1,+1]
-- pointer lift/cancel -> POSITION 0 self-centering
-- keep the current ~35-degree product bridge
-- freeze active gesture geometry instead of measuring layout every move
-- replace generic joystick/rack presentation with a shallow projected panoramic wheel
-- internal asymmetric wheel/index rotates; outer input geometry stays fixed
+### Analog pedal + D/R adapter
 
-PEDALS
-- independent analog THROTTLE and BRAKE
-- pointer-down position = local 0
-- relative upward travel -> 0..1
-- freeze origin/travel geometry at pointer-down
-- stable outer acquisition wells + animated inner pedal mechanisms
-- independent pointer ownership and multitouch
-- preserve simultaneous throttle + brake input
+- independent throttle/brake pointer ownership;
+- relative upward thumb travel from pointer-down maps to `0..1`;
+- origin and travel geometry are frozen at pointer-down;
+- second pointers cannot steal an already-owned pedal;
+- capture failure is fail-closed;
+- pointerup/cancel/lost capture/blur/hidden/pagehide/dispose release continuous demand;
+- orientation/fullscreen structural changes fail closed for held continuous controls;
+- compact `D/R` remains stateful across ordinary lifecycle releases;
+- `D<->R` is intentionally allowed under held throttle and at any speed; held throttle is re-signed at the same logical timestamp.
 
-D/R
-- compact state selector
-- allow D<->R while throttle is held and at any speed for now
-- no Neutral/release/speed interlocks unless real driving proves a need
-- one input-layer direction state; UI renders it rather than owning another copy
-```
+### Steering V2 hardening
 
-Owner decisions locked during preparation:
+- X-only mapping/dead-zone and `POSITION 0` self-centering are preserved;
+- steering hitbox geometry is read once at pointer-down and frozen for the active drag;
+- presentation/layout changes therefore cannot alter steering under a stationary finger;
+- orientation/fullscreen structural changes self-center the active gesture.
 
-- preserve simultaneous analog throttle + brake input;
-- current M6 controller remains brake-priority when both values are non-zero; physical combined-pedal consequences are a later explicit physics/handling question rather than a hidden control-stage change;
-- default hand layout is left-thumb steering / right-thumb longitudinal controls;
-- landscape is the first owner-polished driving surface; portrait follows as a separate responsive substage using identical semantics;
-- D/R remains permissive under throttle and at any speed;
-- supplied Concept 4 and V1/V2 screenshots are design evidence/donors, not pixel-perfect specifications.
+### Presentation boundary
 
-Grounding refinements that must survive implementation:
+`src/mobile-driving-ui.ts` is presentation-only. It does not produce physics commands.
 
-- product entry is `product-main.ts -> await import("./main.js") -> installProductControls()`; mobile driving belongs to normal `main`/host/input source, not `product-controls` or a second experimental entrypoint;
-- input timelines should receive real pointer events, while visual HUD writes are coalesced to at most one `requestAnimationFrame` so presentation does not become a pointer-frequency DOM workload;
-- command-coupled wheel/pedal motion should update directly (at most the RAF coalescing delay); easing belongs to discrete emphasis/lift/dim/selector transitions, not to the actual command indication;
-- visual state callbacks must be **generation-scoped** so disposal of a stale async host cannot overwrite a newer HUD;
-- restart should detach/disable the previous visual sink before old-host disposal, then bind a fresh neutral state (`steering 0`, `throttle 0`, `brake 0`, `D`) to the new generation;
-- ordinary layout animation uses frozen gesture geometry; structural orientation/fullscreen transitions may explicitly fail closed for continuous gestures rather than silently remapping a held command;
-- no live mobile `backdrop-filter`, large blur/glow or other compositing work that would reopen the accepted A53 performance bottleneck.
+- every host generation has explicit presentation identity;
+- a new generation synchronously resets HUD state to steering 0 / throttle 0 / brake 0 / D before old-host disposal;
+- stale callbacks from older generations are ignored;
+- continuous pointer-driven visual updates are coalesced to at most one `requestAnimationFrame` commit;
+- command-linked wheel/pedal indication has no multi-frame value easing.
 
-This is a product target, not a claim that any previous V3 implementation is accepted.
+### Mechanical mobile HUD
 
-## 4. V3 / donor classification
+- stable outer touch geometry;
+- shallow panoramic projected steering wheel with asymmetric spokes/index and rotating inner rotor;
+- BRAKE left / THROTTLE right;
+- mechanical pedal faces inside fixed acquisition wells;
+- active pedal may lift/grow and its inactive peer may recede; both remain active visually when both inputs are held;
+- compact D/R selector below the pedals;
+- landscape and short-landscape layouts respect safe areas;
+- no new mobile backdrop blur/filter-heavy presentation path.
 
-The V3 product concept was not owner-rejected. The first public device gate failed before meaningful driving with:
+Normal typed private source is used throughout. No compiled `main.js` text surgery, `replaceOnce()` delivery harness or alternate experimental runtime was introduced.
 
-```text
-Driving V3 pedal reset: expected source fragment not found
-```
+## 4. Validation evidence
 
-The failure class was brittle public delivery based on text surgery against compiled runtime. It is evidence against that harness architecture, not against analog pedals or the steering concept.
+### Executed noncanonical focused gate
 
-Historical source remains available for selective donor use:
+Environment available in this chat runtime:
 
-```text
-db61b661...  V3.1 analog foundation
-e651209f...  V3.1 presentation
-c0b3ed22...  V3.1 short-landscape hardening
-8736a2b6...  later post-rollback rebuild tip
-```
+- Node 22.16.0;
+- npm 10.9.2;
+- TypeScript 5.8.3.
 
-The later rebuild's separated `PointerAnalogDriveAdapter` and hardened lifecycle tests are validated donor mechanisms worth mining selectively: frozen pedal origin/travel, source-specific release, independent pedal ownership, capture-failure fail-closed behavior, multitouch and D/R re-sign under held throttle.
+An isolated executable slice containing the active input/presentation implementations compiled successfully with TS 5.8.3.
 
-Do not restore any donor wholesale merely because it is newer. Its direct presentation callbacks and surrounding host/UI integration are not current authority.
+Executed focused behavior tests: **21/21 PASS** covering:
 
-## 5. Repository cleanup boundary
+- generation-safe synchronous reset and stale-generation rejection;
+- multiple presentation changes -> one RAF commit with the latest state;
+- simultaneous pedal presentation;
+- analog pedal mapping and release;
+- D->R under held throttle with same-timestamp re-sign;
+- independent throttle + brake multitouch;
+- non-stealing pointer ownership;
+- pointer-capture failure fail-closed;
+- lost capture / visibility release;
+- V2 X mapping/dead-zone;
+- ordinary steering release -> `POSITION 0`;
+- frozen steering geometry after pointer-down;
+- steering capture failure fail-closed;
+- blur/dispose cleanup;
+- orientation change releasing analog demand while preserving R;
+- fullscreen change self-centering steering.
 
-The repository still has excessive historical branch refs. Cleanup policy:
+Historical donor tests and host contract tests are also present in the branch, but this document does not claim they were executed canonically in this runtime.
 
-1. `main` remains the only long-lived private product authority.
-2. `work/foundation-cleanup` is the only active private lane during this transaction.
-3. Old `work/*`, `candidate/*`, `repair/*`, `noop-*` and redundant `checkpoint/*` refs are historical only.
-4. Valuable old branch tips have been captured in retained archive/history before deletion.
-5. After the clean foundation is validated and promoted, retire the cleanup lane and redundant historical branch names rather than keeping parallel authorities.
-6. Future `checkpoint/*` refs require a concrete rollback/evidence reason and should be retired when safely ancestral to retained authority/archive.
+### Source/diff boundary
 
-The public repository remains an artifact/release surface. Keep `release/r0` immutable and `release/friends-r1` as the moving Friends line. Public checkpoint pruning is lower priority than private source cleanup and must not weaken rollback evidence.
+Relative to `b453462c...`, the active lane changes only:
 
-## 6. Grounding / validation evidence
+- `index.html`;
+- browser/vehicle host input wiring;
+- longitudinal/input adapter source;
+- `main.ts` mobile integration;
+- mobile-driving presentation/CSS;
+- focused tests.
 
-Private GitHub Actions remain blocked by the account's private Actions billing/spending limit. Do not add workaround workflows; this is infrastructure, not product failure.
+No M6 physics implementation, renderer, camera, scan loader/data, network transport, dependencies or vehicle rig source was changed.
 
-The owner-provided `work/foundation-cleanup` ZIP was independently reconstructed into Git tree `885bb4885d1384af3de2b0a189965303225ff49a`, exactly matching the branch tree at the download point before the later grounding-document commits.
+### Rendered gate
 
-Supplemental local evidence on that exact runtime source:
+Rendered proof is still **PENDING**. A local headless Chromium synthetic attempt did not produce a reliable frame because Chromium stalled on the chat container's headless/DBus environment. Do not reinterpret that environment failure as product failure or rendered PASS.
 
-- documentation link audit: PASS;
-- all 157 `.mjs` tool/test files: Node syntax PASS;
-- dependency-free steering/longitudinal subset compiled with noncanonical TypeScript 5.8.3: PASS;
-- focused steering-position / pointer-steering / longitudinal / keyboard-longitudinal / pointer-vehicle baseline: **29/29 PASS**;
-- static Steering V2 + mobile UI contracts: **11/11 PASS**;
-- direct source inspection confirms the current controller can represent simultaneous throttle+brake but M6 drive application is brake-priority;
-- direct source inspection confirms V2 ordinary pointer release neutralizes through `POSITION 0`;
-- direct source inspection confirms current `product-main.ts` imports normal `main` before product control injection;
-- donor review confirms the later separated analog-drive adapter and its lifecycle tests are reusable evidence, not product authority.
+### Canonical gate
 
-Rendered frontend QA is **not** claimed in this grounding pass. Browser plugin is not available here; Playwright is not installed; direct headless Chromium cannot initialize its rendering backend in this environment. A temporary non-product control-lab was used only to reason about geometry/DOM ownership and was not committed or treated as visual proof.
-
-Supplemental Node22/TS5.8 evidence is not canonical release proof.
-
-A direct `npm ci` attempt using the known noncanonical `--force` execution path reached the expected Node/npm dev-engine warnings and then stalled on unavailable package retrieval; it did not expose a new source failure.
-
-Before `main` is advanced through this foundation transaction, still require the exact repository toolchain boundary:
+Still required before promotion/publication:
 
 - Node 24.16.0;
 - npm 11.13.x;
-- lockfile dependencies;
-- TypeScript/Vite versions pinned by the repository;
+- repository lockfile dependencies;
+- TypeScript 7.0.2 / Vite 8.1.5;
 - real `box3d.js@0.0.2` coverage;
 - `npm run check`;
-- Friends/portable build checks;
-- exact source/artifact/rollback identity for publication.
+- Friends/portable build validation;
+- exact source/artifact/rollback identity.
 
-Rendered smoke is required before owner-facing UI handoff, but not to prove this docs-only cleanup transaction changed no runtime.
+Private GitHub Actions currently provide no run/status for the active head. Do not invent CI proof or create workaround workflows merely to bypass the account Actions boundary.
 
-## 7. Recursive grounding result
+## 5. Security boundary
 
-The final preparation used an adversarial recursive loop:
+Scoped diff review following the Codex Security diff-review discipline found no confirmed security vulnerability in the current mobile-controls delta:
 
-1. **Authority falsification** — exact source/refs/PR/public fallback.
-2. **Behavior falsification** — V2 steering semantics, longitudinal capability and physics boundary.
-3. **Donor falsification** — keep only mechanisms supported by source/tests; reject wholesale V3 recovery.
-4. **Lifecycle falsification** — capture failure, cancellation, visibility, disposal, restart and stale async generations.
-5. **UI/performance falsification** — hitbox truth, gesture geometry, render cadence, compositing cost and responsive thumb zones.
-6. **Convergence replay** — restart the critical checks after each material correction.
+- no credentials or private URLs/data;
+- no new network origin or fetch path;
+- no new dependency;
+- no browser permission request;
+- no `eval`/dynamic code execution;
+- no new persistent storage/cookie path;
+- input remains routed through normalized/timestamped product input rather than calling M6 physics directly;
+- viewport/lifecycle loss fails closed for continuous demand.
 
-Material corrections found by the loop were fed back into the target/router before replay. The final two critical replay passes produced no new source/authority contradiction. The remaining unknowns are deliberately deferred because they require implementation/render/device evidence: exact wheel perspective/rotation feel, pedal travel tuning, final landscape spacing, portrait adaptation and physical combined-pedal behavior.
+This is a scoped source/diff review, not a formal full-repository Codex Security scan execution.
 
-Those are implementation/owner-feel questions, not missing preparation facts.
+## 6. Next boundary
 
-## 8. Next sequence — implementation only after M0 promotion boundary
+Do **not** restart M1, restore old V3/V3.1, return to Camera, or redesign the input architecture again.
 
-### M0 — close/promo foundation
+The next work is execution/validation of the already-built candidate:
 
-1. run the canonical repository gate in an exact environment when available;
-2. promote the cleanup foundation to `main` only after that gate;
-3. retire the cleanup lane and stale branch refs that no longer provide unique rollback value.
+1. obtain a canonical checkout/toolchain and run repository check/build;
+2. fix only concrete failures exposed by that gate;
+3. run rendered browser smoke on the built product;
+4. if healthy, produce a normal Friends artifact from exact private source and publish to the moving `release/friends-r1` line with rollback intact;
+5. owner drives the candidate on Galaxy A53 in normal Chrome/fullscreen and judges wheel and pedals independently;
+6. apply local visual/feel polish from real device evidence;
+7. portrait adaptation follows after landscape owner validation.
 
-### M1 — deterministic analog core
-
-- extend the normal longitudinal timeline with analog source events;
-- implement a separated analog pedal + D/R adapter using donor mechanisms selectively;
-- keep current V2 steering intact;
-- generation-scope presentation callbacks from the start;
-- add focused tests before any visual redesign.
-
-### M2 — landscape steering instrument
-
-- semanticize/rename the steering adapter if useful;
-- freeze steering geometry for the active gesture while preserving V2 `POSITION` behavior;
-- implement the projected panoramic wheel with an asymmetric rotation index;
-- value-linked visual rotation has no multi-frame easing lag.
-
-### M3 — landscape pedal instrument + D/R
-
-- fixed acquisition wells + internal mechanical pedal faces;
-- presentation state coalesced to RAF;
-- compact direction selector outside pedal drag paths;
-- remove/retire obsolete binary mobile-drive presentation once replacement is proven.
-
-### M4 — owner landscape feel gate
-
-This is the first intended owner interruption. Judge steering and pedals independently through natural driving on the Galaxy A53 in normal Chrome/fullscreen as relevant.
-
-### M5 — portrait adaptation
-
-Preserve identical semantics; redesign spatial composition for narrow/tall use instead of shrinking landscape blindly.
-
-### M6 — normal product integration / Friends candidate
-
-Rendered QA, canonical build, exact artifact/source/rollback identity and final device check.
-
-No additional general takeover/recovery/grounding loop is planned before M1. If work is restarted in a fresh conversation, read the files in the router order and continue from this boundary rather than reconstructing V3 history again.
+If canonical execution remains the only blocker, keep this branch intact as the source candidate. Do not replace build validation with another compiled-runtime patch harness.
