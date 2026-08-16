@@ -37,6 +37,20 @@ function requireHex(value, length, label) {
   }
 }
 
+function requireTrackedWorktreeClean() {
+  try {
+    execFileSync("git", ["diff", "--quiet", "HEAD", "--"], {
+      cwd: repoRoot,
+      stdio: "ignore",
+    });
+  } catch {
+    throw new Error(
+      "Refusing to export JURE neutral geometry receipt: tracked worktree differs from HEAD.",
+    );
+  }
+}
+
+requireTrackedWorktreeClean();
 const producerCommit = gitText(["rev-parse", "HEAD"], "producer commit");
 const configReceiptGitBlob = gitText(
   ["rev-parse", `HEAD:${JV_M6_FACTORY_RECEIPT_PATH}`],
