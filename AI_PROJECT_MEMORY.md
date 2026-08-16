@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-16
-Status: `MOBILE DRIVING V3.1 DEVICE GATE PUBLISHED / OWNER VALIDATION PENDING`
+Status: `MOBILE DRIVING V3 DEVICE GATE / OWNER VALIDATION PENDING`
 
 This file is a router only. Current Git, reproducible execution evidence and direct owner observation outrank it.
 
@@ -9,64 +9,60 @@ This file is a router only. Current Git, reproducible execution evidence and dir
 
 - accepted private source: `main@f8eb0908f5934aed2d504f34ce483a02754039ec`;
 - single active product lane: `work/friends-r1-usability`;
-- exact V3.1 code candidate: `c0b3ed2223a451cdacfd79f179efd2b88be7434f`;
-- current public V3.1 owner-device candidate: `release/friends-r1@0baba295e3f8a9df8f8445731f043839cb55396f`;
-- superseded failed public V3 harness: `e94ab696d05b4a976a2673a69e40d5ddffea94d7`;
-- public Steering V2 owner proof: `2acd652f68d57497c8ce8886b2875789a70f4be3`;
-- temporary 35-degree bridge source: `d6c646b65a0d57306e138175209c0f652bdbfbda`;
+- current private lane before V3 source absorption: `357ca1689bc15fc315f558110c381056e20b2dee` (living-doc routing only after V2 foundation);
 - Camera Manual Rig V1 absorption: `997c9a34ea429220dbdb4f5408a0ac37200bd712`;
-- fullscreen owner proof: `checkpoint/pages-fullscreen-v1-owner-validated-2026-08-15@8fe52a73554273fa710d2be2fdaf3a144d9056ba`;
-- performance/A53 proof: `checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0`;
+- fullscreen source checkpoint: `checkpoint/fullscreen-v1-owner-validated-2026-08-15@db55501342feacfb0f82099d7f47afe3a9756143`;
+- Analog Steering V1 source: `d80d4636a1327c3aaf9e6689a95a7cb1d91f98b2`;
+- Steering Control V2 UX/debug source: `b9dd4f98ecee192af3302150c95542c772033949`;
+- temporary 35-degree drive bridge: `d6c646b65a0d57306e138175209c0f652bdbfbda`;
+- public Steering V2 owner-device proof: `release/friends-r1@2acd652f68d57497c8ce8886b2875789a70f4be3`;
+- current public Mobile Driving V3 candidate: `release/friends-r1@e94ab696d05b4a976a2673a69e40d5ddffea94d7`;
+- owner-tested performance code: `checkpoint/perf-foundation-a53-validated-2026-08-15@f42e16321d9edb26e10f44ab7c9eeda3c646291c`;
+- public A53 performance proof: `checkpoint/pages-perf-foundation-a53-scan-validated-2026-08-15@a31ba267ae44705d477a8fdfae9ca23d1d65d4d0`;
+- public Camera 1B device proof: `release/friends-r1@4768abedaa67b7505ca963a0836879e42590b67d`;
+- public fullscreen proof: `checkpoint/pages-fullscreen-v1-owner-validated-2026-08-15@8fe52a73554273fa710d2be2fdaf3a144d9056ba`;
 - public known-good Friends rollback: `checkpoint/pages-friends-r1-known-good-2026-08-15@7161215e47f00573b8c1b5c31e5931c89f9d709a`;
 - immutable R0 fallback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`.
 
-Only the lane named in `docs/PROJECT_STATE.md` is active ahead of `main`. Other work/candidate/repair/checkpoint refs are historical/evidence unless explicitly reactivated.
+Only the lane named in `docs/PROJECT_STATE.md` is active ahead of `main`. Other old `work/*`, `candidate/*`, `repair/*` and `checkpoint/*` refs are historical/evidence unless explicitly reactivated.
 
-## Current product truth
+## Current truth
 
-Performance foundation v1, Camera Manual Rig V1 and Fullscreen V1 are owner-accepted foundations. Steering Control V2 is owner-accepted as the mobile steering foundation with visual design still open. Preserve its one-thumb X-only `POSITION [-1,+1]`, neutral/release behavior, temporary +/-35-degree product range and recoverable mobile Debug.
+Plac E2R, Offroad, the owner vehicle and full JSPREV2 scan form the working browser foundation. Performance foundation v1 is owner-validated on Galaxy A53 / normal Chrome for the current full textured JSPREV2 at render scale 1x and culling ON. Camera Manual Rig V1 and Fullscreen V1 are owner-accepted usability foundations.
 
-Mobile Driving V3.1 is the current experiment. It is present in normal typed source on the active work lane as:
+Analog touch steering is a proven product direction. Steering Control V2 is owner-accepted as a **mobile control foundation with design still open**. Preserve its proven X-only `POSITION` semantics, neutral/release behavior, usable placement, 35-degree temporary product range and recoverable mobile Debug while exploring better control language.
 
-- `db61b6610428032e17676583dc36cf84d44e84d1` — analog throttle/brake integrated into the deterministic longitudinal timeline + live D/R switching;
-- `e651209f3e67439ed1ffeafedeb1c0f919208020` — stable-hitbox V3 UI, panoramic rotating steering-wheel feedback and animated analog pedals;
-- `c0b3ed2223a451cdacfd79f179efd2b88be7434f` — short-landscape authority over legacy three-button geometry.
+The current owner-visible experiment is **Mobile Driving V3** and exists only as a noncanonical public device gate until owner validation. It deliberately combines two independently judgeable experiments while keeping physics/rig authority unchanged:
 
-This is source candidate work, not owner acceptance and not promotion to `main`.
+- steering: the same X-only `POSITION` gesture as V2, but a shallow panoramic steering-wheel arc rotates as visual/mechanical feedback instead of presenting a generic slider/rack;
+- longitudinal: independent analog throttle and brake pedals, each 0..1, controlled by relative upward thumb travel;
+- pedal gesture geometry is frozen at pointer-down, so active-pedal enlargement and neighbor shrink cannot feed back into the command value;
+- the existing binary longitudinal path remains a fallback and wins when it has explicit demand;
+- reverse remains the existing binary control in this slice. A D/R selector is deferred because direction changes under throttle/brake deserve their own semantics and safety gate.
 
-The old public V3 gate `e94ab696...` failed before pedal runtime because it text-patched compiled `main.js` and could not find an expected reset fragment. That is a **harness failure**, not evidence against the control concept. Do not repair it with more compiled-main `replaceOnce()` surgery.
+Public V3 publication history: initial experiment `fba33f2e...`; post-publication sanity check caught a one-line loader transport corruption before owner handoff; repaired loader commit `f4edea43...`; final cache-bust/current head `e94ab696...`. The corrected loader blob is byte-identical to the locally syntax-checked file, and Pages built the exact current SHA.
 
-The replacement device gate `0baba295...` is isolated under `driving-v31-test/*`. Its diff from `e94...` is one commit containing only 11 added gate files; normal Friends root/V2/Camera/fullscreen are untouched. Pages built exact `0baba295...` successfully. The gate uses a SHA-verified gzip of one offline-derived static runtime plus separately SHA-verified source-derived V3.1 modules/CSS. It does not runtime-patch another loader and adds no V3 pedal/reset/UI text surgery to compiled `main.js`. It deliberately retains the already owner-tested Steering V1 harness as inherited support.
+Do **not** absorb V3 into private source or declare it owner-accepted until real phone/browser driving demonstrates that it beats the V2 baseline. If accepted, reconstruct/absorb the exact tested analog timeline, pedal adapter, host wiring and visual control layer as small commits rather than treating the public harness as source authority.
 
-Current V3.1 interaction intent:
+Final rig geometry, Ackermann/tie-rod authority, steering feedback/back-drive and final handling remain open; JURE owns rig authoring. The temporary 35-degree bridge is a JV-Web product range only.
 
-- steering gesture remains X-only `POSITION`; shallow panoramic wheel rotates only as feedback;
-- throttle and brake are independent analog pedals driven by relative upward thumb travel from pointer-down;
-- pedal gesture geometry is frozen at pointer-down; active growth / neighbor shrink are presentation only;
-- throttle and brake may coexist;
-- D/R is a state selector and may switch while throttle is held and regardless of speed. **Owner explicitly wants this permissive behavior for now**; add neutral/release/speed locks only if device evidence later justifies them.
-
-Recovered noncanonical evidence for exact V3.1 input code: focused analog/pointer tests `22/22 PASS`, TypeScript 5.8 scoped compile PASS, exact local/Git source blob identity PASS, all published JS syntax checks PASS. This is not the canonical Node24/npm11/TS7/Vite/real-box3d gate.
-
-Rendered agent-side Chromium proof is environment-blocked: two attempts timed out before DOM. Direct HTTP retrieval from the container is also DNS-blocked. Do not classify either as product failure and do not spend repeated iterations repairing the container. GitHub Pages exact-SHA build and post-publication Git blob identity are PASS; real rendered/runtime/feel proof is now an owner-device gate.
-
-Final rig geometry, Ackermann/tie-rod authority, steering feedback/back-drive and final handling remain open; JURE owns rig authoring. The 35-degree bridge is only a JV-Web product range.
+The remaining formal promotion boundary is canonical repo execution/build with Node 24.16.0, npm 11.13.x, lockfile dependencies, TypeScript 7, Vite and real `box3d.js@0.0.2` before promotion to `main` / ordinary Friends release.
 
 ## Next direction
 
-1. owner drives `driving-v31-test` in normal mobile Chrome, Offroad first;
-2. judge steering, throttle, brake and D/R independently: precision/recapture, low-medium-high pedal modulation, simultaneous steer+pedal, D/R under throttle, portrait/landscape ergonomics and visual feedback;
-3. if boot fails, use the exact visible error as evidence — do not rebuild the whole system blindly;
-4. absorb only owner-accepted behavior into durable checkpoints and iterate failed parts separately;
-5. once the mobile driving-control language is stable, polish response curves/haptics and later return to additive dynamic camera assists;
-6. before promotion to `main` / ordinary Friends, run canonical Node 24.16.0 + npm 11.13.x + TS7/Vite/real Box3D checks and canonical artifact smoke.
+1. owner/device test Mobile Driving V3 on normal mobile Chrome, Offroad first;
+2. compare the panoramic wheel-arc directly against Steering V2 for one-thumb precision, full-lock access, recapture, occlusion and portrait/landscape ergonomics;
+3. test throttle and brake modulation at small/medium/full values, simultaneous steering + pedal use, release-to-zero and visual growth/shrink feedback;
+4. classify steering and pedal results separately — one may be accepted while the other needs another iteration;
+5. only after the pedal interaction is good, design D/R direction selection and any throttle/brake response curves or haptics;
+6. after mobile control language stabilizes, revisit dynamic camera assists as an additive layer over the accepted manual camera.
 
-Do not reopen current JSPREV2 micro-optimization by default. Do not turn the temporary 35-degree bridge into final rig truth. Do not sacrifice proven input semantics for animation.
+Do not resume current-JSPREV2 micro-optimization by default. Do not broaden the 35-degree bridge into final steering/rig claims. Do not sacrifice proven input semantics merely to make a control animation look more automotive.
 
 ## Read order
 
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
-3. current slice source/tests
-4. `docs/ARCHITECTURE.md` for stable boundaries
-5. `docs/OWNER_CHECKPOINTS.md` only for owner acceptance
+3. code/tests for the current slice
+4. `docs/ARCHITECTURE.md` only for stable boundaries
+5. `docs/OWNER_CHECKPOINTS.md` only when owner acceptance is relevant
