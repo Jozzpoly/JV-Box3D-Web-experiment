@@ -5,7 +5,7 @@ Owner: Jozz
 Grounded: 2026-08-16
 Updated after P1 owner-device acceptance: 2026-08-16
 
-This document preserves the owner-device intent for the mobile driving polishing campaign. It supersedes `MOBILE_DRIVING_CONTROLS_TARGET.md` where post-device feedback changed the target.
+This document preserves the owner-device intent for the mobile driving polishing campaign. It incorporates and supersedes the former pre-device `MOBILE_DRIVING_CONTROLS_TARGET.md`, which is retained only in Git history.
 
 P1 foundation work has now been implemented, published and owner-accepted. Sections describing future pedal, steering and composition behavior remain target authority; solved pre-P1 defects are retained only as context and must not be reimplemented as if still current.
 
