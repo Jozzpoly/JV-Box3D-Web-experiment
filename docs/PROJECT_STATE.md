@@ -2,264 +2,307 @@
 
 Updated: 2026-08-16
 Owner: Jozz
-Status: `MOBILE DRIVING OWNER-DEVICE ALPHA LIVE / TECHNICAL POLISH AUDIT COMPLETE / P1.0 READY`
+Status: `MOBILE DRIVING OWNER-DEVICE ALPHA LIVE / ROADMAP READINESS AUDITED / R0.1 TEST-EVIDENCE HYGIENE NEXT`
 
 ## 1. Authority
 
 ```text
 accepted private authority: main@f8eb0908f5934aed2d504f34ce483a02754039ec
 single active work lane: work/mobile-driving-controls
-live mobile-driving runtime source: d96e393c466aa41c6436c12bcb1b4ab1861828b0
+live mobile-driving product source: d96e393c466aa41c6436c12bcb1b4ab1861828b0
 runtime implementation checkpoint: f56be8c85ea2b26533eee89c050b1b55cf21ec4b
 public Friends owner-device alpha: release/friends-r1@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf
 public pre-alpha rollback: checkpoint/pages-before-mobile-driving-2026-08-16@fa00f4c3a3c19f1319302bc1728f9cf6490ce462
 immutable public fallback: release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-`main` remains unchanged. `work/mobile-driving-controls` remains the only active lane ahead of it.
+`main` remains unchanged. Only `work/mobile-driving-controls` is active ahead of it.
 
-Git/current source, built artifact evidence and direct owner observation outrank this file.
+Git/current source, exact execution logs, built/public artifact evidence and direct owner observation outrank summaries.
 
-## 2. Current read order
-
-For the next mobile-driving work read:
+## 2. Read order for the next work
 
 1. `AGENTS.md`;
 2. this file;
-3. `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` for current owner intent;
-4. `docs/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md` for verified implementation topology/root causes;
-5. source/tests only for the active sub-slice.
+3. `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` — owner intent;
+4. `docs/MOBILE_DRIVING_ROADMAP_READINESS_AUDIT_2026-08-16.md` — current pre-roadmap gate;
+5. `docs/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md` — deeper source/layout/input findings when needed;
+6. source/tests for the active sub-slice.
 
-`docs/contracts/MOBILE_DRIVING_CONTROLS_TARGET.md` is historical/design foundation and is superseded where the post-alpha grounding changes a rule.
+Do not restart takeover, V3/V3.1 recovery, camera recovery, release-harness archaeology, compiled-runtime patching or final rig/handling work.
 
-## 3. Alpha proof is real
+## 3. What the current alpha actually proves
 
-The mobile-driving alpha is not pending validation anymore.
+The public owner-device alpha is real:
 
-Canonical Windows build evidence exists with Node 24.16.0 / npm 11.17.0 / TypeScript 7.0.2 / Vite 8.1.5 / real box3d.js@0.0.2. The normal Vite bundle and Friends artifact validation passed after release-byte preservation was corrected.
+- exact private source identity is `d96e393c...`;
+- canonical Windows `npm ci` evidence exists under Node 24.16.0 / npm 11.17.0 / TS 7.0.2 / Vite 8.1.5 / real `box3d.js@0.0.2`;
+- canonical TypeScript typecheck passed;
+- third-party verification passed;
+- normal Vite production bundle was built;
+- owner M6 full-rig generation passed;
+- static portable/runtime/vehicle/path/privacy/network/build-identity validation passed;
+- the initial preserved-scan candidate exposed a receipt/manifest byte mismatch and was not published;
+- the release-layer byte problem was subsequently corrected and public `release/friends-r1@7766f711...` was published;
+- Pages is built and the owner directly drove the result on desktop and Galaxy A53 / Chrome, including portrait/landscape/fullscreen states.
 
-Public artifact:
+This proves a functioning browser/device alpha.
 
-```text
-release/friends-r1@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf
-source recorded by build manifest: d96e393c466aa41c6436c12bcb1b4ab1861828b0
-Pages status: built
-```
+It does **not** prove that the complete current repository unit-test suite passed for d96. The preserved Windows log explicitly ran `npm run typecheck` with `no unit-test suite`, and current source contains stale UI-regex tests inconsistent with the analog DOM.
 
-Owner directly confirmed the public build works in desktop browser and on Samsung Galaxy A53 / Chrome and supplied portrait, browser-chrome landscape and fullscreen screenshots.
-
-This is owner-device alpha proof, not final UX acceptance.
+Do not upgrade typecheck/build/device proof into a `FULL npm run check PASS` claim without new exact execution evidence.
 
 ## 4. Protected product foundation
 
-Preserve unless explicitly changed:
+Preserve:
 
 - Plac E2R, Offroad, owner vehicle and approved JSPREV2;
-- accepted A53 render-1x performance foundation;
+- owner-validated A53 render-1x performance foundation;
 - Camera Manual Rig V1;
-- Fullscreen V1 capability;
+- Fullscreen V1;
 - deterministic timestamped input architecture;
-- independent throttle/brake values and multitouch ownership;
-- D/R state authority and permissive D<->R-under-throttle behavior;
-- pointer capture/non-stealing/fail-closed lifecycle behavior;
-- generation-safe presentation reset and RAF coalescing;
-- temporary approximately +/-35-degree steering bridge;
+- independent throttle/brake multitouch ownership;
+- D/R state and permissive D<->R-under-throttle behavior;
+- fail-closed pointer/lifecycle handling;
+- generation-safe presentation/RAF coalescing;
+- current temporary steering bridge;
 - JURE boundary for final rig/steering geometry and final handling.
 
-Do not restart V3/V3.1 recovery, camera recovery, release-harness work or compiled-runtime patching.
+No second hidden input/physics authority was found in the two preparatory audits. Presentation/release defects are not justification for another controls rewrite.
 
-## 5. Owner-device product verdict
+## 5. Current owner target
 
-What works:
+Exact owner intent is in:
 
-- analog throttle/brake are real and materially better than binary drive buttons;
-- analog control architecture is worth polishing, not replacing;
-- projected real-wheel metaphor is promising enough that the owner instinctively tries to rotate it as a physical wheel;
-- desktop/phone/scan/fullscreen product foundation remains usable.
+`docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`
 
-Not accepted:
+Key direction:
 
-- current mobile HUD composition;
-- current relative-from-pointer-down pedal mapping;
-- progress/fill pedal feedback;
-- current pedal industrial design;
-- visible steering background/shell;
-- current rim/spoke geometry;
-- X-only steering as necessarily final gesture;
-- final portrait/landscape layout.
+- fix mobile HUD clipping/competition first;
+- pedals move to absolute frozen-geometry Y mapping after layout foundation;
+- pedal magnitude should read as mechanical depression, not progress fill;
+- preserve projected real-wheel concept but remove distracting shell and repair geometry;
+- rotational steering is a later isolated A/B experiment; keep X-only until owner-proven replacement;
+- final portrait composition follows proven mechanics rather than shrinking landscape.
 
-Current exact owner target is `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`.
+## 6. Verified presentation/layout defects
 
-## 6. Preparatory technical audit — key verified findings
+### 6.1 Production CSS authority
 
-Full evidence: `docs/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md`.
-
-### A. Production CSS authority is currently wrong
-
-The source directly links V2/current mobile CSS from `index.html`, while `main.ts` imports base `style.css` through the dynamically imported main chunk.
-
-The live Vite artifact therefore contains:
+Private source currently mixes:
 
 ```text
-index-C38K2YRz.css -> V2 + current mobile-driving styles
-main-aKpBoyEj.css  -> base style.css, loaded as dependency of dynamic main.js
+index.html -> mobile-driving-controls-v2.css
+index.html -> mobile-driving-controls.css
+main.ts    -> style.css
 ```
 
-Vite's preload helper appends the main CSS link later. Equal-specificity historical base rules can therefore override current mobile rules in the live product.
+Vite emits the V2/current CSS in the entry chunk and base `style.css` as a dependency of dynamically imported `main.js`. The base CSS is appended later in the live artifact.
 
-Observed consequences include:
+Historical equal-specificity rules can therefore override newer component intent.
 
-- old circular blue steering shell partially returning around the new wheel mechanism;
-- old/lower `.scene-actions` placement competing with pedals;
-- intended V2 action-rail z-index/placement not being a reliable live guarantee.
+Confirmed affected areas include:
 
-This is a production cascade regression, not merely a disliked new design choice.
+- circular/blue steering shell reappearing around the new wheel;
+- `.scene-actions` returning toward the lower driving region;
+- action z-index ownership;
+- generic `.mobile-control[data-active]` applying an outer active transform to new pedal targets;
+- historical steering pseudo-elements/label rules surviving component generations.
 
-### B. Root viewport can clip short landscape
+P1.0 must remove competing ownership, not merely add stronger selectors.
 
-Base CSS combines:
+### 6.2 Root viewport clipping
+
+Current root contains:
 
 ```text
-.scene-panel { height: 100svh; min-height: 420px; overflow: hidden; }
-body { overflow: hidden; }
+.scene-panel { height:100svh; min-height:420px; overflow:hidden; }
+body { overflow:hidden; }
 ```
 
-If usable short-landscape viewport height is below 420 CSS px, the scene can remain taller than the visible browser viewport and its lower portion can be clipped.
+A short browser-chrome landscape viewport can therefore be smaller than the scene's enforced 420 px height and clip the lower product region.
 
-The renderer uses `canvas.clientWidth/clientHeight` for render size, aspect and responsive camera distance, so hidden CSS height can also make camera framing describe space the user cannot actually see.
+The renderer derives projection/backing size/default responsive camera distance from `canvas.clientWidth/clientHeight`, so correct CSS scene geometry is the proper authority boundary.
 
-### C. HUD overlays have no shared composition owner
+### 6.3 No coordinated HUD layout owner
 
-Header, toolbar, actions, readouts, mobile controls and Debug panel are independently absolutely positioned sibling overlays. Their local media rules do not reserve space from one another.
+Header, toolbar, actions, readouts, driving controls and Debug panel are independent absolute siblings. Local offsets do not reserve space from one another.
 
-The correct P1 direction is coordinated product zones, not another set of unrelated offsets.
+After CSS/root repair, P1.2 must establish explicit minimal layout zones rather than accumulating more `top/right/bottom` patches.
 
-### D. Input seams are healthy
+### 6.4 Mixed responsive predicates
 
-`CleanBrowserHost` and `F4VehicleHost` keep mobile input adapters/timelines separate from M6 physics and from UI presentation.
+Base/current styles mix:
 
-This allows:
+- coarse-pointer/hover media features;
+- `max-width` mobile fallback;
+- orientation/height breakpoints.
 
-- P1 layout work without input/physics changes;
-- P2 pedal mapping change without presentation rewrite;
-- P3 pedal visuals through existing `--pedal-value` state;
-- P5 rotational steering as an isolated mapping experiment.
+A narrow desktop browser is therefore not automatically equivalent to an A53 state. Rendered checks must distinguish narrow-desktop and coarse-pointer phone behavior or emulate the relevant media features.
 
-### E. Pedal mapping change is narrow but pointer-down semantics must change
+## 7. New release/runtime authority finding
 
-Current adapter stores only target height + pointer-down origin and emits local 0% until movement.
+The live public root contains executable:
 
-Absolute position needs frozen `{top,height}` or equivalent geometry and must enqueue the initial position-derived value immediately after successful pointer capture.
+`jv-live-performance.js`
 
-Ownership/lifecycle/D-R logic should remain intact.
+which is not in private source `index.html` and is recorded in `LIVE_BUILD.json` as a preserved performance overlay.
 
-### F. Pedal visual metaphor currently contains conflicting cues
+Normal root URL: effectively inert after parameter inspection.
 
-The progress fill is directly driven by value, while the pedal face only moves up to 9 px. Merely touching the pedal lifts/grows the entire mechanism, which can visually oppose the desired deeper depression at higher command.
+Diagnostic/performance URLs can make it active:
 
-P3 needs separate value-pose and contact-emphasis layers.
+- cap/replace global `devicePixelRatio` for `jvRenderScale`;
+- patch WebGL draw methods for `jvPerfHud=1`;
+- add a highest-z-index HUD;
+- run a separate RAF sampler.
 
-### G. Spoke disconnect is real geometry, not perception
+Private source already owns `jvRenderScale` and current performance-HUD instrumentation, so this is duplicated release-layer runtime authority.
 
-The internal wheel is 214 px, rim inset/border gives roughly 82 px inner radius, while spokes are 70/61 px. They physically stop short of the rim by roughly 12–21 px.
+**Do not preserve this overlay into the next Friends root candidate.** Future executable root behavior must come from private source. Static approved scan/data and necessary release metadata may still be preserved explicitly.
 
-### H. Static UI tests are not rendered truth
+The existing owner-tested alpha does not need an emergency republish solely for this cleanup.
 
-Some input/lifecycle tests remain valuable. Some UI regex tests are stale and still assert old binary/circular-control implementation details. Source stylesheet-order tests also missed the production CSS split/order problem.
+## 8. Validation semantics correction
 
-Do not make product code satisfy stale tests. Classify UI tests KEEP / UPDATE / DELETE per slice and rely on rendered/device evidence for clipping, overlap and visual feel.
+### Static release gate
 
-## 7. Refined work sequence
+`check:friends-r1` and portable HTTP smoke prove:
 
-Do not jump directly to broad P1 layout tuning. P1 is now subdivided.
+- bytes/hashes;
+- source/build identity;
+- required runtime assets;
+- approved scan/vehicle identity;
+- project-path delivery;
+- root index bytes.
+
+They do not execute JavaScript or render the product in a browser.
+
+### Browser execution gate
+
+Must separately establish that the production artifact:
+
+- executes its module graph;
+- constructs DOM;
+- applies intended CSS;
+- initializes WebGL/product runtime;
+- avoids fatal runtime/console failures.
+
+### Owner-device gate
+
+Separately judges layout, visibility, driving feel and device behavior.
+
+Current alpha has owner-device proof. Future validation summaries must keep these classes explicit.
+
+## 9. R0 — small roadmap-readiness closure
+
+Do this before treating P1 as ordinary polishing.
+
+### R0.1 — validation truth / test hygiene — NEXT
+
+Goal: restore a trustworthy current source-test baseline without letting obsolete UI tests dictate the product.
+
+Required:
+
+1. classify mobile/UI tests `KEEP / UPDATE / DELETE`;
+2. update/remove historical binary-control and V2-presentation assertions;
+3. retain real input/lifecycle/generation invariants;
+4. replace source-only stylesheet-order confidence with a built-artifact ownership check where appropriate;
+5. run the reconciled suite under the canonical Windows toolchain;
+6. record actual commands/results.
+
+This is preparation/test maintenance only. Do not change mobile product behavior in R0.1.
+
+### R0.2 — release-layer executable purity
+
+Mandatory for the next owner-visible Friends publication:
+
+- no historical executable JS/CSS inherited from public baseline;
+- no `jv-live-performance.js` in root unless it becomes explicit private source (not currently needed);
+- preserved release layer limited to approved static data/assets and explicit metadata/byte-preservation files;
+- product source and preserved data/release layers recorded separately.
+
+No separate public republish is required before private P1.0 work.
+
+## 10. Main roadmap after R0.1
 
 ### P1.0 — production CSS authority
 
-First restore deterministic built style ownership/order. No control redesign or input change.
+Split internally:
 
-Then build and inspect the real production artifact on desktop + A53 portrait/browser-landscape/fullscreen and Debug-open state.
+- **P1.0a** one deterministic source-controlled style-loading graph;
+- **P1.0b** retire live V1/V2 component selectors that no longer own current controls;
+- **P1.0c** build the real production artifact, inspect CSS ownership/chunks, ensure no release-layer executable overlay in the candidate, then render desktop/A53 states and pause for a new baseline.
 
-This is a mandatory pause because correcting the cascade may materially change the steering shell and action rail before deliberate redesign.
+Do not redesign pedal/steering semantics in P1.0.
 
 ### P1.1 — root viewport geometry
 
-Resolve `100svh` / `min-height:420px` / hidden-overflow clipping and prove canvas client geometry matches the visible scene.
+Resolve `svh/min-height/overflow` clipping and prove visible scene/canvas geometry.
 
-No local pedal offset workaround.
+### P1.2 — coordinated mobile HUD zones
 
-### P1.2 — one mobile HUD composition owner
-
-Establish explicit minimal zones for top navigation/info, actions, left steering, right longitudinal controls, central world visibility and Debug overlay.
+One explicit composition for navigation/info, actions, steering, longitudinal controls, central world and Debug overlay.
 
 ### P1.3 — action/navigation policy
 
-Keep Camera/Reset/Debug/fullscreen/location controls reachable without sharing sustained pedal drag paths. Browser-chrome landscape and true fullscreen must both be evaluated.
+Camera/Reset/Debug/fullscreen/location remain reachable without pedal-drag competition.
 
 ### P1.4 — driving-zone sizing/spacing
 
-Only after P1.0–P1.3 tune steering/pedal placement and central visible world area. Command semantics remain unchanged.
+Tune cluster placement only after the previous structural fixes.
 
 ### P1.5 — portrait sanity
 
-Keep portrait usable; final portrait design remains P7.
+Keep portrait usable; final intentional portrait design remains P7.
 
-### P2 — absolute pedal input
+### P2
 
-Split into pure mapping, immediate pointer-down demand, lifecycle/ownership preservation and A53 tuning.
+Absolute-position pedals in frozen geometry, immediate pointer-down demand, preserved ownership/lifecycle/D-R, then A53 tuning.
 
-### P3 — mechanical pedal motion
+### P3
 
-Remove progress-meter authority, implement one lightweight physical depression pose, separate contact emphasis, then owner-device judge before styling overhaul.
+Mechanical pedal depression; no progress-meter authority; separate touch emphasis from value pose.
 
-### P4 — steering visual cleanup
+### P4
 
-First evaluate the corrected P1.0 render. Then make acquisition region visually transparent and repair wheel geometry/material/perspective while keeping X-only input.
+Steering visual cleanup after corrected cascade render: transparent acquisition zone, correct rim/spoke/hub geometry, lightweight material/depth.
 
-### P5 — rotational steering experiment
+### P5
 
-First pure ellipse-normalized/unwrapped angle math, then isolated adapter experiment, then A/B against X-only on A53. Do not delete the baseline before owner proof.
+Ellipse-normalized rotational steering experiment, kept isolated and A/B tested against working X-only.
 
-### P6 — wheel/pedal industrial design + feel
+### P6
 
-Refine the accepted mechanisms together.
+Joint wheel/pedal industrial design and feel tuning.
 
-### P7 — portrait-specific composition
+### P7
 
-Design tall/narrow layout intentionally around proven mechanics.
+Portrait-specific composition around proven mechanics.
 
-## 8. Validation philosophy for polish
+## 11. Separate dependency flag
 
-Use the smallest proof matching the changed risk:
+The inspected canonical `npm ci` output reported `1 high severity vulnerability` but did not identify the advisory in the captured evidence.
 
-```text
-P1 layout      -> production build + rendered viewport matrix + owner device
-P2 input       -> focused mapping/ownership/lifecycle tests + owner driving
-P3/P4 visuals  -> source sanity + rendered/device judgement
-P5 gesture     -> focused math/lifecycle tests + owner A/B driving
-P6/P7          -> rendered/device proof + performance sanity
-```
+Do not run `npm audit fix` blindly and do not block P1 solely on this message. Before a broader stable/public release, triage the exact lockfile against current advisory data as a separate dependency-maintenance task.
 
-Full repository tests are not the routine gate for every visual slice, particularly while stale UI regex tests exist. Full release/foundation validation remains appropriate at promotion boundaries.
-
-## 9. Stop conditions
+## 12. Stop conditions
 
 Stop and localize when:
 
-- layout work starts changing input/physics;
-- pedal mapping work changes D/R or timeline arbitration;
-- animation moves active command geometry;
-- rotation work requires deleting X-only before owner comparison;
-- clipping persists after root viewport repair;
-- built CSS order still differs from intended source ownership after P1.0;
-- rendered evidence contradicts static tests;
-- one local defect starts motivating a whole controls rewrite.
+- a validation summary claims a command not present in its execution log;
+- static HTTP/package success is being called browser execution;
+- a public root candidate contains executable JS/CSS not traceable to private source;
+- CSS repair starts accumulating specificity/`!important` instead of removing competing ownership;
+- stale UI tests start forcing obsolete binary/V2 UI back into source;
+- viewport/layout work changes input/physics;
+- animation changes authoritative gesture geometry;
+- one presentation/release defect starts motivating a whole controls rewrite.
 
-## 10. Next boundary
+## 13. Exact next boundary
 
-This preparatory audit changes documentation only.
+**R0.1 — validation truth / test hygiene.**
 
-The next justified implementation is:
+After R0.1 is canonically green, proceed to **P1.0 — production CSS authority**.
 
-**P1.0 — production CSS authority.**
-
-Do not start by moving pedals, redesigning the wheel or changing input semantics. First make the live production artifact render the intended current source hierarchy deterministically, then re-observe the real UI before P1.1/P1.2.
+Do not move pedals, redesign wheel visuals, change pedal mapping or prototype rotational steering before those boundaries are closed.
