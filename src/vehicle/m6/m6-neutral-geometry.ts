@@ -1,4 +1,3 @@
-import type { b3Vec3 } from "../../physics/box3d-runtime-contract.js";
 import {
   m6CornerOffset,
   m6WishboneHardpoints,
@@ -19,11 +18,11 @@ const IDENTITY_ROTATION = Object.freeze({ x: 0, y: 0, z: 0, w: 1 } as const);
 const ORIGIN = Object.freeze({ x: 0, y: 0, z: 0 } as const);
 const REVOLUTE_AXIS_LOCAL = Object.freeze({ x: 1, y: 0, z: 0 } as const);
 
-function point(value: b3Vec3 | JvVec3): JvVec3 {
+function point(value: JvVec3): JvVec3 {
   return { x: value.x, y: value.y, z: value.z };
 }
 
-function midpoint(a: b3Vec3, b: b3Vec3): JvVec3 {
+function midpoint(a: JvVec3, b: JvVec3): JvVec3 {
   return {
     x: 0.5 * (a.x + b.x),
     y: 0.5 * (a.y + b.y),
@@ -31,7 +30,7 @@ function midpoint(a: b3Vec3, b: b3Vec3): JvVec3 {
   };
 }
 
-function subtract(a: b3Vec3 | JvVec3, b: b3Vec3 | JvVec3): JvVec3 {
+function subtract(a: JvVec3, b: JvVec3): JvVec3 {
   return {
     x: a.x - b.x,
     y: a.y - b.y,

@@ -30,6 +30,10 @@ const snapshot = await validatePinnedNativeFactoryReceiptText(
   await readFile(factoryReceiptPath, "utf8"),
 );
 const config = m6TopologyConfigFromReceipt(snapshot);
+const neutralProjectorSource = await readFile(
+  new URL("../src/vehicle/m6/m6-neutral-geometry.ts", import.meta.url),
+  "utf8",
+);
 const TEST_SOURCE = Object.freeze({
   kind: "legacy-procedural-m6",
   producer: Object.freeze({
@@ -71,6 +75,12 @@ function frameNeutralWorldPosition(mechanism, id) {
   assert.deepEqual(owner.neutralPose.rotation, { x: 0, y: 0, z: 0, w: 1 });
   return add(owner.neutralPose.position, value.localPosition);
 }
+
+test("neutral projection stays source-level engine-neutral", () => {
+  assert.equal(neutralProjectorSource.includes("box3d-runtime-contract"), false);
+  assert.equal(neutralProjectorSource.includes("b3BodyId"), false);
+  assert.equal(neutralProjectorSource.includes("b3JointId"), false);
+});
 
 test("JV neutral mechanism v1 exposes one explicit engine-neutral rig space and coherent FL wishbone", () => {
   assert.deepEqual(JV_RIG_SPACE_V1, {
