@@ -122,6 +122,10 @@ export class PointerSteeringJoystickAdapter {
     this.#neutralize("PAGE_HIDE");
   };
 
+  readonly #onViewportChange: EventListener = () => {
+    this.#neutralize("VIEWPORT_CHANGE");
+  };
+
   constructor(options: PointerSteeringJoystickAdapterOptions) {
     this.#windowTarget = options.windowTarget;
     this.#documentTarget = options.documentTarget;
@@ -145,6 +149,16 @@ export class PointerSteeringJoystickAdapter {
     );
     this.#listen(this.#windowTarget, "blur", this.#onBlur);
     this.#listen(this.#windowTarget, "pagehide", this.#onPageHide);
+    this.#listen(
+      this.#windowTarget,
+      "orientationchange",
+      this.#onViewportChange,
+    );
+    this.#listen(
+      this.#documentTarget,
+      "fullscreenchange",
+      this.#onViewportChange,
+    );
     this.#listen(
       this.#documentTarget,
       "visibilitychange",
