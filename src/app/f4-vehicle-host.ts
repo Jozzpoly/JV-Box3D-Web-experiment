@@ -13,6 +13,11 @@ import {
   type NativeFactorySnapshot,
 } from "../config/native-factory-receipt.js";
 import type { LongitudinalTimelineSample } from "../input/longitudinal-input-timeline.js";
+import type {
+  AnalogDrivePedal,
+  PointerAnalogDriveControls,
+  PointerDriveDirection,
+} from "../input/pointer-analog-drive-adapter.js";
 import type { PointerSteeringJoystickTarget } from "../input/pointer-steering-joystick-adapter.js";
 import type {
   PointerVehicleControlId,
@@ -57,6 +62,15 @@ export interface F4VehicleHostOptions {
   readonly onPointerControlStateChange?: (
     control: PointerVehicleControlId,
     active: boolean,
+  ) => void;
+  readonly analogDriveControls?: PointerAnalogDriveControls;
+  readonly onAnalogPedalStateChange?: (
+    pedal: AnalogDrivePedal,
+    value: number,
+    active: boolean,
+  ) => void;
+  readonly onDriveDirectionChange?: (
+    direction: PointerDriveDirection,
   ) => void;
   readonly steeringJoystick?: PointerSteeringJoystickTarget;
   readonly onSteeringJoystickStateChange?: (
@@ -228,6 +242,21 @@ export class F4VehicleHost {
           : {
               onPointerControlStateChange:
                 options.onPointerControlStateChange,
+            }),
+        ...(options.analogDriveControls === undefined
+          ? {}
+          : { analogDriveControls: options.analogDriveControls }),
+        ...(options.onAnalogPedalStateChange === undefined
+          ? {}
+          : {
+              onAnalogPedalStateChange:
+                options.onAnalogPedalStateChange,
+            }),
+        ...(options.onDriveDirectionChange === undefined
+          ? {}
+          : {
+              onDriveDirectionChange:
+                options.onDriveDirectionChange,
             }),
         ...(options.steeringJoystick === undefined
           ? {}
