@@ -99,6 +99,12 @@ export class PointerAnalogDriveAdapter {
     this.#listen(this.#controls.direction, "click", onDirectionClick);
     this.#listen(this.#windowTarget, "blur", () => this.#releaseAll("BLUR"));
     this.#listen(this.#windowTarget, "pagehide", () => this.#releaseAll("PAGE_HIDE"));
+    this.#listen(this.#windowTarget, "orientationchange", () =>
+      this.#releaseAll("VIEWPORT_CHANGE"),
+    );
+    this.#listen(this.#documentTarget, "fullscreenchange", () =>
+      this.#releaseAll("VIEWPORT_CHANGE"),
+    );
     this.#listen(this.#documentTarget, "visibilitychange", () => { if (this.#isDocumentHidden()) this.#releaseAll("VISIBILITY_HIDDEN"); });
     this.#onDirectionChange?.(this.#direction);
   }
