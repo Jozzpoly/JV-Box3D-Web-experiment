@@ -1,214 +1,132 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-16
-Status: `POST-PROMOTION GROUNDING / FRESH-CONVERSATION HANDOFF`
+Status: `P1 ACCEPTED / HANDOFF COMPLETE / JURE PAUSED / READY FOR NEXT PRODUCT SLICE`
 
-This file is a **takeover snapshot**, not a second project-state authority. If it disagrees with live Git or `docs/PROJECT_STATE.md`, resolve live state and update/remove the stale handoff statement.
+This is a takeover snapshot, not source authority. If it disagrees with live Git or `docs/PROJECT_STATE.md`, resolve live state and update/remove the stale statement.
 
-Do not grow this file into another historical campaign log.
+## 1. Fresh entry
 
-## 1. Fresh-agent entry
+For ordinary continuation:
 
-Start cold. Do not assume old chat state is current truth.
+1. resolve live private `main`;
+2. read `AGENTS.md`;
+3. read `docs/PROJECT_STATE.md`;
+4. read this file only when takeover context is useful;
+5. inspect subsystem source/tests only after choosing the next task.
 
-Read in this order:
+Do not reconstruct old campaigns or branch archaeology unless a current fact cannot otherwise be established.
 
-1. live private `main` ref;
-2. `AGENTS.md` from that live `main`;
-3. `docs/PROJECT_STATE.md`;
-4. this file;
-5. `docs/ARCHITECTURE.md` only for the subsystem being touched;
-6. `docs/OWNER_CHECKPOINTS.md` only when owner acceptance matters;
-7. source/tests only after the task boundary is understood.
+## 2. Accepted JV foundation
 
-Also resolve live public Friends only when public/product state matters.
-
-## 2. Exact handoff foundation
-
-At grounding time the accepted/promoted private evidence boundary is:
-
-`2b12a2fa99d49ebe4d748ed851c194825129d38f`
-
-This was the exact candidate that passed the final Main Promotion Gate and was fast-forwarded to `main`.
-
-The exact runtime source the Owner directly drove during the P1 device gate is:
-
-`c9b5990b226685abe35851fc5e9496323096ecf7`
-
-Main-promotion preparation proved no runtime-bearing product changes between that owner-tested source and the promoted candidate. The grounding commit after promotion is documentation-only; it does not claim a new owner runtime test.
-
-Public Friends at grounding:
-
-`Jozzpoly/JV-Box3D-Web-Public release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f`
-
-Private old-main rollback:
-
-`rollback/main-before-p1-foundation-2026-08-16 -> f8eb0908f5934aed2d504f34ce483a02754039ec`
-
-Always re-resolve all moving refs live.
-
-## 3. Why the current main is trusted
-
-Final Main Promotion Gate for exact `2b12a2fa...` established:
-
-- full repository `npm run check`: **444 PASS / 0 FAIL**;
-- TypeScript/docs/third-party checks: PASS;
-- portable production build + validators: PASS;
-- build identity: exact candidate PASS;
-- clean source throughout: PASS;
-- runtime equivalence to owner-tested `c9b5990b...`: PASS;
-- `npm audit --omit=dev`: 0 production vulnerabilities.
-
-One `nanoid` full-audit entry was classified as development/build-tooling-only. Do not change dependencies merely to clear an audit badge; re-triage exact advisory/reachability if maintenance revisits it.
-
-## 4. Owner-accepted product state
-
-The current Friends/P1 foundation was directly used by the Owner on desktop and Samsung Galaxy A53 / Chrome.
-
-Preserve as accepted foundation:
-
-- Plac E2R;
-- Offroad;
-- approved full JSPREV2 scan;
-- current owner vehicle rendering/driving;
-- accepted A53 render-1x performance foundation for the tested scan case;
-- Camera Manual Rig V1;
-- Fullscreen V1;
-- X-only analog steering `POSITION` behavior as current working reference;
-- analog pedals as current functional foundation;
-- correct fail-closed input ownership/lifecycle architecture;
-- P1 CSS ownership and short-viewport fixes;
-- source-owned public runtime with old public executable overlay removed.
-
-Owner explicitly did **not** accept as final:
-
-- pedal mapping/interaction/mechanical design;
-- final HUD composition/spacing;
-- final steering visual language;
-- rotational steering;
-- final authored suspension/steering geometry;
-- Ackermann/tie rods;
-- final handling.
-
-## 5. Mobile polish continuation
-
-If the Owner chooses mobile polish in the fresh conversation, resume from:
-
-1. P1.2 coordinated mobile HUD zones;
-2. P1.3 action/navigation policy;
-3. P1.4 driving-zone sizing/spacing;
-4. P1.5 portrait sanity;
-5. P2 absolute-position pedals;
-6. P3 mechanical pedal depression;
-7. P4 steering visual cleanup;
-8. P5 isolated rotational-steering A/B against X-only reference;
-9. P6 joint wheel/pedal industrial design and feel;
-10. P7 intentional portrait composition.
-
-Do not restart P1.0 CSS authority or the historical `420px` root-floor investigation unless new evidence shows regression.
-
-Pedal target already agreed for P2:
-
-- absolute frozen-geometry Y mapping;
-- touch low/bottom = low demand;
-- touch high/top = high demand;
-- pointerdown immediately emits the touched value;
-- moving up increases, moving down decreases;
-- preserve independent pedal ownership, multitouch, lifecycle release, D/R semantics.
-
-## 6. JURE coordination — important
-
-JURE is moving in parallel and is the authority for authored neutral rig truth. Do not reconstruct its state from this handoff alone.
-
-At grounding review:
+Durable evidence anchors:
 
 ```text
-repo: Jozzpoly/Jozz-Universal-Rig-Editor
-accepted JURE main: d971b8bef5dd7c65b78884b6b449e1f5ab0e7425
-clean foundation candidate / draft PR #3: 4db04eee4da0216f6bd3df6b6b0c82aa20afab5a
-active real-JV branch / draft PR #4: work/real-jv-rig-elements@7b385e8e591d13c3ccab06647390d9d28e06a1d4
+P1 main-promotion candidate:
+  2b12a2fa99d49ebe4d748ed851c194825129d38f
+
+Owner-tested P1 runtime source:
+  c9b5990b226685abe35851fc5e9496323096ecf7
+
+Public Friends:
+  Jozzpoly/JV-Box3D-Web-Public
+  release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f
 ```
 
-PR #4 already carries a critical consumer falsifier:
+The P1 source passed 48/48 focused checks, TypeScript and normal production build. The promoted candidate passed 444/444 complete repository tests, portable/build identity validation and 0 production dependency vulnerabilities. The Owner directly used the P1 Friends build on desktop and Galaxy A53 / Chrome.
 
-- implicit identity placement was rejected;
-- procedural JV-Web M6 wishbone and exact/JURE wishbone are not rigid-congruent;
-- a partial single-hardpoint JURE substitution would create an incoherent hybrid;
-- no M6 runtime hardpoint override is accepted;
-- JURE is developing a coherent double-wishbone neutral shape and still needs to finish Owner-operability / freeze the multi-relation consumer fragment.
+Preserve Plac E2R, Offroad, the approved JSPREV2 scan, owner vehicle, Camera Manual Rig V1, Fullscreen V1, fixed-step/timestamped inputs, independent throttle/brake ownership and current X-only steering `POSITION` behavior unless a scoped task intentionally changes them.
 
-Therefore the fresh JV-Web agent must **not** pre-build a guessed JURE adapter/schema.
+## 3. Open Owner-visible mobile work
 
-Read `docs/contracts/JURE_CONSUMER_BOUNDARY.md` before any cross-project work.
+P1 deliberately did not finalize:
 
-When JURE is ready, the first JV-Web consumer experiment uses one isolated `jure/<specific-purpose>` branch and remains private until strict parse/placement/coherence tests pass.
+- HUD layout/spacing;
+- portrait composition;
+- pedal mapping/mechanical visual feedback;
+- steering visual design;
+- rotational steering;
+- final rig/steering/handling.
 
-## 7. Current M6 interpretation
+Current pedal target for the later P2 slice remains:
 
-Current procedural hardpoints/steering/rack code is real working product code but remains provisional consumer geometry.
+- absolute frozen-geometry Y mapping;
+- low/bottom touch = low demand;
+- high/top touch = high demand;
+- pointerdown immediately emits touched demand;
+- moving vertically changes demand continuously;
+- independent pedal ownership, multitouch, lifecycle release and D/R semantics remain preserved.
 
-Do not upgrade it into authored mechanical truth because it is on `main`.
+Default sequence if mobile polish is chosen:
 
-Do not replace one procedural hardpoint with JURE data while leaving an incompatible procedural wishbone around it.
+`P1.2 coordinated HUD -> P1.3 action/navigation policy -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 final portrait composition`
 
-Consumer dynamics remain JV-Web responsibility even after JURE neutral geometry arrives.
+The next implementation should begin with the smallest visible slice that reduces UI obstruction/chaos. Do not redesign every control at once.
 
-## 8. Branch/repository state
+## 4. JURE pause boundary
 
-Desired steady state is a small branch namespace centered on `main`.
+JURE is intentionally not an active parallel project lane now.
 
-A broad cleanup on 2026-08-16 removed obsolete refs after preserving divergent tips with tags. During an interrupted panic-recovery immediately after cleanup, three historical branch refs were recreated accidentally:
+Accepted JURE `main` remains:
 
-- `archive/pre-cleanup-2026-08-10`;
-- `candidate/jv-web-owner-vehicle-visual-r1`;
-- `candidate/jv-web-render-host-r1`.
+`d971b8bef5dd7c65b78884b6b449e1f5ab0e7425`
 
-They are not authority and their exact divergent tips already have archive tags. Remove these three redundant refs before final handoff if they still exist. Do not restore any other old branches.
+Preserved, closed-without-merge boundaries:
 
-Future branch rules:
+```text
+JURE PR #3 — clean validated foundation candidate:
+  promotion/foundation-ready-squash-2026-08-16
+  @4db04eee4da0216f6bd3df6b6b0c82aa20afab5a
 
-- ordinary JV-Web: at most one concrete work lane;
-- JURE cross-repo: `jure/<specific-purpose>`;
-- no per-conversation/per-agent/per-test branches.
+JURE PR #4 — paused real-JV authoring line:
+  checkpoint/paused-jv-authoring-2026-08-16
+  @f0f8cd91aca583610dc2dedd34e537a145a01b61
 
-## 9. Do not restart
+JV PR #25 — paused neutral receipt seam:
+  checkpoint/jure-neutral-receipt-paused-2026-08-16
+  @7ff1c73ac74c46bce29bd4a4bd68d672dc662ef1
+```
 
-Unless new evidence directly requires it, do not restart:
+No paused PR was merged. No accepted `main` was moved as part of the pause.
+
+The JV neutral seam exact `fd84fcf4...` passed the earlier canonical Windows gate, but later `7ff1c73...` has additional hardening and **does not inherit that PASS claim**. Its exact final gate is still pending and only matters if this seam is resumed.
+
+## 5. Durable cross-project result
+
+When JURE is eventually needed again:
+
+- JURE remains authored neutral rig / Owner authoring authority;
+- JV remains runtime physics/controls/rendering authority;
+- procedural M6 and exact/JURE wishbone geometry are not rigid-congruent;
+- never splice one authored hardpoint/relation into the incompatible procedural shape;
+- first coherent future target is chassis ref + upper/lower arms + carrier ref + 2 revolute + 2 spherical relations;
+- validate strict format/provenance/units/basis/placement and coherent neutral geometry before any Box3D substitution;
+- keep the first integration private and separate from Friends publication.
+
+Read `docs/contracts/JURE_CONSUMER_BOUNDARY.md` before resuming cross-project work.
+
+## 6. Repository hygiene
+
+The obsolete accidental branch refs from the prior recovery are confirmed absent. Do not restore the old branch forest.
+
+At ordinary steady state keep `main` plus at most one real work lane. Paused/checkpoint JURE refs exist only for recovery/evidence and are not active work.
+
+## 7. What not to restart
+
+Without new evidence, do not restart:
 
 - source recovery/takeover archaeology;
-- old Camera reconstruction;
-- old fullscreen reconstruction;
-- historical V1/V2 mobile control campaign;
-- old public runtime-overlay repair;
-- endless optimization of the already accepted A53 render-1x JSPREV2 case;
-- old branch-name authority debates;
-- donor `8736a2...` wholesale restoration;
-- compiled `main.js` patching/text surgery;
-- private GitHub Actions workaround machinery.
+- old Camera or Fullscreen reconstruction;
+- historical V1/V2 mobile control campaigns;
+- P1 CSS authority/root-floor work;
+- old Friends executable-overlay repair;
+- endless optimization of the accepted A53 render-1x case;
+- compiled-runtime text surgery;
+- private GitHub Actions workaround machinery;
+- speculative JURE adapter/runtime substitution.
 
-## 10. First actions in the fresh conversation
+## 8. Handoff result
 
-The new orchestrator should perform a narrow cold verification, not a full historical reconstruction:
+The grounding/handoff stage is complete. The repository is ready for normal JV product development from live `main`.
 
-1. resolve live JV-Web `main`;
-2. resolve live public `release/friends-r1`;
-3. confirm the current branch namespace is sane;
-4. read `AGENTS.md`, `PROJECT_STATE.md`, this handoff;
-5. if JURE-relevant, independently resolve live JURE `main`, PR #3 and PR #4;
-6. state the exact chosen next lane and why;
-7. create a work branch only when implementation actually begins;
-8. continue with small evidence-driven slices and rapid owner-visible validation.
-
-The Owner intends the next real development to happen in a **new conversation after this handoff**, not during the grounding conversation.
-
-## 11. Handoff completion criterion
-
-This handoff is complete when:
-
-- promoted `main` documentation tells current truth;
-- JURE consumer boundary is explicit without speculative schema;
-- obsolete accidental branch refs are removed or clearly identified as non-authoritative;
-- live public/private refs are rechecked;
-- a fresh conversation can reconstruct the active state from `AGENTS.md -> PROJECT_STATE.md -> HANDOFF.md` without reading old chats.
-
-After successful takeover, keep this file concise. Update/retire stale snapshot data rather than appending another campaign history.
+No new branch should be created merely because a new conversation starts. Create one only when the Owner chooses a concrete implementation slice.
