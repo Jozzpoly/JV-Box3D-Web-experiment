@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,16 +10,20 @@ async function source(path) {
   return readFile(resolve(root, path), "utf8");
 }
 
-test("product entry owns the ordered mobile stylesheet graph", async () => {
+test("product entry owns base CSS followed by one current mobile stylesheet", async () => {
   const productMain = await source("src/product-main.ts");
   const index = await source("index.html");
   const base = productMain.indexOf('import "./style.css";');
-  const v2 = productMain.indexOf('import "./mobile-driving-controls-v2.css";');
   const current = productMain.indexOf('import "./mobile-driving-controls.css";');
 
   assert.ok(base >= 0, "product entry must own base CSS");
-  assert.ok(v2 > base, "V2 bridge CSS must follow base CSS");
-  assert.ok(current > v2, "current mobile-driving CSS must load last");
+  assert.ok(current > base, "current mobile-driving CSS must follow base CSS");
+  assert.doesNotMatch(productMain, /mobile-driving-controls-v2\.css/);
+  await assert.rejects(
+    () => access(resolve(root, "src/mobile-driving-controls-v2.css")),
+    { code: "ENOENT" },
+    "superseded V2 presentation stylesheet must not remain in active source",
+  );
   assert.doesNotMatch(index, /mobile-driving-controls(?:-v2)?\.css/);
   assert.doesNotMatch(index, /<link[^>]+rel=["']stylesheet["']/i);
 });
