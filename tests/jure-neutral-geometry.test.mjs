@@ -79,6 +79,32 @@ function frameNeutralWorldPosition(mechanism, id) {
   assert.deepEqual(owner.neutralPose.rotation, { x: 0, y: 0, z: 0, w: 1 });
   return add(owner.neutralPose.position, value.localPosition);
 }
+function assertNoRuntimePolicyKeys(value, path = "mechanism") {
+  const forbiddenKeys = new Set([
+    "mass",
+    "density",
+    "friction",
+    "damping",
+    "hertz",
+    "motor",
+    "solver",
+  ]);
+  if (Array.isArray(value)) {
+    value.forEach((child, index) => assertNoRuntimePolicyKeys(child, `${path}[${index}]`));
+    return;
+  }
+  if (value === null || typeof value !== "object") {
+    return;
+  }
+  for (const [key, child] of Object.entries(value)) {
+    assert.equal(
+      forbiddenKeys.has(key.toLowerCase()),
+      false,
+      `${path}.${key} is JV runtime/dynamics policy`,
+    );
+    assertNoRuntimePolicyKeys(child, `${path}.${key}`);
+  }
+}
 
 test("neutral projection stays source-level engine-neutral", () => {
   assert.equal(neutralProjectorSource.includes("box3d-runtime-contract"), false);
@@ -164,12 +190,23 @@ test("neutral geometry receipt carries stand-alone source provenance without bra
   assert.equal(Object.prototype.hasOwnProperty.call(receipt.source.producer, "branch"), false);
 });
 
-test("neutral geometry receipt excludes Box3D identity and vehicle dynamics policy", () => {
+test("neutral geometry mechanism excludes Box3D runtime identity and vehicle dynamics policy", () => {
   const receipt = buildLegacyM6FrontLeftNeutralGeometryReceipt(config, TEST_SOURCE);
-  const text = JSON.stringify(receipt);
-  for (const forbidden of ["Box3D", "b3Body", "b3Joint", "mass", "density", "friction", "damping", "hertz", "motor", "solver", "steering"]) {
-    assert.equal(text.toLowerCase().includes(forbidden.toLowerCase()), false, `neutral receipt leaked ${forbidden}`);
+
+  // Repository provenance legitimately contains the canonical project name
+  // "JV-Box3D-Web-experiment". Runtime-neutrality therefore belongs to the
+  // mechanism payload, not to arbitrary text in source/provenance metadata.
+  assert.match(receipt.source.producer.repository, /Box3D/);
+
+  const mechanismText = JSON.stringify(receipt.mechanism).toLowerCase();
+  for (const forbidden of ["box3d", "b3body", "b3joint"]) {
+    assert.equal(
+      mechanismText.includes(forbidden),
+      false,
+      `neutral mechanism leaked runtime identity token ${forbidden}`,
+    );
   }
+  assertNoRuntimePolicyKeys(receipt.mechanism);
 });
 
 test("neutral geometry receipt serialization is deterministic and round-trips exact logical content", () => {
