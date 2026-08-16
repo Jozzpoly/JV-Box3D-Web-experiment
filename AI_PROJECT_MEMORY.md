@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-16
-Status: `FOUNDATION CLEANUP / PRODUCT IMPLEMENTATION PAUSED`
+Status: `FOUNDATION CLEANUP / PRE-IMPLEMENTATION GROUNDING COMPLETE / CANONICAL GATE PENDING`
 
 This file is a router only. Current Git, reproducible execution evidence and direct owner observation outrank it.
 
@@ -24,7 +24,8 @@ The clean base contains the owner-accepted foundations that cleanup must preserv
 - A53 performance foundation v1 for the tested render-1x/culling-ON case;
 - Camera Manual Rig V1;
 - Fullscreen V1 mobile + desktop;
-- Steering Control V2: one-thumb X-only analog `POSITION [-1,+1]`, release-to-neutral, usable placement and recoverable mobile Debug;
+- Steering Control V2: one-thumb X-only analog `POSITION [-1,+1]`, pointer lift/cancel neutralizes to **`POSITION 0`** (self-centering) rather than changing normal touch behavior to semantic `RELEASE`, usable placement and recoverable mobile Debug;
+- keyboard/digital steering keeps its existing priority while active;
 - temporary JV-Web wheel steering range of approximately +/-35 degrees.
 
 Final rig geometry, Ackermann/tie-rod authority, steering feedback/back-drive and final handling remain open. JURE owns final rig authoring. The 35-degree bridge is a product intermediate, not rig truth.
@@ -37,14 +38,23 @@ The exact recovered target is in:
 
 Key direction:
 
-- keep V2 steering input semantics but present them as a shallow, wide steering-wheel arc/ellipse that rotates for automotive feedback;
+- keep V2 steering input semantics but present them as a shallow, wide projected steering-wheel mechanism that rotates for automotive feedback;
 - visual active-state growth must never move/resize the hitbox used to calculate steering;
 - independent analog throttle and brake use relative upward thumb travel from pointer-down (`0..1`), with origin/travel frozen at pointer-down;
 - active pedal may grow/lift and its neighbor may shrink/dim, presentation only;
 - steering/pedals must support independent multitouch ownership;
 - use a compact `D/R` state selector; owner explicitly allows D<->R under throttle and at any speed for now;
-- UI and command state for direction must have one authority;
+- UI and command state for direction must have one input-layer authority;
+- preserve simultaneous throttle+brake input even though current M6 drive physics remains brake-priority when both are non-zero;
 - preserve keyboard/digital fallback unless product evidence justifies changing arbitration.
+
+Grounding refinements for implementation:
+
+- product entry is `product-main.ts -> await import("./main.js") -> installProductControls()`; driving input/HUD belongs to normal `main`/host/input source, not `product-controls` or a second entrypoint;
+- input timelines receive real pointer events, but presentation should coalesce continuous HUD writes to at most one `requestAnimationFrame`; command-coupled wheel/pedal motion should not be hidden behind multi-frame CSS easing;
+- presentation callbacks must be generation-scoped so disposal of a stale async host cannot overwrite a newer HUD state;
+- on restart, detach/disable the old presentation sink before disposing the old host, then bind a fresh neutral mobile state (`steering 0`, `throttle 0`, `brake 0`, `D`) to the new generation;
+- ordinary layout motion is handled by frozen gesture geometry; structural viewport/orientation/fullscreen transitions may deliberately fail closed for continuous gestures rather than remap a held command silently.
 
 ## V3 classification
 
@@ -59,23 +69,23 @@ Useful donor points remain in Git:
 - `c0b3ed22...` short-landscape hardening;
 - `8736a2b6...` later post-rollback rebuild tip.
 
-Reuse selectively only after source-level review. Do not restore any donor wholesale.
+The later rebuild's separated `PointerAnalogDriveAdapter` and its lifecycle tests are useful donor mechanisms (frozen pedal geometry, source-specific release, multitouch ownership, fail-closed capture, D/R re-sign under held throttle). Reuse selectively after source-level review; do not restore the donor host/UI stack wholesale.
 
 ## Current workflow rule
 
-Cleanup first, product implementation second.
+Cleanup/grounding first, product implementation second.
 
-During cleanup:
+During the remaining cleanup boundary:
 
 1. keep one active lane;
-2. normalize docs and branch authority around the clean base;
-3. prune stale refs after history is safely retained;
-4. validate the foundation before advancing `main`;
-5. remove the cleanup lane after promotion.
+2. preserve the now-locked mobile-driving target and evidence;
+3. close the canonical toolchain gate when the required environment is available;
+4. advance `main` only after that promotion gate;
+5. retire the cleanup lane and stale historical branch names.
 
-After cleanup, resume mobile controls as small normal-source vertical slices. Experimental owner-device builds must come from typed private source through the normal build pipeline, not a second patched runtime.
+After cleanup, resume mobile controls on one ordinary work lane through small normal-source slices. Do not create per-version V3/V4 runtime branches. Experimental owner-device builds must come from typed private source through the normal build pipeline, not a second patched runtime.
 
-Private GitHub Actions are currently blocked by billing/spending limits; do not create workaround workflows. This does not change product authority.
+Private GitHub Actions are currently blocked by billing/spending limits; do not create workaround workflows. This does not change product authority and must not stop source-level implementation/validation that does not require canonical release proof.
 
 ## Read order
 
