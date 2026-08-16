@@ -1,0 +1,51 @@
+name: JV canonical product gate
+
+on:
+  push:
+    branches:
+      - work/friends-r1-usability
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-product-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+
+      - name: Install canonical Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Pin canonical npm
+        working-directory: /tmp
+        run: npm install --global npm@11.13.0
+
+      - name: Verify toolchain identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = "v24.16.0"
+          test "$(npm --version)" = "11.13.0"
+          node --version
+          npm --version
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run canonical repository build
+        run: npm run build
+
+      - name: Preserve built product artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jv-canonical-product-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
