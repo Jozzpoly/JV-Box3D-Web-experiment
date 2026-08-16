@@ -6,7 +6,7 @@ import { isAbsolute, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+const isWindows = process.platform === "win32";
 const expectedRepository = "Jozzpoly/JV-Box3D-Web-experiment";
 const factoryReceiptPath = "public/receipts/jv_m6_factory_receipt.json";
 const bundleForbiddenMarkers = [
@@ -35,6 +35,15 @@ function run(command, args, options = {}) {
     throw new Error(`${command} ${args.join(" ")} failed with exit ${result.status ?? "unknown"}.`);
   }
   return result;
+}
+
+function runNpm(args, options = {}) {
+  if (!isWindows) {
+    return run("npm", args, options);
+  }
+
+  const commandShell = process.env.ComSpec ?? "cmd.exe";
+  return run(commandShell, ["/d", "/s", "/c", "npm.cmd", ...args], options);
 }
 
 function gitText(args, env = process.env) {
@@ -157,13 +166,13 @@ async function main() {
   console.log(`JV neutral-rig foundation gate: ${head}`);
 
   console.log("[1/9] Installing exact lockfile dependencies...");
-  run(npmCommand, ["ci"]);
+  runNpm(["ci"]);
 
   console.log("[2/9] Strict TypeScript check...");
-  run(npmCommand, ["run", "typecheck"]);
+  runNpm(["run", "typecheck"]);
 
   console.log("[3/9] Focused neutral-rig geometry/provenance tests...");
-  run(npmCommand, ["test", "--", "tests/jure-neutral-geometry.test.mjs"]);
+  runNpm(["test", "--", "tests/jure-neutral-geometry.test.mjs"]);
 
   console.log("[4/9] Deterministic receipt + exact provenance...");
   const first = exporterResult().stdout;
@@ -178,10 +187,10 @@ async function main() {
   await falsifyDirtyTrackedSourceGuard();
 
   console.log("[7/9] Full repository check...");
-  run(npmCommand, ["run", "check"]);
+  runNpm(["run", "check"]);
 
   console.log("[8/9] Production bundle + neutral-seam leak scan...");
-  run(npmCommand, ["run", "build:bundle"]);
+  runNpm(["run", "build:bundle"]);
   await requireBundleExcludesNeutralSeam();
 
   console.log("[9/9] Final repository cleanliness...");
