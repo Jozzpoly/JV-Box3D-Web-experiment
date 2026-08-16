@@ -164,7 +164,8 @@ test("release-all removes only the matching analog source", () => {
   timeline.enqueueAnalogThrottle(0.8, 2, "touch-b");
   timeline.enqueueReleaseAll(5, "BLUR", "touch-b");
 
-  const command = timeline.consumeInterval(0, 10).command;
-  assert.ok(Math.abs(command.throttle - 0.6) < 1e-12);
-  assert.equal(command.brake, 0);
+  const sample = timeline.consumeInterval(0, 10);
+  assert.ok(Math.abs(sample.command.throttle - 0.52) < 1e-12);
+  assert.ok(Math.abs(sample.integratedThrottleMs - 5.2) < 1e-12);
+  assert.equal(sample.command.brake, 0);
 });
