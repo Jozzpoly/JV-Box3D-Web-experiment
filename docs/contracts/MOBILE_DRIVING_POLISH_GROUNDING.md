@@ -1,9 +1,9 @@
 # JV Web — mobile driving polish grounding
 
-Status: `P1 FOUNDATION OWNER-ACCEPTED / P2+ POLISH TARGET`
+Status: `P1 FOUNDATION OWNER-ACCEPTED / PUBLIC TAKEOFF COMPLETE / P2+ POLISH TARGET`
 Owner: Jozz
 Grounded: 2026-08-16
-Updated after P1 owner-device acceptance: 2026-08-16
+Updated after public-main takeoff: 2026-08-17
 
 This document preserves the owner-device intent for the mobile driving polishing campaign. It incorporates and supersedes the former pre-device `MOBILE_DRIVING_CONTROLS_TARGET.md`, which is retained only in Git history.
 
@@ -19,23 +19,25 @@ Owner-tested P1 private product source:
 work/mobile-driving-controls product source: c9b5990b226685abe35851fc5e9496323096ecf7
 ```
 
-Current public Friends artifact:
+Current public artifact and publication anchors:
 
 ```text
-release/friends-r1: a325c279cfe63a0607dba33c3c635a1716e09f8f
+public main / Pages artifact: f512551dc41196bc8ca053357408c93b4b3725be
+public artifact executable source: 0260c8b39c0bb9594afe423b30d8e3536918f24c
 Pages: https://jozzpoly.github.io/JV-Box3D-Web-Public/
-rollback immediately before P1: checkpoint/pages-before-p1-foundation-2026-08-16@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf
+previous accepted Friends artifact: a325c279cfe63a0607dba33c3c635a1716e09f8f
+historical public R0 commit: c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-The public build manifest records exact clean private product source `c9b5990b...`. The release preserved the approved JSPREV2 scan from exact public Git object bytes and removed the historical public executable runtime overlay.
+The current public build manifest records exact clean private executable source `0260c8b39...`. Corrected artifact equivalence proved that the promoted executable behavior is unchanged from the previously accepted Friends artifact apart from exact source-build identity; the approved JSPREV2 scan was preserved from exact public Git object bytes and the historical public executable runtime overlay remains removed.
 
-Owner directly tested the resulting build on desktop and Samsung Galaxy A53 / Chrome, including portrait, landscape, browser-chrome and fullscreen states, and supplied screenshots from the live public build.
+The Owner directly tested the final public-main Pages build on desktop and Samsung Galaxy A53 / Chrome for about five minutes after takeoff and observed no regression from the accepted P1 behavior. Earlier P1 acceptance also covered portrait, landscape, browser-chrome and fullscreen states and included screenshots from the live public build.
 
 ## 2. What is now protected
 
 Protected positive evidence:
 
-- the Friends artifact boots and runs on desktop and phone;
+- the public artifact boots and runs on desktop and phone;
 - the approved JSPREV2 scan and owner vehicle remain usable;
 - analog throttle and brake are connected to real driving and work on the phone;
 - independent pedal interaction remains valuable and should be refined rather than reverted;
@@ -44,7 +46,7 @@ Protected positive evidence:
 - the source/input architecture survived real publication and repeated device use;
 - P1 removed the known competing V2/current/base CSS ownership path and the historical public runtime overlay;
 - the mobile scene can shrink below the old 420px floor;
-- the owner judged the worst previous UI/presentation problems resolved sufficiently to close P1 foundation and begin main-promotion preparation.
+- the owner judged the worst previous UI/presentation problems resolved sufficiently to close P1 foundation and begin coordinated HUD polishing.
 
 This acceptance does **not** make the current HUD composition, pedal mapping, pedal visual design, steering visual design, final steering gesture or final portrait/landscape layouts final.
 
@@ -216,9 +218,9 @@ Critical experiment discipline:
 
 A hybrid/fallback mapping may be considered only if direct rotation shows a concrete usability problem. Do not design one speculatively first.
 
-## 9. Work decomposition after main-promotion preparation
+## 9. Work decomposition after public-main takeoff
 
-Do not resume these slices until the separate Main Promotion Preparation boundary is closed.
+Main Promotion Preparation and public-main takeoff are closed. Resume product work from **P1.2**; do not restart those closed prerequisites without new contradictory evidence.
 
 ### P1.2 — coordinated mobile HUD zones
 
