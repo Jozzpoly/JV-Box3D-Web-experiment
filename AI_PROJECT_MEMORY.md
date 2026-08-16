@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-16
-Status: `P1 ACCEPTED / MAIN ACTIVE / JURE PAUSED / READY FOR NEXT PRODUCT SLICE`
+Status: `P1 ACCEPTED / MAIN ACTIVE / NEUTRAL RIG CONSUMER FOUNDATION IN MAIN / JURE PAUSED`
 
 This file is a compact router. Git/current source, exact execution logs, public artifact evidence and direct Owner observation outrank it.
 
@@ -18,53 +18,61 @@ Resolve moving refs live before writes.
 
 ## Accepted P1
 
-Owner-tested P1 established:
+Owner-tested P1 established working mobile/browser foundation: X-only analog steering reference, analog pedals, accepted desktop + Galaxy A53 / Chrome behavior, Plac E2R, Offroad, owner vehicle, approved JSPREV2, Camera Manual Rig V1 and Fullscreen V1.
 
-- steering works as current X-only analog `POSITION` reference;
-- pedals work as current functional foundation;
-- worst old clipping/overlay failures are resolved sufficiently to continue development;
-- desktop + Galaxy A53 / Chrome use is accepted for this boundary;
-- Plac E2R, Offroad, owner vehicle, approved JSPREV2, Camera Manual Rig V1 and Fullscreen V1 remain protected foundations.
-
-Technical evidence:
+Technical anchors:
 
 - focused P1/input/lifecycle suite: 48/48 PASS;
 - TypeScript + normal Vite production build: PASS;
-- final main promotion gate: 444/444 PASS;
+- final P1 main promotion gate: 444/444 PASS;
 - portable/build identity checks: PASS;
 - runtime equivalence to Owner-tested source: PASS;
 - production dependency audit: 0 vulnerabilities.
 
-## Current task state
+## Neutral rig consumer foundation
 
-The previous grounding/handoff/JURE-preparation stage is complete.
+The useful JV-side work from the former `jure/neutral-geometry-receipt` lane belongs in `main` and is no longer experimental branch authority.
 
-There is no active ordinary work lane. Do not route work back to old recovery/mobile branches and do not create a branch until a concrete slice begins.
+Current foundation:
 
-Default next product direction is mobile control/UI polish from the accepted P1 foundation, starting with coordinated HUD/useful-interface composition before changing pedal semantics.
+- engine-neutral `JvNeutralMechanismV1` bodies/frames/relations;
+- explicit `jv-rig-space/v1` metres/right-handed/+X forward/+Y up/+Z right/root convention;
+- read-only projection of current procedural M6 front-left coherent double-wishbone;
+- deterministic `jv-neutral-geometry-receipt/v1` diagnostic export;
+- exact producer repository + commit provenance;
+- exact factory-receipt path + Git blob + SHA-256 provenance;
+- fail-closed export for tracked source drift or wrong repository `origin`;
+- geometry equivalence checks against the current real FL suspension input;
+- no Box3D IDs/dynamics/controls and no runtime substitution.
 
-Open mobile sequence:
-
-`P1.2 HUD zones -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute-position pedals -> P3 mechanical pedal depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait composition`
-
-Pedal P2 target remains absolute frozen-geometry Y mapping with immediate pointerdown demand; bottom/low = low demand, top/high = high demand, vertical movement changes demand; preserve multitouch/lifecycle/D-R behavior.
+This is a JV consumer-side lowering/diagnostic seam, not the JURE authored format and not a second general rig schema.
 
 ## JURE pause
 
-JURE is separate authored-rig authority but is intentionally paused until JV needs it again.
+JURE is intentionally paused until JV actually needs authored-rig tooling again.
 
-Preserved boundaries:
+Preserved anchors:
 
-- JURE accepted `main`: `d971b8bef5dd7c65b78884b6b449e1f5ab0e7425`;
-- closed JURE PR #3 clean foundation candidate: `4db04eee4da0216f6bd3df6b6b0c82aa20afab5a`;
-- closed JURE PR #4 / paused checkpoint: `checkpoint/paused-jv-authoring-2026-08-16@f0f8cd91aca583610dc2dedd34e537a145a01b61`;
-- closed JV PR #25 / paused neutral seam checkpoint: `checkpoint/jure-neutral-receipt-paused-2026-08-16@7ff1c73ac74c46bce29bd4a4bd68d672dc662ef1`.
+- accepted JURE `main`: `d971b8bef5dd7c65b78884b6b449e1f5ab0e7425`;
+- clean foundation candidate / closed PR #3: `4db04eee4da0216f6bd3df6b6b0c82aa20afab5a`;
+- paused real-JV authoring / closed PR #4: `checkpoint/paused-jv-authoring-2026-08-16@f0f8cd91aca583610dc2dedd34e537a145a01b61`;
+- closed PR #2 remains historical recovery evidence.
 
-No paused PR was merged.
+Durable rule: procedural JV M6 wishbone and exact/JURE-authored wishbone are not rigid-congruent. Never create a partial hybrid. Future first coherent target is chassis reference + upper/lower arms + carrier reference + 2 inboard revolutes + 2 outboard spherical relations. Strict parse/provenance/units/basis/placement and neutral geometry coherence must precede Box3D substitution.
 
-The earlier JV seam `fd84fcf4...` passed canonical Windows validation including full 448/448 tests, but exact `7ff1c73...` has later hardening and its final exact-SHA execution gate is still pending. Do not transfer the older PASS claim.
+## Branch policy
 
-Durable cross-project rule: procedural M6 wishbone and exact/JURE-authored wishbone are not rigid-congruent. Never build a partial hybrid. Future first coherent target is chassis reference + upper/lower arms + carrier reference + 2 inboard revolutes + 2 outboard spherical relations. Strict parse/provenance/units/basis/placement and geometry coherence must precede Box3D substitution.
+Steady-state target is **main-only**. Do not retain work/checkpoint branches after their useful result is preserved in `main` or durable external evidence.
+
+A temporary branch later requires a concrete risky implementation/rollback reason; it is not created per agent, conversation or test.
+
+## Current product direction
+
+Default next product direction remains mobile control/UI polish from the accepted P1 foundation:
+
+`P1.2 HUD zones -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute-position pedals -> P3 mechanical pedal depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait composition`
+
+Pedal P2 target: absolute frozen-geometry Y mapping, immediate pointerdown demand, bottom/low = low, top/high = high, vertical movement changes demand; preserve multitouch/lifecycle/D-R behavior.
 
 ## Protected boundaries
 
@@ -80,8 +88,6 @@ Preserve unless explicitly changed by a scoped task:
 - temporary steering/drive bridge as product intermediate only;
 - JURE authored-rig authority / JV runtime authority separation.
 
-## Do not restart without evidence
-
-Do not restart source recovery, branch archaeology, old Camera/Fullscreen reconstruction, P1 CSS authority/root-floor work, historical V1/V2 controls, old Friends overlay repair, accepted-A53 micro-optimization, private Actions workaround machinery, or speculative JURE runtime integration.
+Do not restart source recovery, branch archaeology, old Camera/Fullscreen reconstruction, P1 CSS/root-floor work, old Friends overlay repair, accepted-A53 micro-optimization, private Actions workaround machinery, or speculative JURE runtime substitution without new evidence.
 
 For takeover read `AGENTS.md -> docs/PROJECT_STATE.md`; use `docs/HANDOFF.md` only when snapshot context is useful.
