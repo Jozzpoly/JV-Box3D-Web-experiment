@@ -2,7 +2,7 @@
 
 Updated: 2026-08-16
 Owner: Jozz
-Status: `MOBILE DRIVING OWNER-DEVICE ALPHA LIVE / ROADMAP READINESS AUDITED / R0.1 TEST-EVIDENCE HYGIENE NEXT`
+Status: `MOBILE DRIVING OWNER-DEVICE ALPHA LIVE / R0.1 SOURCE HYGIENE IMPLEMENTED / CANONICAL FULL CHECK PENDING`
 
 ## 1. Authority
 
@@ -25,7 +25,7 @@ Git/current source, exact execution logs, built/public artifact evidence and dir
 1. `AGENTS.md`;
 2. this file;
 3. `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` — owner intent;
-4. `docs/MOBILE_DRIVING_ROADMAP_READINESS_AUDIT_2026-08-16.md` — current pre-roadmap gate;
+4. `docs/MOBILE_DRIVING_ROADMAP_READINESS_AUDIT_2026-08-16.md` — pre-roadmap adversarial audit;
 5. `docs/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md` — deeper source/layout/input findings when needed;
 6. source/tests for the active sub-slice.
 
@@ -48,9 +48,11 @@ The public owner-device alpha is real:
 
 This proves a functioning browser/device alpha.
 
-It does **not** prove that the complete current repository unit-test suite passed for d96. The preserved Windows log explicitly ran `npm run typecheck` with `no unit-test suite`, and current source contains stale UI-regex tests inconsistent with the analog DOM.
+It does **not** prove that the complete repository unit-test suite passed for d96. The preserved Windows log explicitly ran `npm run typecheck` with `no unit-test suite`; the old suite also contained stale UI-regex tests inconsistent with the analog product DOM.
 
-Do not upgrade typecheck/build/device proof into a `FULL npm run check PASS` claim without new exact execution evidence.
+R0.1 has now reconciled those known stale mobile/UI test contracts in source. A new exact canonical `npm run check` execution is still required before the suite may be called green.
+
+Do not upgrade typecheck/build/device proof into a `FULL npm run check PASS` claim without that execution evidence.
 
 ## 4. Protected product foundation
 
@@ -140,7 +142,7 @@ Base/current styles mix:
 
 A narrow desktop browser is therefore not automatically equivalent to an A53 state. Rendered checks must distinguish narrow-desktop and coarse-pointer phone behavior or emulate the relevant media features.
 
-## 7. New release/runtime authority finding
+## 7. Release/runtime authority finding
 
 The live public root contains executable:
 
@@ -194,24 +196,73 @@ Separately judges layout, visibility, driving feel and device behavior.
 
 Current alpha has owner-device proof. Future validation summaries must keep these classes explicit.
 
-## 9. R0 — small roadmap-readiness closure
+## 9. R0 — roadmap-readiness closure
 
-Do this before treating P1 as ordinary polishing.
+### R0.1 — validation truth / test hygiene — SOURCE HYGIENE IMPLEMENTED; CANONICAL PROOF PENDING
 
-### R0.1 — validation truth / test hygiene — NEXT
+The source-side reconciliation is complete without product/runtime changes.
 
-Goal: restore a trustworthy current source-test baseline without letting obsolete UI tests dictate the product.
+#### KEEP
 
-Required:
+Behavioural coverage remains intact for:
 
-1. classify mobile/UI tests `KEEP / UPDATE / DELETE`;
-2. update/remove historical binary-control and V2-presentation assertions;
-3. retain real input/lifecycle/generation invariants;
-4. replace source-only stylesheet-order confidence with a built-artifact ownership check where appropriate;
-5. run the reconciled suite under the canonical Windows toolchain;
-6. record actual commands/results.
+- analog throttle/brake timeline integration;
+- D/R held-throttle re-sign;
+- independent multitouch ownership;
+- second-pointer non-stealing;
+- pointer-capture failure;
+- pointercancel/lostpointercapture;
+- visibility/pagehide/dispose release;
+- steering POSITION/self-centering;
+- frozen steering gesture geometry;
+- orientation/fullscreen fail-closed lifecycle;
+- generation monotonicity/stale callback rejection;
+- RAF presentation coalescing;
+- simultaneous pedal presentation state;
+- legacy host pointer forwarding where that optional compatibility API still genuinely exists.
 
-This is preparation/test maintenance only. Do not change mobile product behavior in R0.1.
+#### UPDATE
+
+`tests/mobile-ui-contract.test.mjs` now protects current durable product semantics only:
+
+- viewport-fit coverage without disabling browser zoom;
+- exactly one owner-facing steering surface;
+- exactly two owner-facing analog pedals, BRAKE and THROTTLE;
+- one D/R selector;
+- no legacy `data-pointer-control` binary buttons in product DOM;
+- slider/accessibility semantics without pinning visual geometry;
+- Debug starts closed/recoverable.
+
+`tests/mobile-driving-integration-contract.test.mjs` now protects:
+
+- typed analog controls + generation-scoped presentation wiring;
+- owner-facing analog path rather than legacy binary product wiring;
+- semantic BRAKE-before-THROTTLE DOM order;
+- presentation-generation invalidation before old host disposal.
+
+It no longer asserts the historical V2/current stylesheet order or visual implementation details that P1.0 is explicitly meant to replace.
+
+`tests/toolchain-contract.test.mjs` now also pins validation truth:
+
+- `npm test` is `node tools/run-tests.mjs`;
+- `npm run check` includes typecheck + complete test runner + docs + third-party;
+- default `tools/run-tests.mjs` execution discovers every top-level `tests/*.test.mjs` unless an explicit focused list is supplied.
+
+#### DELETE
+
+`tests/mobile-driving-controls-v2.test.mjs` was removed. It required the separate V2 stylesheet, hidden legacy binary steering targets, exact historical rack geometry and fixed Debug/action offsets. Those are superseded presentation implementation details and would directly force the wrong architecture back into P1.0.
+
+#### Remaining R0.1 gate
+
+Run **one exact canonical full `npm run check`** from the current active source and preserve the command/result log.
+
+Until that run exists:
+
+- R0.1 source hygiene = implemented;
+- complete current suite = **NOT YET PROVEN GREEN**;
+- P1.0 implementation remains blocked on this single proof boundary.
+
+If the canonical suite fails, classify the exact failure before changing product source. Do not repair the product to satisfy a stale test.
 
 ### R0.2 — release-layer executable purity
 
@@ -224,7 +275,7 @@ Mandatory for the next owner-visible Friends publication:
 
 No separate public republish is required before private P1.0 work.
 
-## 10. Main roadmap after R0.1
+## 10. Main roadmap after canonical R0.1 proof
 
 ### P1.0 — production CSS authority
 
@@ -301,8 +352,8 @@ Stop and localize when:
 
 ## 13. Exact next boundary
 
-**R0.1 — validation truth / test hygiene.**
+**Execute and preserve one canonical Windows `npm run check` for the reconciled current source.**
 
-After R0.1 is canonically green, proceed to **P1.0 — production CSS authority**.
+If green, R0.1 closes and the next implementation is **P1.0 — production CSS authority**.
 
-Do not move pedals, redesign wheel visuals, change pedal mapping or prototype rotational steering before those boundaries are closed.
+Do not move pedals, redesign wheel visuals, change pedal mapping or prototype rotational steering before that proof boundary is closed.
