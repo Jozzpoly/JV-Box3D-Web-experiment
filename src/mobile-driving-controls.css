@@ -167,6 +167,21 @@
   transform: scale(1.045) translateY(-2px);
 }
 
+.mobile-steering-joystick:focus-visible {
+  outline: 2px solid rgba(165, 211, 255, .95);
+  outline-offset: 3px;
+}
+
+/* Debug is a real overlay. Keep the action rail above it so the same Debug
+   button remains the fail-safe exit path in every mobile composition. */
+.panel[data-open] {
+  z-index: 18;
+}
+
+.scene-actions {
+  z-index: 22;
+}
+
 .mobile-drive-controls {
   display: grid;
   grid-template-columns: repeat(2, minmax(58px, 68px));
@@ -343,6 +358,30 @@
   font-size: .62rem;
 }
 
+@media (hover: none) and (pointer: coarse), (max-width: 620px) {
+  /* Short browser-chrome viewports must be allowed to shrink below the
+     historical 420px desktop scene floor. The canvas remains 100svh high. */
+  .scene-panel {
+    min-height: 0;
+  }
+
+  .scene-actions {
+    top: calc(max(10px, env(safe-area-inset-top)) + 98px);
+    right: max(12px, env(safe-area-inset-right));
+    bottom: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+  }
+
+  .scene-action {
+    min-height: 31px;
+    padding: 6px 8px;
+    font-size: .58rem;
+  }
+}
+
 @media (hover: none) and (pointer: coarse) and (orientation: portrait) {
   .mobile-controls {
     bottom: max(26px, calc(env(safe-area-inset-bottom) + 16px));
@@ -374,6 +413,11 @@
   .mobile-direction-selector.mobile-control {
     height: 34px;
     min-height: 34px;
+  }
+
+  .scene-actions {
+    top: calc(max(8px, env(safe-area-inset-top)) + 72px);
+    bottom: auto;
   }
 }
 
