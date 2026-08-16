@@ -1,22 +1,125 @@
 # JV Web — mobile driving controls target
 
-Status: `PRODUCT TARGET / IMPLEMENTATION PAUSED DURING FOUNDATION CLEANUP`
+Status: `PRODUCT TARGET / PRE-IMPLEMENTATION FOUNDATION`
 Owner: Jozz
-Recovered and normalized: 2026-08-16
+Recovered and refined: 2026-08-16
 
-This is the durable interaction target recovered from owner feedback and the V2/V3 experiments. It is **not** authority for final vehicle rig geometry, steering physics or handling. It defines what the browser/mobile input layer should deliver when implementation resumes.
+This is the durable interaction and implementation target for the next JV-Web mobile-driving stage. It is **not** authority for final vehicle rig geometry, steering physics or handling. It defines how the browser/mobile control surface should behave and how it should be integrated so later iteration stays fast and safe.
 
 ## 1. Product intent
 
-Touch driving should become deliberately enjoyable and automotive rather than looking like a generic mobile gamepad.
+Touch driving should become deliberately enjoyable, mechanical and automotive rather than looking or behaving like a generic mobile gamepad.
 
-Preserve the proven precision of Steering Control V2, then add richer mechanical visual feedback without allowing animation or layout changes to alter the command under the finger.
+The control surface should feel like an **instrument attached to the simulated mechanism**: its visible motion must truthfully communicate command state, while the actual input mapping remains stable, precise and deterministic.
 
-The implementation must remain easy to extend with later sensitivity tuning, haptics and alternative presentation, but there should be one normal production input path rather than parallel experimental runtimes.
+The implementation should preserve the owner-accepted precision of Steering Control V2, then add richer mechanical feedback without allowing animation, responsive layout or decorative motion to change the command under the finger.
 
-## 2. Steering — preserved input semantics
+Long-term extensibility matters, but avoid speculative frameworks. Build one clean production path that can later accept sensitivity tuning, haptics, handedness, alternative visual presentation and additive driving assists without replacing the input foundation.
 
-The accepted V2 foundation remains the behavioral baseline:
+## 2. Evidence from the previous UI iterations
+
+The supplied owner screenshots establish useful design evidence rather than a single visual mockup to copy.
+
+### Old binary mobile controls
+
+What worked:
+
+- primary driving controls lived in the two lower thumb zones;
+- steering occupied the left hand and longitudinal controls the right;
+- the centre of the world view remained largely unobstructed.
+
+What failed as a long-term interaction model:
+
+- LEFT/RIGHT and DRIVE/REVERSE were binary buttons for fundamentally continuous actions;
+- three large right-side action buttons consumed space without expressing throttle/brake magnitude;
+- the UI behaved like a generic mobile gamepad rather than a vehicle mechanism.
+
+### Analog Steering V1 — circular joystick
+
+What worked:
+
+- proved that direct analog steering on the phone is viable;
+- one-thumb absolute X `POSITION` control was a useful direction.
+
+What failed:
+
+- the circular shell and vertical guide visually advertised a Y axis that had no function;
+- the control was much taller than the real interaction required;
+- the large circle sat close to the bottom/left edge and consumed valuable world view;
+- visual metaphor and actual degrees of freedom disagreed.
+
+### Steering Control V2 — rack
+
+What worked and is protected:
+
+- the visible affordance became one-dimensional like the actual X-only command;
+- the control became significantly shallower and more space-efficient;
+- its placement moved away from the extreme screen edge;
+- owner accepted its precision and practical driving behavior;
+- Debug recovery and the ~35-degree product steering bridge were validated alongside it.
+
+What remains open:
+
+- the rack/slider communicates position accurately, but still does not feel strongly automotive;
+- the moving rectangular thumb is useful as a calibration metaphor but weak as final mechanical feedback.
+
+### Concept 4 — Split Pedals
+
+Treat the supplied concept as a **design donor**, not a pixel-perfect specification.
+
+Strong ideas to preserve:
+
+- separate vertical throttle and brake instruments;
+- clear analog travel rather than binary press state;
+- compact D/R grouped with the longitudinal controls;
+- steering and pedals form one coherent mechanical control language.
+
+Do not copy blindly:
+
+- the concept's steering rack is superseded by the panoramic-wheel direction;
+- exact pedal order, dimensions, colors and labels remain implementation/tuning decisions;
+- the final controls must fit the real JV viewport, performance constraints and existing HUD rather than the mockup frame.
+
+## 3. Locked owner decisions for the next stage
+
+### Simultaneous throttle + brake
+
+Input must preserve independent analog throttle and brake simultaneously. Do not prevent the state merely because the current vehicle controller may choose a dominant effect.
+
+Current source fact: `M6VehicleController.#applyDrive()` gives brake strict behavioral priority whenever `brake > epsilon`; therefore the present physics does **not** yet combine drive torque and brake torque even if the input command contains both values.
+
+For this mobile-controls stage:
+
+- preserve both input values and expose them accurately;
+- do not silently rewrite vehicle physics just to simulate combined pedal consequences;
+- record/telemeter both values so a later physics/handling stage can decide what simultaneous pedals should physically do.
+
+### D/R switching
+
+Allow `D <-> R` while throttle is held and regardless of speed. Do not add Neutral, forced pedal release, speed interlocks or safety lockouts unless real driving later proves a need.
+
+A direction flip under active throttle should preserve throttle magnitude and change its sign from the same input timestamp. With the current drive controller this can create strong opposing drive torque while the vehicle is still moving in the previous direction; that behavior is intentionally permitted as an experiment rather than sanitized away.
+
+### Default hand layout
+
+Primary default:
+
+```text
+LEFT THUMB  -> steering
+RIGHT THUMB -> throttle / brake / D-R cluster
+```
+
+Do not build a handedness setting in this stage. Keep semantic input ownership independent from CSS placement so a future mirrored layout can be added without changing timeline or vehicle logic.
+
+### Responsive sequence
+
+Landscape is the **primary driving/polish target first**. Portrait is a separate subsequent substage using the same interaction semantics.
+
+This is sequencing, not permission to leave portrait broken. The purpose is to give the most important driving surface enough attention before adapting it to the narrower orientation.
+
+## 4. Steering — preserved input semantics
+
+The accepted V2 foundation remains the normal-driving behavioral baseline:
 
 ```text
 one thumb
@@ -26,30 +129,46 @@ release/cancel/lifecycle loss -> neutral 0
 current product full-lock bridge -> approximately +/-35 degrees at the wheels
 ```
 
-The current V2 adapter maps the pointer's absolute horizontal position inside the fixed control hitbox to `[-1,+1]`, with a small center dead zone. That mapping is the starting behavior because the owner accepted its feel. Sensitivity/dead-zone changes are later tuning questions, not part of the cleanup stage.
+The current V2 adapter maps the pointer's absolute horizontal position inside the control hitbox to `[-1,+1]`, with a small centre dead zone. Preserve that mapping for the first new driving candidate because its feel was owner-accepted.
 
-The old circular joystick metaphor must not return: it visually suggests a Y axis that does nothing.
+Do not return to a circular joystick metaphor. No visible element should imply vertical steering movement.
 
-Layout requirements:
+### Gesture geometry hardening
 
-- remove obsolete left/right steering buttons from the mobile driving surface;
-- keep the steering control away from the extreme bottom/left screen edges and respect safe areas;
-- remain reachable in portrait and landscape without consuming excessive world view.
+V2 recomputes `getBoundingClientRect()` during pointer movement. The new steering control should instead freeze the active control geometry at pointer-down, exactly as the pedal gesture does, so an orientation/layout/fullscreen change cannot silently remap steering under a stationary finger.
 
-## 3. Steering — target presentation
+Normal stable-viewport V2 behavior remains unchanged; this only hardens mid-gesture layout changes.
 
-The preferred direction is the hybrid developed from the owner's feedback:
+## 5. Steering — target mechanical presentation
 
-- a very wide, shallow steering-wheel arc / ellipse, viewed from above or at a steep angle;
-- the physical gesture remains the proven X-only control;
-- an internal wheel/mechanical layer rotates with steering command so the player immediately sees how much steering is applied;
-- active-state emphasis may enlarge/lift the **internal visual mechanism**, but must not resize or move the hitbox used for command calculation during the gesture.
+Preferred design direction:
 
-The previous prototype used roughly +/-108 degrees of visual wheel rotation at full command. Treat that as useful donor tuning only, not an accepted product constant.
+- fixed, shallow touch acquisition zone in the lower-left thumb region;
+- inside it, a circular steering-wheel mechanism viewed from above at a steep perspective angle so it appears as a very wide shallow ellipse/arc;
+- the user's finger still moves only left/right across the fixed zone;
+- the internal wheel rotates with the steering command and therefore communicates applied lock.
 
-The steering presentation and the steering input calculation must remain separate modules/boundaries. Presentation must not query or redefine input geometry during an active gesture.
+### Important rendering detail
 
-## 4. Analog throttle and brake
+Do **not** fake this by drawing an already-squashed ellipse and rotating the ellipse itself; that would visibly change the ellipse orientation and can look like a wobbling plate rather than a wheel.
+
+Prefer a circular internal wheel/rim projected with a steep 3D tilt and then rotated around its steering axis. The circular rim remains perspectively elliptical while asymmetric spokes/grip marks rotate inside it.
+
+The rotating visual needs an **asymmetric index** — for example an offset spoke, grip marker or spoke pattern — because a perfectly symmetric rim does not communicate rotation clearly.
+
+### Active feedback
+
+On touch, the internal wheel may visually lift, become slightly less steep, grow or strengthen so it feels as though the mechanism comes toward the thumb.
+
+Critical invariant:
+
+> the outer input hitbox and the geometry captured at pointer-down do not move or resize during the gesture.
+
+All active-state movement belongs to internal presentation layers.
+
+The previous prototype used roughly +/-108 degrees of visual wheel rotation at full command. Treat that only as donor tuning. Full visual rotation, perspective angle and active lift are feel variables for the landscape polish pass.
+
+## 6. Analog throttle and brake — gesture semantics
 
 Provide two independent vertical analog pedals:
 
@@ -58,112 +177,239 @@ THROTTLE: relative upward travel from pointer-down -> 0..1
 BRAKE:    relative upward travel from pointer-down -> 0..1
 ```
 
-Required gesture semantics:
+Required behavior:
 
-- touching a pedal establishes that touch position as local `0%` rather than jumping to an absolute value;
-- moving the thumb upward progressively increases demand toward `100%`;
-- moving back downward reduces demand toward `0%`;
-- clamp the command to `[0,1]`;
-- freeze the gesture origin and usable travel geometry at pointer-down;
-- release, pointer cancel, lost capture, window blur, hidden document, page hide and dispose must fail closed to `0` for the owned pedal;
-- pointer-capture failure must not create hidden demand.
+- touching anywhere inside a pedal's stable acquisition zone establishes that touch as local `0%`;
+- upward travel progressively increases the value toward `100%`;
+- moving back down reduces the value toward `0%`;
+- clamp to `[0,1]`;
+- freeze `originY` and usable travel at pointer-down;
+- use a small start slop/dead movement region to reject unavoidable touch jitter, but tune it from device feel rather than inheriting V3 magic numbers blindly;
+- release, cancel, lost capture, blur, hidden document, page hide and dispose fail closed to `0` for the owned pedal;
+- pointer-capture failure must not create hidden demand;
+- one pointer may own each pedal; a second pointer cannot steal an already-owned pedal.
 
-Throttle and brake have independent pointer ownership. The system must support:
+The first landscape layout should start from the automotive ordering **BRAKE left / THROTTLE right** inside the right-hand cluster. This also places the more frequently sustained throttle closer to the outer/right thumb approach. Treat exact spacing and dimensions as owner-feel tuning, not mechanical authority.
 
-- steering + throttle simultaneously;
-- steering + brake simultaneously;
-- throttle + brake simultaneously when separate pointers own them.
+## 7. Pedal mechanical presentation
 
-Existing keyboard/digital demand remains a valid fallback. When explicit digital longitudinal demand is active, preserve its current priority over analog demand unless later product evidence justifies a different arbitration rule.
+Each pedal should have two distinct layers:
 
-## 5. Pedal feedback
-
-The controls should visually behave like mechanical pedals rather than plain buttons/sliders.
+1. **stable acquisition well / hitbox** — fixed dimensions and location;
+2. **mechanical pedal face** — visual element that may move, tilt, grow and change emphasis.
 
 Desired feedback:
 
-- the active pedal grows/lifts/becomes visually stronger;
-- the neighboring inactive pedal may shrink and/or dim;
-- pedal face/travel/fill should visibly follow the analog value;
-- a percentage/value readout is allowed when it helps tuning or comprehension.
+- analog value visibly changes the pedal face position/tilt/compression;
+- active pedal may grow/lift and become more prominent;
+- if exactly one pedal is active, its inactive neighbor may shrink/dim modestly;
+- if throttle and brake are active simultaneously, both remain visually active — never shrink one merely because the other is pressed;
+- visual grooves/segments may progressively strengthen with value, but avoid turning the pedal into a generic vertical progress bar;
+- a numeric percentage is useful for development/debugging but should not be the primary production feedback.
 
-Critical invariant: **all of this feedback is presentation only**. A pedal that reads `70%` must remain `70%` if its visual size changes under a stationary thumb.
+Critical invariant:
 
-## 6. D / R direction selector
+> a pedal reading 70% remains 70% under a stationary finger even if its internal visual changes size or pose.
 
-Replace the eventual separate reverse-drive button with a compact direction state selector:
+Do not scale or transform the element that defines initial pointer hit testing. Animate only its internal face.
+
+## 8. D/R direction selector
+
+Use a compact state control grouped underneath/beside the pedals, preferably a small mechanical rocker/segmented selector rather than a third full-size drive button.
 
 ```text
 D <-> R
 ```
 
-Owner decision: for now, allow D/R switching while throttle is held and regardless of vehicle speed. Do **not** add neutral, forced pedal release, speed interlocks or automatic safety lockouts unless real driving demonstrates that they are needed. The permissive behavior may enable useful or fun mechanics.
+Requirements:
 
-When direction changes while analog throttle is already active, the active throttle demand must immediately follow the selected direction from that input timestamp.
+- default/reset direction is `D`;
+- one authoritative input-layer state owns direction;
+- presentation renders that state; presentation must never keep a second independent direction variable;
+- switching direction under throttle re-emits the held throttle magnitude with the new sign at the same logical timestamp;
+- brake state is unaffected;
+- selector must remain usable while steering and/or a pedal pointer is active, including a third touch if the device/browser supplies it.
 
-The input adapter and the visible selector must share one authoritative direction state. Reset/restart must not allow a UI state such as `D` while the command layer still behaves as `R`. Default start/reset direction is `D` unless the product later defines another explicit state.
+## 9. Multitouch and lifecycle contract
 
-## 7. Existing capabilities that this work must not regress
+Required simultaneous combinations include:
 
-Preserve:
+- steering + throttle;
+- steering + brake;
+- throttle + brake;
+- steering + throttle + D/R tap where the browser/device provides the extra pointer;
+- steering + brake + D/R tap;
+- throttle + brake using separate pointers.
 
-- Steering Control V2 precision and release-to-neutral behavior;
-- recoverable mobile Debug open/close behavior;
-- Fullscreen V1 on phone and desktop;
-- Camera Manual Rig V1 and manual calibration freedom;
-- the accepted A53 render-1x performance foundation;
-- the current temporary ~35-degree JV-Web steering range;
-- vehicle/Box3D drive physics unless the control task proves a physics change is necessary.
+Lifecycle rules:
 
-The 35-degree mapping is a temporary JV-Web product bridge, not final JURE/rig truth.
+- pointer capture is mandatory for continuous steering/pedal gestures;
+- capture failure is fail-closed;
+- release/cancel/lost capture clears only the source/pedal it owns;
+- `blur`, `visibilitychange(hidden)`, `pagehide` and disposal clear owned continuous demand;
+- restart/recreation cannot leave an old adapter holding direction/pedal state behind a newly reset UI;
+- direction itself is persistent state during an active host lifetime, but new host/reset begins at explicit `D` unless later product design changes that rule.
 
-## 8. Architecture boundary
+## 10. UI composition and thumb zones
 
-Implementation resumes in normal typed private source. No product control feature may depend on text replacement or runtime surgery against compiled `main.js`.
-
-The failed public V3 gate produced:
+Preserve the strongest spatial idea visible across the old UI and V2:
 
 ```text
-Driving V3 pedal reset: expected source fragment not found
+lower left  = primary steering instrument
+lower right = primary longitudinal instrument
+centre      = world/vehicle visibility
+upper zones = location/camera/reset/debug and non-driving actions
 ```
 
-That failure came from brittle delivery/patch-harness assumptions, not from owner rejection of the control concept. Do not repeat the `replaceOnce()`/compiled-runtime patching approach.
+Landscape first:
 
-Preferred ownership:
+- steering and pedal clusters should feel balanced without being mirror-symmetric for its own sake;
+- neither cluster should touch the extreme screen edge;
+- respect safe-area insets;
+- the right-side Camera/Reset/Debug rail must stay outside the sustained pedal drag zone;
+- D/R must not sit directly in the normal upward drag path of a pedal;
+- the main vehicle/world view should remain readable between the two thumb zones.
+
+Portrait gets a separate layout pass after landscape feel is established. Do not shrink the landscape design blindly until it fits.
+
+## 11. Performance constraints inherited from the A53 foundation
+
+The accepted performance campaign showed that mobile compositing effects over the WebGL canvas can materially damage frame rate. New controls must not reintroduce that cost.
+
+For the mobile driving surface:
+
+- no live `backdrop-filter` over the WebGL view;
+- avoid large blurred shadows/glows and expensive full-surface filters;
+- prefer compositor-friendly `transform` and `opacity` for continuous feedback;
+- use CSS custom properties for continuous steering/pedal visual state rather than rebuilding layout;
+- freeze gesture geometry at pointer-down instead of calling layout measurement on every pointer move;
+- do not perform production numeric text formatting/DOM writes on every pointer move unless a debug mode explicitly needs it;
+- measure before adding visually expensive effects.
+
+Mechanical does not mean graphically heavy. The control should feel alive through geometry and motion, not GPU-expensive decoration.
+
+## 12. Source architecture for the implementation stage
+
+Use normal typed private source only. No compiled-runtime patch harnesses, `replaceOnce()` surgery or alternate experimental runtime.
+
+Preferred responsibilities:
 
 ```text
-pointer/device adapters
-    -> deterministic steering/longitudinal timelines
-    -> normal host command path
-    -> existing vehicle/physics layer
+Pointer steering adapter
+    -> owns one steering pointer
+    -> freezes hitbox geometry at acquisition
+    -> emits normalized POSITION events
 
-presentation/UI
-    <- receives normalized control state for feedback
-    X must not redefine active input geometry
+Longitudinal timeline
+    -> accepts digital fallback + analog throttle/brake sources
+    -> deterministic timestamped integration
+    -> preserves independent throttle/brake values
+
+Pointer analog drive adapter
+    -> owns pedal pointers + D/R state
+    -> converts relative Y travel to analog values
+    -> re-emits throttle on direction flip
+    -> exposes one UI-facing state stream/callback
+
+Mobile driving presentation
+    -> renders steering/pedal/direction state
+    -> owns no command semantics
+    -> never redefines active gesture geometry
+
+CleanBrowserHost / F4VehicleHost
+    -> compose adapters/timelines into the existing command path
+
+M6 vehicle controller
+    -> unchanged in the control stage unless explicit physics evidence requires a separate follow-up
 ```
 
-Keep steering, analog longitudinal input, D/R state and presentation independently testable even when they are composed into one mobile HUD.
+### Naming cleanup
 
-## 9. Validation contract for the next implementation stage
+Do not perpetuate prototype version names in normal source. Once replaced cleanly, prefer semantic names such as:
 
-Before owner device testing:
+```text
+pointer-steering-position-adapter.ts
+pointer-analog-drive-adapter.ts
+mobile-driving-ui.ts
+mobile-driving-controls.css
+```
 
-1. focused pure tests for steering/pedal mapping and clamping;
-2. lifecycle tests for release/cancel/lost capture/blur/visibility/pagehide/dispose;
-3. pointer-capture failure must fail closed;
-4. multitouch ownership tests;
-5. D/R-under-throttle timestamp/state tests;
-6. presentation invariant tests proving visual growth does not mutate gesture geometry;
-7. host integration tests using the normal source path;
-8. rendered browser smoke in portrait + short landscape + desktop where relevant.
+Versions belong in Git/history/checkpoints, not permanent filenames such as `*-v3.ts`.
 
-For promotion to `main` / normal Friends publication, also require the repository's canonical Node/npm/TypeScript/Vite/real-Box3D gate and exact source/artifact identity.
+The existing V3/V3.1 and later rebuild commits are donor evidence only. Reuse individual ideas/tests after validation; do not transplant their entire host/UI stack.
 
-Owner device validation remains the final gate for feel. Steering and pedals should be judged independently; one subsystem may pass while the other needs another iteration.
+## 13. Implementation sequence after foundation cleanup
 
-## 10. Donor evidence, not authority
+### M0 — close repository foundation
 
-Useful historical donor commits remain in Git and may be mined selectively:
+- exact source identity;
+- dependency/toolchain gate when canonical environment is available;
+- promote cleanup foundation to `main` only after the gate;
+- retire cleanup lane and redundant old branch names.
+
+### M1 — deterministic analog core, no redesign
+
+- extend longitudinal timeline with analog source events;
+- implement separate analog pedal/D-R adapter;
+- preserve existing V2 steering;
+- prove simultaneous values, D/R-under-throttle, source arbitration and lifecycle behavior in focused tests.
+
+### M2 — steering instrument, landscape
+
+- rename/clarify steering adapter ownership if useful;
+- freeze steering geometry at pointer-down;
+- implement panoramic projected-wheel presentation over unchanged X-only POSITION mapping;
+- validate no regression in full-lock access, recapture and release-to-neutral.
+
+### M3 — pedal instrument + D/R, landscape
+
+- implement fixed acquisition wells and internal mechanical pedal faces;
+- add analog feedback without layout feedback loops;
+- add compact D/R state control;
+- tune travel, spacing and visual response on the real landscape viewport.
+
+### M4 — owner landscape feel gate
+
+This is the first justified pause for irreplaceable owner judgement. Test natural driving, not a patch/bootstrap mechanism.
+
+Judge steering and pedals separately. A weak visual/feel detail causes a local iteration, not destruction of the whole input foundation.
+
+### M5 — portrait adaptation
+
+- preserve identical semantics;
+- redesign spatial arrangement for narrow/tall use rather than scaling landscape blindly;
+- retain reachable Debug, camera, reset and fullscreen behavior.
+
+### M6 — product integration / Friends candidate
+
+- rendered browser QA;
+- canonical repository gate;
+- normal source build/public artifact;
+- exact source/artifact/rollback identity;
+- one final device pass before promotion.
+
+## 14. Validation contract
+
+Before owner feel testing:
+
+1. pure mapping/clamping tests for steering and pedals;
+2. frozen-geometry tests proving layout changes do not alter an active command;
+3. lifecycle tests for release/cancel/lost capture/blur/visibility/pagehide/dispose;
+4. pointer-capture failure fail-closed;
+5. multitouch ownership and non-stealing tests;
+6. analog + digital source arbitration tests;
+7. simultaneous throttle + brake preservation tests;
+8. D/R-under-throttle timestamp/sign tests;
+9. reset/restart single-direction-authority tests;
+10. presentation tests proving visual growth/tilt does not mutate input geometry;
+11. host integration through the normal source path;
+12. rendered smoke and console health in the target landscape viewport before owner handoff.
+
+For promotion to `main` / normal Friends publication, also require the repository's pinned Node/npm/TypeScript/Vite/real-Box3D gate and exact source/artifact identity.
+
+## 15. Donor evidence, not authority
+
+Useful historical donors remain in Git:
 
 ```text
 V3.1 analog foundation: db61b6610428032e17676583dc36cf84d44e84d1
@@ -172,4 +418,8 @@ V3.1 short-landscape:   c0b3ed2223a451cdacfd79f179efd2b88be7434f
 later rebuild tip:      8736a2b63441cebf9a735f5c302ffaee2b7858bf
 ```
 
-These are sources of tested ideas and failure evidence. None of them should be copied wholesale or treated as current product authority merely because they are newer than the clean pre-V3 foundation.
+Known useful donor ideas include analog timeline events, stable pedal origin/travel, source-specific release, pointer-capture hardening, multitouch lifecycle tests and separation of the analog pedal adapter from steering.
+
+Known failure evidence includes compiled-runtime text patching, versioned parallel UI paths, broad rollback after delivery failure and coupling product acceptance to harness success.
+
+Use Git history to recover code. Use this contract to decide whether recovered code still belongs in the product.
