@@ -1,7 +1,7 @@
 # JURE -> JV-Web consumer boundary
 
 Updated: 2026-08-16
-Status: `BOUNDARY FROZEN / CONCRETE DATA SCHEMA NOT YET FROZEN`
+Status: `BOUNDARY FROZEN / CONCRETE JURE DATA SCHEMA NOT YET FROZEN`
 
 This contract defines ownership and integration invariants between Jozz Universal Rig Editor (JURE) and JV Web. It deliberately does **not** define the final serialized JURE consumer schema yet.
 
@@ -9,9 +9,27 @@ JURE is a separate project and authority. Resolve its current refs, PRs and stat
 
 ## 1. Purpose
 
-JURE should let the Owner create trustworthy authored rig truth once and hand a small deterministic result to consumers without an agent reconstructing hardpoints/frames from screenshots, naming conventions or procedural guesses.
+JURE should let the Owner create trustworthy authored rig truth once and hand a small deterministic result to consumers without an agent reconstructing hardpoints, frames or part relationships from screenshots, naming conventions or procedural guesses.
 
-JV Web is the first real consumer/falsifier. Its job is to prove that an authored neutral mechanism can be consumed without contaminating authored truth with browser/Box3D/runtime convenience.
+JV Web is the first real consumer/falsifier. Its job is to prove that an authored neutral mechanism can be consumed without contaminating authored truth with browser, Box3D or runtime convenience.
+
+### Shared long-term program direction
+
+JURE and JV are complementary parts of the same R&D direction, not unrelated tools that happen to exchange files.
+
+The primary near-term purpose of JURE in the JV program is to let the Owner author and correct the mechanical and representation truth needed by JV vehicles: exact part placement, interface frames, relation topology, suspension and steering geometry, coherent replacement subgraphs, and the representation intent needed to bind real visual parts to the mechanism.
+
+The current M6 is the first demanding integration target. The long-term target is broader:
+
+- replace provisional procedural vehicle rig geometry with coherent authored mechanisms;
+- make real vehicle parts fit their authored mechanical interfaces instead of compensating with hidden offsets;
+- author new vehicle rigs without rebuilding the consumer architecture for every car;
+- represent mechanisms such as wishbones, steering links, racks, dampers, springs, pistons, rotors and similar moving assemblies through explicit mechanical interfaces;
+- keep the architecture open to future non-vehicle mechanisms when real use requires them, without prematurely turning either project into a general-purpose mechanical framework.
+
+A damper/spring pair illustrates the intended responsibility split. JURE should be able to author the neutral attachment frames, axis/travel geometry and representation mapping needed to make the visible damper and spring fit the mechanism exactly. JV owns the runtime force law, spring/damping parameters, solver state and current compression/extension. The visual layer should then animate the exact authored parts from that runtime state. JURE must not become the vehicle dynamics solver merely to support correct rigging and animation.
+
+This shared direction does not make every JURE concept a JV API and does not make current JV procedural geometry authored truth. The projects should meet through the smallest explicit consumer boundary proven by real mechanisms.
 
 ## 2. Authority split
 
@@ -28,7 +46,7 @@ JV Web is the first real consumer/falsifier. Its job is to prove that an authore
 ### JV Web owns
 
 - strict consumer parsing/validation;
-- consumer placement into the JV-Web vehicle/world coordinate system;
+- consumer placement into JV vehicle rig space and later world space;
 - Box3D/native runtime body/joint identity;
 - mass, inertia and collision policy;
 - damping, friction, springs, motors, force laws and solver/runtime configuration;
@@ -51,94 +69,51 @@ This result is a durable architectural constraint, not merely a failed experimen
 
 ## 4. Coherent replacement rule
 
-A JURE-authored mechanism must replace a coherent neutral geometric unit.
+A JURE-authored mechanism must replace a coherent neutral geometric unit. Do not replace one JURE hardpoint inside an otherwise incompatible procedural mechanism, mix authored and procedural companion relations from different shapes, or mutate authored frames merely to make a consumer topology fit.
 
-Do not:
-
-- replace one JURE hardpoint inside an otherwise incompatible procedural arm;
-- mix one JURE-authored relation with procedural companion relations whose neutral geometry belongs to another shape;
-- keep procedural inboard/outboard points merely because the runtime already has them;
-- project or mutate authored frames to make an incompatible consumer topology fit.
-
-The minimum coherent unit is intentionally **not hard-coded in this document yet**. Current JURE work is proving a double-wishbone shape involving upper arm, lower arm, chassis reference, carrier reference, two inboard revolutes and two outboard spherical relations. JURE must finish the Owner workflow and freeze the intended multi-relation consumer fragment before JV-Web treats that shape as executable contract.
+The minimum coherent unit is intentionally **not hard-coded here yet**. Current JURE work is proving a double-wishbone shape involving upper arm, lower arm, chassis reference, carrier reference, two inboard revolutes and two outboard spherical relations. JURE must finish the Owner workflow and freeze the intended multi-relation consumer fragment before JV-Web treats that shape as executable contract.
 
 ## 5. Requirements for the future JURE consumer fragment
 
-When the concrete format is frozen, it must be sufficient for an independent consumer to reject ambiguity without agent interpretation.
+When the concrete format is frozen, it must make explicit at least: schema/version identity; exact producer/source provenance; deterministic element/frame/relation identity; units; coordinate basis/handedness; authored neutral transforms and relation semantics; placement semantics; relation endpoints/kinds without consumer IDs; deterministic bytes/identity; and fail-closed behavior for unsupported versions or relations.
 
-At minimum the format/associated immutable evidence must make explicit:
-
-- schema/version identity;
-- exact source/revision provenance when source-derived data matters;
-- deterministic element/frame/relation identity;
-- units;
-- coordinate basis/handedness conventions;
-- authored neutral frame transforms and relation semantics;
-- enough placement information to distinguish source-local/authored-local/root/consumer placement;
-- relation endpoints and relation kind without consumer-specific body/joint IDs;
-- deterministic serialization/bytes or an equivalently strict canonical identity;
-- compatibility/failure behavior for unsupported versions or relation kinds.
-
-The exact field names, JSON layout and packaging are **not authority yet** and must not be guessed in JV-Web before JURE freezes them.
-
-Consumer dynamics do not belong in this authored fragment unless a future cross-project design explicitly establishes a separate authored dynamics domain.
+The exact field names, JSON layout and packaging are **not authority yet** and must not be guessed in JV-Web before JURE freezes them. Consumer dynamics do not belong in the authored fragment unless a later cross-project design explicitly creates a separate authored dynamics domain.
 
 ## 6. First JV-Web consumer experiment
 
-The first real integration must be isolated and private.
-
-### Branch
-
-Use exactly one branch named:
-
-`jure/<specific-purpose>`
-
-`docs/PROJECT_STATE.md` must name the branch and the exact JURE producer/checkpoint while it is active.
-
-### Sequence
+The first real integration must remain isolated and private on one `jure/<specific-purpose>` branch. Sequence:
 
 ```text
-1. freeze/pin exact JURE fragment + producer/checkpoint
-2. obtain exact bytes/evidence without text/checkout transformation
-3. strict independent parser in JV-Web
-4. validate schema version and supported relation vocabulary
-5. validate units / basis / handedness / finite values
-6. validate provenance and exact source identity where required
-7. validate explicit placement; reject implicit identity
-8. prove internal neutral geometry coherence independently
-9. map into a consumer-neutral intermediate representation
-10. compare that coherent unit against the procedural M6 unit it would replace
-11. only after geometry passes, experiment with runtime/Box3D substitution
-12. validate browser/runtime behavior privately
-13. decide separately whether any public Friends experiment is warranted
+freeze exact JURE fragment + producer
+-> obtain exact bytes
+-> strict independent parse
+-> units/basis/provenance validation
+-> explicit placement validation
+-> internal neutral geometry proof
+-> lower into the small JV consumer representation
+-> compare against the coherent procedural unit
+-> only then private runtime/Box3D substitution
+-> browser/runtime proof
+-> separate public decision
 ```
 
 Do not skip from parser success directly to runtime substitution.
 
 ## 7. Fail-closed rules
 
-Reject the consumer fragment/experiment if:
+Reject the experiment if schema/units/basis/provenance are ambiguous, locators are non-unique, placement requires guessing, identity placement is assumed, values are non-finite/incomplete, authored and procedural shapes are mixed, relation kinds need reinterpretation, or runtime dynamics would have to be written back into authored neutral truth.
 
-- schema version is unknown;
-- units or basis are implicit;
-- a required source revision/provenance cannot be proven;
-- a frame/relation locator cannot be resolved uniquely;
-- placement depends on agent guessing or screenshot interpretation;
-- identity transform is assumed rather than demonstrated;
-- any required value is non-finite or structurally incomplete;
-- the proposed replacement mixes incompatible authored/procedural neutral geometry;
-- a relation kind would need to be silently reinterpreted as a different consumer mechanism;
-- runtime dynamics would have to be written back into JURE-authored neutral truth.
-
-A failed consumer experiment must not mutate public Friends or current accepted `main` runtime.
+A failed experiment must not mutate public Friends or accepted `main` runtime.
 
 ## 8. Relationship to current M6 source
 
-Current JV-Web M6 code already exposes geometry as explicit typed values/functions, including `M6WishboneHardpoints` and `m6WishboneHardpoints(...)`. This is a useful consumer seam, but the current values remain procedural/provisional.
+Current JV-Web M6 geometry remains procedural/provisional consumer truth.
 
-Do not create a second generic rig framework around them pre-emptively. Once JURE freezes a real consumer fragment, introduce only the smallest adapter/intermediate necessary to replace the proven coherent unit.
+The `jure/neutral-geometry-receipt` preparation lane introduces a deliberately small read-only `JvNeutralMechanismV1` projection for the front-left coherent double-wishbone. Its diagnostic receipt is an **output mirror of current JV consumer truth**, not a second authored rig format and not a runtime input.
 
-Current source-registration and temporary steering bridges remain valid product intermediates until a separately validated coherent authored replacement exists.
+For stand-alone cross-project use the receipt carries the exact JV producer commit plus pinned factory-receipt path, Git blob identity and SHA-256 of canonical blob bytes. Moving branch names are intentionally not provenance authority.
+
+Do not create a second generic rig framework around this representation. Once JURE freezes a real consumer fragment, introduce only the smallest strict adapter/binding necessary to lower it into the proven consumer seam.
 
 ## 9. Current JURE coordination snapshot
 
@@ -153,18 +128,10 @@ active real-JV product line / draft PR #4:
   work/real-jv-rig-elements@7b385e8e591d13c3ccab06647390d9d28e06a1d4
 ```
 
-PR #4 is coordination evidence, not JV-Web authority. It may advance after this snapshot.
+PR #4 is coordination evidence, not JV-Web authority.
 
-## 10. Exit condition for this boundary
+## 10. Exit condition
 
-This boundary becomes an executable cross-project format contract only when all of the following exist:
+This becomes an executable cross-project format contract only when JURE freezes one explicit versioned multi-relation fragment, validates deterministic export, JV-Web independently parses it, units/basis/placement/provenance are proven, neutral geometry coherence passes, the coherent procedural replacement unit is identified, and a private runtime substitution can be designed without modifying authored truth.
 
-1. JURE freezes one explicit versioned multi-relation consumer fragment;
-2. JURE validates deterministic save/export for the exact real mechanism;
-3. JV-Web independently parses and validates the exact fragment;
-4. units/basis/placement/provenance are proven without guessing;
-5. neutral geometry coherence passes;
-6. the coherent procedural replacement unit is identified;
-7. an isolated private runtime substitution test can be designed without modifying authored truth.
-
-Until then: document the boundary, do not build speculative adapter architecture.
+Until then: preserve the shared direction, exchange exact diagnostic evidence, and do not build speculative adapter architecture.

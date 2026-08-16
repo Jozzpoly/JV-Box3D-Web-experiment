@@ -33,6 +33,10 @@ export const JV_RIG_SPACE_V1 = Object.freeze({
   root: "neutral-chassis-body-origin",
 } as const);
 
+export const JV_WEB_REPOSITORY = "Jozzpoly/JV-Box3D-Web-experiment" as const;
+export const JV_M6_FACTORY_RECEIPT_PATH =
+  "public/receipts/jv_m6_factory_receipt.json" as const;
+
 export interface JvNeutralBodyV1 {
   readonly id: string;
   readonly neutralPose: JvRigidPoseV1;
@@ -77,12 +81,28 @@ export interface JvNeutralMechanismV1 {
   readonly relations: readonly JvNeutralRelationV1[];
 }
 
+/**
+ * Exact identity of the JV source used to produce a cross-project diagnostic
+ * receipt. Branch names are intentionally excluded: a moving branch is not
+ * evidence. The config receipt is pinned both by Git blob identity and SHA-256
+ * of the canonical blob bytes.
+ */
+export interface JvNeutralGeometrySourceV1 {
+  readonly kind: "legacy-procedural-m6";
+  readonly producer: Readonly<{
+    repository: typeof JV_WEB_REPOSITORY;
+    commit: string;
+  }>;
+  readonly configReceipt: Readonly<{
+    path: typeof JV_M6_FACTORY_RECEIPT_PATH;
+    gitBlob: string;
+    sha256: string;
+  }>;
+}
+
 export interface JvNeutralGeometryReceiptV1 {
   readonly format: "jv-neutral-geometry-receipt/v1";
-  readonly source: Readonly<{
-    kind: "legacy-procedural-m6";
-    configReceiptPath: "public/receipts/jv_m6_factory_receipt.json";
-  }>;
+  readonly source: JvNeutralGeometrySourceV1;
   readonly mechanism: JvNeutralMechanismV1;
 }
 

@@ -9,6 +9,7 @@ import {
   type JvNeutralBodyV1,
   type JvNeutralFrameV1,
   type JvNeutralGeometryReceiptV1,
+  type JvNeutralGeometrySourceV1,
   type JvNeutralMechanismV1,
   type JvVec3,
 } from "../neutral-mechanism.js";
@@ -77,23 +78,10 @@ function frame(
 export function projectLegacyM6FrontLeftWishboneNeutral(
   config: M6TopologyConfig,
 ): JvNeutralMechanismV1 {
-  const carrierOrigin = m6CornerOffset(
-    config,
-    FRONT_LEFT_CORNER,
-  );
-  const hardpoints = m6WishboneHardpoints(
-    config,
-    FRONT_LEFT_CORNER,
-    carrierOrigin,
-  );
-  const upperHinge = midpoint(
-    hardpoints.upperFrontChassis,
-    hardpoints.upperRearChassis,
-  );
-  const lowerHinge = midpoint(
-    hardpoints.lowerFrontChassis,
-    hardpoints.lowerRearChassis,
-  );
+  const carrierOrigin = m6CornerOffset(config, FRONT_LEFT_CORNER);
+  const hardpoints = m6WishboneHardpoints(config, FRONT_LEFT_CORNER, carrierOrigin);
+  const upperHinge = midpoint(hardpoints.upperFrontChassis, hardpoints.upperRearChassis);
+  const lowerHinge = midpoint(hardpoints.lowerFrontChassis, hardpoints.lowerRearChassis);
 
   const chassisId = "m6.chassis-reference";
   const upperArmId = "m6.fl.upper-arm";
@@ -108,50 +96,14 @@ export function projectLegacyM6FrontLeftWishboneNeutral(
   ] as const;
 
   const frames = [
-    frame(
-      "m6.fl.upper-inboard.chassis",
-      chassisId,
-      upperHinge,
-      REVOLUTE_AXIS_LOCAL,
-    ),
-    frame(
-      "m6.fl.upper-inboard.arm",
-      upperArmId,
-      ORIGIN,
-      REVOLUTE_AXIS_LOCAL,
-    ),
-    frame(
-      "m6.fl.lower-inboard.chassis",
-      chassisId,
-      lowerHinge,
-      REVOLUTE_AXIS_LOCAL,
-    ),
-    frame(
-      "m6.fl.lower-inboard.arm",
-      lowerArmId,
-      ORIGIN,
-      REVOLUTE_AXIS_LOCAL,
-    ),
-    frame(
-      "m6.fl.upper-outboard.arm",
-      upperArmId,
-      subtract(hardpoints.upperBallJoint, upperHinge),
-    ),
-    frame(
-      "m6.fl.upper-outboard.carrier",
-      carrierId,
-      subtract(hardpoints.upperBallJoint, carrierOrigin),
-    ),
-    frame(
-      "m6.fl.lower-outboard.arm",
-      lowerArmId,
-      subtract(hardpoints.lowerBallJoint, lowerHinge),
-    ),
-    frame(
-      "m6.fl.lower-outboard.carrier",
-      carrierId,
-      subtract(hardpoints.lowerBallJoint, carrierOrigin),
-    ),
+    frame("m6.fl.upper-inboard.chassis", chassisId, upperHinge, REVOLUTE_AXIS_LOCAL),
+    frame("m6.fl.upper-inboard.arm", upperArmId, ORIGIN, REVOLUTE_AXIS_LOCAL),
+    frame("m6.fl.lower-inboard.chassis", chassisId, lowerHinge, REVOLUTE_AXIS_LOCAL),
+    frame("m6.fl.lower-inboard.arm", lowerArmId, ORIGIN, REVOLUTE_AXIS_LOCAL),
+    frame("m6.fl.upper-outboard.arm", upperArmId, subtract(hardpoints.upperBallJoint, upperHinge)),
+    frame("m6.fl.upper-outboard.carrier", carrierId, subtract(hardpoints.upperBallJoint, carrierOrigin)),
+    frame("m6.fl.lower-outboard.arm", lowerArmId, subtract(hardpoints.lowerBallJoint, lowerHinge)),
+    frame("m6.fl.lower-outboard.carrier", carrierId, subtract(hardpoints.lowerBallJoint, carrierOrigin)),
   ] as const;
 
   return {
@@ -161,42 +113,24 @@ export function projectLegacyM6FrontLeftWishboneNeutral(
     bodies,
     frames,
     relations: [
-      {
-        id: "m6.fl.upper-inboard",
-        type: "revolute",
-        frameA: "m6.fl.upper-inboard.chassis",
-        frameB: "m6.fl.upper-inboard.arm",
-      },
-      {
-        id: "m6.fl.lower-inboard",
-        type: "revolute",
-        frameA: "m6.fl.lower-inboard.chassis",
-        frameB: "m6.fl.lower-inboard.arm",
-      },
-      {
-        id: "m6.fl.upper-outboard",
-        type: "spherical",
-        frameA: "m6.fl.upper-outboard.arm",
-        frameB: "m6.fl.upper-outboard.carrier",
-      },
-      {
-        id: "m6.fl.lower-outboard",
-        type: "spherical",
-        frameA: "m6.fl.lower-outboard.arm",
-        frameB: "m6.fl.lower-outboard.carrier",
-      },
+      { id: "m6.fl.upper-inboard", type: "revolute", frameA: "m6.fl.upper-inboard.chassis", frameB: "m6.fl.upper-inboard.arm" },
+      { id: "m6.fl.lower-inboard", type: "revolute", frameA: "m6.fl.lower-inboard.chassis", frameB: "m6.fl.lower-inboard.arm" },
+      { id: "m6.fl.upper-outboard", type: "spherical", frameA: "m6.fl.upper-outboard.arm", frameB: "m6.fl.upper-outboard.carrier" },
+      { id: "m6.fl.lower-outboard", type: "spherical", frameA: "m6.fl.lower-outboard.arm", frameB: "m6.fl.lower-outboard.carrier" },
     ],
   };
 }
 
 export function buildLegacyM6FrontLeftNeutralGeometryReceipt(
   config: M6TopologyConfig,
+  source: JvNeutralGeometrySourceV1,
 ): JvNeutralGeometryReceiptV1 {
   return {
     format: "jv-neutral-geometry-receipt/v1",
     source: {
-      kind: "legacy-procedural-m6",
-      configReceiptPath: "public/receipts/jv_m6_factory_receipt.json",
+      kind: source.kind,
+      producer: { ...source.producer },
+      configReceipt: { ...source.configReceipt },
     },
     mechanism: projectLegacyM6FrontLeftWishboneNeutral(config),
   };
