@@ -43,6 +43,9 @@ class FakeEventTarget {
 class FakeJoystickTarget extends FakeEventTarget {
   captured = new Set();
   failCapture = false;
+  left = 0;
+  width = 100;
+  geometryReads = 0;
 
   setPointerCapture(pointerId) {
     if (this.failCapture) {
@@ -60,7 +63,8 @@ class FakeJoystickTarget extends FakeEventTarget {
   }
 
   getBoundingClientRect() {
-    return { left: 0, width: 100 };
+    this.geometryReads += 1;
+    return { left: this.left, width: this.width };
   }
 }
 
@@ -126,6 +130,23 @@ test("drag emits POSITION and pointer release self-centers", () => {
     value: 0,
     active: false,
   });
+  fixture.adapter.dispose();
+});
+
+test("active steering drag keeps pointer-down geometry even if layout changes", () => {
+  const fixture = createFixture();
+  fixture.target.dispatch("pointerdown", { pointerId: 3, clientX: 0 });
+  assert.equal(fixture.target.geometryReads, 1);
+
+  fixture.target.left = 50;
+  fixture.target.width = 200;
+  fixture.setNow(2);
+  fixture.target.dispatch("pointermove", { pointerId: 3, clientX: 25 });
+
+  const expected = resolvePointerSteeringPosition(25, 0, 100);
+  assert.equal(fixture.target.geometryReads, 1);
+  assert.equal(fixture.stateChanges.at(-1).active, true);
+  assert.ok(Math.abs(fixture.stateChanges.at(-1).value - expected) < 1e-12);
   fixture.adapter.dispose();
 });
 
