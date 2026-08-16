@@ -39,6 +39,28 @@ test("devEngines fails closed on runtime or package-manager drift", async () => 
   });
 });
 
+test("npm test and npm run check keep their declared validation scope", async () => {
+  const packageJson = await json("package.json");
+
+  assert.equal(packageJson.scripts?.test, "node tools/run-tests.mjs");
+  assert.equal(
+    packageJson.scripts?.check,
+    "npm run typecheck && npm run test && npm run check:docs && npm run check:third-party",
+  );
+});
+
+test("default test runner executes every top-level test file unless a focused list is supplied", async () => {
+  const runner = canonicalText(
+    await readFile(new URL("tools/run-tests.mjs", root), "utf8"),
+  );
+
+  assert.match(runner, /const requestedTestFiles = process\.argv\.slice\(2\);/);
+  assert.match(runner, /requestedTestFiles\.length > 0/);
+  assert.match(runner, /readdir\(testsDirectory, \{ withFileTypes: true \}\)/);
+  assert.match(runner, /entry\.isFile\(\) && entry\.name\.endsWith\("\.test\.mjs"\)/);
+  assert.match(runner, /spawnSync\(process\.execPath, \["--test", \.\.\.testFiles\]/);
+});
+
 test("canonical pin preserves the accepted dependency lock", async () => {
   const text = canonicalText(
     await readFile(new URL("package-lock.json", root), "utf8"),
