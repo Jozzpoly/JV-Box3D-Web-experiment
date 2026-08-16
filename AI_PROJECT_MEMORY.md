@@ -1,9 +1,9 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-16
-Status: `MOBILE DRIVING OWNER-DEVICE ALPHA LIVE / POLISH CAMPAIGN GROUNDED`
+Status: `MOBILE DRIVING OWNER-DEVICE ALPHA LIVE / R0.1 SOURCE HYGIENE IMPLEMENTED / CANONICAL CHECK PENDING`
 
-This file is a router only. Git/current source, reproducible runtime evidence and direct owner observation outrank it.
+This file is a compact router only. Git/current source, exact execution logs, built/public artifact evidence and direct owner observation outrank it.
 
 ## Authority
 
@@ -19,88 +19,136 @@ Only `work/mobile-driving-controls` is active ahead of `main`. Historical V3/V3.
 
 ## Proven alpha state
 
-Canonical Windows build/publication exists for exact clean source `d96e393c...` using Node 24.16.0, npm 11.17.0, TS 7.0.2, Vite 8.1.5 and real box3d.js. Public build manifest pins that source and GitHub Pages is built from `release/friends-r1`.
+Canonical Windows install/typecheck/build/artifact validation exists for exact clean source `d96e393c...` under Node 24.16.0, npm 11.17.0, TS 7.0.2, Vite 8.1.5 and real box3d.js. Public build manifest pins that source.
 
-Owner directly confirmed the live public build works on desktop and Samsung Galaxy A53 / Chrome. Analog pedals work and are materially better than the old binary buttons. The projected steering-wheel concept is strongly promising.
+Owner directly confirmed the live public build works on desktop and Samsung Galaxy A53 / Chrome. Analog pedals work and are materially better than old binary drive buttons. The projected steering-wheel concept is promising.
 
-Do not restart takeover, V3 recovery, camera work, release-harness work or the input architecture.
+Do **not** call the d96 repository suite fully green: the preserved publication run explicitly used `npm run typecheck` with no unit-test suite. R0.1 reconciled known stale mobile/UI tests; one new exact canonical `npm run check` is still required.
+
+Do not restart takeover, V3 recovery, camera work, release-harness archaeology or the input architecture.
 
 ## Current owner-intent authority
 
-Read first for mobile-control work:
+Read:
 
 `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`
 
-The older `MOBILE_DRIVING_CONTROLS_TARGET.md` remains background but is superseded where the new grounding explicitly records post-device feedback.
+For technical preparation/readiness also read:
 
-## Critical owner feedback now locked
+- `docs/MOBILE_DRIVING_ROADMAP_READINESS_AUDIT_2026-08-16.md`;
+- `docs/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md` when deeper implementation evidence is needed.
+
+The older `MOBILE_DRIVING_CONTROLS_TARGET.md` is background only where not superseded by post-device feedback.
+
+## R0.1 current boundary
+
+Source-side test hygiene is implemented without product/runtime changes:
+
+- behavioural ownership/lifecycle/D-R/frozen-geometry/generation tests remain;
+- `mobile-ui-contract` now protects current analog product/accessibility semantics instead of binary/circular UI;
+- `mobile-driving-integration-contract` protects analog/generation wiring instead of stylesheet history;
+- superseded `mobile-driving-controls-v2.test.mjs` was removed;
+- `toolchain-contract` now pins what `npm test`, `npm run check` and default test discovery actually mean.
+
+**Next action is one canonical Windows `npm run check` on the current active source.**
+
+Until it passes, do not start P1.0 and do not claim the full suite is green.
+
+If it fails, classify the exact failure first. Do not modify product code merely to satisfy a stale test.
+
+## Critical preparatory findings
+
+### CSS/runtime authority
+
+Current source mixes direct V2/current mobile stylesheet links with base `style.css` imported by dynamically loaded `main.ts`. Production Vite loading can append base CSS later and let historical equal-specificity rules override current controls.
+
+This explains real alpha contamination including the returning circular/blue steering shell, action-rail competition and generic outer active transforms on new pedal targets.
+
+P1.0 must establish one current style owner rather than stacking more specificity.
+
+### Viewport/layout
+
+`100svh + min-height:420px + overflow:hidden` can clip short browser-chrome landscape. Renderer projection derives from canvas client geometry, so repair CSS viewport authority rather than adding camera workarounds.
+
+HUD overlays have no single composition owner; after root repair establish coordinated product zones instead of more independent offsets.
+
+### Public executable overlay
+
+Current public alpha preserves `jv-live-performance.js`, executable JS outside private source. It is mostly inert on the normal URL but can override DPR and install WebGL/perf instrumentation on diagnostic URLs. Private source already owns those concerns.
+
+Do not preserve that overlay into the next Friends candidate. Future executable root behavior must come from private source; only approved static scan/data and explicit release metadata may be carried forward.
+
+### Validation classes
+
+Keep separate:
+
+1. source/check evidence;
+2. build/artifact/static HTTP evidence;
+3. browser execution/render evidence;
+4. owner-device judgement.
+
+Static Pages HTTP smoke does not execute JS/CSS/WebGL.
+
+## Locked owner feedback
 
 ### Responsive HUD
 
-Current alpha is cluttered. Short/rotated landscape can clip useful controls/interface and the right Camera/Reset/Debug rail competes with the pedal cluster. Treat this as coordinated driving-HUD composition, not another pile of local offsets.
+Current alpha is cluttered. Short/rotated landscape can clip useful controls/interface and Camera/Reset/Debug competes with pedals. Treat this as coordinated driving-HUD composition, not local offset patching.
 
 ### Pedal input
 
-Relative-from-pointer-down mapping is superseded for the next experiment.
+After P1 foundation, move from relative pointer-down travel to absolute Y inside frozen pedal geometry:
 
-Target:
-
-- bottom of frozen pedal geometry = low;
+- bottom = low;
 - top = high;
-- pointer-down immediately emits value from touch Y;
+- pointer-down immediately emits touch-position demand;
 - drag up increases, drag down decreases;
 - release/lifecycle loss = zero;
-- preserve independent ownership, simultaneous T+B, D/R state and fail-closed lifecycle.
+- preserve independent ownership, simultaneous T+B, D/R and fail-closed lifecycle.
 
 ### Pedal feedback
 
-Current fill/progress visualization is rejected. The pedal itself should physically depress/tilt/move with analog value while the invisible acquisition geometry stays fixed. Pedal styling should later share a coherent automotive/mechanical design language with the steering wheel.
+Replace fill/progress feedback with physical pedal depression/tilt/translation. Keep acquisition geometry stable. Later align pedal industrial design with steering wheel.
 
 ### Steering
 
-Keep the steeply projected real-wheel idea. Remove the large blue shell/background and improve rim/hub/spokes; spokes should meet the rim correctly.
+Keep steep projected real-wheel concept. Remove distracting blue shell and repair rim/hub/spokes. X-only works but owner instinctively tries rotation; direct rotational manipulation is a later isolated A/B experiment. Preserve X-only until owner-proven replacement. Do not mix with rig/physics.
 
-Current X-only steering works but the visual wheel makes the owner instinctively try to rotate it. Direct rotational manipulation is now a dedicated experiment. Preserve X-only until the rotational gesture is owner-proven. Do not mix this with rig/steering physics.
+## Main roadmap after R0.1
 
-## Preferred work packets
-
-1. `P1 responsive driving-HUD composition` — fix clipping/overlap without changing command semantics.
-2. `P2 absolute-position pedal input` — direct Y mapping in frozen geometry.
-3. `P3 mechanical pedal motion` — physical depression, no progress-bar feedback.
-4. `P4 steering visual cleanup` — remove shell, improve wheel geometry, keep X-only for isolation.
-5. `P5 rotational steering gesture experiment` — compare direct wheel rotation with working X-only on A53.
-6. `P6 joint wheel/pedal design + feel tuning`.
-7. `P7 portrait-specific composition`.
-
-These are slices, not required branches/version names.
+1. `P1.0 production CSS authority` — one loading graph, retire historical live component layers, inspect real production artifact/render.
+2. `P1.1 root viewport geometry`.
+3. `P1.2 coordinated mobile HUD zones`.
+4. `P1.3 action/navigation policy`.
+5. `P1.4 driving-zone sizing/spacing`.
+6. `P1.5 portrait sanity`.
+7. `P2 absolute-position pedal input`.
+8. `P3 mechanical pedal motion`.
+9. `P4 steering visual cleanup`.
+10. `P5 rotational steering A/B experiment`.
+11. `P6 joint wheel/pedal design + feel`.
+12. `P7 portrait-specific composition`.
 
 ## Protected boundaries
 
 Preserve:
 
 - Plac E2R, Offroad, owner vehicle and approved JSPREV2;
-- accepted A53 performance foundation for the tested render-1x case;
-- Camera Manual Rig V1 and Fullscreen capability;
-- deterministic input timeline;
+- accepted A53 performance foundation for tested render-1x case;
+- Camera Manual Rig V1 and Fullscreen;
+- deterministic input timelines;
 - multitouch ownership/non-stealing/lifecycle fail-closed behavior;
 - D/R-under-throttle semantics;
 - generation-safe presentation boundary;
-- temporary approximately +/-35-degree product steering bridge;
+- temporary approximately +/-35-degree steering bridge;
 - JURE boundary for final rig/steering geometry and final handling.
 
-A local polish failure is never justification to discard the analog control stack.
-
-## Next action
-
-This grounding stage makes no product implementation. Next justified implementation is `P1 responsive driving-HUD composition` unless the owner reprioritizes.
-
-Use smallest relevant checks, then return to real browser/A53 judgement quickly. Tests support the product; they are not the product acceptance criterion.
+A local presentation/release failure is never justification to discard the analog-control stack.
 
 ## Read order
 
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
 3. `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`
-4. source/tests for the current slice
-5. `docs/contracts/MOBILE_DRIVING_CONTROLS_TARGET.md` only for earlier foundation/background
-6. `docs/ARCHITECTURE.md` only when stable boundaries are needed
+4. readiness/technical audit only as needed
+5. source/tests for the current slice
