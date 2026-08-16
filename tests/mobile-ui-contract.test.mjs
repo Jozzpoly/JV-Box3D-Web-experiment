@@ -22,6 +22,15 @@ test("mobile viewport preserves safe-area coverage without disabling browser zoo
   assert.doesNotMatch(html, /maximum-scale\s*=\s*1/i);
 });
 
+test("mobile scene can shrink below the historical desktop 420px floor", async () => {
+  const mobileCss = await read("src/mobile-driving-controls.css");
+
+  assert.match(
+    mobileCss,
+    /@media \(hover: none\) and \(pointer: coarse\), \(max-width: 620px\) \{[\s\S]*?\.scene-panel\s*\{[\s\S]*?min-height:\s*0;/,
+  );
+});
+
 test("product DOM exposes one steering surface, two analog pedals, and one D-R selector", async () => {
   const main = await read("src/main.ts");
 
@@ -72,9 +81,12 @@ test("analog owner controls expose slider semantics without encoding presentatio
 
 test("Friends debug surface starts closed and remains explicitly recoverable", async () => {
   const main = await read("src/main.ts");
+  const mobileCss = await read("src/mobile-driving-controls.css");
 
   assert.match(main, /data-debug-toggle aria-expanded="false"/);
   assert.match(main, /data-debug-panel aria-hidden="true"/);
   assert.match(main, /setDebugPanelOpen\(false\)/);
   assert.match(main, /data-debug-toggle/);
+  assert.match(mobileCss, /\.panel\[data-open\]\s*\{[\s\S]*?z-index:\s*18;/);
+  assert.match(mobileCss, /\.scene-actions\s*\{[\s\S]*?z-index:\s*22;/);
 });
