@@ -25,6 +25,7 @@
     "check:portable": "npm run check:portable:static && npm run check:portable:runtime-assets && npm run check:portable:vehicle-visual && npm run check:portable:vehicle-paths && npm run check:portable:privacy && npm run check:portable:network && npm run check:portable:http",
     "inspect:vehicle-glb": "tsc -p tsconfig.test.json && node tools/inspect-vehicle-glb.mjs",
     "inspect:owner-rig-interfaces": "node tools/owner-vehicle/inspect-owner-m6-interfaces.mjs --source-root assets/owner-vehicle/source --contract-root assets/owner-vehicle/contracts --factory-receipt public/receipts/jv_m6_factory_receipt.json",
+    "export:jure-neutral-geometry": "tsc -p tsconfig.test.json && node tools/write-jure-neutral-geometry-receipt.mjs",
     "check": "npm run typecheck && npm run test && npm run check:docs && npm run check:third-party",
     "prebuild:bundle": "npm run generate:vehicle-fixture && npm run generate:owner-full-rig",
     "build:bundle": "vite build",
