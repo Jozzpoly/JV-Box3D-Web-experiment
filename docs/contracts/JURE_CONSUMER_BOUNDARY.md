@@ -27,9 +27,21 @@ The current M6 is the first demanding integration target. The long-term target i
 - represent mechanisms such as wishbones, steering links, racks, dampers, springs, pistons, rotors and similar moving assemblies through explicit mechanical interfaces;
 - keep the architecture open to future non-vehicle mechanisms when real use requires them, without prematurely turning either project into a general-purpose mechanical framework.
 
-A damper/spring pair illustrates the intended responsibility split. JURE should be able to author the neutral attachment frames, axis/travel geometry and representation mapping needed to make the visible damper and spring fit the mechanism exactly. JV owns the runtime force law, spring/damping parameters, solver state and current compression/extension. The visual layer should then animate the exact authored parts from that runtime state. JURE must not become the vehicle dynamics solver merely to support correct rigging and animation.
+A damper/spring pair illustrates the intended responsibility split. JURE should let the Owner directly author and adjust its neutral attachment frames, axis/travel geometry and representation mapping until the real visual damper and spring fit and move correctly. JV owns the runtime force law, spring/damping parameters, solver state and current compression/extension. The visual layer should then animate the exact authored parts from that runtime state. JURE must not become the vehicle dynamics solver merely to support correct rigging and animation.
 
 This shared direction does not make every JURE concept a JV API and does not make current JV procedural geometry authored truth. The projects should meet through the smallest explicit consumer boundary proven by real mechanisms.
+
+### Owner end-to-end authoring invariant
+
+JURE is **not** an agent-operated preprocessing step for JV. Its product goal is to make the Owner capable of carrying a real rigging task from beginning to end inside the workbench.
+
+For a mechanism that JURE claims to support, the intended Owner workflow is:
+
+`load/inspect exact SOURCE -> create/select authored parts -> author and adjust frames/relations -> fit mechanical geometry and representation -> inspect diagnostics -> kinematically test/reset -> correct the rig -> save/reopen -> export deterministic authored result`
+
+The agent may implement the workbench, derive difficult math, add diagnostics, automate repetitive work and help investigate failures. It must not remain a mandatory rig-authoring operator whose manual coordinate edits or consumer-code changes are required every time the Owner wants to create or correct a rig. Repeated hard rigging operations should become inspectable Owner workflows in JURE rather than permanent agent-only procedures.
+
+This is especially important for the JV program: the Owner must eventually be able to build and tune the complete vehicle rig in JURE, including exact part fit, suspension/steering relations and visual representation of moving assemblies such as dampers and springs, before handing deterministic authored truth to JV for runtime physics.
 
 ## 2. Authority split
 
@@ -111,7 +123,7 @@ Current JV-Web M6 geometry remains procedural/provisional consumer truth.
 
 The `jure/neutral-geometry-receipt` preparation lane introduces a deliberately small read-only `JvNeutralMechanismV1` projection for the front-left coherent double-wishbone. Its diagnostic receipt is an **output mirror of current JV consumer truth**, not a second authored rig format and not a runtime input.
 
-For stand-alone cross-project use the receipt carries the exact JV producer commit plus pinned factory-receipt path, Git blob identity and SHA-256 of canonical blob bytes. Moving branch names are intentionally not provenance authority.
+For stand-alone cross-project use the receipt carries the exact JV producer commit plus pinned factory-receipt path, Git blob identity and SHA-256 of canonical blob bytes. Moving branch names are intentionally not provenance authority. The exporter must also reject tracked source drift from `HEAD` before claiming that producer commit; a dirty tracked worktree cannot emit an authoritative cross-project receipt.
 
 Do not create a second generic rig framework around this representation. Once JURE freezes a real consumer fragment, introduce only the smallest strict adapter/binding necessary to lower it into the proven consumer seam.
 
