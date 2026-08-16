@@ -1,3 +1,7 @@
+import "./style.css";
+import "./mobile-driving-controls-v2.css";
+import "./mobile-driving-controls.css";
+
 import {
   DEFAULT_SCENE_PACKAGE_URL,
   validateScenePackageV1,
