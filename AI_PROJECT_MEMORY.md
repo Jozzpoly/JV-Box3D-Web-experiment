@@ -1,154 +1,126 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-16
-Status: `MOBILE DRIVING OWNER-DEVICE ALPHA LIVE / R0.1 SOURCE HYGIENE IMPLEMENTED / CANONICAL CHECK PENDING`
+Status: `P1 FOUNDATION OWNER-ACCEPTED / MAIN PROMOTION PREPARATION ACTIVE`
 
 This file is a compact router only. Git/current source, exact execution logs, built/public artifact evidence and direct owner observation outrank it.
 
 ## Authority
 
-- accepted private authority: `main@f8eb0908f5934aed2d504f34ce483a02754039ec`;
-- single active work lane: `work/mobile-driving-controls`;
-- exact source used by current live mobile-driving alpha: `d96e393c466aa41c6436c12bcb1b4ab1861828b0`;
-- runtime implementation checkpoint: `f56be8c85ea2b26533eee89c050b1b55cf21ec4b`;
-- current public Friends alpha: `release/friends-r1@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf`;
-- pre-alpha public rollback: `checkpoint/pages-before-mobile-driving-2026-08-16@fa00f4c3a3c19f1319302bc1728f9cf6490ce462`;
+- accepted private authority remains `main@f8eb0908f5934aed2d504f34ce483a02754039ec` until an explicit promotion occurs;
+- only ordinary active work lane: `work/mobile-driving-controls`;
+- exact owner-tested P1 product source: `c9b5990b226685abe35851fc5e9496323096ecf7`;
+- current public Friends artifact: `release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
+- immediate public rollback: `checkpoint/pages-before-p1-foundation-2026-08-16@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf`;
 - immutable public fallback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`.
 
-Only `work/mobile-driving-controls` is active ahead of `main`. Historical V3/V3.1/rebuild refs are donor evidence only.
+The active lane is a linear descendant of current `main`. Do not treat it as accepted private authority until the Main Promotion Gate is green and promotion is explicitly approved.
 
-## Proven alpha state
+## Accepted P1 foundation
 
-Canonical Windows install/typecheck/build/artifact validation exists for exact clean source `d96e393c...` under Node 24.16.0, npm 11.17.0, TS 7.0.2, Vite 8.1.5 and real box3d.js. Public build manifest pins that source.
+Exact source `c9b5990b...` has canonical Windows P1 evidence:
 
-Owner directly confirmed the live public build works on desktop and Samsung Galaxy A53 / Chrome. Analog pedals work and are materially better than old binary drive buttons. The projected steering-wheel concept is promising.
+- 48/48 focused P1/input/lifecycle tests PASS;
+- TypeScript typecheck PASS;
+- normal Vite production build PASS;
+- clean-tree checks PASS;
+- emitted CSS entry-linked with no late JS-owned CSS;
+- base -> current mobile cascade verified;
+- mobile scene historical 420px floor removed in the production CSS.
 
-Do **not** call the d96 repository suite fully green: the preserved publication run explicitly used `npm run typecheck` with no unit-test suite. R0.1 reconciled known stale mobile/UI tests; one new exact canonical `npm run check` is still required.
+The exact source was then published as public `a325c279...` through the Friends release gate:
 
-Do not restart takeover, V3 recovery, camera work, release-harness archaeology or the input architecture.
+- existing `check:friends-r1` PASS;
+- exact approved JSPREV2 preserved from Git object bytes;
+- candidate/staged Git tree byte equivalence verified;
+- ordinary non-force fast-forward publication;
+- live manifest source = `c9b5990b...`;
+- live scan index exact;
+- historical `jv-live-performance.js` absent.
 
-## Current owner-intent authority
+Owner directly tested the resulting Pages build on desktop and Galaxy A53 / Chrome across portrait, landscape, browser-chrome and fullscreen states. Steering and pedals work; the worst previous presentation failures are resolved well enough to close P1 foundation. Pedal design/interaction and later HUD/steering polish remain explicitly open.
 
-Read:
+## Current task: prepare promotion to main
 
-`docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`
+Feature/polish work is paused.
 
-For technical preparation/readiness also read:
+Read first:
 
-- `docs/MOBILE_DRIVING_ROADMAP_READINESS_AUDIT_2026-08-16.md`;
-- `docs/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md` when deeper implementation evidence is needed.
+1. `AGENTS.md`;
+2. `docs/PROJECT_STATE.md`;
+3. source/tests only as needed for the promotion audit.
 
-The older `MOBILE_DRIVING_CONTROLS_TARGET.md` is background only where not superseded by post-device feedback.
+Do not restart recovery, camera work, P1 layout implementation, pedal redesign or rotational steering while the promotion boundary is active.
 
-## R0.1 current boundary
+### Remaining evidence gate
 
-Source-side test hygiene is implemented without product/runtime changes:
+A historical canonical full `npm run check` produced 439 PASS / 3 FAIL. Two failures were proven stale/incorrect test expectations and corrected. The remaining R1 bridge failure required near-identical left/right peak speed even though the owner-accepted temporary bridge explicitly permits residual asymmetry and does not claim final handling; that overconstraint was removed in promotion preparation without changing vehicle physics.
 
-- behavioural ownership/lifecycle/D-R/frozen-geometry/generation tests remain;
-- `mobile-ui-contract` now protects current analog product/accessibility semantics instead of binary/circular UI;
-- `mobile-driving-integration-contract` protects analog/generation wiring instead of stylesheet history;
-- superseded `mobile-driving-controls-v2.test.mjs` was removed;
-- `toolchain-contract` now pins what `npm test`, `npm run check` and default test discovery actually mean.
+**Do not yet claim the current complete suite is green.** One fresh canonical full `npm run check` on the final promotion candidate is required.
 
-**Next action is one canonical Windows `npm run check` on the current active source.**
+The final promotion gate must also:
 
-Until it passes, do not start P1.0 and do not claim the full suite is green.
+- prove all post-`c9b5990b...` changes are non-runtime/test-doc preparation unless separately revalidated;
+- run normal production `build:bundle`;
+- preserve clean-tree evidence;
+- capture `npm audit --json` and classify the currently reported `1 high severity vulnerability` instead of blindly fixing it;
+- verify the candidate remains a clean descendant of live `main`.
 
-If it fails, classify the exact failure first. Do not modify product code merely to satisfy a stale test.
-
-## Critical preparatory findings
-
-### CSS/runtime authority
-
-Current source mixes direct V2/current mobile stylesheet links with base `style.css` imported by dynamically loaded `main.ts`. Production Vite loading can append base CSS later and let historical equal-specificity rules override current controls.
-
-This explains real alpha contamination including the returning circular/blue steering shell, action-rail competition and generic outer active transforms on new pedal targets.
-
-P1.0 must establish one current style owner rather than stacking more specificity.
-
-### Viewport/layout
-
-`100svh + min-height:420px + overflow:hidden` can clip short browser-chrome landscape. Renderer projection derives from canvas client geometry, so repair CSS viewport authority rather than adding camera workarounds.
-
-HUD overlays have no single composition owner; after root repair establish coordinated product zones instead of more independent offsets.
-
-### Public executable overlay
-
-Current public alpha preserves `jv-live-performance.js`, executable JS outside private source. It is mostly inert on the normal URL but can override DPR and install WebGL/perf instrumentation on diagnostic URLs. Private source already owns those concerns.
-
-Do not preserve that overlay into the next Friends candidate. Future executable root behavior must come from private source; only approved static scan/data and explicit release metadata may be carried forward.
-
-### Validation classes
-
-Keep separate:
-
-1. source/check evidence;
-2. build/artifact/static HTTP evidence;
-3. browser execution/render evidence;
-4. owner-device judgement.
-
-Static Pages HTTP smoke does not execute JS/CSS/WebGL.
-
-## Locked owner feedback
-
-### Responsive HUD
-
-Current alpha is cluttered. Short/rotated landscape can clip useful controls/interface and Camera/Reset/Debug competes with pedals. Treat this as coordinated driving-HUD composition, not local offset patching.
-
-### Pedal input
-
-After P1 foundation, move from relative pointer-down travel to absolute Y inside frozen pedal geometry:
-
-- bottom = low;
-- top = high;
-- pointer-down immediately emits touch-position demand;
-- drag up increases, drag down decreases;
-- release/lifecycle loss = zero;
-- preserve independent ownership, simultaneous T+B, D/R and fail-closed lifecycle.
-
-### Pedal feedback
-
-Replace fill/progress feedback with physical pedal depression/tilt/translation. Keep acquisition geometry stable. Later align pedal industrial design with steering wheel.
-
-### Steering
-
-Keep steep projected real-wheel concept. Remove distracting blue shell and repair rim/hub/spokes. X-only works but owner instinctively tries rotation; direct rotational manipulation is a later isolated A/B experiment. Preserve X-only until owner-proven replacement. Do not mix with rig/physics.
-
-## Main roadmap after R0.1
-
-1. `P1.0 production CSS authority` — one loading graph, retire historical live component layers, inspect real production artifact/render.
-2. `P1.1 root viewport geometry`.
-3. `P1.2 coordinated mobile HUD zones`.
-4. `P1.3 action/navigation policy`.
-5. `P1.4 driving-zone sizing/spacing`.
-6. `P1.5 portrait sanity`.
-7. `P2 absolute-position pedal input`.
-8. `P3 mechanical pedal motion`.
-9. `P4 steering visual cleanup`.
-10. `P5 rotational steering A/B experiment`.
-11. `P6 joint wheel/pedal design + feel`.
-12. `P7 portrait-specific composition`.
+If all are satisfactory and the owner approves, promotion is fast-forward only. Create a concrete rollback/evidence ref for pre-promotion `main`; no force push and no accidental merge commit.
 
 ## Protected boundaries
 
 Preserve:
 
 - Plac E2R, Offroad, owner vehicle and approved JSPREV2;
-- accepted A53 performance foundation for tested render-1x case;
-- Camera Manual Rig V1 and Fullscreen;
-- deterministic input timelines;
-- multitouch ownership/non-stealing/lifecycle fail-closed behavior;
+- accepted A53 render-1x performance foundation;
+- Camera Manual Rig V1 and Fullscreen V1;
+- timestamped/fixed-step input architecture;
+- independent throttle/brake ownership and fail-closed lifecycle;
 - D/R-under-throttle semantics;
-- generation-safe presentation boundary;
-- temporary approximately +/-35-degree steering bridge;
-- JURE boundary for final rig/steering geometry and final handling.
+- generation-safe UI presentation;
+- current X-only steering POSITION control as working reference;
+- temporary steering/drive bridge as product intermediate only;
+- JURE boundary for final authored rig/steering geometry and final handling.
 
-A local presentation/release failure is never justification to discard the analog-control stack.
+## Validation classes
 
-## Read order
+Keep separate:
 
-1. `AGENTS.md`
-2. `docs/PROJECT_STATE.md`
-3. `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`
-4. readiness/technical audit only as needed
-5. source/tests for the current slice
+1. source/unit/type checks;
+2. build/artifact/static HTTP checks;
+3. browser execution/render proof;
+4. owner-device/feel judgement.
+
+A focused suite is not a full-suite pass. A static Friends validator is not browser execution. Owner acceptance of current steering/pedals is not acceptance of final pedal design, final steering physics or final rig truth.
+
+## Current documentation interpretation
+
+Current truth:
+
+- `AGENTS.md`;
+- `docs/PROJECT_STATE.md`;
+- this router;
+- `docs/ARCHITECTURE.md`;
+- `docs/OWNER_CHECKPOINTS.md`.
+
+Owner-intent authority:
+
+- `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`.
+
+The dated mobile technical/readiness audits remain historical evidence. Their pre-P1 statements about V2 CSS, clipping cause, old public runtime overlay or pending R0.1 must not be treated as current state after the accepted P1 checkpoint.
+
+## Development after main promotion
+
+Resume only after the promotion boundary closes:
+
+1. P1.2 coordinated HUD zones;
+2. P1.3 action/navigation policy;
+3. P1.4 driving-zone sizing/spacing;
+4. P1.5 portrait sanity;
+5. P2 absolute-position pedals;
+6. P3 mechanical pedal depression;
+7. P4 steering visual cleanup;
+8. P5 isolated rotational-steering A/B experiment;
+9. P6 joint wheel/pedal design + feel;
+10. P7 intentional portrait composition.
