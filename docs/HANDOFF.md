@@ -1,44 +1,51 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-17
-Status: `HANDOFF READY / P1 ACCEPTED / MAINTENANCE CLOSED / PRODUCT CONTINUATION NEXT / JURE PAUSED`
+Status: `HANDOFF READY / P1 ACCEPTED / MAINTENANCE CLOSED / PUBLIC TAKEOFF COMPLETE / PRODUCT CONTINUATION NEXT / JURE PAUSED`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
 ## Fresh entry — do this, not archaeology
 
-1. Resolve live private `main` and public `release/friends-r1`.
+1. Resolve live private `main`, public `main`, and GitHub Pages source/status.
 2. Read `AGENTS.md`.
 3. Read `docs/PROJECT_STATE.md`.
 4. Read this handoff.
 5. Read `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` for the Owner's current UI/control intent.
 6. Inspect only current mobile UI/layout source and relevant tests for the selected next slice.
 
-Do **not** restart the closed neutral-foundation campaign, old recovery work, Camera/Fullscreen reconstruction, pre-P1 CSS repair or public-overlay repair without new contradictory evidence.
+Do **not** restart the closed neutral-foundation campaign, old recovery work, Camera/Fullscreen reconstruction, pre-P1 CSS repair, public-overlay repair or public-main takeoff machinery without new contradictory evidence.
 
-## Live repository state after Owner cleanup
+## Live repository/publication state
 
-Verified at handoff preparation:
+Verified after final Owner cleanup and public takeoff:
 
 ```text
 private JV-Web branches: main only
-private open PRs/issues: 0 / 0
-public open PRs/issues: 0 / 0
-public Friends: release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f
-public Pages: built, HTTPS enforced, source release/friends-r1 /
-public control-plane main: 8f6e0e5009379423302c76b74ca189b824ce5cef
+public JV-Web branches: main only
+public main / Pages artifact: f512551dc41196bc8ca053357408c93b4b3725be
+public artifact executable source: 0260c8b39c0bb9594afe423b30d8e3536918f24c
+public Pages: built, HTTPS enforced, source main /
+previous accepted Friends commit: a325c279cfe63a0607dba33c3c635a1716e09f8f
+historical public R0 commit: c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 JURE accepted main: d971b8bef5dd7c65b78884b6b449e1f5ab0e7425
 ```
 
-The Owner manually removed the redundant private branches, including the former rollback/checkpoint refs. Historical commit `f8eb0908f5934aed2d504f34ce483a02754039ec` still exists in current-main ancestry and remains historical evidence, not a live branch.
+The old public `release/friends-r1`, `release/r0` and historical checkpoint refs have been removed. Their exact commits remain history/evidence anchors where reachable from current `main`; do not recreate branch families merely for archival comfort.
 
-Public cleanup is incomplete: eight old `checkpoint/*` branches still exist. They are non-authoritative historical refs. Keep `main`, `release/friends-r1` and immutable `release/r0`.
+The current private handoff commit after this document update is documentation-only. It does not replace `0260c8b39...` as the executable source of the accepted public artifact and does not inherit the exact Windows execution PASS anchored to `3606e593...`.
+
+## Public takeoff acceptance
+
+The final public candidate passed the existing Friends static/runtime contract and corrected artifact-equivalence gate. Public `main@f512551...` preserves both old public-control-plane and accepted Friends ancestry, Pages now serves `main` `/`, and the Owner manually exercised the deployed site for about five minutes on desktop and phone without observing a regression from accepted P1 behavior.
+
+This closes publication takeoff. Do not reinterpret it as final acceptance of the current HUD/pedal/steering design.
 
 ## Accepted product baseline
 
 Preserve unless the selected product slice explicitly changes it:
 
-- desktop + Galaxy A53 / Chrome Friends foundation;
+- desktop + Galaxy A53 / Chrome P1 foundation;
 - Plac E2R, Offroad and approved JSPREV2;
 - owner vehicle;
 - Camera Manual Rig V1;
@@ -75,7 +82,7 @@ V5 proved: canonical clone/origin, Node 24.16.0/npm 11.17.0, `npm ci`, TypeScrip
 
 The current handoff/docs commits after that anchor are documentation-only. Exact execution PASS belongs to `3606e593...`; do not transfer it across future source/test/dependency changes.
 
-V1/V2 were harness failures. V4 found one false-positive assertion. They are resolved history, not current defects.
+V1/V2 were harness failures. V4 found one false-positive assertion. Later public takeoff wrapper failures were also process/harness failures; the corrected candidate equivalence and final publication passed. Do not reopen these without new evidence.
 
 ## Security/dependency finding
 
@@ -92,7 +99,7 @@ JURE stays paused and remains future authored-rig authority. JV stays runtime au
 
 ## Product continuation order
 
-The former Main Promotion Preparation/maintenance prerequisite is satisfied. In the next product conversation, use:
+Maintenance foundation and public takeoff are satisfied. In the next product conversation, use:
 
 `P1.2 coordinated HUD -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait composition`
 
@@ -116,7 +123,6 @@ Keep P1.2 layout-only whenever possible. Do not change pedal mapping, steering g
 
 - dev-only `nanoid` advisory;
 - JS gap in portable network-policy proof;
-- eight public historical checkpoint branches;
 - no branch protection currently enabled;
 - existing Vite `box3d.js` browser-externalization and large-chunk warnings.
 
