@@ -1,5 +1,10 @@
 export type SteeringSide = "LEFT" | "RIGHT";
-export type InputReleaseReason = "BLUR" | "VISIBILITY_HIDDEN" | "PAGE_HIDE" | "DISPOSE";
+export type InputReleaseReason =
+  | "BLUR"
+  | "VISIBILITY_HIDDEN"
+  | "PAGE_HIDE"
+  | "VIEWPORT_CHANGE"
+  | "DISPOSE";
 
 interface RawDeviceEventBase {
   readonly timestampMs: number;
