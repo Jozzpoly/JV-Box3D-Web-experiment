@@ -1,6 +1,6 @@
 # JV Web — architecture
 
-Updated: 2026-08-15
+Updated: 2026-08-16
 Status: `CURRENT STABLE BOUNDARIES`
 
 This document describes stable system boundaries. It is not a roadmap, branch ledger or mechanical-history archive.
@@ -98,7 +98,7 @@ Manual camera calibration is user-owned presentation state. Automatic driving as
 
 Camera gesture ownership stays in the renderer/UI path. Terrain/obstacle camera avoidance requires an explicit environment-query/probe boundary; do not infer authoritative collision or ground state from visual data just to make a camera effect work.
 
-Vehicle controls stay on the timestamped product-input path. Device-specific controls must not call M6 physics directly. Future analog steering should extend the existing `RELEASE` / `RATE` / `POSITION` command model, while analog throttle/brake should extend the normalized longitudinal path. Steering and longitudinal source ownership remain independent so simultaneous controls can coexist.
+Vehicle controls stay on the timestamped product-input path. Device-specific controls must not call M6 physics directly. Current analog steering uses the existing `RELEASE` / `RATE` / `POSITION` command model, and analog throttle/brake use the normalized longitudinal path. Steering and longitudinal source ownership remain independent so simultaneous controls can coexist. Future input experiments should extend these boundaries rather than bypass them.
 
 Immersive/fullscreen behavior, HUD composition and user settings are presentation/capability layers. They may change how JV is operated or displayed without becoming vehicle-mechanics authority.
 
