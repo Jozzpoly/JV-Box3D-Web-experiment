@@ -34,6 +34,10 @@ const neutralProjectorSource = await readFile(
   new URL("../src/vehicle/m6/m6-neutral-geometry.ts", import.meta.url),
   "utf8",
 );
+const neutralExporterSource = await readFile(
+  new URL("../tools/write-jure-neutral-geometry-receipt.mjs", import.meta.url),
+  "utf8",
+);
 const TEST_SOURCE = Object.freeze({
   kind: "legacy-procedural-m6",
   producer: Object.freeze({
@@ -80,6 +84,18 @@ test("neutral projection stays source-level engine-neutral", () => {
   assert.equal(neutralProjectorSource.includes("box3d-runtime-contract"), false);
   assert.equal(neutralProjectorSource.includes("b3BodyId"), false);
   assert.equal(neutralProjectorSource.includes("b3JointId"), false);
+});
+
+test("neutral receipt exporter binds producer identity only after rejecting tracked source drift", () => {
+  assert.equal(
+    neutralExporterSource.includes('["diff", "--quiet", "HEAD", "--"]'),
+    true,
+  );
+  const cleanGuardCall = neutralExporterSource.indexOf("requireTrackedWorktreeClean();");
+  const producerRead = neutralExporterSource.indexOf("const producerCommit = gitText");
+  assert.ok(cleanGuardCall >= 0, "missing tracked-worktree clean guard");
+  assert.ok(producerRead >= 0, "missing producer HEAD read");
+  assert.ok(cleanGuardCall < producerRead, "producer identity is read before clean-source guard");
 });
 
 test("JV neutral mechanism v1 exposes one explicit engine-neutral rig space and coherent FL wishbone", () => {
