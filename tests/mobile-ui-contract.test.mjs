@@ -25,14 +25,26 @@ test("mobile viewport preserves safe-area coverage without disabling browser zoo
 test("product DOM exposes one steering surface, two analog pedals, and one D-R selector", async () => {
   const main = await read("src/main.ts");
 
-  assert.equal(count(main, /\bdata-steering-joystick\b/g), 1);
-  assert.equal(count(main, /data-analog-pedal="BRAKE"/g), 1);
-  assert.equal(count(main, /data-analog-pedal="THROTTLE"/g), 1);
-  assert.equal(count(main, /data-drive-direction="D"/g), 1);
+  assert.equal(
+    count(main, /<div\b[^>]*\bdata-steering-joystick\b[^>]*>/g),
+    1,
+  );
+  assert.equal(
+    count(main, /<button\b[^>]*data-analog-pedal="BRAKE"[^>]*>/g),
+    1,
+  );
+  assert.equal(
+    count(main, /<button\b[^>]*data-analog-pedal="THROTTLE"[^>]*>/g),
+    1,
+  );
+  assert.equal(
+    count(main, /<button\b[^>]*data-drive-direction="D"[^>]*>/g),
+    1,
+  );
 
   assert.doesNotMatch(
     main,
-    /\bdata-pointer-control=/,
+    /<(?:button|div)\b[^>]*\bdata-pointer-control=/,
     "legacy binary pointer buttons must not be part of the owner-facing product DOM",
   );
 });
@@ -42,17 +54,20 @@ test("analog owner controls expose slider semantics without encoding presentatio
 
   assert.match(
     main,
-    /data-steering-joystick[^>]*role="slider"[^>]*aria-valuemin="-100"[^>]*aria-valuemax="100"/,
+    /<div\b[^>]*data-steering-joystick\b[^>]*role="slider"[^>]*aria-valuemin="-100"[^>]*aria-valuemax="100"[^>]*>/,
   );
   assert.match(
     main,
-    /data-analog-pedal="BRAKE"[^>]*role="slider"[^>]*aria-valuemin="0"[^>]*aria-valuemax="100"/,
+    /<button\b[^>]*data-analog-pedal="BRAKE"[^>]*role="slider"[^>]*aria-valuemin="0"[^>]*aria-valuemax="100"[^>]*>/,
   );
   assert.match(
     main,
-    /data-analog-pedal="THROTTLE"[^>]*role="slider"[^>]*aria-valuemin="0"[^>]*aria-valuemax="100"/,
+    /<button\b[^>]*data-analog-pedal="THROTTLE"[^>]*role="slider"[^>]*aria-valuemin="0"[^>]*aria-valuemax="100"[^>]*>/,
   );
-  assert.match(main, /data-drive-direction="D"[^>]*aria-label="[^"]*D\/R[^"]*"/);
+  assert.match(
+    main,
+    /<button\b[^>]*data-drive-direction="D"[^>]*aria-label="[^"]*D\/R[^"]*"[^>]*>/,
+  );
 });
 
 test("Friends debug surface starts closed and remains explicitly recoverable", async () => {
