@@ -1,10 +1,12 @@
 import "./style.css";
 import { F4VehicleHost } from "./app/f4-vehicle-host.js";
 import type {
-  PointerVehicleControlId,
-  PointerVehicleControlTargets,
-} from "./input/pointer-vehicle-control-adapter.js";
+  AnalogDrivePedal,
+  PointerAnalogDriveControls,
+  PointerDriveDirection,
+} from "./input/pointer-analog-drive-adapter.js";
 import type { SteeringCommand } from "./input/steering-command.js";
+import { MobileDrivingUi } from "./mobile-driving-ui.js";
 import { M6ProductRenderer } from "./render/m6-product-renderer.js";
 import {
   formatBrowserRuntimeReport,
@@ -65,20 +67,46 @@ app.innerHTML = `
       </p>
 
       <div class="mobile-controls" aria-label="Touch vehicle controls">
-        <div class="mobile-control-cluster mobile-steering-controls" aria-label="Steering controls">
-          <button hidden aria-hidden="true" tabindex="-1" type="button" class="mobile-control mobile-control-steer" data-pointer-control="STEER_LEFT" aria-label="Steer left" aria-pressed="false"><span aria-hidden="true">◀</span><small>LEFT</small></button>
-          <button hidden aria-hidden="true" tabindex="-1" type="button" class="mobile-control mobile-control-steer" data-pointer-control="STEER_RIGHT" aria-label="Steer right" aria-pressed="false"><span aria-hidden="true">▶</span><small>RIGHT</small></button>
-          <div class="mobile-steering-joystick" data-steering-joystick role="slider" aria-label="Analog steering joystick" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0" aria-valuetext="CENTER">
-            <span class="mobile-steering-axis" aria-hidden="true">
-              <span class="mobile-steering-thumb"></span>
+        <div class="mobile-control-cluster mobile-steering-controls" aria-label="Analog steering">
+          <div class="mobile-steering-joystick" data-steering-joystick role="slider" aria-label="Analog steering" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0" aria-valuetext="CENTER">
+            <span class="mobile-steering-wheel-stage" aria-hidden="true">
+              <span class="mobile-steering-wheel-tilt">
+                <span class="mobile-steering-wheel-rotor">
+                  <span class="mobile-steering-wheel-rim"></span>
+                  <span class="mobile-steering-spoke mobile-steering-spoke-a"></span>
+                  <span class="mobile-steering-spoke mobile-steering-spoke-b"></span>
+                  <span class="mobile-steering-spoke mobile-steering-spoke-c"></span>
+                  <span class="mobile-steering-wheel-hub"></span>
+                  <span class="mobile-steering-wheel-marker"></span>
+                </span>
+              </span>
+              <span class="mobile-steering-center-tick"></span>
             </span>
             <small>STEER</small>
           </div>
         </div>
-        <div class="mobile-control-cluster mobile-drive-controls" aria-label="Drive controls">
-          <button type="button" class="mobile-control mobile-control-drive" data-pointer-control="FORWARD" aria-label="Drive forward" aria-pressed="false"><span aria-hidden="true">▲</span><small>DRIVE</small></button>
-          <button type="button" class="mobile-control mobile-control-brake" data-pointer-control="BRAKE" aria-label="Brake" aria-pressed="false"><span aria-hidden="true">●</span><small>BRAKE</small></button>
-          <button type="button" class="mobile-control mobile-control-drive" data-pointer-control="REVERSE" aria-label="Drive in reverse" aria-pressed="false"><span aria-hidden="true">▼</span><small>REVERSE</small></button>
+        <div class="mobile-control-cluster mobile-drive-controls" aria-label="Analog drive controls">
+          <button type="button" class="mobile-control mobile-pedal mobile-pedal-brake" data-analog-pedal="BRAKE" role="slider" aria-label="Analog brake. Slide thumb upward for more input." aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%">
+            <span class="mobile-pedal-mechanism" aria-hidden="true">
+              <span class="mobile-pedal-fill"></span>
+              <span class="mobile-pedal-track"></span>
+              <span class="mobile-pedal-face"></span>
+            </span>
+            <small>BRAKE</small>
+          </button>
+          <button type="button" class="mobile-control mobile-pedal mobile-pedal-throttle" data-analog-pedal="THROTTLE" role="slider" aria-label="Analog throttle. Slide thumb upward for more input." aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%">
+            <span class="mobile-pedal-mechanism" aria-hidden="true">
+              <span class="mobile-pedal-fill"></span>
+              <span class="mobile-pedal-track"></span>
+              <span class="mobile-pedal-face"></span>
+            </span>
+            <small>THROTTLE</small>
+          </button>
+          <button type="button" class="mobile-control mobile-direction-selector" data-drive-direction="D" aria-label="Drive direction D. Tap to switch D/R." aria-pressed="false">
+            <span data-direction-option="D">D</span>
+            <span class="mobile-direction-divider" aria-hidden="true">/</span>
+            <span data-direction-option="R">R</span>
+          </button>
         </div>
       </div>
 
@@ -209,74 +237,37 @@ const cameraResetButton = requireElement<HTMLButtonElement>("[data-camera-reset]
 const debugToggleButton = requireElement<HTMLButtonElement>("[data-debug-toggle]");
 const debugPanel = requireElement<HTMLElement>("[data-debug-panel]");
 const steeringJoystick = requireElement<HTMLElement>("[data-steering-joystick]");
+const throttlePedal = requireElement<HTMLButtonElement>(
+  '[data-analog-pedal="THROTTLE"]',
+);
+const brakePedal = requireElement<HTMLButtonElement>(
+  '[data-analog-pedal="BRAKE"]',
+);
+const directionSelector = requireElement<HTMLButtonElement>(
+  "[data-drive-direction]",
+);
 
-const pointerControlButtons: Record<
-  PointerVehicleControlId,
-  HTMLButtonElement
-> = {
-  STEER_LEFT: requireElement<HTMLButtonElement>(
-    '[data-pointer-control="STEER_LEFT"]',
-  ),
-  STEER_RIGHT: requireElement<HTMLButtonElement>(
-    '[data-pointer-control="STEER_RIGHT"]',
-  ),
-  FORWARD: requireElement<HTMLButtonElement>(
-    '[data-pointer-control="FORWARD"]',
-  ),
-  REVERSE: requireElement<HTMLButtonElement>(
-    '[data-pointer-control="REVERSE"]',
-  ),
-  BRAKE: requireElement<HTMLButtonElement>(
-    '[data-pointer-control="BRAKE"]',
-  ),
+const mobileDrivingFrames = {
+  request: (callback: FrameRequestCallback) =>
+    window.requestAnimationFrame(callback),
+  cancel: (handle: number) => window.cancelAnimationFrame(handle),
 };
 
-const pointerControls: PointerVehicleControlTargets = {
-  steerLeft: pointerControlButtons.STEER_LEFT,
-  steerRight: pointerControlButtons.STEER_RIGHT,
-  forward: pointerControlButtons.FORWARD,
-  reverse: pointerControlButtons.REVERSE,
-  brake: pointerControlButtons.BRAKE,
+const mobileDrivingUi = new MobileDrivingUi(
+  {
+    steering: steeringJoystick,
+    throttle: throttlePedal,
+    brake: brakePedal,
+    direction: directionSelector,
+  },
+  mobileDrivingFrames,
+);
+
+const analogDriveControls: PointerAnalogDriveControls = {
+  throttle: throttlePedal,
+  brake: brakePedal,
+  direction: directionSelector,
 };
-
-function setPointerControlState(
-  control: PointerVehicleControlId,
-  active: boolean,
-): void {
-  const button = pointerControlButtons[control];
-  button.setAttribute("aria-pressed", String(active));
-  button.toggleAttribute("data-active", active);
-}
-
-function resetPointerControlStates(): void {
-  for (const control of Object.keys(
-    pointerControlButtons,
-  ) as PointerVehicleControlId[]) {
-    setPointerControlState(control, false);
-  }
-}
-
-function setSteeringJoystickState(value: number, active: boolean): void {
-  const normalized = Math.max(-1, Math.min(1, value));
-  steeringJoystick.style.setProperty(
-    "--steering-x",
-    `${(-normalized * 34).toFixed(2)}%`,
-  );
-  steeringJoystick.toggleAttribute("data-active", active);
-  steeringJoystick.setAttribute(
-    "aria-valuenow",
-    String(Math.round(normalized * 100)),
-  );
-  const magnitude = Math.round(Math.abs(normalized) * 100);
-  steeringJoystick.setAttribute(
-    "aria-valuetext",
-    normalized > 0
-      ? `LEFT ${magnitude}%`
-      : normalized < 0
-        ? `RIGHT ${magnitude}%`
-        : "CENTER",
-  );
-}
 
 function setDebugPanelOpen(open: boolean): void {
   debugPanel.toggleAttribute("data-open", open);
@@ -297,11 +288,7 @@ browserRuntimeElement.textContent = formatBrowserRuntimeReport(
   browserRuntimeReport,
 );
 
-const animationFrames = {
-  request: (callback: FrameRequestCallback) =>
-    window.requestAnimationFrame(callback),
-  cancel: (handle: number) => window.cancelAnimationFrame(handle),
-};
+const animationFrames = mobileDrivingFrames;
 
 let renderer: M6ProductRenderer | null = null;
 try {
@@ -470,8 +457,6 @@ function renderTrace(trace: M6TraceFrame): void {
 }
 
 function resetDisplay(): void {
-  resetPointerControlStates();
-  setSteeringJoystickState(0, false);
   runtimeBackendElement.textContent = "PENDING";
   scenePackageElement.textContent = "PENDING";
   nativeSourceElement.textContent = "PENDING";
@@ -499,6 +484,7 @@ function resetDisplay(): void {
 
 async function startHost(): Promise<void> {
   const generation = ++startupGeneration;
+  mobileDrivingUi.beginGeneration(generation);
   const rateProfileId = selectedProfileId();
   restartButton.disabled = true;
   profileSelect.disabled = true;
@@ -530,10 +516,21 @@ async function startHost(): Promise<void> {
       windowTarget: window,
       documentTarget: document,
       isDocumentHidden: () => document.visibilityState === "hidden",
-      pointerControls,
-      onPointerControlStateChange: setPointerControlState,
+      analogDriveControls,
+      onAnalogPedalStateChange: (
+        pedal: AnalogDrivePedal,
+        value: number,
+        active: boolean,
+      ) => {
+        mobileDrivingUi.setPedal(generation, pedal, value, active);
+      },
+      onDriveDirectionChange: (direction: PointerDriveDirection) => {
+        mobileDrivingUi.setDirection(generation, direction);
+      },
       steeringJoystick,
-      onSteeringJoystickStateChange: setSteeringJoystickState,
+      onSteeringJoystickStateChange: (value: number, active: boolean) => {
+        mobileDrivingUi.setSteering(generation, value, active);
+      },
       generation,
       spawn: { x: spawnX, y: spawnY, z: spawnZ },
       rateProfileId,
@@ -595,7 +592,7 @@ async function startHost(): Promise<void> {
       `Running — ${scene.id}; ${backend.id}; ` +
       `${box3dReceipt.identity.packageName}@${box3dReceipt.identity.packageVersion}; ` +
       `RATE/POSITION steering + reference wheel drive; ` +
-      `keyboard + pointer + analog joystick; generation ${generation}`;
+      `keyboard + analog steering + analog pedals + D/R; generation ${generation}`;
   } catch (error: unknown) {
     if (generation !== startupGeneration) {
       return;
@@ -649,9 +646,11 @@ profileSelect.addEventListener("change", () => {
 window.addEventListener(
   "pagehide",
   () => {
-    startupGeneration += 1;
+    const generation = ++startupGeneration;
+    mobileDrivingUi.beginGeneration(generation);
     host?.dispose();
     host = null;
+    mobileDrivingUi.dispose();
     renderer?.dispose();
     renderer = null;
   },
@@ -659,5 +658,4 @@ window.addEventListener(
 );
 
 setDebugPanelOpen(false);
-setSteeringJoystickState(0, false);
 void startHost();
