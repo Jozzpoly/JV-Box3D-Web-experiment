@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-16
-Status: `P1 ACCEPTED / MAINTENANCE-FOUNDATION PASS / PRODUCT ROADMAP PARKED / JURE PAUSED`
+Status: `P1 ACCEPTED / MAINTENANCE VALIDATION ACTIVE / EXACT GATE PENDING / PRODUCT ROADMAP PARKED / JURE PAUSED`
 
 Compact router only. Live Git, actually executed evidence, public artifact state and direct Owner observation outrank this file.
 
@@ -44,7 +44,7 @@ JV `main` contains a dormant/read-only consumer seam:
 
 Current evidence classification: `SOURCE-VALIDATED / EXACT EXECUTION GATE PENDING`.
 
-Do not treat the presence of the gate as proof it ran. Earlier `fd84fcf4...` Windows PASS does not transfer to current `main`.
+Do not treat the presence of the gate as proof it ran. Earlier `fd84fcf4...` Windows PASS does not transfer to current `main`. The 2026-08-16 owner-side attempts against `81c7c14...` failed in validation tooling before dependency installation/project tests and therefore do not constitute a neutral-rig PASS or product FAIL.
 
 ## JURE pause
 

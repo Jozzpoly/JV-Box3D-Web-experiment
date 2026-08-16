@@ -42,8 +42,11 @@ function runNpm(args, options = {}) {
     return run("npm", args, options);
   }
 
+  // On Windows npm is exposed as npm.cmd. Node does not execute .cmd files
+  // directly without a command shell, so dispatch it explicitly through the
+  // system command processor while keeping the argument vector fixed here.
   const commandShell = process.env.ComSpec ?? "cmd.exe";
-  return run(commandShell, ["/d", "/s", "/c", "npm.cmd", ...args], options);
+  return run(commandShell, ["/d", "/c", "npm.cmd", ...args], options);
 }
 
 function gitText(args, env = process.env) {
@@ -171,8 +174,13 @@ async function main() {
   console.log("[2/9] Strict TypeScript check...");
   runNpm(["run", "typecheck"]);
 
-  console.log("[3/9] Focused neutral-rig geometry/provenance tests...");
-  runNpm(["test", "--", "tests/jure-neutral-geometry.test.mjs"]);
+  console.log("[3/9] Focused neutral-rig geometry/provenance + graph-invariant tests...");
+  runNpm([
+    "test",
+    "--",
+    "tests/jure-neutral-geometry.test.mjs",
+    "tests/jure-neutral-graph-invariants.test.mjs",
+  ]);
 
   console.log("[4/9] Deterministic receipt + exact provenance...");
   const first = exporterResult().stdout;

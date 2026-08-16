@@ -25,14 +25,42 @@ function assertFiniteVec3(value, label) {
   }
 }
 
-function worldFramePosition(mechanism, frame) {
+function rotateVec3ByUnitQuaternion(value, rotation) {
+  const tx = 2 * (rotation.y * value.z - rotation.z * value.y);
+  const ty = 2 * (rotation.z * value.x - rotation.x * value.z);
+  const tz = 2 * (rotation.x * value.y - rotation.y * value.x);
+  return {
+    x: value.x + rotation.w * tx + (rotation.y * tz - rotation.z * ty),
+    y: value.y + rotation.w * ty + (rotation.z * tx - rotation.x * tz),
+    z: value.z + rotation.w * tz + (rotation.x * ty - rotation.y * tx),
+  };
+}
+
+function ownerBody(mechanism, frame) {
   const owner = mechanism.bodies.find((body) => body.id === frame.ownerBody);
   assert.ok(owner, `missing owner body ${frame.ownerBody}`);
+  return owner;
+}
+
+function worldFramePosition(mechanism, frame) {
+  const owner = ownerBody(mechanism, frame);
+  const rotatedLocal = rotateVec3ByUnitQuaternion(
+    frame.localPosition,
+    owner.neutralPose.rotation,
+  );
   return {
-    x: owner.neutralPose.position.x + frame.localPosition.x,
-    y: owner.neutralPose.position.y + frame.localPosition.y,
-    z: owner.neutralPose.position.z + frame.localPosition.z,
+    x: owner.neutralPose.position.x + rotatedLocal.x,
+    y: owner.neutralPose.position.y + rotatedLocal.y,
+    z: owner.neutralPose.position.z + rotatedLocal.z,
   };
+}
+
+function worldFrameAxis(mechanism, frame) {
+  assert.ok(frame.primaryAxisLocal, `${frame.id} requires primaryAxisLocal`);
+  return rotateVec3ByUnitQuaternion(
+    frame.primaryAxisLocal,
+    ownerBody(mechanism, frame).neutralPose.rotation,
+  );
 }
 
 function assertCoincident(a, b, label) {
@@ -44,7 +72,21 @@ function assertCoincident(a, b, label) {
   }
 }
 
-test("neutral mechanism graph keeps unique identities, valid references and finite neutral data", () => {
+function assertColinear(a, b, label) {
+  const normA = Math.hypot(a.x, a.y, a.z);
+  const normB = Math.hypot(b.x, b.y, b.z);
+  assert.ok(normA > 1e-12, `${label} axis A must be non-zero`);
+  assert.ok(normB > 1e-12, `${label} axis B must be non-zero`);
+  const normalizedDot = Math.abs(
+    (a.x * b.x + a.y * b.y + a.z * b.z) / (normA * normB),
+  );
+  assert.ok(
+    Math.abs(normalizedDot - 1) <= 1e-12,
+    `${label} world axes must be colinear; |dot|=${normalizedDot}`,
+  );
+}
+
+test("neutral mechanism graph keeps coherent identities, transforms and relation references", () => {
   const mechanism = projectLegacyM6FrontLeftWishboneNeutral(config);
 
   assertUniqueIds(mechanism.bodies, "body");
@@ -77,6 +119,10 @@ test("neutral mechanism graph keeps unique identities, valid references and fini
   }
 
   for (const relation of mechanism.relations) {
+    assert.ok(
+      relation.type === "revolute" || relation.type === "spherical",
+      `${relation.id} has unsupported relation type ${relation.type}`,
+    );
     assert.equal(frameIds.has(relation.frameA), true, `${relation.id} references missing frameA ${relation.frameA}`);
     assert.equal(frameIds.has(relation.frameB), true, `${relation.id} references missing frameB ${relation.frameB}`);
     assert.notEqual(relation.frameA, relation.frameB, `${relation.id} must connect two distinct frames`);
@@ -85,10 +131,23 @@ test("neutral mechanism graph keeps unique identities, valid references and fini
     const frameB = mechanism.frames.find((frame) => frame.id === relation.frameB);
     assert.ok(frameA);
     assert.ok(frameB);
+    assert.notEqual(
+      frameA.ownerBody,
+      frameB.ownerBody,
+      `${relation.id} must connect frames owned by distinct bodies`,
+    );
     assertCoincident(
       worldFramePosition(mechanism, frameA),
       worldFramePosition(mechanism, frameB),
       `${relation.id} neutral endpoints`,
     );
+
+    if (relation.type === "revolute") {
+      assertColinear(
+        worldFrameAxis(mechanism, frameA),
+        worldFrameAxis(mechanism, frameB),
+        `${relation.id} revolute`,
+      );
+    }
   }
 });

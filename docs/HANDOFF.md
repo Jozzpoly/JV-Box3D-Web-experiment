@@ -1,7 +1,7 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-16
-Status: `P1 ACCEPTED / MAINTENANCE-FOUNDATION PASS / PRODUCT ROADMAP PARKED / JURE PAUSED`
+Status: `P1 ACCEPTED / MAINTENANCE VALIDATION ACTIVE / EXACT GATE PENDING / PRODUCT ROADMAP PARKED / JURE PAUSED`
 
 Snapshot only; live Git and `docs/PROJECT_STATE.md` outrank it.
 
@@ -44,7 +44,7 @@ The useful former JURE-preparation seam is in private `main` as dormant/read-onl
 - deterministic diagnostic receipt with exact producer/factory provenance;
 - fail-closed tracked-source and canonical-origin guards;
 - exact geometry/provenance tests;
-- graph invariants for unique IDs, references, finite data, unit quaternions and coincident relation endpoints;
+- graph invariants for unique IDs, references, finite data, unit quaternions, coherent cross-body relations, coincident relation endpoints and revolute-axis compatibility;
 - no Box3D/runtime substitution.
 
 This is JV consumer truth, not future JURE authored format.
@@ -57,9 +57,11 @@ Canonical exact gate:
 npm run gate:neutral-rig-foundation
 ```
 
-It performs exact dependency install, strict TS, focused neutral tests, deterministic double receipt export, exact Git blob/SHA-256 provenance, wrong-origin and dirty-source falsifiers, full repository check, production bundle, neutral-seam leak scan and final cleanliness.
+It performs exact dependency install, strict TS, focused neutral geometry/provenance + graph-invariant tests, deterministic double receipt export, exact Git blob/SHA-256 provenance, wrong-origin and dirty-source falsifiers, full repository check, production bundle, neutral-seam leak scan and final cleanliness.
 
-**Current classification remains `SOURCE-VALIDATED / EXACT EXECUTION GATE PENDING`.** The gate source exists, but it has not yet been executed against the exact current private `main`. Never promote that to PASS from intent or from the older `fd84fcf4...` result.
+**Current classification remains `SOURCE-VALIDATED / EXACT EXECUTION GATE PENDING`.** The gate source exists, but it has not yet completed against the exact current private `main`. Never promote that to PASS from intent or from the older `fd84fcf4...` result.
+
+Two owner-side attempts on 2026-08-16 against `81c7c14...` stopped before project validation: V1 exposed a Windows PowerShell stderr/error-stream launcher defect; V2 then exposed direct Node `spawnSync("npm.cmd")` incompatibility before `npm ci`. Both are validation-tooling failures, not neutral-rig/product failures. The current repository gate explicitly invokes npm through the Windows command shell when needed; that portability correction still requires exact execution evidence.
 
 ## Public control plane repaired
 
@@ -95,6 +97,8 @@ The mobile/control roadmap is preserved but deliberately not active in this conv
 `P1.2 coordinated HUD -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait composition`
 
 Do not change mobile layout, pedals, steering, physics, rendering, scan presentation or handling as part of maintenance/foundation cleanup.
+
+The two large mobile-driving audit documents from 2026-08-16 are preserved as pre-P1 technical evidence. Their old alpha refs and readiness blockers are historical; current status comes from `docs/PROJECT_STATE.md`.
 
 ## Do not restart
 

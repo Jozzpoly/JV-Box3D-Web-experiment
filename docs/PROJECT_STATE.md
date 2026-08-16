@@ -2,7 +2,7 @@
 
 Updated: 2026-08-16
 Owner: Jozz
-Status: `P1 ACCEPTED / MAINTENANCE-FOUNDATION PASS ACTIVE / PRODUCT ROADMAP PARKED / JURE PAUSED`
+Status: `P1 ACCEPTED / MAINTENANCE VALIDATION ACTIVE / EXACT GATE PENDING / PRODUCT ROADMAP PARKED / JURE PAUSED`
 
 ## 1. Authority
 
@@ -33,7 +33,7 @@ JV `main` owns a small read-only consumer-side neutral rig seam:
 - `src/vehicle/neutral-mechanism.ts` — engine-neutral bodies/frames/relations and explicit `jv-rig-space/v1`;
 - `src/vehicle/m6/m6-neutral-geometry.ts` — read-only current procedural M6 front-left coherent double-wishbone projection;
 - `tests/jure-neutral-geometry.test.mjs` — geometry/provenance/authority checks;
-- `tests/jure-neutral-graph-invariants.test.mjs` — unique identity, valid graph references, finite neutral data, unit quaternions and coincident relation endpoints;
+- `tests/jure-neutral-graph-invariants.test.mjs` — unique identity, valid graph references, finite neutral data, unit quaternions, coherent cross-body relations, coincident relation endpoints and revolute-axis compatibility;
 - `tools/write-jure-neutral-geometry-receipt.mjs` — deterministic diagnostic receipt exporter;
 - `npm run export:jure-neutral-geometry` — diagnostic export;
 - `npm run gate:neutral-rig-foundation` — repo-owned exact foundation gate.
@@ -48,7 +48,9 @@ Current neutral foundation classification is:
 
 Do not inherit the earlier `fd84fcf4...` full Windows PASS onto current `main`.
 
-The repo-owned gate now performs: exact `npm ci`, strict TypeScript, focused rig tests, deterministic double export, exact producer/factory Git blob/SHA-256 checks, wrong-origin falsifier, dirty tracked-source falsifier using an isolated temporary Git index, full `npm run check`, production bundle, neutral-seam leak scan and final repository cleanliness.
+Two owner-side gate attempts on 2026-08-16 against `81c7c14...` stopped before dependency installation/project validation: V1 exposed a Windows PowerShell stderr/error-stream harness defect; V2 then reached the repository gate and exposed direct `spawnSync("npm.cmd")` incompatibility on Windows. These are validation-tooling failures, not neutral-rig or product failures. The current gate uses an explicit Windows command-shell path for npm, but that fix itself remains execution-pending until the exact current commit completes the gate.
+
+The repo-owned gate performs: exact `npm ci`, strict TypeScript, focused neutral geometry/provenance + graph-invariant tests, deterministic double export, exact producer/factory Git blob/SHA-256 checks, wrong-origin falsifier, dirty tracked-source falsifier using an isolated temporary Git index, full `npm run check`, production bundle, neutral-seam leak scan and final repository cleanliness.
 
 A planned gate or its source code is not execution evidence. Upgrade the classification only after `npm run gate:neutral-rig-foundation` actually completes on the exact current commit and its output is retained.
 
@@ -89,6 +91,8 @@ Do not change product behavior, mobile layout, controls, physics, renderer, scan
 The parked product sequence remains preserved for later Owner-directed resumption:
 
 `P1.2 HUD composition -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait composition`
+
+Historical note: `docs/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md` and `docs/MOBILE_DRIVING_ROADMAP_READINESS_AUDIT_2026-08-16.md` record the pre-P1 investigation boundary and contain refs/findings that were current at that time. Preserve them as technical evidence, but do not treat their old alpha refs, readiness blockers or proposed closure steps as current project state. This file is the current-state authority.
 
 ## 8. Fresh-agent entry
 
