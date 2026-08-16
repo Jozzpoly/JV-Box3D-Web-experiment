@@ -17,7 +17,7 @@ const receiptPath = new URL(
   import.meta.url,
 );
 
-const snapshot = validatePinnedNativeFactoryReceiptText(
+const snapshot = await validatePinnedNativeFactoryReceiptText(
   await readFile(receiptPath, "utf8"),
 );
 const config = m6TopologyConfigFromReceipt(snapshot);

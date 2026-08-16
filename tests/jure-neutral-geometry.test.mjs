@@ -24,7 +24,7 @@ const factoryReceiptPath = new URL(
   "../public/receipts/jv_m6_factory_receipt.json",
   import.meta.url,
 );
-const snapshot = validatePinnedNativeFactoryReceiptText(
+const snapshot = await validatePinnedNativeFactoryReceiptText(
   await readFile(factoryReceiptPath, "utf8"),
 );
 const config = m6TopologyConfigFromReceipt(snapshot);
