@@ -2,186 +2,225 @@
 
 Updated: 2026-08-16
 Owner: Jozz
-Status: `P1 FOUNDATION OWNER-ACCEPTED / MAIN PROMOTION PREPARATION ACTIVE`
+Status: `MAIN PROMOTED / GROUNDING + HANDOFF PREPARATION ACTIVE / PRODUCT WORK FROZEN`
 
-## 1. Current authority and exact accepted evidence
+## 1. Current authority
+
+Private source/product authority is the live `main` of:
+
+`Jozzpoly/JV-Box3D-Web-experiment`
+
+The repository was explicitly promoted on 2026-08-16 from the old accepted baseline to the validated P1 line. Resolve `main` live before every write; do not copy a historical SHA from this document into a write command without rechecking GitHub.
+
+Exact promotion/evidence boundary:
 
 ```text
-accepted private authority:
-  main@f8eb0908f5934aed2d504f34ce483a02754039ec
+promoted main candidate:
+  2b12a2fa99d49ebe4d748ed851c194825129d38f
 
-single active work lane:
-  work/mobile-driving-controls
-
-owner-tested P1 product source:
+owner-tested P1 runtime source:
   c9b5990b226685abe35851fc5e9496323096ecf7
 
+private rollback tag for old main:
+  rollback/main-before-p1-foundation-2026-08-16
+  -> f8eb0908f5934aed2d504f34ce483a02754039ec
+
 current public Friends artifact:
+  Jozzpoly/JV-Box3D-Web-Public
   release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f
 
 public rollback immediately before P1 foundation:
-  checkpoint/pages-before-p1-foundation-2026-08-16@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf
+  7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf
 
 immutable public fallback:
   release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-`main` has not yet been promoted. `work/mobile-driving-controls` is the only ordinary work lane ahead of it.
+The promoted candidate is eight commits after the owner-tested `c9b5990b...` product source. Main-promotion preparation proved that those post-owner-test changes did not modify runtime-bearing product source; they were documentation/test-contract preparation. The later grounding/handoff work is documentation-only and does not create a new owner-tested runtime claim.
 
-The active lane is a linear descendant of `main`; the pre-promotion comparison on 2026-08-16 reported `ahead_by=124`, `behind_by=0` at product source `c9b5990b...`. Promotion must remain an ordinary fast-forward; do not rewrite `main`.
+## 2. Repository state and branch policy
 
-Git/current source, exact execution logs, built/public artifact evidence and direct owner observation outrank this summary.
+Product work is intentionally frozen during grounding and handoff preparation. There is no ordinary active product lane.
 
-## 2. Product status now
+The desired steady-state branch model is:
 
-The P1 foundation is a real public/browser/device checkpoint, not a source-only candidate.
+- `main` — accepted JV-Web authority;
+- at most one temporary ordinary work lane when a concrete JV-Web implementation begins;
+- `jure/<specific-purpose>` only for an explicitly isolated JURE -> JV-Web consumer experiment.
 
-Implemented and published from exact private source `c9b5990b...`:
+A branch name is navigation state, not history authority.
 
-- **P1.0a — deterministic CSS entry authority**: production CSS is entry-linked; dynamic JS no longer owns a later competing CSS preload;
-- **P1.0b — current mobile CSS ownership**: the superseded V2 presentation stylesheet was removed from the active source/cascade and the still-needed focus/action/debug safety rules were transferred to the current owner;
-- **P1.1a — short-viewport floor removal**: mobile `.scene-panel` can shrink below the historical desktop `420px` floor;
-- **R0.2 release purity**: the moving Friends root no longer carries `jv-live-performance.js` or another historical executable public overlay.
+A 2026-08-16 cleanup removed the obsolete branch forest after preserving divergent tips with archive/rollback tags. During an interrupted recovery immediately afterward, three historical refs were accidentally recreated:
 
-The public release was assembled with the approved JSPREV2 runtime scan recovered from exact Git object bytes. The preserved scan index remains exactly 7256 bytes with SHA-256 `64a2cdf8ef30f245544d90786528e867186f0740c37aac415a5b8b0c4d7b885e`.
+- `archive/pre-cleanup-2026-08-10`;
+- `candidate/jv-web-owner-vehicle-visual-r1`;
+- `candidate/jv-web-render-host-r1`.
 
-## 3. Validation truth
+They are **not active work and not authority**. Their exact divergent tips are already preserved by archive tags created before cleanup. Remove those three redundant branch refs before final handoff if they still exist. Do not restore the old branch forest.
 
-### 3.1 Canonical P1 foundation gate — PASS
+## 3. Accepted P1 product foundation
 
-Exact source: `c9b5990b226685abe35851fc5e9496323096ecf7`.
+The current product foundation is real public/browser/device evidence, not a source-only candidate.
 
-Canonical Windows evidence under Node `24.16.0` / npm `11.17.0` showed:
+Implemented and owner-tested from exact runtime source `c9b5990b...`:
+
+- deterministic CSS entry authority; dynamic JS no longer owns a later competing CSS preload;
+- superseded V2 mobile presentation stylesheet removed from the active cascade;
+- current mobile CSS is the component presentation owner;
+- short mobile viewport can shrink below the historical desktop `420px` floor;
+- moving Friends root no longer carries the old executable `jv-live-performance.js` overlay;
+- analog steering works as the current X-only `POSITION` reference;
+- analog pedals work as the current functional foundation;
+- Camera Manual Rig V1 and Fullscreen V1 remain accepted foundations;
+- Plac E2R, Offroad, owner vehicle and approved JSPREV2 remain available.
+
+The approved scan carried into the P1 release has exact `__jv_scan__/index.json` identity:
+
+```text
+bytes: 7256
+SHA-256: 64a2cdf8ef30f245544d90786528e867186f0740c37aac415a5b8b0c4d7b885e
+```
+
+## 4. Validation truth
+
+### 4.1 P1 focused source/build gate
+
+Exact product source: `c9b5990b226685abe35851fc5e9496323096ecf7`.
+
+Canonical Windows Node `24.16.0` / npm `11.17.0` evidence:
 
 - focused P1/input/lifecycle suite: **48/48 PASS**;
-- TypeScript `tsc --noEmit`: **PASS**;
-- normal Vite `build:bundle`: **PASS**;
-- clean source before/after install, focused gate and build: **PASS**;
-- every emitted CSS asset linked directly by the entry HTML: **PASS**;
-- late JS-owned CSS references: **NONE**;
-- linked cascade base -> current mobile: **PASS**;
-- mobile scene `min-height:0` override present in production CSS: **PASS**.
+- TypeScript: PASS;
+- normal Vite production bundle: PASS;
+- clean-tree checks: PASS;
+- all emitted CSS entry-linked: PASS;
+- late JS-owned CSS: NONE;
+- base -> current mobile cascade: PASS;
+- mobile `scene-panel` floor override present: PASS.
 
-### 3.2 Friends release gate — PASS
+### 4.2 Friends release gate
 
-The exact P1 source was rebuilt and validated before publication.
+Exact public release: `release/friends-r1@a325c279...`.
 
-`check:friends-r1` passed its portable/static/runtime-assets/vehicle/path/privacy/network/build-identity/Friends checks. The candidate contained 57 static files and the exact approved JSPREV2 receipt and owner vehicle. The project-path HTTP smoke passed.
-
-The staged public Git tree was byte-compared with the candidate before commit. Publication was an ordinary non-force fast-forward from `7766f711...` to public commit `a325c279...`.
-
-The bounded live Pages probe verified:
-
-- live build manifest source = exact `c9b5990b...`;
+- existing Friends candidate validator: PASS;
+- exact approved JSPREV2 recovered from Git object bytes;
+- final staged public Git tree byte-compared with candidate;
+- ordinary non-force fast-forward publication;
+- live manifest source = exact `c9b5990b...`;
 - live scan index = exact approved bytes;
-- old `jv-live-performance.js` = absent.
+- historical public runtime overlay = absent.
 
-### 3.3 Owner-device gate — ACCEPTED FOR P1 FOUNDATION
+### 4.3 Owner-device gate
 
-On 2026-08-16 the owner directly tested the current public build on desktop and Samsung Galaxy A53 / Chrome, including portrait, landscape, browser-chrome and fullscreen states.
+Owner directly tested the P1 Friends build on desktop and Samsung Galaxy A53 / Chrome in portrait, landscape, browser-chrome and fullscreen states.
 
-Owner verdict for this boundary:
+Accepted for this boundary:
 
 - steering works well;
-- pedals work well enough as the current foundation;
-- the worst previous presentation problems are resolved sufficiently to close this stage;
-- current pedal design and pedal interaction are explicitly **not final** and will be changed substantially in later polish;
-- the current result is satisfactory enough to begin preparation for promotion to `main`.
+- pedals work well as the current functional foundation;
+- the worst previous clipping/overlay/presentation failures are resolved sufficiently to close P1 foundation;
+- current state is suitable as the base for continued development.
 
-This acceptance does not claim final HUD composition, pedal semantics/design, steering visual design, rotational steering, rig geometry or handling.
+Explicitly not final:
 
-## 4. Full repository suite truth
+- pedal mapping/mechanics/visual design;
+- coordinated HUD composition;
+- steering visual language;
+- rotational steering;
+- authored rig geometry;
+- Ackermann/tie-rod authority;
+- final vehicle handling.
 
-Do not conflate the focused P1 gate with a complete repository-suite PASS.
+### 4.4 Final Main Promotion Gate
 
-The earlier canonical full `npm run check` at R0.1 executed the real full suite and produced **439 PASS / 3 FAIL**. Classification found:
+Exact candidate promoted to `main`: `2b12a2fa99d49ebe4d748ed851c194825129d38f`.
 
-1. one import-format regex contract that did not reflect product behavior — corrected;
-2. one longitudinal timeline expectation whose arithmetic was wrong — corrected;
-3. one temporary R1 bridge test that required left/right peak-speed residual `<0.05 m/s` even though the accepted R1 bridge explicitly permits residual asymmetry and does not claim final handling.
+Canonical gate evidence:
 
-The third assertion was removed during main-promotion preparation without changing vehicle/physics source. The test still protects the durable R1 invariants: topology, neutral straightness, maintained contacts, correct left/right turn direction and coherent steering geometry.
+- complete repository suite: **444 PASS / 0 FAIL**;
+- TypeScript/check/docs/third-party gates: PASS;
+- portable production build and validators: PASS;
+- exact build identity: PASS;
+- source clean through the gate: PASS;
+- runtime equivalence to owner-tested `c9b5990b...`: PASS;
+- production dependency audit (`npm audit --omit=dev`): **0 vulnerabilities**.
 
-**A fresh canonical full `npm run check` on the final promotion candidate is still required before `main` may be called suite-green.**
+The full npm audit reported one `nanoid` development/build-tooling advisory while the lockfile entry is dev-only. This did not justify changing the validated lockfile before promotion. Treat it as maintenance evidence, not a production-runtime vulnerability claim.
 
-Do not alter product physics merely to make provisional handling equations green.
+## 5. Protected product boundaries
 
-## 5. Protected product foundation
-
-Preserve through main preparation and later polish:
+Preserve unless a later evidence-backed task explicitly changes them:
 
 - Plac E2R, Offroad, owner vehicle and approved JSPREV2;
-- owner-validated A53 render-1x performance foundation;
+- accepted A53 / Chrome / render-1x performance foundation for the tested scan case;
 - Camera Manual Rig V1;
 - Fullscreen V1;
 - fixed-step/timestamped input architecture;
 - independent throttle/brake multitouch ownership;
 - D/R state and permissive D<->R-under-throttle behavior;
-- fail-closed capture/lifecycle release;
+- fail-closed pointer capture/lifecycle release;
 - generation-safe UI presentation / <=1 RAF coalescing;
-- current X-only steering POSITION control as the working reference;
-- current temporary steering/drive bridge as a product intermediate only;
-- JURE boundary for final authored rig/steering geometry and final handling.
+- current X-only steering `POSITION` behavior as working reference;
+- temporary steering/drive bridge as product intermediate only.
 
-Presentation cleanup is not justification for another input or physics rewrite.
+Do not reopen solved P1 CSS/release-overlay problems without new evidence.
 
-## 6. Main-promotion preparation boundary
+## 6. JURE coordination snapshot
 
-Feature/polish implementation is paused while this boundary is active.
+This section is a coordination snapshot only. JURE is a separate authority; resolve its refs/PRs live before acting.
 
-Before promoting `work/mobile-driving-controls` to `main`, require all of the following:
+At the 2026-08-16 grounding review:
 
-1. **Current-state documentation truth**
-   - `AGENTS.md`, `README.md`, `docs/PROJECT_STATE.md`, `AI_PROJECT_MEMORY.md`, `docs/ARCHITECTURE.md` and `docs/OWNER_CHECKPOINTS.md` must not instruct a future agent from superseded live refs or pending stages;
-   - historical dated audits may remain historical; do not rewrite them to pretend they were authored after later fixes.
+```text
+JURE repo:
+  Jozzpoly/Jozz-Universal-Rig-Editor
 
-2. **Runtime-equivalence audit**
-   - compare the final promotion candidate with owner-tested product source `c9b5990b...`;
-   - any post-`c9b5990b` changes must be classified;
-   - owner-device acceptance transfers only if product/runtime-bearing files are unchanged or separately revalidated.
+accepted JURE baseline:
+  main@d971b8bef5dd7c65b78884b6b449e1f5ab0e7425
 
-3. **Canonical source gate**
-   - fresh Windows clone;
-   - exact Node/npm toolchain;
-   - `npm ci`;
-   - exact full `npm run check` with preserved output;
-   - normal production `build:bundle` and clean-tree verification.
+clean foundation candidate / draft PR #3:
+  promotion/foundation-ready-squash-2026-08-16
+  @4db04eee4da0216f6bd3df6b6b0c82aa20afab5a
 
-4. **Dependency advisory triage**
-   - canonical installs currently report `1 high severity vulnerability` without naming it in the preserved short output;
-   - capture `npm audit --json` for classification;
-   - determine whether it affects production/runtime or only development/build tooling;
-   - do **not** run `npm audit fix` blindly and do not change dependencies merely to clear a badge.
+active JURE product work / draft PR #4:
+  work/real-jv-rig-elements
+  @7b385e8e591d13c3ccab06647390d9d28e06a1d4
+```
 
-5. **Git promotion safety**
-   - resolve live `main` and active-lane refs immediately before promotion;
-   - candidate must remain a descendant of current `main` and `main` must not have moved unexpectedly;
-   - create a concrete pre-promotion rollback/evidence ref for old `main` if promotion is approved;
-   - promotion is fast-forward only, no force, no merge-by-accident.
+Current cross-project evidence from PR #4 is important:
 
-If any requirement fails, stop and localize it. Do not broaden the scope into new product work.
+- JURE has a complete small lower-hinge authoring/Test path and a relation-scoped mechanical fragment direction;
+- a private JV consumer falsifier rejected implicit identity placement;
+- explicit rigid placement was validated only as an abstraction;
+- current procedural M6 wishbone geometry and exact/JURE wishbone geometry were proven **not rigid-congruent**;
+- therefore replacing one JURE hardpoint/relation while leaving an incompatible procedural wishbone is invalid;
+- no M6 runtime hardpoint substitution is accepted yet;
+- JURE has moved toward a coherent double-wishbone neutral shape: upper arm, lower arm, chassis reference, carrier reference, two inboard revolutes and two outboard spherical relations;
+- JURE should finish Owner-operability and freeze a multi-relation consumer fragment before JV-Web freezes a concrete import schema.
 
-## 7. Documentation classification
+JV-Web should help by preserving a clean consumer boundary, not by pre-implementing a guessed adapter. See `docs/contracts/JURE_CONSUMER_BOUNDARY.md`.
 
-Current truth documents:
+## 7. JURE -> JV-Web first integration rule
 
-- `AGENTS.md` — operating contract;
-- this file — moving project state;
-- `AI_PROJECT_MEMORY.md` — compact router;
-- `docs/ARCHITECTURE.md` — stable boundaries;
-- `docs/OWNER_CHECKPOINTS.md` — scoped owner-visible acceptance.
+When JURE has an explicit frozen consumer fragment:
 
-Durable owner-intent contract:
+1. resolve exact JURE source/checkpoint live;
+2. create one isolated JV-Web branch named `jure/<specific-purpose>`;
+3. pin the exact fragment/fixture identity;
+4. independently strict-parse and validate version/units/basis/provenance/placement;
+5. prove neutral geometry coherence without runtime substitution;
+6. reject implicit identity or agent-guessed transforms;
+7. only then experiment with replacing the coherent procedural runtime unit;
+8. keep consumer dynamics/Box3D identities in JV-Web;
+9. do not change public Friends in the first consumer slice.
 
-- `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`.
+No partial hybrid of JURE-authored neutral geometry and incompatible procedural M6 geometry.
 
-Dated readiness/technical audits are historical evidence. Their descriptions of pre-P1 CSS contamination, old public overlay or pending R0.1 are not current-state instructions after this checkpoint.
+## 8. Product roadmap after handoff
 
-## 8. Development after a successful main promotion
+Do not begin this roadmap during grounding/handoff preparation. It is the next product direction once a fresh agent has taken over and the Owner chooses the lane.
 
-Do not resume feature work until the main-promotion boundary is explicitly closed.
-
-The intended polish direction remains:
+Mobile polish direction:
 
 1. P1.2 coordinated mobile HUD zones;
 2. P1.3 action/navigation policy;
@@ -194,20 +233,26 @@ The intended polish direction remains:
 9. P6 joint wheel/pedal industrial design and feel;
 10. P7 intentional portrait composition.
 
-## 9. Stop conditions
+JURE consumer work is a separate lane and starts only when JURE has frozen the needed consumer fragment.
 
-Stop and investigate if:
+## 9. Grounding / handoff boundary
 
-- a document upgrades planned or focused validation into a full-suite claim;
-- owner-device acceptance is generalized to final physics/rig/handling;
-- a promotion candidate changes runtime after the accepted `c9b5990b...` surface without renewed evidence;
-- dependency maintenance starts changing the lockfile without a specific advisory/reachability reason;
-- `main` moves or promotion ceases to be a clean fast-forward;
-- public artifact state is mistaken for private source authority;
-- feature work resumes before the promotion boundary is closed.
+Feature implementation is frozen until the handoff is complete.
+
+A fresh JV-Web agent should:
+
+1. resolve live private `main` and public `release/friends-r1`;
+2. read `AGENTS.md`;
+3. read this file;
+4. read `docs/HANDOFF.md`;
+5. inspect `docs/ARCHITECTURE.md` only for the subsystem being touched;
+6. resolve JURE live only if the next task actually involves the JURE boundary;
+7. create a work branch only when implementation genuinely begins.
+
+Do **not** restart source recovery, branch archaeology, camera reconstruction, old V1/V2 mobile controls, performance micro-optimization of the accepted A53 case, or pre-P1 release repair.
 
 ## 10. Exact next action
 
-Finish the current-state documentation audit, then produce **one exact Main Promotion Gate** for the final active-lane candidate.
+Finish the docs-only grounding/handoff commit, remove the three accidentally restored historical branch refs if they still exist, independently re-resolve `main`/public/JURE refs, and hand the project to a fresh conversation.
 
-That gate must prove the complete `npm run check`, production build, runtime-equivalence boundary and dependency-advisory classification. If it is green and the owner approves promotion, only then fast-forward `main`.
+Do not resume product development in this conversation after that boundary.

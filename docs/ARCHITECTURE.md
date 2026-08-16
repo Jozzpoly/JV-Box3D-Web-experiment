@@ -80,17 +80,66 @@ The current browser vehicle uses pinned `box3d.js@0.0.2` and the existing M6 Web
 
 The coherent-front driving bridge is a useful product intermediate, not final rig/steering/handling architecture. Historical M5/M6 values, calibration outputs and convenience tests are evidence only for the claims they directly prove.
 
+Current procedural `m6WishboneHardpoints(...)`, source-registration repairs and rack/steering bridges are consumer runtime geometry. Their existence in production source does not make them authored neutral rig truth.
+
 Physics performance work must not silently reduce fixed-step rate, solver/substeps, collision semantics or vehicle complexity.
 
 ## 9. Owner vehicle visual boundary
 
 Owner source meshes/contracts generate the browser visual package deterministically. Visual calibration must not silently retune physics, and physics convenience must not redefine authored asset semantics.
 
-## 10. JURE authoring boundary
+Visual representation and authored mechanical truth are separate. A visual package may continue to render against provisional runtime mechanics until an explicit coherent authored rig replacement is validated.
 
-JURE is the intended owner-facing authoring system for rig elements, frames, mating points and later broader JV/VAW authoring needs.
+## 10. JURE authoring and consumer boundary
 
-JV Web should eventually consume explicit JURE-authored outputs through a small adapter/contract. It should not maintain a parallel rig editor or repair uncertain authored geometry with accumulating ad-hoc offsets.
+JURE is the intended owner-facing authoring system for rig elements, frames, provenance, neutral mechanical relations and representation intent. JV Web is a consumer/falsifier of those authored outputs.
+
+Authority split:
+
+```text
+JURE
+  authored neutral elements / frames / relations / representation intent
+  source provenance and deterministic consumer-facing authored data
+
+JV Web
+  strict consumer parsing and placement validation
+  Box3D/runtime identities and topology
+  masses / inertia / damping / motors / force laws / solver/runtime policy
+  controls, rendering integration, telemetry and release behavior
+```
+
+JURE must not absorb Box3D/native consumer dynamics merely to make JV-Web integration convenient. JV-Web must not invent authored hardpoints/frames merely to make current visuals fit.
+
+### 10.1 Coherent replacement rule
+
+Cross-project evidence has already falsified a dangerous shortcut: the current procedural M6 wishbone and the exact/JURE-authored wishbone are not rigid-congruent. Therefore a consumer experiment must not replace one JURE hardpoint or relation while silently retaining an incompatible procedural shape around it.
+
+A JURE-authored neutral mechanism replaces a **coherent mechanical unit**. The exact minimum unit is not hard-coded here while JURE is still proving its multi-relation export shape.
+
+### 10.2 Future consumer seam
+
+The first real JURE -> JV-Web integration is data-first and private:
+
+```text
+frozen/versioned JURE consumer fragment
+-> exact fixture/source identity
+-> strict independent parse
+-> version / units / basis / provenance checks
+-> explicit placement/transform validation
+-> neutral geometry coherence checks
+-> dry mapping into a consumer-neutral intermediate
+-> only then isolated Box3D/runtime substitution experiment
+```
+
+Do not assume identity placement. Do not guess unit conversion, handedness, basis or frame meaning from screenshots/names. Fail closed when data is ambiguous or incomplete.
+
+Create the first consumer experiment on `jure/<specific-purpose>`, and keep public Friends unchanged in that slice.
+
+### 10.3 Schema timing
+
+This repository intentionally does **not** freeze a concrete JURE JSON schema yet. JURE is currently proving Owner-operability of a coherent double-wishbone neutral shape and the eventual multi-relation consumer fragment. Freezing the parser before that boundary is stable would turn a current experiment into permanent coupling.
+
+The durable requirements live in `docs/contracts/JURE_CONSUMER_BOUNDARY.md`. The concrete executable schema should be added only when an exact JURE fragment is frozen and independently validated by the consumer.
 
 ## 11. Experience, camera and input boundary
 
@@ -118,7 +167,8 @@ Jozzpoly/JV-Box3D-Web-Public
 
 - owner-visible behavior and exact source/runtime evidence outrank historical naming;
 - source, authored data, visual representation, physics and release artifact are separate layers;
-- JURE authors rig truth; JV Web consumes it later;
+- JURE authors neutral rig truth; JV Web consumes it and owns runtime dynamics;
+- do not create partial hybrids between incompatible authored and procedural mechanism geometry;
 - tests protect real invariants, not provisional equations or incidental counts;
 - simple product bridges may exist, but stay labeled temporary;
 - measure before adding scaling architecture;

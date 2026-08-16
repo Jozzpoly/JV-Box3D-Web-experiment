@@ -12,7 +12,7 @@ Jozzpoly/JV-Box3D-Web-Public
   generated public artifacts / GitHub Pages
 ```
 
-Rig authoring belongs to the separate Jozz Universal Rig Editor (JURE). JV Web should consume authored rig/frame outputs later instead of growing a second temporary rig editor.
+Rig authoring belongs to the separate Jozz Universal Rig Editor (JURE). JV Web should consume explicit authored neutral rig/frame/relation outputs through the boundary in `docs/contracts/JURE_CONSUMER_BOUNDARY.md` instead of growing a second temporary rig editor.
 
 Moving SHAs, the active work lane, rollback refs and the current validation boundary are intentionally kept out of this README. Read `docs/PROJECT_STATE.md` for current state.
 
@@ -53,11 +53,18 @@ A fresh agent should read only:
 2. `docs/PROJECT_STATE.md`
 3. code/tests needed for the current task
 
+During an explicit takeover/handoff, insert:
+
+3. `docs/HANDOFF.md`
+
+before opening broad history or implementation files.
+
 Then use, only when relevant:
 
 - `docs/ARCHITECTURE.md` — stable system boundaries;
 - `docs/OWNER_CHECKPOINTS.md` — scoped owner acceptance;
-- `docs/contracts/` — executable/external format contracts;
+- `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — cross-project JURE/JV-Web ownership and first-consumer rules;
+- `docs/contracts/` — other executable/external format contracts;
 - `docs/baselines/` — reproducible historical baselines.
 
 `AI_PROJECT_MEMORY.md` is a compact router. Old branch names and Git history are not current instructions.
@@ -68,6 +75,6 @@ Prefer:
 
 `small need -> small vertical slice -> targeted check -> rendered/device proof when relevant -> owner-visible result -> continue`
 
-Keep one ordinary active work lane ahead of `main`. Do not create branches, documents or validation machinery per conversation. Preserve important states with checkpoints and let Git carry the history.
+Keep one ordinary active work lane ahead of `main` only when real implementation requires isolation. Do not create branches, documents or validation machinery per conversation. Preserve important historical states with Git history/tags and keep branch navigation small.
 
 Third-party notices are in `THIRD_PARTY_NOTICES.md`.

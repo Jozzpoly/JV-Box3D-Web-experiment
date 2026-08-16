@@ -1,126 +1,116 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-16
-Status: `P1 FOUNDATION OWNER-ACCEPTED / MAIN PROMOTION PREPARATION ACTIVE`
+Status: `MAIN PROMOTED / GROUNDED FOR HANDOFF / PRODUCT WORK FROZEN`
 
 This file is a compact router only. Git/current source, exact execution logs, built/public artifact evidence and direct owner observation outrank it.
 
 ## Authority
 
-- accepted private authority remains `main@f8eb0908f5934aed2d504f34ce483a02754039ec` until an explicit promotion occurs;
-- only ordinary active work lane: `work/mobile-driving-controls`;
-- exact owner-tested P1 product source: `c9b5990b226685abe35851fc5e9496323096ecf7`;
+- private source/product authority: live `main` of `Jozzpoly/JV-Box3D-Web-experiment`;
+- exact promoted evidence boundary: `2b12a2fa99d49ebe4d748ed851c194825129d38f`;
+- exact owner-tested P1 runtime source: `c9b5990b226685abe35851fc5e9496323096ecf7`;
 - current public Friends artifact: `release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
-- immediate public rollback: `checkpoint/pages-before-p1-foundation-2026-08-16@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf`;
-- immutable public fallback: `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`.
+- old private main is preserved by tag `rollback/main-before-p1-foundation-2026-08-16` -> `f8eb0908f5934aed2d504f34ce483a02754039ec`;
+- immutable public fallback remains `release/r0@c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`.
 
-The active lane is a linear descendant of current `main`. Do not treat it as accepted private authority until the Main Promotion Gate is green and promotion is explicitly approved.
+Resolve moving refs live before writes. Do not route work back to the former `work/mobile-driving-controls` lane; its product line was accepted and promoted.
 
-## Accepted P1 foundation
+## Validation / acceptance boundary
 
-Exact source `c9b5990b...` has canonical Windows P1 evidence:
+P1 owner-tested runtime `c9b5990b...`:
 
 - 48/48 focused P1/input/lifecycle tests PASS;
-- TypeScript typecheck PASS;
+- TypeScript PASS;
 - normal Vite production build PASS;
-- clean-tree checks PASS;
-- emitted CSS entry-linked with no late JS-owned CSS;
-- base -> current mobile cascade verified;
-- mobile scene historical 420px floor removed in the production CSS.
+- CSS entry authority / no late JS CSS PASS;
+- short mobile viewport floor fix present;
+- exact public Friends release validated and published;
+- owner-tested on desktop + Galaxy A53 / Chrome in portrait, landscape, browser and fullscreen.
 
-The exact source was then published as public `a325c279...` through the Friends release gate:
+Owner verdict: steering works well, pedals work as the current foundation, and the worst old presentation failures are resolved sufficiently to close P1. Pedal semantics/design, HUD composition, steering design, final rig and handling remain open.
 
-- existing `check:friends-r1` PASS;
-- exact approved JSPREV2 preserved from Git object bytes;
-- candidate/staged Git tree byte equivalence verified;
-- ordinary non-force fast-forward publication;
-- live manifest source = `c9b5990b...`;
-- live scan index exact;
-- historical `jv-live-performance.js` absent.
+Final promotion candidate `2b12a2fa...`:
 
-Owner directly tested the resulting Pages build on desktop and Galaxy A53 / Chrome across portrait, landscape, browser-chrome and fullscreen states. Steering and pedals work; the worst previous presentation failures are resolved well enough to close P1 foundation. Pedal design/interaction and later HUD/steering polish remain explicitly open.
+- complete repository suite **444 PASS / 0 FAIL**;
+- docs/third-party checks PASS;
+- portable production build + validators PASS;
+- exact build identity PASS;
+- source clean;
+- runtime equivalence to `c9b5990b...` PASS;
+- production dependency audit: 0 vulnerabilities.
 
-## Current task: prepare promotion to main
+The one full-audit `nanoid` entry was dev/build-tooling-only and did not justify changing the validated lockfile.
 
-Feature/polish work is paused.
+## Current task
 
-Read first:
+Ground and hand off the promoted `main`.
+
+No product feature implementation in this boundary. Do not resume P1.2/P2, camera work, performance work, old release repair or JURE runtime substitution here.
+
+Read for takeover:
 
 1. `AGENTS.md`;
 2. `docs/PROJECT_STATE.md`;
-3. source/tests only as needed for the promotion audit.
+3. `docs/HANDOFF.md`;
+4. source/tests only for the chosen next task.
 
-Do not restart recovery, camera work, P1 layout implementation, pedal redesign or rotational steering while the promotion boundary is active.
+## Branch policy
 
-### Remaining evidence gate
+Steady state: `main` plus at most one concrete temporary work lane.
 
-A historical canonical full `npm run check` produced 439 PASS / 3 FAIL. Two failures were proven stale/incorrect test expectations and corrected. The remaining R1 bridge failure required near-identical left/right peak speed even though the owner-accepted temporary bridge explicitly permits residual asymmetry and does not claim final handling; that overconstraint was removed in promotion preparation without changing vehicle physics.
+JURE cross-repo experiments in this repo use `jure/<specific-purpose>` only and must be named in `docs/PROJECT_STATE.md` while active.
 
-**Do not yet claim the current complete suite is green.** One fresh canonical full `npm run check` on the final promotion candidate is required.
+A branch cleanup retired the old ref forest after preserving divergent tips as archive/rollback tags. Three historical refs were accidentally recreated during an interrupted recovery immediately afterward. They are non-authoritative and should be removed before final handoff if still live:
 
-The final promotion gate must also:
+- `archive/pre-cleanup-2026-08-10`;
+- `candidate/jv-web-owner-vehicle-visual-r1`;
+- `candidate/jv-web-render-host-r1`.
 
-- prove all post-`c9b5990b...` changes are non-runtime/test-doc preparation unless separately revalidated;
-- run normal production `build:bundle`;
-- preserve clean-tree evidence;
-- capture `npm audit --json` and classify the currently reported `1 high severity vulnerability` instead of blindly fixing it;
-- verify the candidate remains a clean descendant of live `main`.
+Do not restore the old branch forest.
 
-If all are satisfactory and the owner approves, promotion is fast-forward only. Create a concrete rollback/evidence ref for pre-promotion `main`; no force push and no accidental merge commit.
+## JURE coordination
+
+JURE is separate authority for authored rig truth. Resolve JURE live before any cross-project work.
+
+Grounding snapshot:
+
+- JURE accepted baseline: `main@d971b8bef5dd7c65b78884b6b449e1f5ab0e7425`;
+- clean foundation candidate / draft PR #3: `4db04eee4da0216f6bd3df6b6b0c82aa20afab5a`;
+- active product line / draft PR #4: `work/real-jv-rig-elements@7b385e8e591d13c3ccab06647390d9d28e06a1d4`.
+
+Critical current falsifier: procedural JV-Web M6 wishbone and exact/JURE-authored wishbone are not rigid-congruent. Never create a hybrid by replacing one authored hardpoint/relation inside an incompatible procedural shape.
+
+Do not freeze a concrete JV-Web JURE import schema yet. JURE should first finish Owner-operability of the coherent four-relation wishbone and freeze the multi-relation consumer fragment.
+
+Future first consumer sequence:
+
+`exact versioned JURE fragment -> strict independent parse -> units/basis/provenance/placement validation -> coherent neutral geometry proof -> private jure/* runtime experiment -> later public decision`
+
+No coordinate guessing, implicit identity transform, consumer dynamics in JURE, or public Friends change in the first consumer slice.
+
+See `docs/contracts/JURE_CONSUMER_BOUNDARY.md`.
 
 ## Protected boundaries
 
 Preserve:
 
-- Plac E2R, Offroad, owner vehicle and approved JSPREV2;
+- Plac E2R, Offroad, owner vehicle, approved JSPREV2;
 - accepted A53 render-1x performance foundation;
 - Camera Manual Rig V1 and Fullscreen V1;
 - timestamped/fixed-step input architecture;
 - independent throttle/brake ownership and fail-closed lifecycle;
 - D/R-under-throttle semantics;
 - generation-safe UI presentation;
-- current X-only steering POSITION control as working reference;
+- X-only steering `POSITION` as working reference;
 - temporary steering/drive bridge as product intermediate only;
-- JURE boundary for final authored rig/steering geometry and final handling.
+- JURE as authored rig authority, JV-Web as consumer/runtime authority.
 
-## Validation classes
+## After takeover
 
-Keep separate:
+Owner chooses one next lane:
 
-1. source/unit/type checks;
-2. build/artifact/static HTTP checks;
-3. browser execution/render proof;
-4. owner-device/feel judgement.
+- continue mobile polish from P1.2;
+- or, if JURE has frozen the required consumer fragment, start one isolated `jure/<purpose>` consumer validation.
 
-A focused suite is not a full-suite pass. A static Friends validator is not browser execution. Owner acceptance of current steering/pedals is not acceptance of final pedal design, final steering physics or final rig truth.
-
-## Current documentation interpretation
-
-Current truth:
-
-- `AGENTS.md`;
-- `docs/PROJECT_STATE.md`;
-- this router;
-- `docs/ARCHITECTURE.md`;
-- `docs/OWNER_CHECKPOINTS.md`.
-
-Owner-intent authority:
-
-- `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`.
-
-The dated mobile technical/readiness audits remain historical evidence. Their pre-P1 statements about V2 CSS, clipping cause, old public runtime overlay or pending R0.1 must not be treated as current state after the accepted P1 checkpoint.
-
-## Development after main promotion
-
-Resume only after the promotion boundary closes:
-
-1. P1.2 coordinated HUD zones;
-2. P1.3 action/navigation policy;
-3. P1.4 driving-zone sizing/spacing;
-4. P1.5 portrait sanity;
-5. P2 absolute-position pedals;
-6. P3 mechanical pedal depression;
-7. P4 steering visual cleanup;
-8. P5 isolated rotational-steering A/B experiment;
-9. P6 joint wheel/pedal design + feel;
-10. P7 intentional portrait composition.
+Do not run both as one slice.
