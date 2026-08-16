@@ -2,7 +2,7 @@
 
 Updated: 2026-08-16
 Owner: Jozz
-Status: `FOUNDATION CLEANUP / PRODUCT IMPLEMENTATION PAUSED`
+Status: `FOUNDATION CLEANUP / PRE-IMPLEMENTATION TARGET LOCKED`
 
 ## 1. Authority during cleanup
 
@@ -37,34 +37,43 @@ See `docs/OWNER_CHECKPOINTS.md` only when a scoped acceptance claim needs the du
 
 ## 3. Mobile driving target recovered from history
 
-The next mobile-control implementation target is now explicit in:
+The next mobile-control implementation target is explicit in:
 
 `docs/contracts/MOBILE_DRIVING_CONTROLS_TARGET.md`
 
-Summary:
+Core target:
 
 ```text
 STEERING
 - preserve V2 one-thumb X-only POSITION [-1,+1]
 - release/lifecycle loss -> neutral
 - keep the current ~35-degree product bridge
-- replace generic joystick/rack presentation with a shallow panoramic steering-wheel arc
-- rotate/animate internal visual feedback without changing the fixed input hitbox
+- replace generic joystick/rack presentation with a shallow panoramic projected steering wheel
+- rotate/animate internal mechanical feedback without changing frozen input geometry
 
 PEDALS
 - independent analog THROTTLE and BRAKE
 - pointer-down position = local 0
 - relative upward travel -> 0..1
 - freeze origin/travel geometry at pointer-down
-- active pedal may grow/lift while its neighbor shrinks/dims, presentation only
+- stable outer hitboxes + animated inner pedal mechanisms
 - independent pointer ownership and multitouch
 
 D/R
 - compact state selector
 - allow D<->R while throttle is held and at any speed for now
 - no Neutral/release/speed interlocks unless real driving proves a need
-- UI and command layer must share one authoritative direction state
+- one input-layer direction state; UI renders it rather than owning another copy
 ```
+
+Owner decisions locked during preparation:
+
+- preserve simultaneous analog throttle + brake input;
+- current M6 controller is still brake-priority when both values are non-zero; physical combined-pedal consequences are a later explicit physics/handling question rather than a hidden change in this control stage;
+- default hand layout is left-thumb steering / right-thumb longitudinal controls;
+- landscape is the first owner-polished driving surface; portrait follows as a separate responsive substage using identical semantics;
+- D/R remains permissive under throttle and at any speed;
+- supplied Concept 4 and V1/V2 screenshots are design evidence/donors, not pixel-perfect specifications.
 
 This is a product target, not a claim that any previous V3 implementation is accepted.
 
@@ -108,6 +117,16 @@ Private GitHub Actions were attempted during branch cleanup and GitHub refused t
 
 Do not add more private cleanup/validation workflows as a workaround. This is an infrastructure constraint, not a product failure.
 
+The owner-provided `work/foundation-cleanup` ZIP was independently reconstructed into Git tree `885bb4885d1384af3de2b0a189965303225ff49a`, exactly matching the branch tree before the preparation-document updates. Supplemental local evidence on that exact source:
+
+- documentation link audit: PASS;
+- 157 `.mjs` tool/test files: Node syntax PASS;
+- dependency-free steering/longitudinal subset compiled with noncanonical TypeScript 5.8.3: PASS;
+- focused steering + longitudinal baseline tests: 18/18 PASS;
+- third-party/canonical gate remains unavailable locally because installed dependencies and the pinned Node/npm/TS/Vite environment are absent.
+
+Supplemental Node22/TS5.8 evidence is not canonical release proof.
+
 Before `main` is advanced through this foundation transaction, still require the exact repository toolchain boundary:
 
 - Node 24.16.0;
@@ -124,20 +143,21 @@ Before `main` is advanced through this foundation transaction, still require the
 
 Cleanup stage:
 
-1. normalize current docs around the clean base and recovered mobile-control target;
-2. audit branch ancestry and retain only the minimum useful private refs;
-3. validate the clean foundation without reopening product features;
-4. fast-forward `main` only after the foundation gate is satisfied;
-5. retire the cleanup lane and stale historical branch names.
+1. keep current target/docs normalized around the clean base;
+2. close the remaining canonical foundation gate when an exact toolchain environment is available;
+3. fast-forward/promote the clean foundation to `main` only after that gate;
+4. retire the cleanup lane and stale historical branch names.
 
-Then resume product work from `main` with one ordinary work lane and small vertical slices:
+Then resume product work from `main` with one ordinary work lane and the staged sequence defined in `MOBILE_DRIVING_CONTROLS_TARGET.md`:
 
-1. steering presentation over the preserved V2 input semantics;
-2. analog pedal input + deterministic longitudinal integration;
-3. pedal presentation and multitouch;
-4. D/R state selector with permissive under-throttle switching;
-5. owner mobile driving/feel gate;
-6. sensitivity/haptics/polish only from real feedback;
-7. later additive dynamic camera assists over the accepted manual camera foundation.
+1. deterministic analog input core with V2 steering still intact;
+2. landscape panoramic steering instrument over unchanged X-only POSITION semantics;
+3. landscape mechanical pedal instrument + D/R;
+4. owner landscape driving/feel gate;
+5. separate portrait adaptation;
+6. normal source build / rendered QA / Friends candidate;
+7. sensitivity, haptics or deeper physics consequences only from real feedback.
+
+Do not pause for owner intervention between internal slices unless a real device/feel judgement or inaccessible platform action is genuinely required.
 
 Do not mix repository recovery, delivery-harness invention and control-design iteration into one slice again.
