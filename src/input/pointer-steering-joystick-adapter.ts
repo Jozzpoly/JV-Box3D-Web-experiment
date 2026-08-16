@@ -26,6 +26,11 @@ interface InstalledListener {
   readonly listener: EventListener;
 }
 
+interface ActiveSteeringGeometry {
+  readonly left: number;
+  readonly width: number;
+}
+
 const DEFAULT_DEAD_ZONE = 0.08;
 
 function pointerButtonIsSupported(event: PointerEvent): boolean {
@@ -79,6 +84,7 @@ export class PointerSteeringJoystickAdapter {
     | undefined;
   readonly #listeners: InstalledListener[] = [];
   #activePointerId: number | null = null;
+  #activeGeometry: ActiveSteeringGeometry | null = null;
   #hasActivated = false;
   #disposed = false;
 
@@ -160,6 +166,7 @@ export class PointerSteeringJoystickAdapter {
       );
     }
     this.#activePointerId = null;
+    this.#activeGeometry = null;
     this.#onStateChange?.(0, false);
     for (const { target, type, listener } of this.#listeners.reverse()) {
       target.removeEventListener(type, listener);
@@ -181,7 +188,11 @@ export class PointerSteeringJoystickAdapter {
       return;
     }
 
-    const value = this.#positionFor(event.clientX);
+    const geometry = this.#captureGeometry();
+    if (geometry === null) {
+      return;
+    }
+    const value = this.#positionFor(event.clientX, geometry);
     if (value === null) {
       return;
     }
@@ -195,6 +206,7 @@ export class PointerSteeringJoystickAdapter {
     }
 
     this.#activePointerId = event.pointerId;
+    this.#activeGeometry = geometry;
     this.#hasActivated = true;
     this.#timeline.enqueuePosition(
       value,
@@ -205,10 +217,14 @@ export class PointerSteeringJoystickAdapter {
   }
 
   #handlePointerMove(event: PointerEvent): void {
-    if (this.#disposed || event.pointerId !== this.#activePointerId) {
+    if (
+      this.#disposed ||
+      event.pointerId !== this.#activePointerId ||
+      this.#activeGeometry === null
+    ) {
       return;
     }
-    const value = this.#positionFor(event.clientX);
+    const value = this.#positionFor(event.clientX, this.#activeGeometry);
     if (value === null) {
       return;
     }
@@ -229,6 +245,7 @@ export class PointerSteeringJoystickAdapter {
     event.preventDefault();
     event.stopPropagation();
     this.#activePointerId = null;
+    this.#activeGeometry = null;
     this.#timeline.enqueuePosition(0, this.#safeTimestamp(), this.#sourceId);
     if (releaseCapture) {
       this.#releaseCapture(event.pointerId);
@@ -242,6 +259,7 @@ export class PointerSteeringJoystickAdapter {
     }
     this.#releaseCapture();
     this.#activePointerId = null;
+    this.#activeGeometry = null;
     this.#timeline.enqueuePosition(0, this.#safeTimestamp(), this.#sourceId);
     this.#onStateChange?.(0, false);
   }
@@ -259,13 +277,31 @@ export class PointerSteeringJoystickAdapter {
     }
   }
 
-  #positionFor(clientX: number): number | null {
+  #captureGeometry(): ActiveSteeringGeometry | null {
     try {
       const rect = this.#target.getBoundingClientRect();
+      if (
+        !Number.isFinite(rect.left) ||
+        !Number.isFinite(rect.width) ||
+        rect.width <= 0
+      ) {
+        return null;
+      }
+      return { left: rect.left, width: rect.width };
+    } catch {
+      return null;
+    }
+  }
+
+  #positionFor(
+    clientX: number,
+    geometry: ActiveSteeringGeometry,
+  ): number | null {
+    try {
       return resolvePointerSteeringPosition(
         clientX,
-        rect.left,
-        rect.width,
+        geometry.left,
+        geometry.width,
         this.#deadZone,
       );
     } catch {
