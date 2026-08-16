@@ -1,83 +1,93 @@
-# JV Web — mobile driving owner-device alpha / polish grounding
+# JV Web — mobile driving polish grounding
 
-Status: `OWNER-DEVICE ALPHA LIVE / POLISH TARGET / NO IMPLEMENTATION YET`
+Status: `P1 FOUNDATION OWNER-ACCEPTED / P2+ POLISH TARGET`
 Owner: Jozz
 Grounded: 2026-08-16
+Updated after P1 owner-device acceptance: 2026-08-16
 
-This document captures the first real owner-device verdict on the new mobile driving controls after canonical build and publication. It is the current authority for the next polishing stage where it explicitly supersedes `MOBILE_DRIVING_CONTROLS_TARGET.md`.
+This document preserves the owner-device intent for the mobile driving polishing campaign. It supersedes `MOBILE_DRIVING_CONTROLS_TARGET.md` where post-device feedback changed the target.
+
+P1 foundation work has now been implemented, published and owner-accepted. Sections describing future pedal, steering and composition behavior remain target authority; solved pre-P1 defects are retained only as context and must not be reimplemented as if still current.
 
 It does **not** authorize final rig geometry, steering physics, handling or JURE-owned mechanical authoring.
 
-## 1. Exact evidence boundary
+## 1. Current accepted evidence boundary
 
-Private source used by the live artifact:
+Owner-tested P1 private product source:
 
 ```text
-work/mobile-driving-controls source: d96e393c466aa41c6436c12bcb1b4ab1861828b0
-runtime implementation checkpoint: f56be8c85ea2b26533eee89c050b1b55cf21ec4b
+work/mobile-driving-controls product source: c9b5990b226685abe35851fc5e9496323096ecf7
 ```
 
-Public Friends owner-device alpha:
+Current public Friends artifact:
 
 ```text
-release/friends-r1: 7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf
+release/friends-r1: a325c279cfe63a0607dba33c3c635a1716e09f8f
 Pages: https://jozzpoly.github.io/JV-Box3D-Web-Public/
-rollback checkpoint: checkpoint/pages-before-mobile-driving-2026-08-16@fa00f4c3a3c19f1319302bc1728f9cf6490ce462
+rollback immediately before P1: checkpoint/pages-before-p1-foundation-2026-08-16@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf
 ```
 
-The public build manifest records exact clean source `d96e393c...`. GitHub Pages reports the site built from `release/friends-r1`.
+The public build manifest records exact clean private product source `c9b5990b...`. The release preserved the approved JSPREV2 scan from exact public Git object bytes and removed the historical public executable runtime overlay.
 
-Owner directly tested the build on desktop browser and Samsung Galaxy A53 / Chrome, including portrait, landscape and fullscreen states, and supplied screenshots from the live public build.
+Owner directly tested the resulting build on desktop and Samsung Galaxy A53 / Chrome, including portrait, landscape, browser-chrome and fullscreen states, and supplied screenshots from the live public build.
 
-## 2. What the alpha proves
+## 2. What is now protected
 
 Protected positive evidence:
 
-- the new Friends artifact boots and runs on desktop and phone;
+- the Friends artifact boots and runs on desktop and phone;
 - the approved JSPREV2 scan and owner vehicle remain usable;
 - analog throttle and brake are connected to real driving and work on the phone;
-- the analog pedals are materially better for driving than the previous binary forward/reverse buttons;
-- independent pedal interaction is valuable enough to keep and refine rather than revert;
-- the projected steering-wheel concept is strongly promising: the owner is broadly satisfied with the direction and instinctively treats it as a real steering wheel;
-- fullscreen still works as a capability;
-- the source/input architecture survived real publication and device use, so this stage is **polish and interaction refinement**, not another recovery/rewrite campaign.
+- independent pedal interaction remains valuable and should be refined rather than reverted;
+- current X-only analog steering works well as the reference interaction;
+- fullscreen remains a working capability;
+- the source/input architecture survived real publication and repeated device use;
+- P1 removed the known competing V2/current/base CSS ownership path and the historical public runtime overlay;
+- the mobile scene can shrink below the old 420px floor;
+- the owner judged the worst previous UI/presentation problems resolved sufficiently to close P1 foundation and begin main-promotion preparation.
 
-This does not accept the present HUD composition, present pedal mapping, present pedal visual design, present steering shell, final steering gesture or final portrait/landscape layouts.
+This acceptance does **not** make the current HUD composition, pedal mapping, pedal visual design, steering visual design, final steering gesture or final portrait/landscape layouts final.
 
-## 3. First major regression: driving HUD composition
+## 3. P1 result and remaining composition target
 
-Owner observation: the new controls created UI clutter and regressions. In rotated/short landscape, part of the useful viewport/interface disappears or is clipped, and driving controls compete with useful Camera/Reset/Debug actions.
+### Closed P1 foundation defects
 
-The supplied screenshots support the classification: multiple independently positioned overlays occupy the same lower/right screen region; in short landscape the right driving cluster and action rail compete for limited vertical space and lower controls can leave the useful viewport.
+The pre-P1 alpha exposed two structural problems:
 
-Treat this as a **composition problem**, not a request for more local `top/right/bottom` patches.
+- historical CSS layers could override the current mobile control presentation after production bundling;
+- a `100svh` scene combined with a desktop `min-height:420px` floor and hidden overflow could clip short landscape/browser-chrome states.
 
-Required direction:
+Those specific foundation problems were repaired and owner-tested. Do not recreate V1/V2 presentation ownership or add another release-layer executable overlay.
 
-- redesign the mobile driving HUD as a coordinated set of reserved zones;
+### Remaining composition polish
+
+The current public state is usable and accepted as the foundation, but the HUD is not final. Steering, pedals, actions, status/readouts and central world visibility still need intentional long-term composition rather than accumulating unrelated offsets.
+
+Required direction for the next composition work:
+
 - preserve a readable central world/vehicle region;
-- steering owns the lower-left driving zone;
+- steering owns a lower-left driving zone;
 - longitudinal controls own a lower-right driving zone;
-- Camera/Reset/Debug/fullscreen/location actions must not share sustained pedal drag space;
+- Camera/Reset/Debug/fullscreen/location actions must remain reachable without sustained pedal-drag competition;
 - browser-chrome short landscape and true fullscreen are distinct viewport classes and both must remain usable;
 - portrait is a distinct layout, not a uniformly scaled landscape layout;
 - responsive layout may move inactive controls, but must never remap an already-owned continuous gesture under a stationary finger;
-- use `dvh/svh`, safe-area insets and explicit compact/short-landscape composition rather than relying on one fixed overlay arrangement.
+- use safe-area/modern viewport geometry and explicit responsive composition rather than returning to one fixed overlay arrangement.
 
-This layout slice should be isolated from pedal/steering semantic changes whenever possible so regressions can be localized.
+Keep layout slices isolated from pedal/steering semantic changes whenever possible so regressions can be localized.
 
-## 4. Pedal input semantics — owner target changed after device use
+## 4. Pedal input semantics — next owner target
 
-The pre-alpha contract defined relative travel:
+The current accepted P1 baseline still uses relative travel:
 
 ```text
 pointer-down anywhere = local 0%
 then upward delta from that origin = 0..100%
 ```
 
-That rule is now **superseded for the next experiment** by direct owner-device feedback.
+That working baseline is intentionally **not** the final target.
 
-Desired model:
+Desired next model:
 
 ```text
 stable pedal acquisition geometry
@@ -104,9 +114,9 @@ Implications for the next input slice:
 
 Do not change M6 physics while implementing this mapping. This is an input-surface change.
 
-## 5. Pedal mechanical feedback — progress visualization rejected
+## 5. Pedal mechanical feedback — progress visualization rejected as final design
 
-The current rising/falling fill/line reads like a progress meter. The owner explicitly wants the pedal itself to behave visually like a physical mechanism.
+The current fill/line presentation remains a functional alpha mechanism, not final visual authority. The owner wants the pedal itself to behave visually like a physical mechanism.
 
 Target metaphor:
 
@@ -125,7 +135,7 @@ Preferred visual variables driven from the same `0..1` command:
 - restrained contact/shadow/highlight changes that reinforce depth;
 - optional active-touch emphasis, secondary to the mechanical pose itself.
 
-Reject as primary production feedback:
+Reject as primary final feedback:
 
 - vertical progress bars/fills;
 - numeric percentages outside Debug;
@@ -153,31 +163,31 @@ Strongly preserve:
 - the idea of a real steering wheel viewed at a steep angle;
 - command-linked visible wheel rotation;
 - asymmetric visual features that make rotation legible;
-- lower-left thumb placement as a promising driving zone.
+- lower-left placement as a promising driving zone;
+- the current X-only interaction as the working reference until a better interaction is owner-proven.
 
-Reject/change:
+Still open for visual improvement:
 
-- the large blue closed background/shell around the wheel;
-- any presentation that makes the control read again as a giant circular joystick;
-- spokes that visually stop before meeting the rim;
-- coarse placeholder geometry that weakens the physical-wheel illusion.
+- any remaining background/acquisition presentation that distracts from the physical-wheel metaphor;
+- spokes/rim/hub geometry and mechanical continuity;
+- coarse placeholder geometry/material cues.
 
 Next steering-visual target:
 
-- transparent/invisible acquisition zone;
-- visible steering mechanism only;
+- transparent/invisible acquisition zone where ergonomically useful;
+- visible steering mechanism as the visual authority;
 - cleaner rim geometry;
-- spokes/linkages that actually meet the rim/hub correctly;
+- spokes/linkages that meet the rim/hub correctly;
 - improved perspective/foreshortening and material language;
 - preserve lightweight transform-based rendering.
 
-The acquisition zone may remain larger than the visible wheel for ergonomics, but it must not be rendered as a large distracting background plate.
+The acquisition zone may remain larger than the visible wheel for ergonomics, but it should not become a distracting joystick-like plate.
 
-## 8. Steering gesture — new owner hypothesis
+## 8. Steering gesture — owner hypothesis, not accepted replacement
 
-The current live alpha still uses the protected V2 X-only `POSITION [-1,+1]` mapping. It works, but the owner reports an important natural reaction: because the visual now convincingly looks like a steering wheel, he instinctively tries to **grab and rotate it around its centre** rather than only slide horizontally.
+The accepted P1 baseline uses the protected X-only `POSITION [-1,+1]` mapping and the owner reports that it works well.
 
-This is not yet accepted replacement behavior. It becomes a dedicated experimental hypothesis.
+A separate usability hypothesis remains valuable: because the control looks like a steering wheel, direct grab-and-rotate manipulation may eventually feel more natural than horizontal-only input.
 
 Preferred experiment: direct rotational manipulation.
 
@@ -206,29 +216,25 @@ Critical experiment discipline:
 
 A hybrid/fallback mapping may be considered only if direct rotation shows a concrete usability problem. Do not design one speculatively first.
 
-## 9. Work decomposition
+## 9. Work decomposition after main-promotion preparation
 
-Do not solve the whole surface in one patch. Current preferred slices:
+Do not resume these slices until the separate Main Promotion Preparation boundary is closed.
 
-### P0 — grounding closure (this stage)
+### P1.2 — coordinated mobile HUD zones
 
-- record live source/public identity;
-- record owner-device observations;
-- supersede only the rules actually changed by feedback;
-- no product implementation.
+Refine the accepted P1 foundation into an explicit composition for navigation/info, actions, steering, longitudinal controls, central world and Debug overlay.
 
-### P1 — responsive driving-HUD composition
+### P1.3 — action/navigation policy
 
-Goal: remove clipping/overlap and recover useful viewport in short landscape/fullscreen without changing command semantics.
+Keep Camera/Reset/Debug/fullscreen/location reachable without pedal-drag competition.
 
-Judge:
+### P1.4 — driving-zone sizing/spacing
 
-- browser-chrome landscape;
-- reverse phone rotation / alternate landscape orientation;
-- fullscreen landscape;
-- portrait sanity;
-- Camera/Reset/Debug/fullscreen accessibility;
-- central vehicle/world visibility.
+Tune cluster placement only after the composition policy is explicit.
+
+### P1.5 — portrait sanity
+
+Keep portrait useful while mechanics are still evolving. Final portrait-specific design remains P7.
 
 ### P2 — absolute-position pedal input
 
@@ -236,11 +242,11 @@ Replace only relative-origin pedal mapping with absolute Y mapping in frozen geo
 
 ### P3 — mechanical pedal motion
 
-Remove progress-fill as primary feedback and make pedal value visibly depress the pedal mechanism. No pedal styling overhaul required yet.
+Remove progress-fill as primary final feedback and make pedal value visibly depress the pedal mechanism. No broad styling rewrite is required in the same slice.
 
 ### P4 — steering visual cleanup
 
-Remove blue shell, leave an ergonomic invisible hit region, repair rim/spokes/hub geometry and improve projected-wheel presentation while keeping X-only behavior for this slice.
+Refine acquisition presentation, rim/spokes/hub geometry and projected-wheel presentation while keeping X-only behavior for this slice.
 
 ### P5 — rotational steering gesture experiment
 
@@ -274,7 +280,7 @@ scan/frame-rate problem                  -> performance/render stage only with n
 
 A failure in one layer is never justification to discard the complete analog control stack.
 
-## 11. Owner gate philosophy for the next stages
+## 11. Owner gate philosophy for later stages
 
 Tests are support tooling. The primary acceptance loop is real driving on the actual public/browser surface.
 
@@ -289,4 +295,4 @@ small source change
 -> keep or locally revise
 ```
 
-The next owner interventions should evaluate the product itself, not release-script mechanics.
+Owner interventions should evaluate the product itself, not release-script mechanics.
