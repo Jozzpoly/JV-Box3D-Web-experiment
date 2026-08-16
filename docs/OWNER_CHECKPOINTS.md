@@ -236,6 +236,43 @@ Not accepted by this checkpoint:
 
 Protected meaning: X-only analog `POSITION` touch steering, the V2 mobile control placement, usable steering range and recoverable mobile Debug are now a stable product foundation. Future work should iterate the driving feel and control language without regressing these capabilities. The next steering experiments may replace the V2 visual/control metaphor if they demonstrably improve driving.
 
+## P1-FOUNDATION-01 — mobile driving presentation foundation
+
+Date: 2026-08-16
+Classification: `OWNER ACCEPTED — PRODUCT/PRESENTATION FOUNDATION, DESIGN OPEN`
+
+Exact evidence boundary:
+
+```text
+private owner-tested source: c9b5990b226685abe35851fc5e9496323096ecf7
+public Friends release: release/friends-r1@a325c279cfe63a0607dba33c3c635a1716e09f8f
+public rollback immediately before P1: checkpoint/pages-before-p1-foundation-2026-08-16@7766f711390a33ea8f24a3ddba6eeed4e2eeb4bf
+canonical P1 focused gate: 48/48 PASS + typecheck + production Vite build
+Friends release validator: PASS
+live release probe: exact source/scan identity; old public runtime overlay absent
+```
+
+Owner directly tested the resulting public build on desktop and Samsung Galaxy A53 / Chrome. Supplied evidence covers desktop, portrait phone, portrait fullscreen, landscape browser and landscape fullscreen states.
+
+Owner verdict for this boundary:
+
+- the current state is satisfactory enough to close this stage;
+- steering works well;
+- pedals work well as the current functional foundation;
+- the worst previous UI/presentation problems are resolved sufficiently to proceed;
+- pedal design and pedal interaction are still intentionally open and expected to change substantially during later polish.
+
+Not accepted by this checkpoint:
+
+- final pedal mapping, pedal mechanics or visual design;
+- final coordinated HUD composition and spacing;
+- final steering visual language;
+- rotational steering as a replacement for the working X-only reference;
+- final rig geometry, Ackermann/tie-rod authority or vehicle handling;
+- promotion to `main` before the separate Main Promotion Gate is completed.
+
+Protected meaning: CSS ownership, release-runtime purity and short-viewport presentation are now good enough to serve as the owner-accepted P1 baseline. Further UI/control refinement should build on this state instead of reopening the solved V1/V2 contamination/release-overlay problems without new evidence.
+
 ## Durable method
 
 When a later slice changes owner-visible behavior, record only the new durable verdict. Do not append test logs or rebuild the entire project chronology here.
