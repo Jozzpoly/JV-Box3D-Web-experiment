@@ -9,16 +9,16 @@ Jozzpoly/JV-Box3D-Web-experiment
   private source / development / accepted main
 
 Jozzpoly/JV-Box3D-Web-Public
-  generated public artifacts / GitHub Pages
+  public artifact control plane + GitHub Pages artifacts
 ```
 
-Rig authoring belongs to the separate Jozz Universal Rig Editor (JURE). JV Web should consume explicit authored neutral rig/frame/relation outputs through the boundary in `docs/contracts/JURE_CONSUMER_BOUNDARY.md` instead of growing a second temporary rig editor.
+The public repository `main` is documentation/control-plane only. The deployed Friends application is served from `release/friends-r1`; resolve live refs and `docs/PROJECT_STATE.md` before making publication claims.
 
-Moving SHAs, the active work lane, rollback refs and the current validation boundary are intentionally kept out of this README. Read `docs/PROJECT_STATE.md` for current state.
+Rig authoring belongs to the separate Jozz Universal Rig Editor (JURE). JV Web consumes explicit authored neutral truth through the boundary in `docs/contracts/JURE_CONSUMER_BOUNDARY.md`; it must not grow a second temporary rig editor.
 
-## Development
+Moving SHAs, active maintenance/product scope, rollback refs and current evidence classification live in `docs/PROJECT_STATE.md`, not this README.
 
-Canonical toolchain:
+## Canonical toolchain
 
 ```text
 Node 24.16.0
@@ -35,46 +35,68 @@ npm ci
 npm run dev -- --host 0.0.0.0
 ```
 
-For normal feature work, use the smallest relevant check:
+For normal scoped work use the smallest relevant check:
 
 ```text
 npm test -- tests/<relevant>.test.mjs
 ```
 
-Use `npm run check` for broad foundation/integration gates. User-visible web changes also need rendered/browser validation; a passing build alone is not acceptance.
+Use `npm run check` for broad foundation/integration checks. User-visible web changes also need rendered/browser/device evidence; a passing build is not Owner acceptance.
 
-Friends release builds use `npm run build:friends-r1`. A release that changes the scan requires `JOZZ_SCAN_PREVIEW_PACK` pointing at the exact approved source pack; code-only releases may preserve the already-published scan.
+## Neutral-rig diagnostics
+
+JV contains a read-only neutral consumer projection used to expose current procedural M6 mechanical assumptions without feeding them back into runtime.
+
+Diagnostic receipt:
+
+```text
+npm run export:jure-neutral-geometry
+```
+
+Exact neutral-foundation acceptance gate:
+
+```text
+npm run gate:neutral-rig-foundation
+```
+
+The exact gate is intentionally heavier: clean canonical clone, lockfile install, TypeScript, focused rig checks, deterministic provenance export and falsifiers, full repository check, production bundle/leak scan and final cleanliness. **The existence of this command is not evidence that it passed.** Read `docs/PROJECT_STATE.md` for the current exact execution status.
+
+## Friends release
+
+Friends release builds use:
+
+```text
+npm run build:friends-r1
+```
+
+A release that changes the scan requires `JOZZ_SCAN_PREVIEW_PACK` pointing at the exact approved source pack. Code-only releases may preserve the exact already-published scan under the release provenance rules. The public repository does not rebuild private source and should not be patched as a development workspace.
 
 ## Start here
 
-A fresh agent should read only:
+A fresh agent normally reads:
 
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
 3. code/tests needed for the current task
 
-During an explicit takeover/handoff, insert:
+During an explicit takeover/handoff, read `docs/HANDOFF.md` after `docs/PROJECT_STATE.md`.
 
-3. `docs/HANDOFF.md`
-
-before opening broad history or implementation files.
-
-Then use, only when relevant:
+Then, only when relevant:
 
 - `docs/ARCHITECTURE.md` — stable system boundaries;
-- `docs/OWNER_CHECKPOINTS.md` — scoped owner acceptance;
-- `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — cross-project JURE/JV-Web ownership and first-consumer rules;
-- `docs/contracts/` — other executable/external format contracts;
+- `docs/OWNER_CHECKPOINTS.md` — scoped Owner acceptance;
+- `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — JURE/JV ownership and first-consumer rules;
+- `docs/contracts/` — other external/executable contracts;
 - `docs/baselines/` — reproducible historical baselines.
 
 `AI_PROJECT_MEMORY.md` is a compact router. Old branch names and Git history are not current instructions.
 
-## Everyday workflow
+## Workflow
 
 Prefer:
 
-`small need -> small vertical slice -> targeted check -> rendered/device proof when relevant -> owner-visible result -> continue`
+`small need -> small scoped change -> targeted check -> rendered/device proof when relevant -> Owner-visible result -> continue`
 
-Keep one ordinary active work lane ahead of `main` only when real implementation requires isolation. Do not create branches, documents or validation machinery per conversation. Preserve important historical states with Git history/tags and keep branch navigation small.
+Use a temporary branch only when a concrete isolation/rollback need justifies it. Do not create branches, checkpoint refs, documents or validation machinery merely because a new conversation/agent/test exists. Historical Git state is evidence; branch names are navigation.
 
 Third-party notices are in `THIRD_PARTY_NOTICES.md`.
