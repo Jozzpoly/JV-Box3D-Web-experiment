@@ -13,13 +13,11 @@ async function source(path) {
 test("F4VehicleHost passes analog-drive controls through without owning input semantics", async () => {
   const text = await source("src/app/f4-vehicle-host.ts");
 
-  assert.match(
-    text,
-    /type AnalogDrivePedal,[\s\S]*PointerAnalogDriveControls,[\s\S]*PointerDriveDirection/,
-  );
   assert.match(text, /readonly analogDriveControls\?: PointerAnalogDriveControls;/);
   assert.match(text, /readonly onAnalogPedalStateChange\?: \(/);
+  assert.match(text, /pedal: AnalogDrivePedal,/);
   assert.match(text, /readonly onDriveDirectionChange\?: \(/);
+  assert.match(text, /direction: PointerDriveDirection,/);
   assert.match(
     text,
     /analogDriveControls: options\.analogDriveControls/,
