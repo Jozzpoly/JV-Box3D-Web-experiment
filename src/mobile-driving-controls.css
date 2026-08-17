@@ -550,3 +550,20 @@
     grid-template-columns: minmax(180px, 28vw) minmax(0, 1fr) max-content;
   }
 }
+
+/* P1.2 short-landscape correction: driving controls occupy the lower corners
+   of the composed HUD without reserving a full-width row away from world. */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 520px) and (max-width: 980px) {
+  .scene-panel {
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "header header header"
+      "nav world actions"
+      "readouts world actions";
+  }
+
+  .mobile-controls {
+    grid-area: 2 / 1 / 4 / 4;
+    align-self: stretch;
+  }
+}
