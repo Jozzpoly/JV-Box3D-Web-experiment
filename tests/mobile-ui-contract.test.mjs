@@ -31,6 +31,25 @@ test("mobile scene can shrink below the historical desktop 420px floor", async (
   );
 });
 
+test("P1.2 mobile HUD uses scene-level named composition zones without shrinking the canvas", async () => {
+  const mobileCss = await read("src/mobile-driving-controls.css");
+
+  assert.match(
+    mobileCss,
+    /\.scene-panel\s*\{[^}]*display:\s*grid;[^}]*grid-template-areas:/,
+  );
+  assert.match(mobileCss, /"readouts world actions"/);
+  assert.match(mobileCss, /"controls controls controls"/);
+  assert.match(
+    mobileCss,
+    /\.scene-panel\s*>\s*\[data-scene\]\s*\{[^}]*position:\s*absolute;[^}]*width:\s*100%;[^}]*height:\s*100%;/,
+  );
+  assert.match(mobileCss, /\.scene-actions\s*\{[^}]*grid-area:\s*actions;/);
+  assert.match(mobileCss, /\.scene-readouts\s*\{[^}]*grid-area:\s*readouts;/);
+  assert.match(mobileCss, /\.mobile-controls\s*\{[^}]*grid-area:\s*controls;/);
+  assert.doesNotMatch(mobileCss, /!important\b/);
+});
+
 test("product DOM exposes one steering surface, two analog pedals, and one D-R selector", async () => {
   const main = await read("src/main.ts");
 
