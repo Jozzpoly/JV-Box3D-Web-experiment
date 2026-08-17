@@ -50,6 +50,22 @@ test("P1.2 mobile HUD uses scene-level named composition zones without shrinking
   assert.doesNotMatch(mobileCss, /!important\b/);
 });
 
+test("P1.2 short coarse-pointer landscape overlays controls without a full bottom controls row", async () => {
+  const mobileCss = await read("src/mobile-driving-controls.css");
+  const shortLandscape =
+    /@media \(hover: none\) and \(pointer: coarse\) and \(orientation: landscape\) and \(max-height: 520px\) and \(max-width: 980px\)/;
+
+  assert.match(mobileCss, shortLandscape);
+  assert.match(
+    mobileCss,
+    /@media \(hover: none\) and \(pointer: coarse\) and \(orientation: landscape\) and \(max-height: 520px\) and \(max-width: 980px\) \{[\s\S]*?\.scene-panel\s*\{[^}]*grid-template-rows:\s*auto auto minmax\(0, 1fr\);/,
+  );
+  assert.match(
+    mobileCss,
+    /@media \(hover: none\) and \(pointer: coarse\) and \(orientation: landscape\) and \(max-height: 520px\) and \(max-width: 980px\) \{[\s\S]*?\.mobile-controls\s*\{[^}]*grid-area:\s*2\s*\/\s*1\s*\/\s*4\s*\/\s*4;/,
+  );
+});
+
 test("product DOM exposes one steering surface, two analog pedals, and one D-R selector", async () => {
   const main = await read("src/main.ts");
 
