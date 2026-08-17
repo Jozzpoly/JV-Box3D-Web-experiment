@@ -1,11 +1,9 @@
 /* JV Web mobile driving controls.
-   Outer touch geometry is stable. Continuous command feedback is confined to
+   P1.2 keeps outer touch geometry stable while one scene-level composition
+   owns the mobile HUD zones. Continuous command feedback stays confined to
    inner mechanical layers so presentation never changes input mapping. */
 
 .mobile-controls {
-  left: max(22px, calc(env(safe-area-inset-left) + 14px));
-  right: max(22px, calc(env(safe-area-inset-right) + 14px));
-  bottom: max(22px, calc(env(safe-area-inset-bottom) + 14px));
   gap: clamp(28px, 7vw, 64px);
 }
 
@@ -358,17 +356,78 @@
   font-size: .62rem;
 }
 
+/* P1.2: scene-panel is the single mobile HUD composition owner. The canvas
+   remains viewport-sized behind the grid; every interactive HUD surface gets
+   a named zone instead of an independent screen-edge offset. */
 @media (hover: none) and (pointer: coarse), (max-width: 620px) {
-  /* Short browser-chrome viewports must be allowed to shrink below the
-     historical 420px desktop scene floor. The canvas remains 100svh high. */
   .scene-panel {
+    --mobile-hud-safe-top: max(10px, env(safe-area-inset-top));
+    --mobile-hud-safe-right: max(12px, env(safe-area-inset-right));
+    --mobile-hud-safe-bottom: max(14px, env(safe-area-inset-bottom));
+    --mobile-hud-safe-left: max(12px, env(safe-area-inset-left));
+    --mobile-hud-column-gap: clamp(8px, 2.5vw, 14px);
+    --mobile-hud-row-gap: 7px;
     min-height: 0;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "header header header"
+      "nav nav nav"
+      "readouts world actions"
+      "controls controls controls";
+    column-gap: var(--mobile-hud-column-gap);
+    row-gap: var(--mobile-hud-row-gap);
+    padding:
+      var(--mobile-hud-safe-top)
+      var(--mobile-hud-safe-right)
+      var(--mobile-hud-safe-bottom)
+      var(--mobile-hud-safe-left);
+  }
+
+  .scene-panel > [data-scene] {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    width: auto;
+    height: auto;
+  }
+
+  .scene-header,
+  .product-toolbar,
+  .scene-actions,
+  .scene-readouts,
+  .mobile-controls {
+    position: relative;
+    inset: auto;
+    margin: 0;
+  }
+
+  .scene-header {
+    grid-area: header;
+    align-self: start;
+    min-width: 0;
+  }
+
+  .product-toolbar {
+    grid-area: nav;
+    align-self: start;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  .product-controls {
+    width: max-content;
+    max-width: none;
   }
 
   .scene-actions {
-    top: calc(max(10px, env(safe-area-inset-top)) + 98px);
-    right: max(12px, env(safe-area-inset-right));
-    bottom: auto;
+    grid-area: actions;
+    align-self: start;
+    justify-self: end;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -380,19 +439,36 @@
     padding: 6px 8px;
     font-size: .58rem;
   }
-}
 
-@media (hover: none) and (pointer: coarse) and (orientation: portrait) {
+  .scene-readouts {
+    grid-area: readouts;
+    align-self: start;
+    justify-self: start;
+    max-width: 120px;
+  }
+
   .mobile-controls {
-    bottom: max(26px, calc(env(safe-area-inset-bottom) + 16px));
+    grid-area: controls;
+    align-self: end;
+    width: 100%;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: clamp(18px, 5vw, 48px);
   }
 }
 
+/* Landscape gives navigation/readouts and the action rail separate side
+   columns while the named world area stays intentionally empty. */
 @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
-  .mobile-controls {
-    left: max(24px, calc(env(safe-area-inset-left) + 14px));
-    right: max(24px, calc(env(safe-area-inset-right) + 14px));
-    bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px));
+  .scene-panel {
+    grid-template-columns: minmax(160px, 30vw) minmax(0, 1fr) max-content;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "header header header"
+      "nav world actions"
+      "readouts world actions"
+      "controls controls controls";
   }
 
   .mobile-steering-joystick {
@@ -414,37 +490,39 @@
     height: 34px;
     min-height: 34px;
   }
+}
 
-  .scene-actions {
-    top: calc(max(8px, env(safe-area-inset-top)) + 72px);
-    bottom: auto;
+/* Narrow layouts can enter the same composition even when pointer media
+   queries are unavailable (for example responsive browser emulation). */
+@media (max-width: 620px) and (orientation: landscape) {
+  .scene-panel {
+    grid-template-columns: minmax(150px, 32vw) minmax(0, 1fr) max-content;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "header header header"
+      "nav world actions"
+      "readouts world actions"
+      "controls controls controls";
   }
 }
 
+/* Short landscape with browser chrome is a real viewport class. The grid
+   stays the same; only the already-existing control geometry is compressed. */
 @media (orientation: landscape) and (max-height: 520px) and (max-width: 980px) {
-  .mobile-controls {
-    left: max(22px, calc(env(safe-area-inset-left) + 12px));
-    right: max(22px, calc(env(safe-area-inset-right) + 12px));
-    bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
-  }
-
   .mobile-drive-controls {
-    grid-template-columns: repeat(2, minmax(52px, 60px)) !important;
-    grid-template-rows: auto auto !important;
+    grid-template-columns: repeat(2, minmax(52px, 60px));
+    grid-template-rows: auto auto;
     grid-template-areas:
       "brake throttle"
-      "direction direction" !important;
+      "direction direction";
     gap: 6px;
   }
 
   .mobile-pedal.mobile-control {
-    width: clamp(52px, 7.5vw, 60px) !important;
-    height: clamp(84px, 24vh, 104px) !important;
-    min-height: 84px !important;
+    width: clamp(52px, 7.5vw, 60px);
+    height: clamp(84px, 24vh, 104px);
+    min-height: 84px;
   }
-
-  .mobile-pedal-brake.mobile-control { grid-area: brake !important; }
-  .mobile-pedal-throttle.mobile-control { grid-area: throttle !important; }
 
   .mobile-steering-joystick {
     width: clamp(184px, 29vw, 228px);
@@ -456,9 +534,19 @@
   }
 
   .mobile-direction-selector.mobile-control {
-    grid-area: direction !important;
-    width: 100% !important;
-    height: 32px !important;
-    min-height: 32px !important;
+    width: 100%;
+    height: 32px;
+    min-height: 32px;
+  }
+}
+
+/* True fullscreen is intentionally its own landscape composition class.
+   It keeps the same control semantics and sizes, but uses the recovered
+   viewport width for a less cramped left rail and central world region. */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  :fullscreen .scene-panel {
+    --mobile-hud-column-gap: clamp(10px, 2vw, 18px);
+    --mobile-hud-row-gap: 8px;
+    grid-template-columns: minmax(180px, 28vw) minmax(0, 1fr) max-content;
   }
 }
