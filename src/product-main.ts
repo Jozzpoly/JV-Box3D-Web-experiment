@@ -1,5 +1,6 @@
 import "./style.css";
 import "./mobile-driving-controls.css";
+import "./utility-drawer.css";
 
 import {
   DEFAULT_SCENE_PACKAGE_URL,
@@ -30,6 +31,7 @@ import { installJvBuildIdentity } from "./runtime/build-identity.js";
 import { installJvPerformanceObserver } from "./runtime/performance-observer.js";
 import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
 import { installProductControls } from "./product-controls.js";
+import { installUtilityDrawer } from "./utility-drawer.js";
 
 function requestUrl(input: RequestInfo | URL): string {
   if (typeof input === "string") {
@@ -157,6 +159,7 @@ installProductControls({
     fullscreen: true,
   },
 });
+installUtilityDrawer();
 
 const activeSettings = getJvProductViewSettings();
 if (

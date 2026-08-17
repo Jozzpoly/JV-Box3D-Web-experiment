@@ -1,0 +1,138 @@
+/* P1.3 Utility Drawer.
+   P1.2 driving controls are a protected baseline. This stylesheet changes only
+   compact/touch product chrome: the persistent header disappears and the
+   existing world/view toolbar becomes an on-demand overlay. */
+.utility-drawer-toggle {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse), (max-width: 620px) {
+  .scene-panel {
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "readouts world actions"
+      "controls controls controls";
+  }
+
+  .scene-header {
+    display: none;
+  }
+
+  .utility-drawer-toggle {
+    position: absolute;
+    z-index: 24;
+    top: var(--mobile-hud-safe-top);
+    left: 50%;
+    width: 54px;
+    height: 25px;
+    min-height: 25px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(198, 214, 231, .22);
+    border-top: 0;
+    border-radius: 0 0 12px 12px;
+    background: rgba(10, 15, 22, .92);
+    color: rgba(226, 237, 248, .86);
+    transform: translateX(-50%);
+    touch-action: manipulation;
+    box-shadow: none;
+  }
+
+  .utility-drawer-toggle:hover {
+    background: rgba(18, 27, 38, .96);
+  }
+
+  .utility-drawer-toggle:focus-visible {
+    outline: 2px solid rgba(165, 211, 255, .95);
+    outline-offset: 2px;
+  }
+
+  .utility-drawer-chevron {
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 130ms ease;
+    pointer-events: none;
+  }
+
+  .scene-panel[data-utility-drawer-open] .utility-drawer-chevron {
+    transform: translateY(2px) rotate(225deg);
+  }
+
+  .product-toolbar {
+    grid-area: auto;
+    position: absolute;
+    z-index: 23;
+    top: calc(var(--mobile-hud-safe-top) + 28px);
+    left: calc(var(--mobile-hud-safe-left) + clamp(96px, 26vw, 124px));
+    right: calc(var(--mobile-hud-safe-right) + clamp(76px, 20vw, 92px));
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px) scale(.99);
+    transform-origin: 50% 0;
+    transition:
+      opacity 110ms ease,
+      transform 130ms cubic-bezier(.2, .75, .2, 1),
+      visibility 0s linear 130ms;
+  }
+
+  .product-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scene-panel[data-utility-drawer-open] .product-toolbar {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    transition-delay: 0s;
+  }
+
+  .product-controls {
+    width: max-content;
+    max-width: none;
+    flex-wrap: nowrap;
+    border-radius: 0 0 12px 12px;
+    background: rgba(8, 13, 20, .96);
+  }
+
+  .product-control-label {
+    display: none;
+  }
+
+  .product-choice-row {
+    flex-wrap: nowrap;
+  }
+}
+
+/* P1.2's accepted short-landscape control overlay still owns the numeric
+   .mobile-controls grid area. Zero-height retired chrome rows preserve those
+   exact row lines while giving the world the recovered height. */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 520px) and (max-width: 980px) {
+  .scene-panel {
+    grid-template-rows: 0 0 minmax(0, 1fr);
+    grid-template-areas:
+      ". . ."
+      ". . ."
+      "readouts world actions";
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .utility-drawer-chevron,
+  .product-toolbar {
+    transition: none;
+  }
+}
