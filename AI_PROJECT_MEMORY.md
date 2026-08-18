@@ -1,65 +1,75 @@
 # AI project memory — JV Web
 
-Updated: 2026-08-17
-Status: `P1 ACCEPTED / MAINTENANCE CLOSED / PUBLIC TAKEOFF COMPLETE / HANDOFF READY / PRODUCT CONTINUATION NEXT / JURE PAUSED`
+Updated: 2026-08-18
+Status: `P1.3.1 OWNER-PREVIEW VALIDATED / HANDOFF FREEZE / CANONICAL CONSOLIDATION PENDING / JURE PAUSED`
 
-Compact router only. Live Git, executed evidence and direct Owner observation outrank this file.
+Compact router only. Live Git, executed evidence and direct Owner observation outrank this file. This version belongs to `checkpoint/p1-3-1-handoff-2026-08-18`; private `main` remains accepted source/product authority.
 
-## Authority
+## Authority / refs
 
-- private source/product authority: live `main` of `Jozzpoly/JV-Box3D-Web-experiment`;
-- private branch set after Owner cleanup: **main only**;
-- public artifact/Pages authority: `main@f512551dc41196bc8ca053357408c93b4b3725be` of `Jozzpoly/JV-Box3D-Web-Public`;
-- public branch set after Owner cleanup: **main only**;
-- public Pages: **built**, HTTPS enforced, source `main` `/`;
-- public executable source anchor: private `0260c8b39c0bb9594afe423b30d8e3536918f24c`;
-- P1 promotion evidence: `2b12a2fa99d49ebe4d748ed851c194825129d38f`;
-- Owner-tested P1 source: `c9b5990b226685abe35851fc5e9496323096ecf7`;
-- previous accepted public Friends commit: `a325c279cfe63a0607dba33c3c635a1716e09f8f`;
-- historical public R0 commit: `c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44`;
-- historical pre-P1 private anchor: `f8eb0908f5934aed2d504f34ce483a02754039ec`;
-- exact neutral-foundation Windows PASS: `3606e59368cac47d2fa7c505dbe4b5875a6a6c48`.
+```text
+private main: bf4c5dc9585afb229fa4d29f780f67edb4eb077b
+P1.3 source: work/p1-3-utility-drawer@1a17d12797f1cb515a35eae4d7f42681b1c5f010
+P1.3.1 source: work/p1-3-1-drawer-polish@4cda838ea57d2716f3ff86db1c2865cc03ee06d4
+public main rollback: f512551dc41196bc8ca053357408c93b4b3725be
+public preview: preview/p1-2-owner@6cbe6146c945a12dadb92b4b3f601bfffb8ca280
+public P1.3.1 preview tree: 1fca7addb2c1a83434ff614c8b21ae53be7bef5a
+```
 
-The old public `release/friends-r1`, `release/r0` and checkpoint refs are removed. Their exact commits remain reachable from accepted public `main` history where applicable; branch names are not authority.
+Owner supplied live Galaxy A53 screenshots from the current P1.3.1 Pages preview.
 
-Owner manually smoke-tested the new public-main Pages publication on desktop and phone for about five minutes with no observed regression from the accepted P1 behavior. Treat this as publication/behavior smoke acceptance, not as proof that the current HUD, pedals, steering visuals or portrait composition are final.
+## Accepted direction
 
-## Accepted P1
+P1.2 lower composition is a protected working foundation: world remains useful through orientation/fullscreen, controls do not hide critical UI, and steering/pedals did not regress.
 
-Owner-accepted desktop + Galaxy A53 / Chrome foundation: Plac E2R, Offroad, approved JSPREV2, owner vehicle, Camera Manual Rig V1, Fullscreen V1, current X-only analog steering `POSITION`, analog pedals and established input/lifecycle/D-R behavior.
+P1.3 established the correct mobile chrome model: remove persistent top status/header and expose world/view options through a small top-centre transient drawer.
 
-Do not treat current HUD composition, pedal mapping/design, steering visual/gesture, portrait layout, final rig or handling as accepted final truth.
+P1.3.1 widened the drawer to safe-area width. Owner verdict: portrait no longer looks brutally clipped, landscape is clearly better, closed view remains clean, and the wide drawer is a good foundation for future non-essential options. Main driving screen should show only essential information/controls.
 
-## Latest Owner product feedback
+Design still open: Owner prefers the earlier simpler drawer chevron. Current public preview of the new SVG is visually contaminated by stale P1.3 border-based chevron CSS because P1.3.1 is an overlay, not a clean rebuild. Scroll/fade is not yet meaningfully owner-tested because current content did not require it.
 
-Pedals work and are a major improvement over old binary buttons, but the current interface is still chaotic. In rotated/short landscape states useful interface can disappear or be obscured; pedals can cover useful UI. The next work must first coordinate the mobile HUD/layout as one system before deeper pedal or steering redesign.
+## Evidence boundary
 
-## Maintenance/publication closure
+P1.3 `1a17d127...` canonical Windows run: Node 24.16.0, npm 11.17.0, `npm ci`, full check **458/458 PASS**, typecheck, docs/third-party and Vite 8.1.5 build PASS.
 
-Exact Windows V5 at `3606e593...` passed canonical clone/origin, Node 24.16.0/npm 11.17.0, install/typecheck, 8/8 focused neutral tests, provenance + falsifiers, 452/452 full tests, docs/third-party, production bundle/leak scan and final clean HEAD. Receipt SHA-256:
+P1.3.1 `4cda838...`: focused drawer **6/6 PASS**, standalone TS sanity and Chromium responsive sanity. No full canonical repository build yet.
 
-`a43d079b7803e39bfec42a6c5f15f838ef1f5b5ac5e06d7474d15493b4ed9bf0`
+Current public P1.3.1 proof is an explicit preview overlay on canonical P1.3:
 
-Public takeoff then promoted the reviewed artifact to `JV-Box3D-Web-Public/main@f512551...`. Corrected artifact equivalence passed with zero errors; executable JS/CSS behavior was unchanged apart from exact source-build identity, the approved scan stayed byte-preserved from `a325c279...`, Pages moved to `main` `/`, and the Owner desktop+phone smoke found no regression.
+```text
+assets/p13-1-drawer-polish-preview.css
+assets/p13-1-drawer-polish-preview.js
+P1_3_1_PREVIEW_OVERLAY.json
+```
 
-V1/V2 harness failures, the V4 false-positive test and later Windows wrapper failures are resolved process history. Do not restart them without new contradictory evidence. Documentation-only descendants do not move the exact execution or public-executable source anchors.
+The overlay receipt requires canonical rebuild before product acceptance. Remove the overlay when consolidating.
 
-## Security/dependency boundary
+## Protected product baseline
 
-V5: production-only audit 0 vulnerabilities; all-dependency audit has one high transitive dev-only `nanoid` advisory (GHSA-2v37-7h3g-55p8 / CVE-2026-67213). Future dependency-maintenance debt only; no blind `npm audit fix`.
+Preserve Plac E2R, Offroad, approved JSPREV2, owner vehicle, Camera Manual Rig V1, Fullscreen V1, X-only analog steering `POSITION`, analog throttle/brake, independent multitouch, fail-closed lifecycle, D/R semantics, P1.2 short-landscape composition and accepted A53 render-1x performance.
 
-Other non-blocking debt: JS gap in portable network-policy proof, no branch protection, existing Vite `box3d.js` browser-externalization and large-chunk warnings.
+Do not use drawer polish to change physics, drivetrain, steering/pedal semantics or JURE authority.
 
-## JURE pause
+## Owner roadmap feedback
 
-Accepted JURE main remains `d971b8bef5dd7c65b78884b6b449e1f5ab0e7425`. JURE is future authored-rig authority; JV is runtime authority. Never splice exact/JURE hardpoints into incompatible procedural M6 geometry.
+Future drawer: home for non-essential settings/options; may expand downward/multi-row. Camera/Reset/Debug may later become compact icons.
 
-## Product continuation
+Future steering visual: larger wheel, slightly higher, not visually clipped by the blue box; visible wheel may extend beyond stable acquisition geometry; blue plate becomes optional contrast aid. Preserve working X-only mapping during that visual slice.
 
-Maintenance and public takeoff are closed. In a separate product conversation resume:
+## Process rule
 
-`P1.2 HUD -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait`
+During visual polish use small source change -> smallest check -> explicit fast preview -> real A53 judgement. Do not rebuild release infrastructure for pixel-level iterations.
 
-Immediate target: **P1.2 coordinated mobile HUD composition**, preserving current steering/pedal semantics, Camera/Fullscreen, scan and accepted product behavior.
+Before final acceptance: canonical Node24/npm11 source build -> public preview without executable overlay -> exact identity -> Owner smoke.
 
-For takeover read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md -> docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md`, resolve live private/public `main` and Pages first, then inspect only source/tests relevant to P1.2.
+Obsolete Windows build/publication kits and their false-validator failures are closed archaeology; do not repair/reuse them.
+
+## Takeover route
+
+Read:
+
+`AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`
+
+from `checkpoint/p1-3-1-handoff-2026-08-18`, then inspect only current drawer source/tests. `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` remains useful for future pedal/steering intent, but its old “P1.2 next” staging text is superseded.
+
+Do not implement immediately after takeover. First verify live refs and current Owner intent. Then either do one small drawer-handle/design polish pass or, if the drawer is good enough, canonical-consolidate P1.3.1 and remove the public overlay.
