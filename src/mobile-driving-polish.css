@@ -15,6 +15,15 @@
     align-items: center;
     gap: 4px;
     pointer-events: auto;
+    transition: opacity 90ms ease, visibility 0s linear 0s;
+  }
+
+  /* The wide utility drawer owns this top strip while open. Avoid stacking two
+     unrelated action surfaces on top of each other. */
+  .scene-panel[data-utility-drawer-open] .scene-actions {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .scene-action {
@@ -243,6 +252,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scene-actions,
   .scene-action {
     transition: none;
   }
