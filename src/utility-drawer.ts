@@ -1,6 +1,7 @@
 const COMPACT_UTILITY_QUERY =
   "(hover: none) and (pointer: coarse), (max-width: 620px)";
 const DRAWER_ID = "product-utility-drawer";
+const SCROLL_EPSILON_PX = 2;
 
 function requireElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -27,19 +28,57 @@ export function installUtilityDrawer(): void {
   toggle.setAttribute("aria-label", "Otwórz opcje świata i widoku");
   toggle.title = "Opcje świata i widoku";
 
-  const chevron = document.createElement("span");
-  chevron.className = "utility-drawer-chevron";
+  const chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  chevron.classList.add("utility-drawer-chevron");
+  chevron.setAttribute("viewBox", "0 0 24 24");
   chevron.setAttribute("aria-hidden", "true");
+  const chevronPath = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "path",
+  );
+  chevronPath.setAttribute("d", "M6.5 9 12 14.5 17.5 9");
+  chevron.append(chevronPath);
   toggle.append(chevron);
 
   productToolbar.id = DRAWER_ID;
   productToolbar.setAttribute("data-utility-drawer", "");
+
+  const scroller = document.createElement("div");
+  scroller.className = "utility-drawer-scroll";
+  scroller.setAttribute("data-utility-drawer-scroll", "");
+  while (productToolbar.firstChild !== null) {
+    scroller.append(productToolbar.firstChild);
+  }
+  productToolbar.append(scroller);
   scenePanel.insertBefore(toggle, productToolbar);
 
   const compactMedia = window.matchMedia(COMPACT_UTILITY_QUERY);
 
   function enabled(): boolean {
     return compactMedia.matches;
+  }
+
+  function syncScrollAffordance(): void {
+    if (!enabled()) {
+      productToolbar.removeAttribute("data-utility-scroll-left");
+      productToolbar.removeAttribute("data-utility-scroll-right");
+      return;
+    }
+
+    const maxScrollLeft = Math.max(
+      0,
+      scroller.scrollWidth - scroller.clientWidth,
+    );
+    productToolbar.toggleAttribute(
+      "data-utility-scroll-left",
+      maxScrollLeft > SCROLL_EPSILON_PX &&
+        scroller.scrollLeft > SCROLL_EPSILON_PX,
+    );
+    productToolbar.toggleAttribute(
+      "data-utility-scroll-right",
+      maxScrollLeft > SCROLL_EPSILON_PX &&
+        scroller.scrollLeft < maxScrollLeft - SCROLL_EPSILON_PX,
+    );
   }
 
   function setOpen(requestedOpen: boolean): void {
@@ -69,6 +108,8 @@ export function installUtilityDrawer(): void {
       productToolbar.removeAttribute("aria-hidden");
       productToolbar.removeAttribute("inert");
     }
+
+    window.requestAnimationFrame(syncScrollAffordance);
   }
 
   const onToggleClick = () => {
@@ -125,13 +166,23 @@ export function installUtilityDrawer(): void {
   };
 
   const resetClosed = () => setOpen(false);
+  const onScrollerScroll = () => syncScrollAffordance();
+  const resizeObserver = typeof ResizeObserver === "function"
+    ? new ResizeObserver(() => syncScrollAffordance())
+    : null;
 
   toggle.addEventListener("click", onToggleClick);
   productToolbar.addEventListener("click", onToolbarClick);
+  scroller.addEventListener("scroll", onScrollerScroll, { passive: true });
   document.addEventListener("pointerdown", onDocumentPointerDown, true);
   window.addEventListener("keydown", onKeyDown);
   compactMedia.addEventListener("change", resetClosed);
   document.addEventListener("fullscreenchange", resetClosed);
+  resizeObserver?.observe(scroller);
+  const scrollContent = scroller.firstElementChild;
+  if (scrollContent instanceof HTMLElement) {
+    resizeObserver?.observe(scrollContent);
+  }
 
   setOpen(false);
 
@@ -140,10 +191,12 @@ export function installUtilityDrawer(): void {
     () => {
       toggle.removeEventListener("click", onToggleClick);
       productToolbar.removeEventListener("click", onToolbarClick);
+      scroller.removeEventListener("scroll", onScrollerScroll);
       document.removeEventListener("pointerdown", onDocumentPointerDown, true);
       window.removeEventListener("keydown", onKeyDown);
       compactMedia.removeEventListener("change", resetClosed);
       document.removeEventListener("fullscreenchange", resetClosed);
+      resizeObserver?.disconnect();
     },
     { once: true },
   );

@@ -55,6 +55,47 @@ test("P1.3 drawer overlays chrome and removes persistent compact header", async 
   assert.doesNotMatch(css, /!important\b/);
 });
 
+test("P1.3.1 gives the transient drawer viewport width and an inner scroll rail", async () => {
+  const drawer = await read("src/utility-drawer.ts");
+  const css = await read("src/utility-drawer.css");
+
+  assert.match(drawer, /data-utility-drawer-scroll/);
+  assert.match(drawer, /data-utility-scroll-left/);
+  assert.match(drawer, /data-utility-scroll-right/);
+  assert.match(drawer, /ResizeObserver/);
+
+  assert.match(
+    css,
+    /\.product-toolbar\s*\{[\s\S]*?left:\s*var\(--mobile-hud-safe-left\);[\s\S]*?right:\s*var\(--mobile-hud-safe-right\);[\s\S]*?overflow:\s*hidden;/,
+  );
+  assert.match(
+    css,
+    /\.utility-drawer-scroll\s*\{[\s\S]*?overflow-x:\s*auto;[\s\S]*?scroll-snap-type:\s*inline proximity;/,
+  );
+  assert.match(
+    css,
+    /\.product-toolbar\[data-utility-scroll-left\]::before,[\s\S]*?data-utility-scroll-right/,
+  );
+  assert.doesNotMatch(css, /clamp\(96px,\s*26vw,\s*124px\)/);
+});
+
+test("P1.3.1 keeps the drawer shell visually stable while its content scrolls", async () => {
+  const css = await read("src/utility-drawer.css");
+
+  assert.match(
+    css,
+    /\.product-toolbar\s*\{[\s\S]*?border-radius:\s*14px;[\s\S]*?background:\s*#080d14;/,
+  );
+  assert.match(
+    css,
+    /\.product-controls\s*\{[\s\S]*?background:\s*transparent;[\s\S]*?box-shadow:\s*none;/,
+  );
+  assert.match(
+    css,
+    /\.product-control-group \+ \.product-control-group\s*\{[\s\S]*?border-inline-start:/,
+  );
+});
+
 test("P1.3 preserves P1.2 steering, pedal and D-R presentation ownership", async () => {
   const drawer = await read("src/utility-drawer.ts");
   const css = await read("src/utility-drawer.css");
