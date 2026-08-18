@@ -1,0 +1,6 @@
+/* Direct steering manipulation must not move its own visual reference after
+   pointer-down. The accepted X-position surface can animate its inner stage,
+   but a grabbed wheel must stay registered under the finger. */
+.mobile-steering-joystick[data-active] .mobile-steering-wheel-stage {
+  transform: scale(1) translateY(0);
+}
