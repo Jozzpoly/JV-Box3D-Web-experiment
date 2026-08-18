@@ -26,6 +26,7 @@ import {
 import {
   getJvProductViewSettings,
   replaceJvProductViewSettings,
+  subscribeJvProductViewSettings,
   type JvTextureFilterMode,
 } from "./render/jv-product-view-settings.js";
 import { installJvBuildIdentity } from "./runtime/build-identity.js";
@@ -71,6 +72,10 @@ function selectedGridVisible(): boolean {
   return new URL(window.location.href).searchParams.get("jvGrid") === "1";
 }
 
+function selectedSteeringPlateVisible(): boolean {
+  return new URL(window.location.href).searchParams.get("jvSteeringPlate") !== "0";
+}
+
 const spawnTarget = parseProductSpawnTarget(window.location.search);
 
 function timedProductWorldLoader(loader: ProductWorldLoader): ProductWorldLoader {
@@ -97,6 +102,7 @@ configureProductWorldLoader(
 const initialSettings = {
   textureFilter: selectedTextureFilter(),
   gridVisible: selectedGridVisible(),
+  steeringPlateVisible: selectedSteeringPlateVisible(),
 } as const;
 replaceJvProductViewSettings(initialSettings);
 
@@ -128,6 +134,19 @@ if (spawnTarget !== "map") {
 }
 
 await import("./main.js");
+
+const scenePanel = document.querySelector<HTMLElement>(".scene-panel");
+if (scenePanel === null) {
+  throw new Error("JV product requires .scene-panel after runtime startup.");
+}
+const unsubscribeViewPresentation = subscribeJvProductViewSettings((settings) => {
+  scenePanel.toggleAttribute(
+    "data-steering-plate-hidden",
+    !settings.steeringPlateVisible,
+  );
+});
+window.addEventListener("pagehide", unsubscribeViewPresentation, { once: true });
+
 installJvBuildIdentity();
 installJvPerformanceObserver();
 installProductControls({
@@ -157,6 +176,7 @@ installProductControls({
     ],
     textureFilter: true,
     grid: true,
+    steeringPlate: true,
     fullscreen: true,
   },
 });
@@ -165,7 +185,8 @@ installUtilityDrawer();
 const activeSettings = getJvProductViewSettings();
 if (
   activeSettings.textureFilter !== initialSettings.textureFilter ||
-  activeSettings.gridVisible !== initialSettings.gridVisible
+  activeSettings.gridVisible !== initialSettings.gridVisible ||
+  activeSettings.steeringPlateVisible !== initialSettings.steeringPlateVisible
 ) {
   throw new Error("JV product view settings changed during startup.");
 }

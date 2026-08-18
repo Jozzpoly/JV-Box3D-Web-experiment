@@ -3,6 +3,7 @@ export type JvTextureFilterMode = "nearest" | "linear";
 export interface JvProductViewSettings {
   readonly textureFilter: JvTextureFilterMode;
   readonly gridVisible: boolean;
+  readonly steeringPlateVisible: boolean;
 }
 
 type ViewSettingsListener = (settings: JvProductViewSettings) => void;
@@ -11,6 +12,7 @@ export const DEFAULT_JV_PRODUCT_VIEW_SETTINGS: JvProductViewSettings =
   Object.freeze({
     textureFilter: "nearest",
     gridVisible: false,
+    steeringPlateVisible: true,
   });
 
 let currentSettings = DEFAULT_JV_PRODUCT_VIEW_SETTINGS;
@@ -32,15 +34,20 @@ export function replaceJvProductViewSettings(
   if (typeof next.gridVisible !== "boolean") {
     throw new Error("JV grid visibility must be boolean.");
   }
+  if (typeof next.steeringPlateVisible !== "boolean") {
+    throw new Error("JV steering plate visibility must be boolean.");
+  }
   if (
     next.textureFilter === currentSettings.textureFilter &&
-    next.gridVisible === currentSettings.gridVisible
+    next.gridVisible === currentSettings.gridVisible &&
+    next.steeringPlateVisible === currentSettings.steeringPlateVisible
   ) {
     return;
   }
   currentSettings = Object.freeze({
     textureFilter: next.textureFilter,
     gridVisible: next.gridVisible,
+    steeringPlateVisible: next.steeringPlateVisible,
   });
   for (const listener of [...listeners]) {
     listener(currentSettings);
@@ -60,6 +67,15 @@ export function setJvGridVisible(gridVisible: boolean): void {
   replaceJvProductViewSettings({
     ...currentSettings,
     gridVisible,
+  });
+}
+
+export function setJvSteeringPlateVisible(
+  steeringPlateVisible: boolean,
+): void {
+  replaceJvProductViewSettings({
+    ...currentSettings,
+    steeringPlateVisible,
   });
 }
 

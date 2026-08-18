@@ -1,6 +1,7 @@
 import {
   getJvProductViewSettings,
   setJvGridVisible,
+  setJvSteeringPlateVisible,
   setJvTextureFilter,
   subscribeJvProductViewSettings,
   type JvTextureFilterMode,
@@ -18,6 +19,7 @@ export interface ProductControlCapabilities {
   readonly locationChoices?: readonly ProductLocationChoice[];
   readonly textureFilter: boolean;
   readonly grid: boolean;
+  readonly steeringPlate?: boolean;
   readonly fullscreen?: boolean;
 }
 
@@ -41,6 +43,16 @@ function rememberGridVisible(visible: boolean): void {
     url.searchParams.set("jvGrid", "1");
   } else {
     url.searchParams.delete("jvGrid");
+  }
+  window.history.replaceState(null, "", url.href);
+}
+
+function rememberSteeringPlateVisible(visible: boolean): void {
+  const url = new URL(window.location.href);
+  if (visible) {
+    url.searchParams.delete("jvSteeringPlate");
+  } else {
+    url.searchParams.set("jvSteeringPlate", "0");
   }
   window.history.replaceState(null, "", url.href);
 }
@@ -177,17 +189,37 @@ export function installProductControls(
   }
 
   let gridButton: HTMLButtonElement | null = null;
-  if (capabilities.grid) {
+  let steeringPlateButton: HTMLButtonElement | null = null;
+  if (capabilities.grid || capabilities.steeringPlate === true) {
     const viewGroup = controlGroup("Widok");
-    gridButton = document.createElement("button");
-    gridButton.type = "button";
-    gridButton.className = "product-choice";
-    gridButton.addEventListener("click", () => {
-      const visible = !getJvProductViewSettings().gridVisible;
-      setJvGridVisible(visible);
-      rememberGridVisible(visible);
-    });
-    viewGroup.append(gridButton);
+    const viewChoices = document.createElement("div");
+    viewChoices.className = "product-choice-row";
+
+    if (capabilities.grid) {
+      gridButton = document.createElement("button");
+      gridButton.type = "button";
+      gridButton.className = "product-choice";
+      gridButton.addEventListener("click", () => {
+        const visible = !getJvProductViewSettings().gridVisible;
+        setJvGridVisible(visible);
+        rememberGridVisible(visible);
+      });
+      viewChoices.append(gridButton);
+    }
+
+    if (capabilities.steeringPlate === true) {
+      steeringPlateButton = document.createElement("button");
+      steeringPlateButton.type = "button";
+      steeringPlateButton.className = "product-choice";
+      steeringPlateButton.addEventListener("click", () => {
+        const visible = !getJvProductViewSettings().steeringPlateVisible;
+        setJvSteeringPlateVisible(visible);
+        rememberSteeringPlateVisible(visible);
+      });
+      viewChoices.append(steeringPlateButton);
+    }
+
+    viewGroup.append(viewChoices);
     controls.append(viewGroup);
   }
 
@@ -238,6 +270,12 @@ export function installProductControls(
     if (gridButton !== null) {
       gridButton.textContent = settings.gridVisible ? "Grid ON" : "Grid OFF";
       setChoiceActive(gridButton, settings.gridVisible);
+    }
+    if (steeringPlateButton !== null) {
+      steeringPlateButton.textContent = settings.steeringPlateVisible
+        ? "Tło kier. ON"
+        : "Tło kier. OFF";
+      setChoiceActive(steeringPlateButton, settings.steeringPlateVisible);
     }
   });
   window.addEventListener(
