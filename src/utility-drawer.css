@@ -173,6 +173,13 @@
     box-shadow: none;
   }
 
+  /* Legacy compact chrome hid all but the first product-control group. The
+     utility drawer owns the complete settings surface, so restore every group
+     explicitly within this scope. */
+  .product-toolbar[data-utility-drawer] .product-control-group {
+    display: grid;
+  }
+
   .product-control-group {
     align-items: end;
     scroll-snap-align: start;

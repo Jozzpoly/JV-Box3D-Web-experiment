@@ -55,6 +55,15 @@ test("P1.3 drawer overlays chrome and removes persistent compact header", async 
   assert.doesNotMatch(css, /!important\b/);
 });
 
+test("P1.3 drawer restores the complete product control surface on compact UI", async () => {
+  const css = await read("src/utility-drawer.css");
+
+  assert.match(
+    css,
+    /\.product-toolbar\[data-utility-drawer\]\s+\.product-control-group\s*\{\s*display:\s*grid;/,
+  );
+});
+
 test("P1.3.1 gives the transient drawer viewport width and an inner scroll rail", async () => {
   const drawer = await read("src/utility-drawer.ts");
   const css = await read("src/utility-drawer.css");
