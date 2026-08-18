@@ -1,129 +1,97 @@
 # JV Web — takeover handoff
 
-Updated: 2026-08-17
-Status: `HANDOFF READY / P1 ACCEPTED / MAINTENANCE CLOSED / PUBLIC TAKEOFF COMPLETE / PRODUCT CONTINUATION NEXT / JURE PAUSED`
+Updated: 2026-08-19
+Status: `HANDOFF CANDIDATE / MOBILE POLISH P1.2-P1.3.1 ACCEPTED / CANONICAL + PUBLIC STEADY-STATE CLOSED / NO ACTIVE PRODUCT SLICE / JURE PAUSED`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
-## Fresh entry — do this, not archaeology
+## Fresh entry — do this first
 
-1. Resolve live private `main`, public `main`, and GitHub Pages source/status.
+1. Resolve live private `main` and public `main`.
 2. Read `AGENTS.md`.
 3. Read `docs/PROJECT_STATE.md`.
 4. Read this handoff.
-5. Read `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` for the Owner's current UI/control intent.
-6. Inspect only current mobile UI/layout source and relevant tests for the selected next slice.
+5. Inspect only source/tests relevant to the selected next need.
+6. Read mobile/JURE contracts only if that boundary is actually selected.
 
-Do **not** restart the closed neutral-foundation campaign, old recovery work, Camera/Fullscreen reconstruction, pre-P1 CSS repair, public-overlay repair or public-main takeoff machinery without new contradictory evidence.
+Do not implement immediately merely because an old roadmap names a next numbered stage. First verify current Owner intent and choose the smallest useful product slice.
 
-## Live repository/publication state
-
-Verified after final Owner cleanup and public takeoff:
+## Exact accepted boundary
 
 ```text
-private JV-Web branches: main only
-public JV-Web branches: main only
-public main / Pages artifact: f512551dc41196bc8ca053357408c93b4b3725be
-public artifact executable source: 0260c8b39c0bb9594afe423b30d8e3536918f24c
-public Pages: built, HTTPS enforced, source main /
-previous accepted Friends commit: a325c279cfe63a0607dba33c3c635a1716e09f8f
-historical public R0 commit: c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
-JURE accepted main: d971b8bef5dd7c65b78884b6b449e1f5ab0e7425
+canonical private executable source:
+  cd7f5f89e8cfb872ff6bddc619e3fb78f2124af4
+
+owner-approved product source before the test-only close fix:
+  23fe49c608da2aaecdf5cf28f3954d55bb364db9
+
+public executable steady-state promotion:
+  7efe864a337349f4bbdb9e690c2209a0ee781ba2
+
+public main after Owner-acceptance provenance closure:
+  086e25c9bd22bddca6462f0d585de6d0fd424012
+
+previous accepted public steady-state:
+  f512551dc41196bc8ca053357408c93b4b3725be
+
+approved JSPREV2 preservation source:
+  a325c279cfe63a0607dba33c3c635a1716e09f8f
 ```
 
-The old public `release/friends-r1`, `release/r0` and historical checkpoint refs have been removed. Their exact commits remain history/evidence anchors where reachable from current `main`; do not recreate branch families merely for archival comfort.
+Private `main` is now a docs-only descendant of `cd7f5f89...`; resolve its live SHA rather than treating the executable anchor as the documentation head.
 
-The current private handoff commit after this document update is documentation-only. It does not replace `0260c8b39...` as the executable source of the accepted public artifact and does not inherit the exact Windows execution PASS anchored to `3606e593...`.
+The canonical close at `cd7f5f89...` passed the normal Node 24.16.0 / npm 11.17.0 install/build path and full repository tests **462/462**. The final commit after Owner product approval was test-only and did not alter product runtime source.
 
-## Public takeoff acceptance
+Owner then tested the final public steady-state on Samsung Galaxy A53 / Chrome and confirmed: world/vehicle boot, steering, throttle+brake, utility drawer, steering plate default OFF plus ON/OFF toggle, landscape/browser/fullscreen sanity and JSPREV2 loading.
 
-The final public candidate passed the existing Friends static/runtime contract and corrected artifact-equivalence gate. Public `main@f512551...` preserves both old public-control-plane and accepted Friends ancestry, Pages now serves `main` `/`, and the Owner manually exercised the deployed site for about five minutes on desktop and phone without observing a regression from accepted P1 behavior.
-
-This closes publication takeoff. Do not reinterpret it as final acceptance of the current HUD/pedal/steering design.
+This closes the P1.2/P1.3/P1.3.1 source/build/publication boundary.
 
 ## Accepted product baseline
 
-Preserve unless the selected product slice explicitly changes it:
+Protect unless a later focused slice explicitly changes it:
 
-- desktop + Galaxy A53 / Chrome P1 foundation;
-- Plac E2R, Offroad and approved JSPREV2;
-- owner vehicle;
-- Camera Manual Rig V1;
-- Fullscreen V1;
-- current X-only analog steering `POSITION` behavior as the working reference;
-- analog pedal foundation;
-- independent pedal ownership/multitouch/lifecycle/D-R semantics;
-- accepted A53 render-1x performance boundary.
+- Plac E2R, Offroad, approved JSPREV2 and owner vehicle;
+- Camera Manual Rig V1 and Fullscreen V1;
+- P1.2 short-landscape/lower-driving composition foundation;
+- P1.3 minimal persistent driving HUD + transient utility drawer;
+- P1.3.1 compact top actions, larger physical-wheel presentation and optional steering plate default OFF;
+- X-only analog steering `POSITION` as the current working reference;
+- analog throttle/brake foundation;
+- independent multitouch, fail-closed lifecycle and current D/R semantics;
+- accepted A53/Chrome render-1x performance boundary.
 
-P1 is not final HUD, pedal mechanics, pedal mapping, steering visuals/gesture, portrait composition, final rig geometry or handling.
+This does not make pedal mapping/mechanics/design, steering gesture/design, portrait-specific layout, final rig geometry or handling final truth.
 
-## Latest Owner feedback — preserve this intent
+## Open product intent — not a scheduler
 
-The Owner's last direct product verdict after P1 was positive about the driving controls but explicit about the next problem:
+`docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` preserves still-useful Owner intent for future control polish. Candidate directions include absolute-position pedal mapping, mechanical pedal depression, further wheel/pedal industrial design, an isolated direct-rotation steering experiment and intentional portrait composition.
 
-- pedals work and are substantially better than the previous binary buttons;
-- substantial multi-stage polishing is expected;
-- the UI has become chaotic;
-- in rotated/short landscape states part of the screen/interface can disappear or become poorly usable;
-- pedals can cover useful interface;
-- the UI must be recomposed as a coordinated system before deeper pedal/steering redesign.
+These are **not** a mandatory P1.4 -> P2 -> P3 execution order. The next conversation should reselect the next need from live product state and Owner feedback.
 
-This is why **P1.2 coordinated HUD composition is next**. Do not jump straight to P2 pedal mapping merely because its desired semantics are already documented.
+## Evidence and debt boundaries
 
-## Neutral foundation — closed evidence
+Scoped Owner acceptance is in `docs/OWNER_CHECKPOINTS.md`.
 
-Exact Owner-side Windows PASS anchor:
+The final canonical install again reported one high-severity dependency finding. Earlier V5 evidence attributed the then-current finding to a transitive dev-only `nanoid` advisory and found 0 production-only vulnerabilities, but that exact attribution was not independently re-run for `cd7f5f89...`. Do not present the historical attribution as freshly proven and do not run blind `npm audit fix`.
 
-`3606e59368cac47d2fa7c505dbe4b5875a6a6c48`
+Other non-blocking debt: JavaScript gap in portable network-policy proof, no branch protection, existing Vite browser-externalization/large-chunk warnings and redundant historical branch names.
 
-V5 proved: canonical clone/origin, Node 24.16.0/npm 11.17.0, `npm ci`, TypeScript, 8/8 focused neutral tests, deterministic provenance, wrong-origin + dirty-source falsifiers, 452/452 full tests, docs/third-party checks, production bundle/leak scan and final clean HEAD. Receipt SHA-256:
+## Ref discipline
 
-`a43d079b7803e39bfec42a6c5f15f838ef1f5b5ac5e06d7474d15493b4ed9bf0`
+Only private `main` and public `main` are current authorities. Older work/checkpoint/preview refs may remain visible because the current connector lacks branch-ref deletion. They are historical navigation only, not active work lanes. Do not infer authority from their names and do not build owner-side cleanup tooling solely to remove them.
 
-The current handoff/docs commits after that anchor are documentation-only. Exact execution PASS belongs to `3606e593...`; do not transfer it across future source/test/dependency changes.
+## Closed work not to restart
 
-V1/V2 were harness failures. V4 found one false-positive assertion. Later public takeoff wrapper failures were also process/harness failures; the corrected candidate equivalence and final publication passed. Do not reopen these without new evidence.
+Without new contradictory evidence, do not reopen:
 
-## Security/dependency finding
+- old recovery/publication campaigns;
+- neutral-foundation validation machinery;
+- Camera/Fullscreen reconstruction;
+- old P1 CSS/overlay repair;
+- P1.2/P1.3/P1.3.1 canonical-close/publication runners;
+- accepted A53 1x micro-optimization;
+- speculative JURE runtime substitution.
 
-V5 captured:
+## Takeover success criterion
 
-- production-only audit: 0 vulnerabilities;
-- all dependencies: one high transitive dev-only `nanoid` advisory, GHSA-2v37-7h3g-55p8 / CVE-2026-67213.
-
-Do not blindly `npm audit fix`. Treat it as a future deliberate dependency-maintenance slice, not a blocker for P1.2.
-
-## JURE boundary
-
-JURE stays paused and remains future authored-rig authority. JV stays runtime authority. Never mix exact/JURE hardpoints with incompatible procedural M6 geometry in a partial hybrid.
-
-## Product continuation order
-
-Maintenance foundation and public takeoff are satisfied. In the next product conversation, use:
-
-`P1.2 coordinated HUD -> P1.3 action/navigation -> P1.4 driving-zone sizing -> P1.5 portrait sanity -> P2 absolute pedals -> P3 mechanical depression -> P4 steering visuals -> P5 rotational A/B -> P6 joint industrial design -> P7 intentional portrait composition`
-
-### Immediate next slice: P1.2
-
-Goal: turn the accepted but still chaotic mobile overlay into deliberate zones while preserving the working input semantics.
-
-Protect:
-
-- central world/vehicle visibility;
-- lower-left steering zone;
-- lower-right longitudinal zone;
-- Camera/Reset/Debug/fullscreen/location reachability without pedal-drag competition;
-- short landscape with browser chrome and true fullscreen as distinct viewport classes;
-- portrait as a distinct layout;
-- frozen gesture geometry during an owned pointer interaction.
-
-Keep P1.2 layout-only whenever possible. Do not change pedal mapping, steering gesture, vehicle physics or JURE authority in the same slice.
-
-## Known non-blocking debt
-
-- dev-only `nanoid` advisory;
-- JS gap in portable network-policy proof;
-- no branch protection currently enabled;
-- existing Vite `box3d.js` browser-externalization and large-chunk warnings.
-
-Do not turn these into another maintenance campaign unless they block the active product goal.
+A fresh agent should be able to reconstruct the current state from live Git + `AGENTS.md` + `docs/PROJECT_STATE.md` + this file without this conversation. If those sources disagree, stop and resolve the contradiction before product work.
