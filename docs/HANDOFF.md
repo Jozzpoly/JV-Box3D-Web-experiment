@@ -1,7 +1,7 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-19
-Status: `HANDOFF CANDIDATE / MOBILE POLISH P1.2-P1.3.1 ACCEPTED / CANONICAL + PUBLIC STEADY-STATE CLOSED / NO ACTIVE PRODUCT SLICE / JURE PAUSED`
+Status: `HANDOFF READY / MOBILE POLISH P1.2-P1.3.1 ACCEPTED / CANONICAL + PUBLIC STEADY-STATE CLOSED / NO ACTIVE PRODUCT SLICE / JURE PAUSED`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
@@ -28,8 +28,11 @@ owner-approved product source before the test-only close fix:
 public executable steady-state promotion:
   7efe864a337349f4bbdb9e690c2209a0ee781ba2
 
-public main after Owner-acceptance provenance closure:
+Owner-acceptance provenance anchor:
   086e25c9bd22bddca6462f0d585de6d0fd424012
+
+current public main after public handoff/control-plane closure:
+  1b64b45b0d3c1d5cb7ccc469e98e300568580f60
 
 previous accepted public steady-state:
   f512551dc41196bc8ca053357408c93b4b3725be
@@ -38,11 +41,11 @@ approved JSPREV2 preservation source:
   a325c279cfe63a0607dba33c3c635a1716e09f8f
 ```
 
-Private `main` is now a docs-only descendant of `cd7f5f89...`; resolve its live SHA rather than treating the executable anchor as the documentation head.
+Private `main` is a docs-only descendant of `cd7f5f89...`; resolve its live SHA rather than treating the executable anchor as the documentation head.
 
 The canonical close at `cd7f5f89...` passed the normal Node 24.16.0 / npm 11.17.0 install/build path and full repository tests **462/462**. The final commit after Owner product approval was test-only and did not alter product runtime source.
 
-Owner then tested the final public steady-state on Samsung Galaxy A53 / Chrome and confirmed: world/vehicle boot, steering, throttle+brake, utility drawer, steering plate default OFF plus ON/OFF toggle, landscape/browser/fullscreen sanity and JSPREV2 loading.
+Owner tested the final public steady-state on Samsung Galaxy A53 / Chrome and confirmed: world/vehicle boot, steering, throttle+brake, utility drawer, steering plate default OFF plus ON/OFF toggle, landscape/browser/fullscreen sanity and JSPREV2 loading.
 
 This closes the P1.2/P1.3/P1.3.1 source/build/publication boundary.
 
@@ -72,7 +75,7 @@ These are **not** a mandatory P1.4 -> P2 -> P3 execution order. The next convers
 
 Scoped Owner acceptance is in `docs/OWNER_CHECKPOINTS.md`.
 
-The final canonical install again reported one high-severity dependency finding. Earlier V5 evidence attributed the then-current finding to a transitive dev-only `nanoid` advisory and found 0 production-only vulnerabilities, but that exact attribution was not independently re-run for `cd7f5f89...`. Do not present the historical attribution as freshly proven and do not run blind `npm audit fix`.
+The final canonical install reported one high-severity dependency finding. Earlier V5 evidence attributed the then-current finding to a transitive dev-only `nanoid` advisory and found 0 production-only vulnerabilities, but that exact attribution was not independently re-run for `cd7f5f89...`. Do not present the historical attribution as freshly proven and do not run blind `npm audit fix`.
 
 Other non-blocking debt: JavaScript gap in portable network-policy proof, no branch protection, existing Vite browser-externalization/large-chunk warnings and redundant historical branch names.
 
@@ -92,6 +95,8 @@ Without new contradictory evidence, do not reopen:
 - accepted A53 1x micro-optimization;
 - speculative JURE runtime substitution.
 
-## Takeover success criterion
+## Fresh-agent validation
 
-A fresh agent should be able to reconstruct the current state from live Git + `AGENTS.md` + `docs/PROJECT_STATE.md` + this file without this conversation. If those sources disagree, stop and resolve the contradiction before product work.
+Fresh-agent reconstruction was performed after consolidation. The first pass found one stale public `AGENTS.md` statement that Owner validation was still pending; public control-plane commit `1b64b45b...` corrected it. The resulting live-ref + `AGENTS -> PROJECT_STATE -> HANDOFF` path is internally consistent and sufficient to reconstruct current authority, acceptance, open intent and closed campaigns without this conversation.
+
+**Takeover status: PASS / HANDOFF READY.**

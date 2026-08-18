@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-19
-Status: `MOBILE POLISH P1.2-P1.3.1 ACCEPTED / CANONICAL + PUBLIC CLOSED / HANDOFF CANDIDATE / NO ACTIVE PRODUCT SLICE / JURE PAUSED`
+Status: `MOBILE POLISH P1.2-P1.3.1 ACCEPTED / CANONICAL + PUBLIC CLOSED / HANDOFF READY / NO ACTIVE PRODUCT SLICE / JURE PAUSED`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file.
 
@@ -12,7 +12,8 @@ Compact router only. Live Git, executed evidence and direct Owner observation ou
 - owner-approved product source before the final test-only close fix: `23fe49c608da2aaecdf5cf28f3954d55bb364db9`;
 - public artifact authority: live `main` of `Jozzpoly/JV-Box3D-Web-Public`;
 - public executable promotion: `7efe864a337349f4bbdb9e690c2209a0ee781ba2`;
-- public main after Owner-acceptance provenance closure: `086e25c9bd22bddca6462f0d585de6d0fd424012`;
+- Owner-acceptance provenance anchor: `086e25c9bd22bddca6462f0d585de6d0fd424012`;
+- current public control-plane/docs head after handoff closure: `1b64b45b0d3c1d5cb7ccc469e98e300568580f60`;
 - approved JSPREV2 preservation source: `a325c279cfe63a0607dba33c3c635a1716e09f8f`.
 
 Private/public docs-only descendants do not move the executable-source anchor.
@@ -50,5 +51,7 @@ Resolve live private/public `main`, then read:
 `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`
 
 Inspect source/tests only for the selected next need. Read `docs/OWNER_CHECKPOINTS.md` for scoped Owner acceptance and mobile/JURE contracts only when relevant.
+
+Fresh-agent reconstruction after consolidation: **PASS**. The first pass found and corrected one stale public Owner-validation claim before final handoff.
 
 Do not restart old recovery, neutral-gate, public-overlay, Camera/Fullscreen, P1.2/P1.3/P1.3.1 publication-helper or accepted-A53 optimization campaigns without new contradictory evidence.

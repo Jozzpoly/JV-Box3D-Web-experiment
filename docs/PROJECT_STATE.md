@@ -2,7 +2,7 @@
 
 Updated: 2026-08-19
 Owner: Jozz
-Status: `P1.2/P1.3/P1.3.1 OWNER-ACCEPTED / CANONICAL + PUBLIC STEADY-STATE CLOSED / HANDOFF CANDIDATE / NO ACTIVE PRODUCT SLICE / JURE PAUSED`
+Status: `P1.2/P1.3/P1.3.1 OWNER-ACCEPTED / CANONICAL + PUBLIC STEADY-STATE CLOSED / HANDOFF READY / NO ACTIVE PRODUCT SLICE / JURE PAUSED`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is the compact current-state authority, not project archaeology.
 
@@ -28,8 +28,11 @@ clean canonical preview artifact:
 public executable steady-state promotion:
   7efe864a337349f4bbdb9e690c2209a0ee781ba2
 
-current public main after Owner-acceptance provenance closure:
+Owner-acceptance provenance anchor:
   086e25c9bd22bddca6462f0d585de6d0fd424012
+
+current public main after public handoff/control-plane closure:
+  1b64b45b0d3c1d5cb7ccc469e98e300568580f60
 
 previous accepted public steady-state:
   f512551dc41196bc8ca053357408c93b4b3725be
@@ -43,7 +46,7 @@ historical public R0:
 
 Current private `main` is a documentation-only descendant of `cd7f5f89...`; do not transfer canonical execution claims to later docs-only commits. `cd7f5f89...` remains the executable-source anchor.
 
-Public `main@086e25c9...` is provenance-only after executable promotion `7efe864a...`; runtime/artifact bytes remain those of the accepted canonical promotion.
+Public `main@1b64b45b...` is documentation/provenance-only after executable promotion `7efe864a...`; runtime/artifact bytes remain those of the accepted canonical promotion.
 
 ## 2. Product/release acceptance — CLOSED
 
@@ -150,6 +153,18 @@ Do not restart recovery archaeology, neutral-foundation validation, old Camera/F
 
 Dated technical/roadmap audits are historical evidence. They do not override this current state.
 
-## 9. Handoff-readiness boundary
+## 9. Handoff readiness — PASS
 
-Product, canonical build, public steady-state and final Owner smoke are closed. The current remaining task is documentation/takeover validation only: make the primary authority docs mutually consistent and perform a fresh-agent simulation. No product implementation is authorized by this handoff-consolidation step.
+A fresh-agent reconstruction pass was performed after private/public consolidation. Using live refs plus `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`, the agent could recover:
+
+- current private/public authority;
+- exact executable/public promotion anchors;
+- the accepted product boundary and its Owner evidence;
+- the fact that no product slice is active;
+- future intent versus accepted truth;
+- known non-blocking debt and redundant refs;
+- closed campaigns that must not be restarted.
+
+The first simulation found one stale public `AGENTS.md` claim that Owner validation was still pending. That contradiction was corrected in public control-plane commit `1b64b45b...`, and the reconstruction then became internally consistent.
+
+**Handoff status: READY.** A new conversation should verify live refs, read the three primary authority documents and then select the next small product need from current Owner intent rather than replaying the old roadmap.

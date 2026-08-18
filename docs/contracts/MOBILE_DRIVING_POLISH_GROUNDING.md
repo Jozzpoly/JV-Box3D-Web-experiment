@@ -18,12 +18,14 @@ canonical private executable source:
 public executable steady-state promotion:
   7efe864a337349f4bbdb9e690c2209a0ee781ba2
 
-public main after acceptance provenance closure:
+Owner-acceptance public provenance anchor:
   086e25c9bd22bddca6462f0d585de6d0fd424012
 
 device/browser:
   Samsung Galaxy A53 / Chrome
 ```
+
+Public `main` may move through later documentation/provenance-only descendants; resolve its live SHA. Those docs-only moves do not change the executable promotion anchor above.
 
 Canonical close passed the normal Node 24.16.0 / npm 11.17.0 repository build path and full tests **462/462**. Owner then confirmed the final public steady-state boots world/vehicle, steers, throttles/brakes, opens/closes the utility drawer, keeps steering plate OFF by default with working ON/OFF toggle, survives landscape/browser/fullscreen use without obvious regression and still loads JSPREV2.
 
