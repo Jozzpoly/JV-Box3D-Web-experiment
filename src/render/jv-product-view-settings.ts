@@ -12,7 +12,7 @@ export const DEFAULT_JV_PRODUCT_VIEW_SETTINGS: JvProductViewSettings =
   Object.freeze({
     textureFilter: "nearest",
     gridVisible: false,
-    steeringPlateVisible: true,
+    steeringPlateVisible: false,
   });
 
 let currentSettings = DEFAULT_JV_PRODUCT_VIEW_SETTINGS;

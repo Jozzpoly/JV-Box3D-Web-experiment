@@ -73,7 +73,7 @@ function selectedGridVisible(): boolean {
 }
 
 function selectedSteeringPlateVisible(): boolean {
-  return new URL(window.location.href).searchParams.get("jvSteeringPlate") !== "0";
+  return new URL(window.location.href).searchParams.get("jvSteeringPlate") === "1";
 }
 
 const spawnTarget = parseProductSpawnTarget(window.location.search);

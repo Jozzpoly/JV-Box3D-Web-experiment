@@ -50,9 +50,9 @@ function rememberGridVisible(visible: boolean): void {
 function rememberSteeringPlateVisible(visible: boolean): void {
   const url = new URL(window.location.href);
   if (visible) {
-    url.searchParams.delete("jvSteeringPlate");
+    url.searchParams.set("jvSteeringPlate", "1");
   } else {
-    url.searchParams.set("jvSteeringPlate", "0");
+    url.searchParams.delete("jvSteeringPlate");
   }
   window.history.replaceState(null, "", url.href);
 }
