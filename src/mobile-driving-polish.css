@@ -63,6 +63,50 @@
   .scene-action:active {
     transform: scale(.94);
   }
+
+  /* Keep the accepted acquisition rectangle stable while allowing the wheel
+     artwork to breathe beyond it. The plate remains only a quiet contrast cue. */
+  .mobile-steering-joystick {
+    overflow: visible;
+    contain: layout;
+    border-color: rgba(160, 199, 237, .28);
+    background:
+      radial-gradient(ellipse at 50% 118%, rgba(67, 118, 173, .16), transparent 60%),
+      linear-gradient(180deg, rgba(31, 49, 70, .72), rgba(13, 23, 35, .8));
+  }
+
+  .mobile-steering-wheel-stage {
+    z-index: 2;
+    transform-origin: 50% 62%;
+  }
+
+  .mobile-steering-wheel-tilt {
+    top: -90px;
+    width: clamp(248px, 56vw, 286px);
+    height: clamp(248px, 56vw, 286px);
+    transform: translateX(-50%) scaleY(.4);
+  }
+
+  .mobile-steering-joystick > small {
+    right: 8px;
+    bottom: 5px;
+    color: rgba(197, 215, 232, .5);
+  }
+
+  .mobile-steering-joystick[data-active] {
+    border-color: rgba(194, 221, 248, .42);
+    background:
+      radial-gradient(ellipse at 50% 118%, rgba(78, 137, 196, .22), transparent 62%),
+      linear-gradient(180deg, rgba(35, 57, 81, .8), rgba(14, 25, 39, .86));
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  .mobile-steering-wheel-tilt {
+    top: -96px;
+    width: clamp(248px, 32vw, 292px);
+    height: clamp(248px, 32vw, 292px);
+  }
 }
 
 @media (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 520px) and (max-width: 980px) {
@@ -77,6 +121,12 @@
   .scene-action::before {
     width: 17px;
     height: 17px;
+  }
+
+  .mobile-steering-wheel-tilt {
+    top: -100px;
+    width: clamp(240px, 31vw, 276px);
+    height: clamp(240px, 31vw, 276px);
   }
 }
 
