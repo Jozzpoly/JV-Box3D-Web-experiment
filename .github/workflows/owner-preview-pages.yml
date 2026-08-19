@@ -1,0 +1,135 @@
+name: JV Owner Preview Pages
+
+on:
+  push:
+    branches:
+      - preview/owner-control
+    paths:
+      - preview/owner.json
+      - .github/workflows/owner-preview-pages.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jv-owner-preview-pages
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout preview control lane
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Resolve exact source candidate
+        id: candidate
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          pointer = json.loads(Path("preview/owner.json").read_text(encoding="utf-8"))
+          if pointer.get("schema") != "JV_OWNER_PREVIEW_POINTER_V1":
+              raise SystemExit("preview/owner.json has an unsupported schema")
+          sha = str(pointer.get("sourceCommit", "")).strip().lower()
+          if re.fullmatch(r"[0-9a-f]{40}", sha) is None:
+              raise SystemExit("preview/owner.json must contain an exact 40-character sourceCommit SHA")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"sha={sha}\n")
+          print(f"Owner Preview candidate: {sha}")
+          PY
+
+      - name: Checkout exact source candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.candidate.outputs.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify exact candidate checkout
+        env:
+          EXPECTED_SHA: ${{ steps.candidate.outputs.sha }}
+        run: |
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Setup canonical Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Install declared npm version
+        run: |
+          package_manager="$(node -p 'JSON.parse(require("fs").readFileSync("package.json", "utf8")).packageManager')"
+          case "$package_manager" in
+            npm@*) ;;
+            *) echo "Expected packageManager to declare npm, got: $package_manager" >&2; exit 1 ;;
+          esac
+          (cd "$RUNNER_TEMP" && npm install --global "$package_manager")
+          echo "Node: $(node --version)"
+          echo "npm:  $(npm --version)"
+          test "$(node --version)" = "v$(cat .node-version)"
+          test "npm@$(npm --version)" = "$package_manager"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck candidate
+        run: npm run typecheck
+
+      - name: Build and validate portable candidate
+        run: npm run build:portable
+
+      - name: Verify build identity equals preview pointer
+        env:
+          EXPECTED_SHA: ${{ steps.candidate.outputs.sha }}
+        run: |
+          node tools/validate-build-identity.mjs
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          const expected = process.env.EXPECTED_SHA;
+          if (manifest?.source?.commit !== expected) {
+            throw new Error(`Preview manifest source ${manifest?.source?.commit} != ${expected}`);
+          }
+          if (manifest?.source?.workingTreeClean !== true) {
+            throw new Error("Owner Preview requires a clean committed source candidate.");
+          }
+          if (manifest?.publication?.publishedByBuild !== false) {
+            throw new Error("Portable candidate must not claim it published itself.");
+          }
+          console.log(`Preview identity verified: ${expected.slice(0, 12)}.`);
+          NODE
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Deploy Owner Preview
+        id: deployment
+        uses: actions/deploy-pages@v5
