@@ -4,3 +4,16 @@
 .mobile-steering-joystick[data-active] .mobile-steering-wheel-stage {
   transform: scale(1) translateY(0);
 }
+
+/* The accepted X-position target is smaller than the projected wheel artwork.
+   Direct manipulation must still be grabbable on the visible wheel without
+   expanding the layout box or making rotating artwork own input geometry.
+   This circle lives on the stable pre-rotation layer; scaleY projects it to
+   the same ellipse used by the direct-rotation angle model. */
+.mobile-steering-wheel-tilt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: auto;
+}
