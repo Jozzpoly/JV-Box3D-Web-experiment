@@ -48,6 +48,16 @@ test("product main exposes stable direct-wheel geometry inside steering acquisit
   assert.ok(rotor > tilt, "rotating artwork must remain inside stable projected geometry");
 });
 
+test("direct rotation can acquire the visible projected wheel without expanding the layout box", async () => {
+  const directRotationCss = await source("src/direct-rotation-steering.css");
+
+  assert.match(directRotationCss, /\.mobile-steering-wheel-tilt::after\s*\{/);
+  assert.match(directRotationCss, /position:\s*absolute/);
+  assert.match(directRotationCss, /inset:\s*0/);
+  assert.match(directRotationCss, /border-radius:\s*50%/);
+  assert.match(directRotationCss, /pointer-events:\s*auto/);
+});
+
 test("product main uses typed analog driving controls and generation-scoped presentation", async () => {
   const main = await source("src/main.ts");
 
