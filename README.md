@@ -1,20 +1,23 @@
 # JV Web
 
-JV Web is the browser product line for Jozz Vehicle: a driveable desktop/mobile build used both as an R&D surface and as the public Friends demo.
+JV Web is the browser product line for Jozz Vehicle: a driveable desktop/mobile build used both as an R&D surface and as the accepted public Friends demo.
 
 ## Authority and publication
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
-  private source / development / accepted main
+  public source / development / accepted main
+  preview/owner-control -> Owner Preview Pages control lane
 
 Jozzpoly/JV-Box3D-Web-Public
-  public artifact + GitHub Pages steady-state main
+  accepted Friends artifact / release main
 ```
 
-Private `main` is source/product authority. Public `main` is the steady-state artifact and Pages authority. Resolve live refs and `docs/PROJECT_STATE.md` before making moving-SHA or acceptance claims; exact executable/public anchors belong there, not in this README.
+Source `main` is accepted source/product authority. `preview/owner-control` is an operational deployment lane only: `preview/owner.json` points at one exact committed source candidate for Owner Preview Pages. A candidate being live on Owner Preview does not make it accepted product truth.
 
-The public repository is artifact-only. Product fixes belong in private typed source and must be rebuilt/re-promoted; do not patch compiled public runtime as normal development.
+`Jozzpoly/JV-Box3D-Web-Public/main` remains accepted Friends artifact/release authority, not source authority. Product fixes belong in normal typed source and must be rebuilt/validated before Preview or Friends publication; do not patch compiled public runtime as normal development.
+
+Owner Preview Pages is the default iterative Owner-testing surface. ZIP/local-Windows preview is forensic/emergency fallback only, not the normal Owner workflow. Resolve live refs and `docs/PROJECT_STATE.md` before making moving-SHA or acceptance claims; exact active/executable/artifact anchors belong there, not in this README.
 
 Rig authoring belongs to the separate Jozz Universal Rig Editor (JURE). JV Web consumes explicit authored neutral truth through `docs/contracts/JURE_CONSUMER_BOUNDARY.md`; it must not grow a second rig editor.
 
@@ -28,14 +31,14 @@ Vite 8.1.5
 box3d.js 0.0.2
 ```
 
-Typical local start:
+Developer/local source work can use:
 
 ```text
 npm ci
 npm run dev -- --host 0.0.0.0
 ```
 
-For ordinary scoped work use the smallest relevant check, for example:
+This local path is an engineering capability, not the default Owner test loop. For ordinary scoped work use the smallest relevant check, for example:
 
 ```text
 npm test -- tests/<relevant>.test.mjs
@@ -45,7 +48,9 @@ Use `npm run check` for broad foundation/integration checks. Full canonical buil
 
 ## Release notes
 
-Friends-compatible production builds use the repository release/build scripts documented in `package.json` and current project state. Code-only releases may preserve the exact already-approved JSPREV2 public scan under the release provenance rules. A scan-changing release requires exact approved input/provenance validation.
+Owner Preview candidates are built from exact committed source through the Preview control lane and remain experimental until explicitly accepted.
+
+Friends-compatible production builds use the repository release/build scripts documented in `package.json` and current project state. Code-only Friends releases may preserve the exact already-approved JSPREV2 scan under the release provenance rules. A scan-changing release requires exact approved input/provenance validation.
 
 ## Start here
 
@@ -71,7 +76,7 @@ Then, only when relevant:
 
 Prefer:
 
-`small need -> smallest coherent source change -> causal check -> faithful render/device proof -> Owner judgement -> continue`
+`small need -> smallest coherent source change -> causal check -> Owner Preview Pages -> faithful render/device proof -> Owner judgement -> continue`
 
 Use temporary branches/checkpoints only for a concrete isolation or rollback need. Do not create process machinery merely because a new agent, conversation or small polish iteration exists.
 

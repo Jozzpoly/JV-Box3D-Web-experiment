@@ -1,6 +1,6 @@
 # JV Web — architecture
 
-Updated: 2026-08-16
+Updated: 2026-08-20
 Status: `CURRENT STABLE BOUNDARIES`
 
 This document describes stable system boundaries. It is not a roadmap, branch ledger or mechanical-history archive.
@@ -15,7 +15,7 @@ index.html
 -> world renderer + owner vehicle layer
 ```
 
-The browser product currently exposes Plac E2R, Offroad and the approved JSPREV2 scan.
+The source product supports Plac E2R, Offroad and the approved JSPREV2 scan. The accepted Friends artifact includes those worlds. A specific Owner Preview payload may intentionally expose only a subset of heavy static data; deployment payload capability does not redefine the source/world contract. Current Preview-specific gaps belong in `docs/PROJECT_STATE.md`.
 
 ## 2. World boundary
 
@@ -28,7 +28,7 @@ World data is independent from the vehicle runtime.
 
 ## 3. JSPREV2 transport and integrity
 
-Public scan assets resolve relative to `document.baseURI`, so the same build works under the GitHub Pages project path.
+Public scan assets resolve relative to `document.baseURI`, so the same build works under a GitHub Pages project path when the scan payload is included.
 
 Compressed HTTP `Content-Length` is not logical scan-file integrity. Runtime validates the decoded payload/format: byte length, magic/version/tile/group descriptors, counts/triangle relationships, index range and finite numeric streams.
 
@@ -66,7 +66,7 @@ Rich M6 trace/visual materialization is deferred to the final presented catch-up
 
 Runtime telemetry distinguishes browser cadence, scene-presentation cadence, simulation-step count, physics time, trace-capture time and render/UI time. Startup telemetry separately covers world loading, scan-loader phases, synchronous WebGL setup/submission, Box3D boundary/world creation and texture readiness/upload calls.
 
-Telemetry is diagnostic evidence, not a substitute for owner-visible/browser validation.
+Telemetry is diagnostic evidence, not a substitute for Owner-visible/browser validation.
 
 ## 7. Mobile compositor boundary
 
@@ -118,7 +118,7 @@ A JURE-authored neutral mechanism replaces a **coherent mechanical unit**. The e
 
 ### 10.2 Future consumer seam
 
-The first real JURE -> JV-Web integration is data-first and private:
+The first real JURE -> JV-Web integration is data-first and isolated from accepted product/release state:
 
 ```text
 frozen/versioned JURE consumer fragment
@@ -133,7 +133,7 @@ frozen/versioned JURE consumer fragment
 
 Do not assume identity placement. Do not guess unit conversion, handedness, basis or frame meaning from screenshots/names. Fail closed when data is ambiguous or incomplete.
 
-Create the first consumer experiment on `jure/<specific-purpose>`, and keep public Friends unchanged in that slice.
+Create the first consumer experiment on `jure/<specific-purpose>`, and keep accepted `main`, Owner Preview pointer and accepted Friends artifact unchanged in that first slice unless later evidence explicitly expands the scope.
 
 ### 10.3 Schema timing
 
@@ -151,22 +151,31 @@ Vehicle controls stay on the timestamped product-input path. Device-specific con
 
 Immersive/fullscreen behavior, HUD composition and user settings are presentation/capability layers. They may change how JV is operated or displayed without becoming vehicle-mechanics authority.
 
-## 12. Private source vs public artifact
+## 12. Source, Owner Preview and Friends artifact boundary
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
-  source / development / accepted private main
+  public source / development / accepted main
+
+preview/owner-control
+  operational exact-source pointer + Owner Preview Pages workflow
+  R&D/testing surface, not source or release acceptance authority
 
 Jozzpoly/JV-Box3D-Web-Public
-  generated public artifacts / GitHub Pages
+  accepted Friends artifacts / release main
+  artifact authority, not source authority
 ```
 
-`release/r0` stays immutable. `release/friends-r1` is the moving Friends line. A code-only Friends release may carry forward the exact already-published scan; a scan-changing release must explicitly pin the new approved scan input.
+Product changes originate in normal typed source. Owner Preview deploys an exact committed source candidate for rapid device/R&D evidence; a successful Preview does not itself grant product or release acceptance. Accepted Friends publication remains a separate artifact/release step from accepted source.
+
+Historical `release/*` branch names, when present in older history or documentation, are archaeology rather than current release authority. Current rollback and provenance use exact commits and live authority documented in `docs/PROJECT_STATE.md` / `docs/HANDOFF.md`.
+
+A code-only Friends release may carry forward the exact already-published scan; a scan-changing release must explicitly pin and validate the new approved scan input.
 
 ## 13. Architecture principles
 
-- owner-visible behavior and exact source/runtime evidence outrank historical naming;
-- source, authored data, visual representation, physics and release artifact are separate layers;
+- Owner-visible behavior and exact source/runtime evidence outrank historical naming;
+- source, Owner Preview deployment, accepted Friends artifact, authored data, visual representation and physics are separate layers;
 - JURE authors neutral rig truth; JV Web consumes it and owns runtime dynamics;
 - do not create partial hybrids between incompatible authored and procedural mechanism geometry;
 - tests protect real invariants, not provisional equations or incidental counts;
