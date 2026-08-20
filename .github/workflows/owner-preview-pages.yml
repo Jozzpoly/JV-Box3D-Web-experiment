@@ -28,7 +28,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Resolve exact source candidate
+      - name: Resolve exact preview composition
         id: candidate
         run: |
           python3 - <<'PY'
@@ -38,14 +38,43 @@ jobs:
           from pathlib import Path
 
           pointer = json.loads(Path("preview/owner.json").read_text(encoding="utf-8"))
-          if pointer.get("schema") != "JV_OWNER_PREVIEW_POINTER_V1":
-              raise SystemExit("preview/owner.json has an unsupported schema")
-          sha = str(pointer.get("sourceCommit", "")).strip().lower()
-          if re.fullmatch(r"[0-9a-f]{40}", sha) is None:
+          schema = pointer.get("schema")
+          source_sha = str(pointer.get("sourceCommit", "")).strip().lower()
+          if re.fullmatch(r"[0-9a-f]{40}", source_sha) is None:
               raise SystemExit("preview/owner.json must contain an exact 40-character sourceCommit SHA")
+
+          if schema == "JV_OWNER_PREVIEW_POINTER_V1":
+              scan = {
+                  "role": "accepted-jsprev2",
+                  "repository": "Jozzpoly/JV-Box3D-Web-Public",
+                  "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f",
+                  "receipt": "receipts/jv_friends_scan_receipt.json",
+              }
+          elif schema == "JV_OWNER_PREVIEW_POINTER_V2":
+              layers = pointer.get("staticLayers")
+              if not isinstance(layers, list) or len(layers) != 1:
+                  raise SystemExit("Owner Preview V2 requires exactly one accepted static layer")
+              scan = layers[0]
+          else:
+              raise SystemExit("preview/owner.json has an unsupported schema")
+
+          if not isinstance(scan, dict) or scan.get("role") != "accepted-jsprev2":
+              raise SystemExit("Owner Preview static layer must be accepted-jsprev2")
+          if scan.get("repository") != "Jozzpoly/JV-Box3D-Web-Public":
+              raise SystemExit("Owner Preview JSPREV2 must come from the accepted public artifact repository")
+          scan_sha = str(scan.get("commit", "")).strip().lower()
+          if re.fullmatch(r"[0-9a-f]{40}", scan_sha) is None:
+              raise SystemExit("Owner Preview JSPREV2 layer must pin an exact 40-character commit SHA")
+          if scan.get("receipt") != "receipts/jv_friends_scan_receipt.json":
+              raise SystemExit("Owner Preview JSPREV2 layer must use the canonical Friends scan receipt")
+
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              output.write(f"sha={sha}\n")
-          print(f"Owner Preview candidate: {sha}")
+              output.write(f"sha={source_sha}\n")
+              output.write(f"scan_repository={scan['repository']}\n")
+              output.write(f"scan_sha={scan_sha}\n")
+              output.write(f"scan_receipt={scan['receipt']}\n")
+          print(f"Owner Preview executable candidate: {source_sha}")
+          print(f"Owner Preview accepted JSPREV2 layer: {scan['repository']}@{scan_sha}")
           PY
 
       - name: Checkout exact source candidate
@@ -109,7 +138,161 @@ jobs:
           if (manifest?.publication?.publishedByBuild !== false) {
             throw new Error("Portable candidate must not claim it published itself.");
           }
-          console.log(`Preview identity verified: ${expected.slice(0, 12)}.`);
+          console.log(`Preview executable identity verified: ${expected.slice(0, 12)}.`);
+          NODE
+
+      - name: Fetch exact accepted JSPREV2 layer
+        env:
+          SCAN_REPOSITORY: ${{ steps.candidate.outputs.scan_repository }}
+          SCAN_SHA: ${{ steps.candidate.outputs.scan_sha }}
+        run: |
+          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
+          rm -rf "$scan_checkout"
+          git clone --filter=blob:none --no-checkout \
+            "https://github.com/${SCAN_REPOSITORY}.git" \
+            "$scan_checkout"
+          git -C "$scan_checkout" sparse-checkout init --cone
+          git -C "$scan_checkout" sparse-checkout set __jv_scan__ receipts
+          git -C "$scan_checkout" checkout --detach "$SCAN_SHA"
+          test "$(git -C "$scan_checkout" rev-parse HEAD)" = "$SCAN_SHA"
+          test -f "$scan_checkout/receipts/jv_friends_scan_receipt.json"
+          test -f "$scan_checkout/__jv_scan__/index.json"
+
+      - name: Compose and validate Owner Preview
+        env:
+          SOURCE_SHA: ${{ steps.candidate.outputs.sha }}
+          SCAN_REPOSITORY: ${{ steps.candidate.outputs.scan_repository }}
+          SCAN_SHA: ${{ steps.candidate.outputs.scan_sha }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
+        run: |
+          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
+          test ! -e dist/__jv_scan__
+          test ! -e "dist/$SCAN_RECEIPT"
+          mkdir -p dist/receipts
+          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
+          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
+
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          dist = Path("dist")
+          receipt_path = Path(os.environ["SCAN_RECEIPT"])
+          receipt = json.loads((dist / receipt_path).read_text(encoding="utf-8"))
+
+          if (
+              receipt.get("schema") != "JV_WEB_FRIENDS_SCAN_RELEASE_V1"
+              or receipt.get("schemaVersion") != 1
+              or receipt.get("releaseId") != "friends-r1"
+              or receipt.get("publicationClass") != "FRIENDS_PUBLIC_INPUT"
+              or receipt.get("sourceMetadataPreserved") is not True
+          ):
+              raise SystemExit("Accepted JSPREV2 receipt identity is invalid")
+
+          runtime = receipt.get("runtime")
+          if not isinstance(runtime, dict) or runtime.get("root") != "__jv_scan__/":
+              raise SystemExit("Accepted JSPREV2 receipt runtime root is invalid")
+
+          records = receipt.get("files")
+          if not isinstance(records, list) or len(records) != 33:
+              raise SystemExit("Accepted JSPREV2 receipt must record exactly 33 runtime files")
+
+          verified_bytes = 0
+          seen = set()
+          for record in records:
+              if not isinstance(record, dict):
+                  raise SystemExit("Accepted JSPREV2 receipt contains a non-object file record")
+              relative = record.get("path")
+              expected_bytes = record.get("bytes")
+              expected_sha = record.get("sha256")
+              if (
+                  not isinstance(relative, str)
+                  or not relative.startswith("__jv_scan__/")
+                  or relative in seen
+                  or not isinstance(expected_bytes, int)
+                  or not isinstance(expected_sha, str)
+                  or len(expected_sha) != 64
+              ):
+                  raise SystemExit(f"Invalid accepted JSPREV2 file record: {record!r}")
+              seen.add(relative)
+              payload = dist / relative
+              if not payload.is_file():
+                  raise SystemExit(f"Accepted JSPREV2 payload is missing: {relative}")
+              actual_bytes = payload.stat().st_size
+              if actual_bytes != expected_bytes:
+                  raise SystemExit(
+                      f"Accepted JSPREV2 byte mismatch for {relative}: "
+                      f"{actual_bytes} != {expected_bytes}"
+                  )
+              digest = hashlib.sha256(payload.read_bytes()).hexdigest()
+              if digest != expected_sha:
+                  raise SystemExit(
+                      f"Accepted JSPREV2 SHA-256 mismatch for {relative}: "
+                      f"{digest} != {expected_sha}"
+                  )
+              verified_bytes += actual_bytes
+
+          index_record = runtime.get("index")
+          if not isinstance(index_record, dict) or index_record.get("path") != "__jv_scan__/index.json":
+              raise SystemExit("Accepted JSPREV2 receipt does not pin the canonical index")
+
+          index = json.loads((dist / "__jv_scan__/index.json").read_text(encoding="utf-8"))
+          if (
+              index.get("schema") != "JV_WEB_JSPREV2_INDEX_V2"
+              or index.get("available") is not True
+              or index.get("packId") != "scan/photogrammetry-primary"
+          ):
+              raise SystemExit("Accepted JSPREV2 index identity is invalid")
+
+          composition = {
+              "schema": "JV_OWNER_PREVIEW_COMPOSITION_V1",
+              "executableSource": {
+                  "repository": "Jozzpoly/JV-Box3D-Web-experiment",
+                  "commit": os.environ["SOURCE_SHA"],
+                  "manifest": "build-manifest.json",
+              },
+              "staticLayers": [
+                  {
+                      "role": "accepted-jsprev2",
+                      "repository": os.environ["SCAN_REPOSITORY"],
+                      "commit": os.environ["SCAN_SHA"],
+                      "receipt": os.environ["SCAN_RECEIPT"],
+                      "previewContentSha256": receipt["source"]["previewContentSha256"],
+                      "runtimeFiles": len(records),
+                      "runtimeBytes": verified_bytes,
+                  }
+              ],
+          }
+          (dist / "owner-preview-composition.json").write_text(
+              json.dumps(composition, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(
+              f"Owner Preview composition verified: source {os.environ['SOURCE_SHA'][:12]}, "
+              f"JSPREV2 {os.environ['SCAN_SHA'][:12]}, "
+              f"{len(records)} files / {verified_bytes} bytes."
+          )
+          PY
+
+      - name: Verify executable layer stayed unchanged
+        env:
+          EXPECTED_SHA: ${{ steps.candidate.outputs.sha }}
+        run: |
+          node tools/validate-build-identity.mjs
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          if (manifest?.source?.commit !== process.env.EXPECTED_SHA) {
+            throw new Error("Owner Preview composition changed executable source identity.");
+          }
+          const composition = JSON.parse(
+            await readFile("dist/owner-preview-composition.json", "utf8"),
+          );
+          if (composition?.executableSource?.commit !== process.env.EXPECTED_SHA) {
+            throw new Error("Owner Preview composition provenance disagrees with executable source.");
+          }
           NODE
 
       - name: Upload Pages artifact
