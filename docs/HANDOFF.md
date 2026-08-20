@@ -134,7 +134,7 @@ Do not apply broad CSS hiding before inventorying exact controls and intended de
 
 ## Ref discipline at takeover
 
-After the docs-only authority correction, accepted `main` may be one docs-only commit ahead of the active steering branch's merge base. Do **not** rebase or force-update the steering branch merely to make `behind=0`; preserve the exact `1b25cf24...` candidate currently tied to Owner Preview evidence.
+Accepted `main` contains docs-only handoff/authority descendants after the active steering branch's merge base. Do **not** rebase or force-update the steering branch merely to make `behind=0`; preserve the exact `1b25cf24...` candidate currently tied to Owner Preview evidence. Resolve the live compare and verify that main-only descendants are documentation-only before treating branch divergence as product drift.
 
 `preview/owner-control` remains a special permanent operational lane. Do not merge its control history into source `main` merely for symmetry.
 
