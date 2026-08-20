@@ -1,183 +1,126 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-20
-Status: `HANDOFF READY / ACTIVE STEERING A/B + JSPREV2 LIVE ON OWNER PREVIEW / RELATIVE-X OWNER FEEL OPEN / JURE PAUSED`
+Status: `HANDOFF READY / DUAL-MODE STEERING OWNER-VALUED + JSPREV2 LIVE ON OWNER PREVIEW / STEERING TUNING OPEN / JURE PAUSED`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
-## Fresh entry — do this first
+## Fresh entry
 
 1. Resolve live `main` of `Jozzpoly/JV-Box3D-Web-experiment`.
 2. Resolve `work/direct-rotation-steering`.
 3. Resolve `preview/owner-control` and read `preview/owner.json`.
-4. Resolve live `main` of `Jozzpoly/JV-Box3D-Web-Public`.
+4. Resolve `Jozzpoly/JV-Box3D-Web-Public/main`.
 5. Read `AGENTS.md`.
 6. Read `docs/PROJECT_STATE.md`.
 7. Read this handoff.
-8. Reconstruct accepted, active, deployed and still-open state before any implementation.
 
-Do not restart takeover archaeology, old recovery/publication campaigns or a numbered roadmap merely because they appear in history.
+Do not restart takeover archaeology, recovery/publication campaigns or old numbered roadmaps merely because they exist in history.
 
-## Exact current boundary
+## Exact active boundary
 
 ```text
-accepted source main before current docs-only descendants:
-  8988dc716fd86b444e3f966edc238f16423a03c5
-
 canonical accepted executable source for P1.2/P1.3/P1.3.1:
   cd7f5f89e8cfb872ff6bddc619e3fb78f2124af4
-
-owner-approved product source before final test-only close fix:
-  23fe49c608da2aaecdf5cf28f3954d55bb364db9
 
 active steering branch:
   work/direct-rotation-steering
 
-active steering A/B source:
+active steering source:
   1b25cf242a007b84f236155e6067539c825876ec
 
-active steering A/B tree:
+active steering tree:
   20bf084af97fe0c3b780e621467c53362b779303
-
-previous Direct-only source:
-  ede95d3da814da97b54522b836f4c2ec0cddf1a7
-
-Owner Preview control lane:
-  preview/owner-control
 
 Owner Preview control implementation:
   5a57c316a297763c7b6310712b5fd0a9469dcf96
 
-Owner Preview executable source:
+Owner Preview executable:
   1b25cf242a007b84f236155e6067539c825876ec
 
-Owner Preview accepted JSPREV2 static layer:
+Owner Preview accepted JSPREV2 layer:
   Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f
-  receipt: receipts/jv_friends_scan_receipt.json
-
-Owner Preview URL:
-  https://jozzpoly.github.io/JV-Box3D-Web-experiment/
 
 accepted Friends/public artifact main:
   1b64b45b0d3c1d5cb7ccc469e98e300568580f60
-
-accepted Friends executable promotion:
-  7efe864a337349f4bbdb9e690c2209a0ee781ba2
 ```
 
-Source repository is public. `main` is accepted source/product authority. `JV-Box3D-Web-Public/main` remains accepted Friends/public artifact authority. `preview/owner-control` is only the operational Preview control lane.
+`main` is accepted source/product authority. Public/Friends `main` is artifact/release authority. `preview/owner-control` is operational control only.
 
-## Accepted baseline — preserve
+## Accepted baseline
 
-P1.2/P1.3/P1.3.1 is closed and Owner-accepted within its documented scope. Canonical close on `cd7f5f89...` used Node 24.16.0 / npm 11.17.0, normal repository build and full suite **462/462 PASS**.
+P1.2/P1.3/P1.3.1 is Owner-accepted within scope. Canonical close on exact `cd7f5f89...` used the normal repository build and full suite **462/462 PASS**.
 
-Owner final A53/Chrome smoke on the accepted Friends surface confirmed world/vehicle boot, steering, throttle+brake, utility drawer, steering plate default OFF with ON/OFF toggle, landscape/browser/fullscreen sanity and JSPREV2 loading.
+Protect the accepted mobile composition, utility drawer, steering surface, analog pedals, multitouch/lifecycle/D-R semantics, Camera Manual Rig V1, Fullscreen V1, Plac E2R, Offroad, JSPREV2, owner vehicle and accepted A53 render-1x boundary unless a focused later slice explicitly changes them.
 
-Protect Plac E2R, Offroad, approved JSPREV2, owner vehicle, Camera Manual Rig V1, Fullscreen V1, P1.2/P1.3/P1.3.1 presentation foundation, analog pedals, multitouch/lifecycle/D-R semantics and accepted A53 render-1x performance unless a later focused slice explicitly changes them.
+## Steering — current Owner decision
 
-## Active experiment — steering A/B
-
-The only active ordinary product work lane is:
-
-`work/direct-rotation-steering@1b25cf242a007b84f236155e6067539c825876ec`
-
-It is not accepted `main`.
-
-Owner-facing modes:
+Owner-facing modes on exact `1b25cf24...`:
 
 - `Obrót` = `DIRECT_ROTATION`;
 - `Przeciąganie` = `RELATIVE_X`.
 
-`X_POSITION` is internal regression/reference only.
+`X_POSITION` remains internal regression/reference only.
 
-Evidence already obtained:
+Technical evidence:
 
-- exact A/B candidate tree reconstructed on live Direct parent: `20bf084af97fe0c3b780e621467c53362b779303`;
-- fresh causal A/B validation: **80/80 PASS** on exact candidate bytes/tree;
-- Direct-only exact source independently reconstructed and freshly validated **63/63 PASS**;
-- A/B delta constrained to steering/host/UI/test scope with no physics, drivetrain, pedal, map or accepted-release spillover;
-- Owner previously confirmed Direct on Samsung Galaxy A53: no grab jump, easier small corrections, steering+pedal multitouch working;
-- Owner Preview exposes `Obrót / Przeciąganie` on the real Pages surface;
-- after JSPREV2 parity restoration, Owner rendered evidence shows the same A/B surface with the scan loaded and the vehicle present.
+- exact A/B tree `20bf084af97fe0c3b780e621467c53362b779303`;
+- fresh A/B validation **80/80 PASS**;
+- independently reconstructed Direct baseline **63/63 PASS**;
+- no physics, drivetrain, pedal, map or accepted-release spillover in the A/B delta.
 
-Still open:
+Owner evidence:
 
-- Relative-X driving feel on A53;
-- progressive gain 1 -> 4 ergonomics;
-- whether both modes should remain;
-- final steering acceptance;
-- integration into accepted `main`.
+- Direct previously proved materially better than X-only for small corrections, with no-jump acquisition and steering+pedal multitouch working;
+- Owner Preview exposes both modes on real Pages;
+- JSPREV2 parity is restored on the same Preview surface;
+- Owner has driven both modes and explicitly judges **both currently worth keeping and developing gradually**.
 
-**Do not merge, retune or replace Relative-X merely because it is deployed. The next steering decision follows Owner driving judgement.**
+Classification: `OWNER ACCEPTED — DUAL-MODE STEERING PRODUCT DIRECTION / FINAL TUNING OPEN`.
 
-## Owner Preview contract — V2 layered composition
+This closes the previous binary question of whether Relative-X has value and whether one mode should be removed now. It does not accept final tuning, gain, sensitivity, haptics/self-centering, industrial design or integration into `main`.
 
-Owner Preview Pages is the default iterative testing surface:
+Do not collapse back to one Owner-facing mode without new Owner evidence.
+
+## Owner Preview contract
+
+Owner Preview is the default iterative test surface:
 
 `https://jozzpoly.github.io/JV-Box3D-Web-experiment/`
 
-`preview/owner.json` now separates the exact executable source from explicitly preserved approved static layers.
+Preview V2 keeps executable and preserved static provenance separate. It builds exact `1b25cf24...`, composes exact accepted JSPREV2 from Public anchor `a325c279...`, validates all 33 scan runtime files by byte length + SHA-256 against the accepted receipt, records composition provenance and deploys only after identity checks.
 
-Current composition:
+The previous JSPREV2 Preview capability gap is closed by Owner rendered evidence.
 
-- executable: `Jozzpoly/JV-Box3D-Web-experiment@1b25cf242a007b84f236155e6067539c825876ec`;
-- JSPREV2 static layer: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`.
+Durable rule: Preview should preserve accepted capabilities unrelated to the active experiment. Deliberate omissions must be explicit and scoped.
 
-The workflow performs exact executable checkout, clean-tree verification, canonical Node/npm/dependency install, typecheck, portable build and build-identity verification. It then fetches the exact pinned scan layer, checks all 33 runtime files against the accepted Friends scan receipt using byte length + SHA-256, writes separate composition provenance and re-verifies executable identity before deploy.
+ZIP/local-Windows preview remains forensic/emergency fallback only.
 
-The previous JSPREV2 Preview capability gap is **CLOSED**. Owner confirmed and provided rendered evidence that the real Owner Preview now loads JSPREV2 while preserving the vehicle and `Obrót / Przeciąganie` A/B controls.
+## Roadmap status
 
-Durable rule: Preview should preserve accepted capabilities unrelated to the active experiment. If an omission is deliberate, make it explicit and scoped rather than silently normalizing a degraded testing surface.
+There is **no current fixed P1.4 -> P2 -> P3 scheduler**. `docs/MOBILE_DRIVING_ROADMAP_READINESS_AUDIT_2026-08-16.md` is historical pre-roadmap evidence, not a current work queue. `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` preserves durable Owner intent and explicitly rejects automatic progression by old stage numbers.
 
-Owner explicitly accepts Pages as the normal workflow. **Do not return to ZIP/local-Windows testing as the default because of agent tooling limitations.** ZIP/local preview is forensic/emergency fallback only.
+Current priority map:
 
-## Other open observation
+1. structurally close/integrate the dual-mode steering foundation before opening another ordinary product lane;
+2. then select the next small product need — pedal semantics/mechanical feedback is the strongest already-grounded candidate;
+3. keep desktop/mobile capability hygiene as an independent small slice;
+4. portrait-specific composition and control industrial-design convergence remain later UI/control directions;
+5. JURE/rig/handling remain separate later foundations;
+6. performance/LOD/streaming remains evidence-driven only.
 
-### Desktop/mobile capability hygiene
+## Ref discipline
 
-Owner observed that desktop exposes some mobile-oriented functions/controls that produce no useful effect there.
+The steering branch may remain behind docs-only `main` descendants. Do not rebase or force-update merely to make `behind=0`; first verify main-only descendants are documentation-only and preserve exact tested steering evidence.
 
-Classification: `OWNER OBSERVED / NOT YET SCOPED`.
-
-Do not apply broad CSS hiding before inventorying exact controls and intended desktop semantics.
-
-## Ref discipline at takeover
-
-Accepted `main` contains docs-only handoff/authority descendants after the active steering branch's merge base. Do **not** rebase or force-update the steering branch merely to make `behind=0`; preserve the exact `1b25cf24...` candidate currently tied to Owner Preview evidence. Resolve the live compare and verify that main-only descendants are documentation-only before treating branch divergence as product drift.
-
-`preview/owner-control` remains a special permanent operational lane. Do not merge its control history into source `main` merely for symmetry.
+`preview/owner-control` is a permanent special operational lane. Do not merge its history into product `main` for symmetry.
 
 ## Closed work not to restart
 
-Without new contradictory evidence, do not reopen:
+Without new contradictory evidence, do not reopen old recovery/publication work, Camera/Fullscreen reconstruction, P1 CSS repair, P1.2/P1.3/P1.3.1 canonical-close machinery, accepted A53 optimization, Preview JSPREV2 parity restoration, ZIP/local preview as normal workflow or speculative JURE runtime substitution.
 
-- old recovery/publication campaigns;
-- neutral-foundation validation machinery;
-- Camera/Fullscreen reconstruction;
-- old P1 CSS/overlay repair;
-- P1.2/P1.3/P1.3.1 canonical-close/publication runners;
-- accepted A53 1x optimization;
-- Owner Preview JSPREV2 parity restoration;
-- ZIP/local-Windows preview as normal workflow;
-- speculative JURE runtime substitution.
+## Next checkpoint
 
-Do not begin pedal redesign merely because steering code exists. The active steering experiment remains open until Owner judgement determines its next step.
+**Plan and validate integration of the dual-mode steering foundation into accepted `main` while keeping both mode tunings explicitly open.**
 
-## Takeover success criterion / next checkpoint
-
-A fresh agent should be able to recover, without this conversation:
-
-- accepted source/product authority;
-- accepted Friends/public artifact authority;
-- exact active steering source;
-- Owner Preview V2 executable + static-layer composition;
-- what has technical evidence versus Owner acceptance;
-- that JSPREV2 parity is restored on Preview;
-- that Relative-X feel remains open;
-- Pages as the default Owner-testing workflow;
-- desktop/mobile hygiene as a separate open item;
-- closed campaigns that must not be restarted.
-
-**Next product checkpoint: Owner driving judgement `Obrót` vs `Przeciąganie` on the current Owner Preview candidate.**
-
-If live refs and these primary docs disagree, stop and resolve the contradiction before product work.
+Do not start a separate pedal branch before resolving that structural close; otherwise the project would again have competing ordinary product lanes.
