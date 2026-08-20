@@ -2,7 +2,7 @@
 
 Updated: 2026-08-20
 Owner: Jozz
-Status: `P1.2/P1.3/P1.3.1 OWNER-ACCEPTED / ACTIVE STEERING A/B LIVE ON OWNER PREVIEW / RELATIVE-X OWNER FEEL OPEN / JURE PAUSED`
+Status: `P1.2/P1.3/P1.3.1 OWNER-ACCEPTED / ACTIVE STEERING A/B + JSPREV2 LIVE ON OWNER PREVIEW / RELATIVE-X OWNER FEEL OPEN / JURE PAUSED`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is the compact current-state authority, not project archaeology.
 
@@ -11,7 +11,7 @@ Git/current source, executed evidence and direct Owner observation outrank this 
 Accepted source/product authority is live `main` of public repository `Jozzpoly/JV-Box3D-Web-experiment`.
 
 ```text
-accepted source main before this docs-only authority correction:
+accepted source main before current docs-only descendants:
   8988dc716fd86b444e3f966edc238f16423a03c5
 
 canonical accepted executable source for P1.2/P1.3/P1.3.1:
@@ -35,8 +35,16 @@ previous Direct-only steering anchor:
 Owner Preview control lane:
   preview/owner-control
 
-Owner Preview exact pointer:
+Owner Preview control implementation:
+  5a57c316a297763c7b6310712b5fd0a9469dcf96
+
+Owner Preview executable pointer:
   1b25cf242a007b84f236155e6067539c825876ec
+
+Owner Preview accepted JSPREV2 static layer:
+  Jozzpoly/JV-Box3D-Web-Public
+  a325c279cfe63a0607dba33c3c635a1716e09f8f
+  receipts/jv_friends_scan_receipt.json
 
 Owner Preview URL:
   https://jozzpoly.github.io/JV-Box3D-Web-experiment/
@@ -47,9 +55,6 @@ accepted Friends/public artifact authority:
 
 accepted Friends executable promotion:
   7efe864a337349f4bbdb9e690c2209a0ee781ba2
-
-approved JSPREV2 preservation source:
-  a325c279cfe63a0607dba33c3c635a1716e09f8f
 ```
 
 `cd7f5f89...` remains the canonical executable-source anchor for the accepted P1.2/P1.3/P1.3.1 close. Later docs-only source commits do not inherit or replace that execution evidence.
@@ -120,7 +125,8 @@ Technical evidence for the committed A/B tree:
 Owner evidence:
 
 - Direct Rotation was previously tested on Samsung Galaxy A53 and judged materially better than X-only for small corrections, with correct no-jump grab behavior and working steering+pedal multitouch;
-- current Owner Preview visibly exposes and switches `Obrót / Przeciąganie`, proving the A/B candidate is live on the real Owner surface.
+- current Owner Preview visibly exposes and switches `Obrót / Przeciąganie`, proving the A/B candidate is live on the real Owner surface;
+- after Preview parity restoration, Owner provided rendered evidence showing the same A/B surface with JSPREV2 loaded and the vehicle present.
 
 Still **NOT VALIDATED / NOT ACCEPTED**:
 
@@ -130,26 +136,39 @@ Still **NOT VALIDATED / NOT ACCEPTED**:
 - final steering milestone acceptance;
 - integration of this steering experiment into accepted `main`.
 
-Do not merge or tune Relative-X merely because it is deployed. The next steering decision must follow real Owner driving judgement.
+Do not merge or tune Relative-X merely because it is deployed. The next product decision must follow real Owner driving judgement.
 
-## 5. Owner Preview workflow — ACCEPTED OPERATIONAL DEFAULT
+## 5. Owner Preview workflow — ACCEPTED OPERATIONAL DEFAULT / JSPREV2 PARITY RESTORED
 
 Owner Preview Pages is the normal iterative testing surface for JV-Web:
 
 `https://jozzpoly.github.io/JV-Box3D-Web-experiment/`
 
-The permanent `preview/owner-control` lane contains the deployment workflow and `preview/owner.json` exact-source pointer. The workflow checks out the exact pointed source SHA, verifies a clean tree, installs canonical Node/npm/dependencies, runs typecheck and `build:portable`, verifies build identity, uploads the Pages artifact and deploys.
+The permanent `preview/owner-control` lane contains the deployment workflow and `preview/owner.json` composition pointer.
+
+Current V2 Preview composition keeps two authorities separate:
+
+- executable layer: exact committed product candidate `1b25cf242a007b84f236155e6067539c825876ec`;
+- preserved static layer: exact accepted JSPREV2 from `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`.
+
+The workflow checks out the exact executable SHA, verifies a clean tree, installs canonical Node/npm/dependencies, runs typecheck and `build:portable`, verifies build identity, then fetches the exact pinned JSPREV2 layer. Before deploy it verifies all 33 scan runtime files against the accepted Friends scan receipt by byte length and SHA-256, writes `owner-preview-composition.json` with separate executable/static provenance and re-verifies that executable identity did not change.
 
 Foundation evidence already established:
 
 - valid candidate deployment succeeds;
 - syntactically valid nonexistent source SHA fails closed before artifact/deploy;
-- previous live Preview remains available after the failed candidate;
-- recovery to a known-good source succeeds.
+- previous live Preview remains available after a failed candidate;
+- recovery to a known-good source succeeds;
+- Owner Preview composition now preserves the accepted JSPREV2 without changing steering/product source;
+- Owner rendered evidence on 2026-08-20 shows `Skan JSPREV2` active, the photogrammetry world rendered, the vehicle present and `Obrót / Przeciąganie` still visible on the real Owner Preview surface.
+
+Classification: `OWNER PREVIEW JSPREV2 PARITY RESTORED`.
+
+This closes the previous Preview capability gap. It does **not** create new acceptance for steering feel, universal scan performance or other devices beyond the evidence actually observed.
 
 Owner explicitly accepts Pages as the default working loop. ZIP/local-Windows preview is forensic/emergency fallback only and must not become the normal workflow because of agent tooling limitations.
 
-Important capability boundary: current Owner Preview portable build does **not** include JSPREV2. Owner confirmed the scan remains unavailable on this surface. This is an **important open Preview capability gap**, not a steering regression and not a reason to return to ZIP/local testing.
+Durable Preview rule: accepted capabilities unrelated to the active experiment should not disappear silently. If a Preview intentionally omits one, the omission must be explicit and scoped as an open capability gap.
 
 ## 6. Other open observations — not active implementation
 
@@ -157,7 +176,7 @@ Owner observed that desktop currently exposes some mobile-oriented controls/func
 
 Classification: `OWNER OBSERVED / NOT YET SCOPED`.
 
-Do not apply broad CSS hiding or redesign before first inventorying the exact controls and deciding intended desktop semantics. Treat this as a future small desktop/mobile capability-hygiene slice, not part of the current handoff close.
+Do not apply broad CSS hiding or redesign before first inventorying the exact controls and deciding intended desktop semantics. Treat this as a future small desktop/mobile capability-hygiene slice, not part of the current steering decision.
 
 Other known non-blocking debt:
 
@@ -178,19 +197,19 @@ Never splice exact/JURE-authored hardpoints into an incompatible procedural mech
 
 JURE is paused for this handoff.
 
-## 8. Handoff boundary
+## 8. Handoff boundary / next decision
 
-The product is handoff-ready **with an active open experiment**.
+The product is handoff-ready **with an active open steering experiment**.
 
 A fresh agent must recover these distinctions without conversation history:
 
 - accepted `main` and accepted P1.2/P1.3/P1.3.1 boundary;
-- active steering A/B branch and exact source;
-- Owner Preview pointer and Pages role;
-- accepted Friends/public artifact authority;
+- active steering A/B branch and exact executable source;
+- Owner Preview V2 composition pointer and Pages role;
+- JSPREV2 parity is restored on Owner Preview through an exact accepted static layer, not by changing product source;
+- accepted Friends/public artifact authority remains separate;
 - Relative-X Owner feel and final steering decision remain open;
-- JSPREV2 is unavailable on Owner Preview but remains accepted on the Friends surface;
 - desktop/mobile no-op observation is open and unscoped;
 - old recovery/publication campaigns are closed.
 
-Do not interpret `HANDOFF READY` as permission to merge the A/B experiment, start pedals, change physics or restart old recovery work.
+The next product checkpoint is Owner driving judgement of `Obrót` versus `Przeciąganie` on the current Preview candidate. Do not start pedal redesign, merge steering or change physics before that judgement.
