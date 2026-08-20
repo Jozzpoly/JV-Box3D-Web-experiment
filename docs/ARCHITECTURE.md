@@ -15,7 +15,7 @@ index.html
 -> world renderer + owner vehicle layer
 ```
 
-The source product supports Plac E2R, Offroad and the approved JSPREV2 scan. The accepted Friends artifact includes those worlds. A specific Owner Preview payload may intentionally expose only a subset of heavy static data; deployment payload capability does not redefine the source/world contract. Current Preview-specific gaps belong in `docs/PROJECT_STATE.md`.
+The source product supports Plac E2R, Offroad and the approved JSPREV2 scan. The accepted Friends artifact includes those worlds. Owner Preview should preserve accepted capabilities unrelated to the active experiment. Heavy approved static data may be composed into Preview as an exact pinned artifact layer with explicit provenance instead of being copied into product source. A deliberate capability omission is an explicit scoped Preview gap recorded in `docs/PROJECT_STATE.md`, not the default delivery model.
 
 ## 2. World boundary
 
@@ -32,7 +32,7 @@ Public scan assets resolve relative to `document.baseURI`, so the same build wor
 
 Compressed HTTP `Content-Length` is not logical scan-file integrity. Runtime validates the decoded payload/format: byte length, magic/version/tile/group descriptors, counts/triangle relationships, index range and finite numeric streams.
 
-The source/release layer additionally pins the exact approved pack identity and file hashes.
+The source/release layer additionally pins the exact approved pack identity and file hashes. When JSPREV2 is preserved into Owner Preview as a static artifact layer, the Preview composition must pin an exact artifact commit and validate the runtime files against the approved release receipt before deploy.
 
 ## 4. Scan decode and loading
 
@@ -158,7 +158,8 @@ Jozzpoly/JV-Box3D-Web-experiment
   public source / development / accepted main
 
 preview/owner-control
-  operational exact-source pointer + Owner Preview Pages workflow
+  operational exact-executable + approved-static-layer composition pointer
+  Owner Preview Pages workflow
   R&D/testing surface, not source or release acceptance authority
 
 Jozzpoly/JV-Box3D-Web-Public
@@ -166,7 +167,11 @@ Jozzpoly/JV-Box3D-Web-Public
   artifact authority, not source authority
 ```
 
-Product changes originate in normal typed source. Owner Preview deploys an exact committed source candidate for rapid device/R&D evidence; a successful Preview does not itself grant product or release acceptance. Accepted Friends publication remains a separate artifact/release step from accepted source.
+Product changes originate in normal typed source. Owner Preview deploys an exact committed executable source candidate for rapid device/R&D evidence and may compose explicitly approved immutable static layers whose repository/commit/receipt provenance is pinned separately. A successful Preview does not itself grant product or release acceptance, and a preserved static layer does not become source authority.
+
+Current Preview V2 uses this model to preserve the approved JSPREV2 scan from exact Friends/Public anchor `a325c279cfe63a0607dba33c3c635a1716e09f8f` while the executable remains the active steering candidate. The composition records executable and static provenance separately and validates scan bytes before deploy.
+
+Accepted Friends publication remains a separate artifact/release step from accepted source.
 
 Historical `release/*` branch names, when present in older history or documentation, are archaeology rather than current release authority. Current rollback and provenance use exact commits and live authority documented in `docs/PROJECT_STATE.md` / `docs/HANDOFF.md`.
 
@@ -176,6 +181,8 @@ A code-only Friends release may carry forward the exact already-published scan; 
 
 - Owner-visible behavior and exact source/runtime evidence outrank historical naming;
 - source, Owner Preview deployment, accepted Friends artifact, authored data, visual representation and physics are separate layers;
+- Owner Preview preserves accepted capabilities unrelated to the active experiment unless an omission is explicit and scoped;
+- preserved Preview static data has separate exact provenance and never becomes executable/source authority;
 - JURE authors neutral rig truth; JV Web consumes it and owns runtime dynamics;
 - do not create partial hybrids between incompatible authored and procedural mechanism geometry;
 - tests protect real invariants, not provisional equations or incidental counts;
