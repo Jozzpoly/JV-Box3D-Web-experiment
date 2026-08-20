@@ -1,5 +1,13 @@
 {
-  "schema": "JV_OWNER_PREVIEW_POINTER_V1",
+  "schema": "JV_OWNER_PREVIEW_POINTER_V2",
   "sourceCommit": "1b25cf242a007b84f236155e6067539c825876ec",
-  "purpose": "Owner Preview steering A/B: Direct Rotation and Relative X"
+  "staticLayers": [
+    {
+      "role": "accepted-jsprev2",
+      "repository": "Jozzpoly/JV-Box3D-Web-Public",
+      "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f",
+      "receipt": "receipts/jv_friends_scan_receipt.json"
+    }
+  ],
+  "purpose": "Owner Preview steering A/B with accepted JSPREV2 parity"
 }
