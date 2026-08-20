@@ -1,5 +1,5 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V1",
-  "sourceCommit": "8988dc716fd86b444e3f966edc238f16423a03c5",
-  "purpose": "Owner Preview foundation canary after Pages Actions switch"
+  "sourceCommit": "0000000000000000000000000000000000000000",
+  "purpose": "Owner Preview fail-closed canary: nonexistent source commit"
 }
