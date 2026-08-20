@@ -1,62 +1,68 @@
 # JV Web — current project state
 
-Updated: 2026-08-19
+Updated: 2026-08-20
 Owner: Jozz
-Status: `P1.2/P1.3/P1.3.1 OWNER-ACCEPTED / CANONICAL + PUBLIC STEADY-STATE CLOSED / HANDOFF READY / NO ACTIVE PRODUCT SLICE / JURE PAUSED`
+Status: `P1.2/P1.3/P1.3.1 OWNER-ACCEPTED / ACTIVE STEERING A/B LIVE ON OWNER PREVIEW / RELATIVE-X OWNER FEEL OPEN / JURE PAUSED`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is the compact current-state authority, not project archaeology.
 
 ## 1. Current authority and exact anchors
 
-Private source/product authority is live `main` of `Jozzpoly/JV-Box3D-Web-experiment`.
-
-Exact executable/release anchors for the accepted mobile-polish boundary:
+Accepted source/product authority is live `main` of public repository `Jozzpoly/JV-Box3D-Web-experiment`.
 
 ```text
-owner-approved product source before test-only close fix:
-  23fe49c608da2aaecdf5cf28f3954d55bb364db9
+accepted source main before this docs-only authority correction:
+  8988dc716fd86b444e3f966edc238f16423a03c5
 
-canonical private executable source:
+canonical accepted executable source for P1.2/P1.3/P1.3.1:
   cd7f5f89e8cfb872ff6bddc619e3fb78f2124af4
 
-canonical source tree:
-  cc2afeb7902f05d12edd98961b2a43f0706603c8
+owner-approved product source before the final test-only close fix:
+  23fe49c608da2aaecdf5cf28f3954d55bb364db9
 
-clean canonical preview artifact:
-  fe5ba2c772dbb530848df5bcd55163171b5847bc
+active steering A/B branch:
+  work/direct-rotation-steering
 
-public executable steady-state promotion:
-  7efe864a337349f4bbdb9e690c2209a0ee781ba2
+active steering A/B source:
+  1b25cf242a007b84f236155e6067539c825876ec
 
-Owner-acceptance provenance anchor:
-  086e25c9bd22bddca6462f0d585de6d0fd424012
+active steering A/B tree:
+  20bf084af97fe0c3b780e621467c53362b779303
 
-current public main after public handoff/control-plane closure:
+previous Direct-only steering anchor:
+  ede95d3da814da97b54522b836f4c2ec0cddf1a7
+
+Owner Preview control lane:
+  preview/owner-control
+
+Owner Preview exact pointer:
+  1b25cf242a007b84f236155e6067539c825876ec
+
+Owner Preview URL:
+  https://jozzpoly.github.io/JV-Box3D-Web-experiment/
+
+accepted Friends/public artifact authority:
+  Jozzpoly/JV-Box3D-Web-Public main
   1b64b45b0d3c1d5cb7ccc469e98e300568580f60
 
-previous accepted public steady-state:
-  f512551dc41196bc8ca053357408c93b4b3725be
+accepted Friends executable promotion:
+  7efe864a337349f4bbdb9e690c2209a0ee781ba2
 
 approved JSPREV2 preservation source:
   a325c279cfe63a0607dba33c3c635a1716e09f8f
-
-historical public R0:
-  c3e33e3dcd343a6d3b5f60df6e07a4a78a64dd44
 ```
 
-Current private `main` is a documentation-only descendant of `cd7f5f89...`; do not transfer canonical execution claims to later docs-only commits. `cd7f5f89...` remains the executable-source anchor.
+`cd7f5f89...` remains the canonical executable-source anchor for the accepted P1.2/P1.3/P1.3.1 close. Later docs-only source commits do not inherit or replace that execution evidence.
 
-Public `main@1b64b45b...` is documentation/provenance-only after executable promotion `7efe864a...`; runtime/artifact bytes remain those of the accepted canonical promotion.
+The active steering branch is intentionally ahead of accepted `main`; it is an experiment, not accepted source authority. `preview/owner-control` is operational deployment control only and must not be treated as another product source tree.
 
-## 2. Product/release acceptance — CLOSED
+## 2. Accepted product/release boundary — CLOSED
 
 Canonical Windows close on exact `cd7f5f89...` used Node 24.16.0 / npm 11.17.0, `npm ci`, the normal repository `npm run build`, typecheck/docs/third-party/build checks and the full repository suite **462/462 PASS**.
 
-The `cd7f5f89...` commit is test-only relative to Owner-approved product source `23fe49c...`; it added coverage for the already-existing steering-plate setting and did not change product runtime source.
+The final test-only close commit added coverage for the already-existing steering-plate setting and did not change the Owner-approved product runtime source.
 
-The clean public artifact was composed onto public `main` without the preview overlay. Release provenance records exact private source `cd7f5f89...`, preserved approved JSPREV2 bytes and no public runtime overlay carry-forward.
-
-Owner final steady-state smoke on Samsung Galaxy A53 / Chrome confirmed on the normal public surface:
+Owner final steady-state smoke on Samsung Galaxy A53 / Chrome confirmed on the accepted Friends surface:
 
 - world and vehicle boot;
 - steering;
@@ -66,22 +72,20 @@ Owner final steady-state smoke on Samsung Galaxy A53 / Chrome confirmed on the n
 - landscape/browser and fullscreen with no obvious regression;
 - JSPREV2 loading.
 
-This closes the P1.2/P1.3/P1.3.1 product/release boundary. Do not restart canonical-close/publication-helper work without new contradictory evidence.
-
-GitHub Pages configuration was not independently re-read through a Pages-settings API during the final close because the available connector did not expose that endpoint. The Owner nevertheless exercised the normal public surface after promotion and observed the newly promoted behavior. Do not claim a fresh Pages-settings API verification that did not occur.
+This closes the P1.2/P1.3/P1.3.1 source/build/Friends-release boundary. Do not restart old recovery/publication-helper work without new contradictory evidence.
 
 ## 3. Accepted product foundation
 
-Preserve unless a later focused slice explicitly changes it:
+Protect unless a later focused slice explicitly changes it:
 
-- Plac E2R, Offroad and approved JSPREV2;
+- Plac E2R, Offroad and approved JSPREV2 on the accepted Friends surface;
 - current owner vehicle;
 - Camera Manual Rig V1;
 - Fullscreen V1;
 - P1.2 short-landscape/lower-driving composition foundation;
 - P1.3 minimal persistent driving HUD + transient utility drawer;
 - P1.3.1 compact top actions, larger physical-wheel presentation and steering plate default OFF/optional ON;
-- current X-only analog steering `POSITION` interaction;
+- accepted X-only analog steering `POSITION` reference;
 - analog throttle/brake foundation;
 - independent multitouch ownership;
 - fail-closed lifecycle behavior and current D/R semantics;
@@ -89,82 +93,104 @@ Preserve unless a later focused slice explicitly changes it:
 
 This is not final authority for pedal mapping/mechanics/industrial design, steering gesture/industrial design, portrait-specific composition, final rig geometry or handling.
 
-Scoped historical Owner acceptance is summarized in `docs/OWNER_CHECKPOINTS.md`.
+Scoped durable Owner acceptance is in `docs/OWNER_CHECKPOINTS.md`.
 
-## 4. No active product slice
+## 4. Active product slice — steering A/B
 
-Do **not** continue an old numbered roadmap mechanically. Real P1.2 -> P1.3 -> P1.3.1 work already crossed and reshaped several earlier roadmap boundaries.
+One active ordinary product lane exists:
 
-The next product conversation should first resolve live state and current Owner intent, then choose the smallest useful product need. Durable open directions include, without implying an order:
+```text
+work/direct-rotation-steering@1b25cf242a007b84f236155e6067539c825876ec
+```
 
-- absolute-position pedal mapping inside frozen acquisition geometry;
-- mechanical pedal depression/feedback and later joint wheel+pedal industrial design;
-- further steering visual refinement if new Owner feedback calls for it;
-- isolated direct-rotation steering experiment against the still-working X-only reference;
-- intentional portrait-specific composition;
-- later rig/handling work only within the established JV/JURE authority boundary.
+Current candidate contains two selectable steering interactions:
 
-`docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` preserves these interaction targets/falsifiers. It is intent authority when relevant, not a mandatory scheduler.
+- `DIRECT_ROTATION` / UI label `Obrót` — realistic rigid-wheel manipulation and current stronger experimental baseline;
+- `RELATIVE_X` / UI label `Przeciąganie` — intention-oriented horizontal relative drag with progressive gain from 1 near center toward 4 at lock.
 
-## 5. Repository/ref state
+`X_POSITION` remains an internal regression/reference mode, not an Owner-facing A/B choice.
 
-Only `main` is current private authority and only public `main` is current artifact authority.
+Technical evidence for the committed A/B tree:
 
-Redundant historical/private refs may still be visible (`work/p1-2-hud-composition`, `work/p1-3-utility-drawer`, `work/p1-3-1-drawer-polish`, `checkpoint/p1-3-1-handoff-2026-08-18`) and public `preview/p1-2-owner` may still exist. They are not active work or competing truth.
+- exact reconstruction on the live Direct parent produced tree `20bf084af97fe0c3b780e621467c53362b779303`;
+- fresh causal auxiliary validation: **80/80 PASS** on the exact candidate bytes/tree;
+- Direct-only source was independently reconstructed to live tree and freshly validated **63/63 PASS**;
+- A/B delta was verified as the intended steering/host/UI/test scope with no physics, drivetrain, pedal, map or accepted-release spillover.
 
-The available GitHub connector in this session does not expose branch-ref deletion. Do not create another owner-side helper campaign merely to remove redundant names. Physical ref deletion is hygiene debt only; resolve ancestry before any later deletion.
+Owner evidence:
 
-## 6. Security/dependency and non-blocking debt
+- Direct Rotation was previously tested on Samsung Galaxy A53 and judged materially better than X-only for small corrections, with correct no-jump grab behavior and working steering+pedal multitouch;
+- current Owner Preview visibly exposes and switches `Obrót / Przeciąganie`, proving the A/B candidate is live on the real Owner surface.
 
-The latest canonical `npm ci` reported one high-severity dependency finding. Earlier exact V5 evidence classified the then-current finding as a transitive dev-only `nanoid` advisory with production-only audit at 0 vulnerabilities; exact attribution was **not independently re-run for the final `cd7f5f89...` close**. Treat the old attribution as historical evidence, not a freshly re-proven current fact.
+Still **NOT VALIDATED / NOT ACCEPTED**:
 
-Do not run blind `npm audit fix`. Dependency maintenance should be a deliberate future slice with lockfile/toolchain revalidation.
+- Relative-X driving feel on the A53;
+- whether progressive gain 1 -> 4 is ergonomically correct;
+- whether both modes should remain in the product;
+- final steering milestone acceptance;
+- integration of this steering experiment into accepted `main`.
+
+Do not merge or tune Relative-X merely because it is deployed. The next steering decision must follow real Owner driving judgement.
+
+## 5. Owner Preview workflow — ACCEPTED OPERATIONAL DEFAULT
+
+Owner Preview Pages is the normal iterative testing surface for JV-Web:
+
+`https://jozzpoly.github.io/JV-Box3D-Web-experiment/`
+
+The permanent `preview/owner-control` lane contains the deployment workflow and `preview/owner.json` exact-source pointer. The workflow checks out the exact pointed source SHA, verifies a clean tree, installs canonical Node/npm/dependencies, runs typecheck and `build:portable`, verifies build identity, uploads the Pages artifact and deploys.
+
+Foundation evidence already established:
+
+- valid candidate deployment succeeds;
+- syntactically valid nonexistent source SHA fails closed before artifact/deploy;
+- previous live Preview remains available after the failed candidate;
+- recovery to a known-good source succeeds.
+
+Owner explicitly accepts Pages as the default working loop. ZIP/local-Windows preview is forensic/emergency fallback only and must not become the normal workflow because of agent tooling limitations.
+
+Important capability boundary: current Owner Preview portable build does **not** include JSPREV2. Owner confirmed the scan remains unavailable on this surface. This is an **important open Preview capability gap**, not a steering regression and not a reason to return to ZIP/local testing.
+
+## 6. Other open observations — not active implementation
+
+Owner observed that desktop currently exposes some mobile-oriented controls/functions that have no useful visible effect there.
+
+Classification: `OWNER OBSERVED / NOT YET SCOPED`.
+
+Do not apply broad CSS hiding or redesign before first inventorying the exact controls and deciding intended desktop semantics. Treat this as a future small desktop/mobile capability-hygiene slice, not part of the current handoff close.
 
 Other known non-blocking debt:
 
+- latest canonical install reported one high-severity dependency finding; older attribution to dev-only `nanoid` is historical, not freshly re-proven for `cd7f5f89...`;
 - portable network-policy proof does not formally cover arbitrary JavaScript network behavior;
 - branch protection is not enabled;
 - existing Vite `box3d.js` browser-externalization warning;
 - existing >500 kB main-chunk warning;
-- redundant historical branch names noted above.
+- redundant historical branch names.
 
-Do not convert these into an open-ended cleanup campaign unless they impede a selected product goal.
+Do not turn these into open-ended cleanup campaigns unless they block a selected product goal.
 
 ## 7. JURE boundary
 
-JURE remains future Owner-authored rig authority; JV Web remains browser/runtime physics, controls, rendering and public product authority. Current procedural M6 geometry must not be silently upgraded into authored neutral truth.
+JURE remains future Owner-authored rig authority; JV Web remains browser/runtime physics, controls and rendering authority. Current procedural M6 geometry must not be silently upgraded into authored neutral truth.
 
 Never splice exact/JURE-authored hardpoints into an incompatible procedural mechanism. Use `docs/contracts/JURE_CONSUMER_BOUNDARY.md` when JURE work becomes active.
 
-JURE is paused for the current handoff.
+JURE is paused for this handoff.
 
-## 8. Fresh-agent takeover
+## 8. Handoff boundary
 
-Normal takeover route:
+The product is handoff-ready **with an active open experiment**.
 
-1. resolve live private `main` and public `main`;
-2. read `AGENTS.md`;
-3. read this file;
-4. read `docs/HANDOFF.md`;
-5. inspect only source/tests needed for the selected next need;
-6. read `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` only when mobile-control/polish intent is relevant.
+A fresh agent must recover these distinctions without conversation history:
 
-Do not restart recovery archaeology, neutral-foundation validation, old Camera/Fullscreen reconstruction, old public-overlay repair, P1.2/P1.3/P1.3.1 publication machinery, accepted-A53 micro-optimization or speculative JURE runtime substitution without new contradictory evidence.
+- accepted `main` and accepted P1.2/P1.3/P1.3.1 boundary;
+- active steering A/B branch and exact source;
+- Owner Preview pointer and Pages role;
+- accepted Friends/public artifact authority;
+- Relative-X Owner feel and final steering decision remain open;
+- JSPREV2 is unavailable on Owner Preview but remains accepted on the Friends surface;
+- desktop/mobile no-op observation is open and unscoped;
+- old recovery/publication campaigns are closed.
 
-Dated technical/roadmap audits are historical evidence. They do not override this current state.
-
-## 9. Handoff readiness — PASS
-
-A fresh-agent reconstruction pass was performed after private/public consolidation. Using live refs plus `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`, the agent could recover:
-
-- current private/public authority;
-- exact executable/public promotion anchors;
-- the accepted product boundary and its Owner evidence;
-- the fact that no product slice is active;
-- future intent versus accepted truth;
-- known non-blocking debt and redundant refs;
-- closed campaigns that must not be restarted.
-
-The first simulation found one stale public `AGENTS.md` claim that Owner validation was still pending. That contradiction was corrected in public control-plane commit `1b64b45b...`, and the reconstruction then became internally consistent.
-
-**Handoff status: READY.** A new conversation should verify live refs, read the three primary authority documents and then select the next small product need from current Owner intent rather than replaying the old roadmap.
+Do not interpret `HANDOFF READY` as permission to merge the A/B experiment, start pedals, change physics or restart old recovery work.
