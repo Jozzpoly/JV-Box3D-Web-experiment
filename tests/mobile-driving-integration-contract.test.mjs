@@ -109,3 +109,58 @@ test("restart invalidates old presentation before disposing the old host", async
   assert.ok(begin > start, "new presentation generation must start inside startHost");
   assert.ok(dispose > begin, "old host must be disposed only after presentation invalidation");
 });
+
+
+test("selectable steering keeps Direct and Relative-X as explicit product alternatives", async () => {
+  const adapter = await source("src/input/pointer-steering-joystick-adapter.ts");
+  const main = await source("src/main.ts");
+  const productMain = await source("src/product-main.ts");
+  const controls = await source("src/product-controls.ts");
+
+  assert.match(adapter, /"DIRECT_ROTATION"[\s\S]*"RELATIVE_X"/);
+  assert.match(main, /selectedSteeringInteraction:[\s\S]*"DIRECT_ROTATION"/);
+  assert.match(main, /getSteeringInteraction:\s*\(\)\s*=>\s*selectedSteeringInteraction/);
+  assert.match(productMain, /const productRuntime = await import\("\.\/main\.js"\)/);
+  assert.match(productMain, /get:\s*productRuntime\.getProductSteeringInteraction/);
+  assert.match(productMain, /set:\s*productRuntime\.setProductSteeringInteraction/);
+  assert.match(controls, /controlGroup\("Kierownica"\)/);
+  assert.match(controls, /DIRECT_ROTATION[\s\S]*Obrót/);
+  assert.match(controls, /RELATIVE_X[\s\S]*Przeciąganie/);
+});
+
+test("steering interaction selection stays session-scoped instead of polluting view settings or URL state", async () => {
+  const controls = await source("src/product-controls.ts");
+  const viewSettings = await source("src/render/jv-product-view-settings.ts");
+  const productMain = await source("src/product-main.ts");
+
+  assert.doesNotMatch(viewSettings, /steeringInteraction|RELATIVE_X|DIRECT_ROTATION/);
+  assert.doesNotMatch(controls, /jvSteeringInteraction|rememberSteeringInteraction/);
+  assert.doesNotMatch(productMain, /jvSteeringInteraction/);
+});
+
+test("F4 and clean browser host only forward the steering interaction provider", async () => {
+  const f4 = await source("src/app/f4-vehicle-host.ts");
+  const clean = await source("src/app/clean-browser-host.ts");
+
+  assert.match(f4, /getSteeringInteraction\?:\s*\(\)\s*=>\s*PointerSteeringInteraction/);
+  assert.match(f4, /\{ getSteeringInteraction: options\.getSteeringInteraction \}/);
+  assert.match(clean, /getSteeringInteraction\?:\s*\(\)\s*=>\s*PointerSteeringInteraction/);
+  assert.match(clean, /\{ getInteraction: options\.getSteeringInteraction \}/);
+  assert.doesNotMatch(f4, /setSteeringInteraction\(/);
+  assert.doesNotMatch(clean, /setSteeringInteraction\(/);
+});
+
+
+test("steering interaction selection survives host restart within the same product session", async () => {
+  const main = await source("src/main.ts");
+  const selection = main.indexOf("let selectedSteeringInteraction");
+  const startHost = main.indexOf("async function startHost(): Promise<void>");
+  const provider = main.indexOf(
+    "getSteeringInteraction: () => selectedSteeringInteraction",
+    startHost,
+  );
+
+  assert.ok(selection >= 0, "session steering selection is missing");
+  assert.ok(selection < startHost, "steering selection must outlive individual host starts");
+  assert.ok(provider > startHost, "every host start must receive the live selection provider");
+});

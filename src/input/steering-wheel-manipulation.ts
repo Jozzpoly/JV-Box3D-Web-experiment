@@ -18,7 +18,13 @@ export interface SteeringWheelRotationState {
   readonly pointerAngleRadians: number | null;
 }
 
+export interface SteeringWheelHorizontalState {
+  readonly wheelAngleRadians: number;
+  readonly pointerX: number;
+}
+
 const TAU = Math.PI * 2;
+const RELATIVE_HORIZONTAL_GAIN_AT_LOCK = 4;
 
 function assertFinite(value: number, label: string): void {
   if (!Number.isFinite(value)) {
@@ -195,11 +201,59 @@ export function advanceSteeringWheelRotation(
 }
 
 export function steeringPositionForWheelRotation(
-  state: SteeringWheelRotationState,
+  state: Readonly<{ wheelAngleRadians: number }>,
   lockRadians: number,
 ): number {
   return wheelAngleToSteeringPosition(
     clampWheelAngle(state.wheelAngleRadians, lockRadians),
     lockRadians,
   );
+}
+
+export function beginSteeringWheelHorizontalManipulation(
+  steeringPosition: number,
+  pointerX: number,
+  lockRadians: number,
+): SteeringWheelHorizontalState {
+  assertFinite(pointerX, "Steering pointer X");
+  return {
+    wheelAngleRadians: steeringPositionToWheelAngle(
+      steeringPosition,
+      lockRadians,
+    ),
+    pointerX,
+  };
+}
+
+export function advanceSteeringWheelHorizontalManipulation(
+  state: SteeringWheelHorizontalState,
+  pointerX: number,
+  radiusX: number,
+  lockRadians: number,
+): SteeringWheelHorizontalState {
+  assertFinite(state.wheelAngleRadians, "Steering wheel angle");
+  assertFinite(state.pointerX, "Previous steering pointer X");
+  assertFinite(pointerX, "Steering pointer X");
+  assertPositive(radiusX, "Steering wheel horizontal radius");
+  assertPositive(lockRadians, "Steering wheel lock");
+
+  const deltaX = pointerX - state.pointerX;
+  const steeringMagnitude = Math.abs(
+    wheelAngleToSteeringPosition(state.wheelAngleRadians, lockRadians),
+  );
+  const gain = 1 +
+    (RELATIVE_HORIZONTAL_GAIN_AT_LOCK - 1) * steeringMagnitude;
+  return {
+    // Around center, gain=1 and the motion exactly matches the horizontal
+    // tangent of direct wheel manipulation. Gain rises smoothly toward lock so
+    // full steering remains reachable from a typical central grab on the
+    // left-side mobile control without sacrificing fine center corrections.
+    // The accumulator is
+    // clamped directly, so motion beyond lock creates no overshoot debt.
+    wheelAngleRadians: clampWheelAngle(
+      state.wheelAngleRadians + deltaX / radiusX * gain,
+      lockRadians,
+    ),
+    pointerX,
+  };
 }

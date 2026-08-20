@@ -1,18 +1,22 @@
 import type { InputReleaseReason } from "./raw-device-event.js";
 import type { SteeringPositionTimeline } from "./steering-position-timeline.js";
 import {
+  advanceSteeringWheelHorizontalManipulation,
   advanceSteeringWheelRotation,
+  beginSteeringWheelHorizontalManipulation,
   beginSteeringWheelRotation,
   freezeSteeringWheelGeometry,
   resolveSteeringWheelPointerAngle,
   steeringPositionForWheelRotation,
   type FrozenSteeringWheelGeometry,
+  type SteeringWheelHorizontalState,
   type SteeringWheelRotationState,
 } from "./steering-wheel-manipulation.js";
 
 export type PointerSteeringInteraction =
   | "X_POSITION"
-  | "DIRECT_ROTATION";
+  | "DIRECT_ROTATION"
+  | "RELATIVE_X";
 
 export interface PointerSteeringJoystickTarget extends EventTarget {
   setPointerCapture(pointerId: number): void;
@@ -44,6 +48,7 @@ export interface PointerSteeringJoystickAdapterOptions {
   readonly isDocumentHidden: () => boolean;
   readonly sourceId?: string;
   readonly interaction?: PointerSteeringInteraction;
+  readonly getInteraction?: () => PointerSteeringInteraction;
   readonly deadZone?: number;
   readonly wheelGeometrySource?: PointerSteeringWheelGeometrySource;
   readonly wheelCenterGuardRatio?: number;
@@ -121,7 +126,7 @@ export class PointerSteeringJoystickAdapter {
   readonly #now: () => number;
   readonly #isDocumentHidden: () => boolean;
   readonly #sourceId: string;
-  readonly #interaction: PointerSteeringInteraction;
+  readonly #getInteraction: () => PointerSteeringInteraction;
   readonly #deadZone: number;
   readonly #wheelGeometrySource:
     | PointerSteeringWheelGeometrySource
@@ -133,9 +138,11 @@ export class PointerSteeringJoystickAdapter {
     | undefined;
   readonly #listeners: InstalledListener[] = [];
   #activePointerId: number | null = null;
+  #activeInteraction: PointerSteeringInteraction | null = null;
   #activeXGeometry: ActiveXSteeringGeometry | null = null;
   #activeWheelGeometry: FrozenSteeringWheelGeometry | null = null;
   #rotationState: SteeringWheelRotationState | null = null;
+  #horizontalState: SteeringWheelHorizontalState | null = null;
   #currentPosition = 0;
   #hasActivated = false;
   #disposed = false;
@@ -186,7 +193,21 @@ export class PointerSteeringJoystickAdapter {
     this.#now = options.now;
     this.#isDocumentHidden = options.isDocumentHidden;
     this.#sourceId = options.sourceId ?? "pointer-steering-joystick";
-    this.#interaction = options.interaction ?? "DIRECT_ROTATION";
+    if (
+      options.interaction !== undefined &&
+      options.getInteraction !== undefined
+    ) {
+      throw new Error(
+        "Steering interaction must use either a fixed mode or a provider, not both.",
+      );
+    }
+    if (options.getInteraction !== undefined) {
+      this.#getInteraction = options.getInteraction;
+    } else {
+      const interaction = options.interaction ?? "DIRECT_ROTATION";
+      this.#assertInteraction(interaction);
+      this.#getInteraction = () => interaction;
+    }
     this.#deadZone = options.deadZone ?? DEFAULT_DEAD_ZONE;
     this.#wheelGeometrySource = options.wheelGeometrySource;
     this.#wheelCenterGuardRatio =
@@ -195,15 +216,17 @@ export class PointerSteeringJoystickAdapter {
       options.wheelLockRadians ?? DEFAULT_DIRECT_WHEEL_LOCK_RADIANS;
     this.#onStateChange = options.onStateChange;
 
-    if (this.#interaction === "X_POSITION") {
-      resolvePointerSteeringPosition(0, -1, 2, this.#deadZone);
-    } else {
-      freezeSteeringWheelGeometry(
-        { left: 0, top: 0, width: 2, height: 2 },
-        this.#wheelCenterGuardRatio,
-      );
-      beginSteeringWheelRotation(0, 0, this.#wheelLockRadians);
-    }
+    resolvePointerSteeringPosition(0, -1, 2, this.#deadZone);
+    const validationGeometry = freezeSteeringWheelGeometry(
+      { left: 0, top: 0, width: 2, height: 2 },
+      this.#wheelCenterGuardRatio,
+    );
+    beginSteeringWheelRotation(0, 0, this.#wheelLockRadians);
+    beginSteeringWheelHorizontalManipulation(
+      0,
+      validationGeometry.centerX,
+      this.#wheelLockRadians,
+    );
 
     this.#listen(this.#target, "pointerdown", this.#onPointerDown);
     this.#listen(this.#target, "pointermove", this.#onPointerMove);
@@ -283,9 +306,11 @@ export class PointerSteeringJoystickAdapter {
     }
 
     this.#activePointerId = event.pointerId;
+    this.#activeInteraction = prepared.interaction;
     this.#activeXGeometry = prepared.xGeometry;
     this.#activeWheelGeometry = prepared.wheelGeometry;
     this.#rotationState = prepared.rotationState;
+    this.#horizontalState = prepared.horizontalState;
     this.#currentPosition = prepared.value;
     this.#hasActivated = true;
     this.#timeline.enqueuePosition(
@@ -320,12 +345,19 @@ export class PointerSteeringJoystickAdapter {
   }
 
   #prepareGesture(event: PointerEvent): Readonly<{
+    interaction: PointerSteeringInteraction;
     value: number;
     xGeometry: ActiveXSteeringGeometry | null;
     wheelGeometry: FrozenSteeringWheelGeometry | null;
     rotationState: SteeringWheelRotationState | null;
+    horizontalState: SteeringWheelHorizontalState | null;
   }> | null {
-    if (this.#interaction === "X_POSITION") {
+    const interaction = this.#interactionForNewGesture();
+    if (interaction === null) {
+      return null;
+    }
+
+    if (interaction === "X_POSITION") {
       const geometry = this.#captureXGeometry();
       if (geometry === null) {
         return null;
@@ -335,10 +367,12 @@ export class PointerSteeringJoystickAdapter {
         return null;
       }
       return {
+        interaction,
         value,
         xGeometry: geometry,
         wheelGeometry: null,
         rotationState: null,
+        horizontalState: null,
       };
     }
 
@@ -346,6 +380,24 @@ export class PointerSteeringJoystickAdapter {
     if (geometry === null) {
       return null;
     }
+    if (interaction === "RELATIVE_X") {
+      return {
+        interaction,
+        // Relative horizontal manipulation is also anchored to the held wheel
+        // position. Pointer-down therefore owns the gesture without changing
+        // steering, regardless of where the visible wheel was grabbed.
+        value: this.#currentPosition,
+        xGeometry: null,
+        wheelGeometry: geometry,
+        rotationState: null,
+        horizontalState: beginSteeringWheelHorizontalManipulation(
+          this.#currentPosition,
+          event.clientX,
+          this.#wheelLockRadians,
+        ),
+      };
+    }
+
     const pointerAngle = this.#wheelPointerAngleFor(event, geometry);
     const rotationState = beginSteeringWheelRotation(
       this.#currentPosition,
@@ -353,6 +405,7 @@ export class PointerSteeringJoystickAdapter {
       this.#wheelLockRadians,
     );
     return {
+      interaction,
       // Direct manipulation is relative to the wheel position at grab. Pointer
       // down therefore re-enqueues the existing position instead of snapping to
       // the absolute touch angle.
@@ -360,18 +413,39 @@ export class PointerSteeringJoystickAdapter {
       xGeometry: null,
       wheelGeometry: geometry,
       rotationState,
+      horizontalState: null,
     };
   }
 
   #valueForMove(event: PointerEvent): number | null {
-    if (this.#interaction === "X_POSITION") {
+    if (this.#activeInteraction === "X_POSITION") {
       if (this.#activeXGeometry === null) {
         return null;
       }
       return this.#xPositionFor(event.clientX, this.#activeXGeometry);
     }
 
+    if (this.#activeInteraction === "RELATIVE_X") {
+      if (
+        this.#activeWheelGeometry === null ||
+        this.#horizontalState === null
+      ) {
+        return null;
+      }
+      this.#horizontalState = advanceSteeringWheelHorizontalManipulation(
+        this.#horizontalState,
+        event.clientX,
+        this.#activeWheelGeometry.radiusX,
+        this.#wheelLockRadians,
+      );
+      return steeringPositionForWheelRotation(
+        this.#horizontalState,
+        this.#wheelLockRadians,
+      );
+    }
+
     if (
+      this.#activeInteraction !== "DIRECT_ROTATION" ||
       this.#activeWheelGeometry === null ||
       this.#rotationState === null
     ) {
@@ -420,9 +494,33 @@ export class PointerSteeringJoystickAdapter {
 
   #clearActiveGesture(): void {
     this.#activePointerId = null;
+    this.#activeInteraction = null;
     this.#activeXGeometry = null;
     this.#activeWheelGeometry = null;
     this.#rotationState = null;
+    this.#horizontalState = null;
+  }
+
+  #interactionForNewGesture(): PointerSteeringInteraction | null {
+    try {
+      const interaction = this.#getInteraction();
+      this.#assertInteraction(interaction);
+      return interaction;
+    } catch {
+      return null;
+    }
+  }
+
+  #assertInteraction(
+    interaction: unknown,
+  ): asserts interaction is PointerSteeringInteraction {
+    if (
+      interaction !== "X_POSITION" &&
+      interaction !== "DIRECT_ROTATION" &&
+      interaction !== "RELATIVE_X"
+    ) {
+      throw new Error(`Unsupported steering interaction: ${String(interaction)}`);
+    }
   }
 
   #releaseCapture(pointerId = this.#activePointerId): void {

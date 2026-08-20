@@ -155,3 +155,66 @@ test("direct wheel rotation drives POSITION while digital RATE input keeps expli
   assert.equal(steeringJoystick.captured.size, 0);
   assert.equal(pointerControls.steerRight.captured.size, 0);
 });
+
+
+test("steering interaction provider switches on the next grab without restarting the browser host", () => {
+  const windowTarget = new FakeEventTarget();
+  const documentTarget = new FakeEventTarget();
+  const animationFrames = new FakeAnimationFrames();
+  const steeringJoystick = new FakeJoystickTarget();
+  const observed = [];
+  let interaction = "DIRECT_ROTATION";
+  let now = 0;
+
+  const host = CleanBrowserHost.start({
+    windowTarget,
+    documentTarget,
+    animationFrames,
+    steeringJoystick,
+    getSteeringInteraction: () => interaction,
+    now: () => now,
+    isDocumentHidden: () => false,
+    onStep(_step, steering) {
+      observed.push(steering.command);
+    },
+  });
+
+  steeringJoystick.dispatch("pointerdown", {
+    pointerId: 51,
+    clientX: 100,
+    clientY: 50,
+  });
+  animationFrames.runNext(0);
+  now = 1000 / 60;
+  animationFrames.runNext(1000 / 60);
+  steeringJoystick.dispatch("pointermove", {
+    pointerId: 51,
+    clientX: 50,
+    clientY: 100,
+  });
+  now = 1000 / 30;
+  animationFrames.runNext(1000 / 30);
+  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: -0.75 });
+  steeringJoystick.dispatch("pointerup", { pointerId: 51, clientX: 50, clientY: 100 });
+
+  interaction = "RELATIVE_X";
+  now = 55;
+  steeringJoystick.dispatch("pointerdown", {
+    pointerId: 52,
+    clientX: 50,
+    clientY: 10,
+  });
+  steeringJoystick.dispatch("pointermove", {
+    pointerId: 52,
+    clientX: 60,
+    clientY: 10,
+  });
+  now = 200 / 3;
+  animationFrames.runNext(200 / 3);
+  assert.equal(observed.at(-1).mode, "POSITION");
+  assert.ok(observed.at(-1).value < 0);
+  assert.ok(Math.abs(observed.at(-1).value) < 0.2);
+
+  steeringJoystick.dispatch("pointerup", { pointerId: 52, clientX: 60, clientY: 10 });
+  host.dispose();
+});

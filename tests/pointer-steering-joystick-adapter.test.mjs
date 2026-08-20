@@ -338,3 +338,86 @@ test("blur neutralizes active direct rotation and dispose releases ownership", (
   assert.deepEqual(sample.command, { mode: "RELEASE" });
   assert.equal(fixture.target.listenerCount(), 0);
 });
+
+
+test("relative-X pointer-down does not jump and horizontal movement is independent of grab height", () => {
+  const wheelGeometry = new FakeWheelGeometry();
+  const top = createFixture({
+    interaction: "RELATIVE_X",
+    wheelGeometrySource: wheelGeometry,
+  });
+  const bottom = createFixture({
+    interaction: "RELATIVE_X",
+    wheelGeometrySource: wheelGeometry,
+  });
+
+  top.target.dispatch("pointerdown", { pointerId: 21, clientX: 100, clientY: 5 });
+  bottom.target.dispatch("pointerdown", { pointerId: 22, clientX: 100, clientY: 75 });
+  near(top.stateChanges.at(-1).value, 0);
+  near(bottom.stateChanges.at(-1).value, 0);
+
+  top.setNow(1);
+  bottom.setNow(1);
+  top.target.dispatch("pointermove", { pointerId: 21, clientX: 110, clientY: 5 });
+  bottom.target.dispatch("pointermove", { pointerId: 22, clientX: 110, clientY: 75 });
+
+  near(top.stateChanges.at(-1).value, bottom.stateChanges.at(-1).value);
+  assert.ok(top.stateChanges.at(-1).value < 0);
+  top.adapter.dispose();
+  bottom.adapter.dispose();
+});
+
+test("interaction provider is frozen for one gesture and re-read on the next grab", () => {
+  let interaction = "DIRECT_ROTATION";
+  const wheelGeometry = new FakeWheelGeometry();
+  const fixture = createFixture({
+    getInteraction: () => interaction,
+    wheelGeometrySource: wheelGeometry,
+  });
+
+  fixture.target.dispatch("pointerdown", {
+    pointerId: 23,
+    clientX: 200,
+    clientY: 40,
+  });
+  interaction = "RELATIVE_X";
+  fixture.setNow(1);
+  fixture.target.dispatch("pointermove", {
+    pointerId: 23,
+    clientX: 100,
+    clientY: 80,
+  });
+  near(fixture.stateChanges.at(-1).value, -0.75);
+
+  fixture.setNow(2);
+  fixture.target.dispatch("pointerup", { pointerId: 23, clientX: 100, clientY: 80 });
+  fixture.setNow(3);
+  fixture.target.dispatch("pointerdown", { pointerId: 24, clientX: 100, clientY: 5 });
+  fixture.setNow(4);
+  fixture.target.dispatch("pointermove", { pointerId: 24, clientX: 110, clientY: 5 });
+  assert.ok(fixture.stateChanges.at(-1).value < 0);
+  assert.ok(Math.abs(fixture.stateChanges.at(-1).value) < 0.1);
+  fixture.adapter.dispose();
+});
+
+test("invalid interaction provider fails closed without taking pointer ownership", () => {
+  const fixture = createFixture({
+    getInteraction: () => "BROKEN_MODE",
+  });
+  fixture.target.dispatch("pointerdown", { pointerId: 25, clientX: 50, clientY: 50 });
+
+  assert.deepEqual(fixture.stateChanges, []);
+  assert.equal(fixture.target.captured.size, 0);
+  assert.deepEqual(fixture.timeline.consumeInterval(0, 1).command, { mode: "RELEASE" });
+  fixture.adapter.dispose();
+});
+
+test("fixed interaction and provider cannot be configured together", () => {
+  assert.throws(
+    () => createFixture({
+      interaction: "DIRECT_ROTATION",
+      getInteraction: () => "RELATIVE_X",
+    }),
+    /either a fixed mode or a provider/,
+  );
+});
