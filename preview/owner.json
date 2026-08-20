@@ -1,5 +1,5 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V1",
-  "sourceCommit": "cd7f5f89e8cfb872ff6bddc619e3fb78f2124af4",
-  "purpose": "Owner Preview recovery canary: known-good canonical source anchor"
+  "sourceCommit": "1b25cf242a007b84f236155e6067539c825876ec",
+  "purpose": "Owner Preview steering A/B: Direct Rotation and Relative X"
 }
