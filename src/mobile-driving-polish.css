@@ -19,16 +19,46 @@
     border-color: rgba(228, 241, 255, .38);
   }
 
+  /* V1.1 makes the zero/contact shelf legible without changing its 10% input
+     mapping. The band is presentation-only and never participates in hit geometry. */
+  .mobile-pedal-mechanism::after {
+    content: "";
+    position: absolute;
+    z-index: 4;
+    left: 7px;
+    right: 7px;
+    bottom: 0;
+    height: 10%;
+    min-height: 10px;
+    border-top: 1px solid rgba(220, 235, 249, .26);
+    border-radius: 0 0 11px 11px;
+    background: linear-gradient(180deg, rgba(220, 235, 249, .025), rgba(220, 235, 249, .09));
+    opacity: .58;
+    pointer-events: none;
+    transition: opacity 80ms ease, border-color 80ms ease, background 80ms ease;
+  }
+
   .mobile-pedal[data-active]:not([data-actuated]) .mobile-pedal-mechanism {
+    border-color: rgba(218, 236, 252, .72);
     box-shadow:
       inset 0 1px rgba(255,255,255,.14),
       inset 0 -18px 32px rgba(0,0,0,.16),
-      0 0 0 1px rgba(202, 224, 244, .08);
+      0 0 0 2px rgba(202, 224, 244, .14);
+  }
+
+  .mobile-pedal[data-active]:not([data-actuated]) .mobile-pedal-mechanism::after {
+    border-top-color: rgba(229, 243, 255, .88);
+    background: linear-gradient(180deg, rgba(217, 237, 255, .08), rgba(217, 237, 255, .24));
+    opacity: 1;
   }
 
   .mobile-pedal[data-actuated] .mobile-pedal-mechanism {
     transform: translateY(calc(var(--pedal-value) * 5px)) scale(1);
     border-color: rgba(228, 241, 255, .56);
+  }
+
+  .mobile-pedal[data-actuated] .mobile-pedal-mechanism::after {
+    opacity: .24;
   }
 
   /* Persistent actions belong to the top edge, not a permanent right rail. */
