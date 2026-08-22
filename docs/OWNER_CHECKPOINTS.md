@@ -1,6 +1,6 @@
 # JV Web — owner checkpoints
 
-Updated: 2026-08-20
+Updated: 2026-08-22
 
 Compact ledger of durable Owner-visible acceptance. Git history preserves detailed campaign/test evidence. A passing test is not Owner acceptance; each entry below is limited to what Jozz actually observed or explicitly accepted.
 
@@ -184,21 +184,51 @@ Owner explicitly judged **both modes currently worth retaining and developing gr
 
 Durable meaning:
 
-- Relative-X has passed the first product-value falsifier; it is not a disposable comparison mode;
-- Direct Rotation also remains a retained product direction;
-- there is no current requirement to force one winner or remove either mode;
+- Relative-X passed the first product-value falsifier and is not a disposable comparison mode;
+- Direct Rotation remains a retained product direction;
+- there is no requirement to force one winner or remove either mode;
 - `X_POSITION` remains internal regression/reference, not a third Owner-facing product choice.
 
-Not accepted by this checkpoint:
+Not accepted by this historical checkpoint: final tuning, integration into accepted `main`, steering physics or vehicle handling changes.
+
+## STEERING-DUAL-MODE-FOUNDATION-02 — integrated source foundation
+
+Date: 2026-08-22
+Classification: `OWNER ACCEPTED — DUAL-MODE STEERING FOUNDATION IN SOURCE / FINAL TUNING OPEN`
+
+Exact integration executable:
+
+```text
+4961cee419a88dc54a5f0ee743cc1ee65886a734
+```
+
+Evidence:
+
+- merge commit preserves exact steering/test blobs from `1b25cf242a007b84f236155e6067539c825876ec` and current pre-close `main` documentation through separate parents;
+- exact integration candidate passed repository-declared Node/npm on `windows-latest`, `npm ci`, and full `npm run build`; recorded status context: `jv/integration-close-windows = success`;
+- Owner regression-tested the exact candidate on Samsung Galaxy A53 / Chrome and explicitly returned PASS for:
+  - `Obrót`;
+  - `Przeciąganie`;
+  - steering + pedal multitouch;
+  - JSPREV2;
+  - fullscreen / basic UI;
+  - overall preservation of the previously accepted behavior.
+
+Durable meaning:
+
+- both Owner-facing steering modes are now accepted as a source-product foundation in `main`;
+- the earlier X-only `POSITION` path remains historical/regression reference rather than the current Owner-facing product;
+- no ordinary steering integration branch is required for further work;
+- future steering work should be small tuning/feel/design slices rather than reopening integration.
+
+Still **not** accepted/frozen:
 
 - final Direct tuning;
 - final Relative-X gain curve or current `1 -> 4` progression;
 - final full-lock/reversal/edge/micro-correction behavior;
 - final sensitivity, haptics/self-centering or industrial design;
-- integration into accepted `main`;
-- steering physics or vehicle handling changes.
-
-This checkpoint accepts the **dual-mode direction**, not final steering completion.
+- steering physics or vehicle handling;
+- Friends/Public promotion of the dual-mode source foundation.
 
 ## Durable method
 
