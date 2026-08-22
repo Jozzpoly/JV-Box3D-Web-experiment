@@ -43,6 +43,7 @@ interface ActivePedalPointer {
 }
 
 const VALUE_EPSILON = 1e-6;
+const PEDAL_CONTACT_ZONE_FRACTION = 0.1;
 
 function pointerButtonIsSupported(event: PointerEvent): boolean { return event.button === 0 || event.button === -1; }
 
@@ -56,7 +57,15 @@ export function resolvePointerAnalogPedalValue(clientY: number, topY: number, he
     throw new RangeError("Pedal acquisition geometry must be finite and positive.");
   }
   const bottomY = topY + heightPx;
-  return Math.max(0, Math.min(1, (bottomY - clientY) / heightPx));
+  const rawValue = Math.max(0, Math.min(1, (bottomY - clientY) / heightPx));
+  if (rawValue <= PEDAL_CONTACT_ZONE_FRACTION) {
+    return 0;
+  }
+  return Math.min(
+    1,
+    (rawValue - PEDAL_CONTACT_ZONE_FRACTION) /
+      (1 - PEDAL_CONTACT_ZONE_FRACTION),
+  );
 }
 
 export class PointerAnalogDriveAdapter {
