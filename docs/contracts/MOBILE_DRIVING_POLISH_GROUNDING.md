@@ -1,6 +1,6 @@
 # JV Web — mobile driving polish grounding
 
-Status: `CURRENT MOBILE FOUNDATION OWNER-ACCEPTED / DUAL-MODE STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + TAP-HIGHLIGHT POLISH ACCEPTED / PEDAL MECHANICAL + CONTACT-ZONE GROUNDING NEXT / FUTURE CONTROL TUNING OPEN / NOT A SCHEDULER`
+Status: `CURRENT MOBILE FOUNDATION OWNER-ACCEPTED / PEDAL CONTACT + MECHANICAL V1 ACTIVE ON PREVIEW / OWNER DEVICE VERDICT OPEN / FUTURE CONTROL TUNING OPEN / NOT A SCHEDULER`
 Owner: Jozz
 Updated: 2026-08-22
 
@@ -25,7 +25,7 @@ mobile tap-highlight integration executable:
 Protect:
 
 - `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X`;
-- absolute-position pedals with acquisition geometry frozen at pointer-down;
+- accepted absolute-position pedals with acquisition geometry frozen at pointer-down;
 - independent throttle/brake ownership;
 - steering + pedal multitouch;
 - D/R explicit pointer ownership/lifecycle while other controls remain held;
@@ -34,102 +34,100 @@ Protect:
 - product-owned active/focus/mechanical feedback without browser tap-highlight overlay;
 - Camera, Fullscreen, Plac E2R, Offroad, JSPREV2, owner vehicle and accepted A53 performance boundary.
 
-## 2. D/R multitouch — accepted boundary
+## 2. Accepted recent boundaries
 
-Original A53 failure: hold throttle with one finger, operate D/R with another -> no switch.
+D/R multitouch is accepted. RED `9a4ed881...` proved old click-only acquisition was not a true second-pointer contract. GREEN `3f6acc82...` established explicit D/R pointer lifecycle. Owner A53/Chrome video confirmed simultaneous throttle, brake, D/R and steering. Integration `bd8980eb...` preserved exact runtime/test blobs and passed full Windows repository build.
 
-Old implementation depended on browser `click` after D/R `pointerdown`. RED `9a4ed881...` proved that this was not a true second-pointer contract.
+Mobile browser tap-highlight polish is accepted. Candidate `a8fb118b...` added only `-webkit-tap-highlight-color: transparent` on custom mobile touch controls; Owner A53/Chrome confirmed the cyan overlay disappeared while product feedback, steering and D/R remained functional. Integration `86c99911...` carries the exact accepted CSS.
 
-GREEN `3f6acc82...` established explicit D/R pointer capture, owned pointerup toggle, fail-closed cancellation/lifecycle release, independent pedal/steering ownership, double-toggle protection and keyboard/assistive click fallback. Command/sign semantics remained in the existing toggle path.
+## 3. Active Pedal Contact + Mechanical Feedback V1
 
-Focused candidate validation passed. Owner A53/Chrome video then confirmed simultaneous throttle, brake, D/R and steering. Integration `bd8980eb...` preserved exact D/R runtime/test blobs and passed full Windows repository build.
+Accepted absolute-position mapping remains the baseline. Active candidate:
 
-Classification: `OWNER ACCEPTED — D/R MULTITOUCH ACQUISITION FOUNDATION`.
+```text
+work/pedal-contact-mechanics@8690368aa19242bb37b9476737ee9b1f5374724a
+```
 
-## 3. Mobile browser tap highlight — accepted polish
+The experiment is deliberately small and combines contact semantics with enough presentation to avoid lying to the Owner during feel validation.
 
-Owner recording exposed an intermittent cyan/translucent whole-target overlay over the throttle control. Existing pedal CSS already disabled user selection, making browser tap feedback the narrow leading diagnosis.
+### V1 semantics
 
-Candidate `a8fb118b...` changed only mobile driving polish CSS and set `-webkit-tap-highlight-color: transparent` on custom mobile controls and the steering touch surface.
+- frozen acquisition geometry remains authoritative for the whole gesture;
+- lower **10%** of that height is zero/contact space;
+- pointer capture and `active=true` are valid in the contact zone while command stays exactly `0`;
+- above the threshold the remaining 90% maps linearly to the full `0..1` range;
+- full pedal input at the top remains `1`;
+- no hysteresis is added in V1; only device evidence may justify it later.
 
-Owner A53/Chrome re-test confirmed:
+The 10% value is an **experimental falsifier value**, chosen to be easy to hit on a phone. It is not an accepted tuning constant.
 
-- cyan highlight no longer appears;
-- custom pedal visual feedback remains;
-- steering and D/R remain functional.
+### V1 presentation
 
-Integration `86c99911...` mechanically preserves the exact Owner-tested CSS with current accepted source history.
+The existing state path already separates pointer ownership from analog value. Candidate formalizes that distinction for presentation:
 
-Classification: `OWNER ACCEPTED — MOBILE TOUCH-HIGHLIGHT POLISH`.
+- `data-active` = acquired/contact;
+- derived `data-actuated` = acquired with value above zero;
+- contact-only state may highlight ownership but must not mechanically depress the pedal;
+- one contact-only pedal must not dim its peer as though it were producing demand;
+- only inner mechanism/face/fill may follow `--pedal-value`;
+- outer `.mobile-pedal` acquisition geometry must stay fixed.
 
-Do not generalize this into global selection/callout suppression without new evidence.
+This is **not** final pedal industrial design.
 
-## 4. Next grounding target — pedal contact + mechanical feedback
+### Evidence
 
-Absolute-position pedal semantics are accepted. The next problem is not choosing a mapping model again; it is making **zero contact, onset of actuation and mechanical depression** coherent and legible.
+- RED `6e228f10...` failed the new contract on accepted old semantics as expected;
+- first logic run: compile/typecheck PASS, UI PASS, analog FAIL from over-strict IEEE-754 exact comparison in the new test oracle;
+- test-only tolerance correction yielded logic GREEN `0c259fe...` with compile/analog/UI PASS;
+- exact final candidate `8690368a...` passed typecheck, analog-drive, mobile-driving-ui, mobile-driving integration, viewport lifecycle, clean-browser analog contract, D/R multitouch regression and bundle build; status `jv/pedal-contact-causal = success`;
+- temporary validation helper was retired after the result;
+- Owner Preview selects exact `8690368a...` plus the accepted JSPREV2 layer.
 
-Owner intent to preserve:
+Classification: `TECHNICALLY GREEN / OWNER DEVICE VERDICT OPEN`.
 
-1. a finger should be able to acquire the lower pedal area at exact command zero;
-2. moving through the initial region should transition smoothly into analog actuation;
-3. roughly the lower 5–10% as zero/contact space is only a hypothesis to test;
-4. the control should communicate `acquired/contact` before it communicates `pressed/actuating`;
-5. visual/mechanical depression should track command without changing the frozen acquisition geometry used by input mapping;
-6. full analog range and current multitouch ownership must remain available.
+## 4. Owner falsifier
 
-### What is open
+On Samsung Galaxy A53 / Chrome:
 
-- exact contact-zone size;
-- whether the transition after the zone is linear or slightly shaped;
-- visual language for contact versus actuation;
-- mechanical travel amount and easing;
-- whether throttle and brake should share one mechanical law or later diverge stylistically.
+1. touch near the pedal bottom and verify exact zero can be held while contact is visibly acknowledged;
+2. roll slowly upward and judge whether zero-to-low-value onset is smooth;
+3. cross the threshold repeatedly in both directions and report any chatter/jitter;
+4. confirm full input remains easy to reach;
+5. judge whether contact and actual mechanical depression are visually distinct enough;
+6. regression smoke throttle+brake, steering+pedal and pedal+D/R.
 
-### What is protected
+Do not ask the Owner to judge motor power or brake dominance in this slice.
 
-Do not change in this slice unless evidence forces it:
+Possible outcomes:
 
-- steering modes or feel;
-- D/R acquisition/sign semantics;
-- throttle/brake independence;
-- lifecycle fail-closed behavior;
-- drivetrain, motor power, brake torque or vehicle physics;
-- rig/JURE authority.
-
-### Minimum falsifier direction
-
-Prefer one small experiment that lets the Owner test:
-
-- touch at the bottom -> exact zero without a jump;
-- slowly roll through contact threshold -> smooth low-value onset;
-- micro-adjust around threshold;
-- reach full pedal range;
-- release -> exact zero;
-- steering + pedal and throttle + brake multitouch remain intact;
-- presentation clearly distinguishes contact from actuation without moving the input scale.
-
-Do not freeze the 5–10% number before device evidence.
+- `PASS` -> preserve model and prepare integration close;
+- `GOOD MODEL / WRONG ZONE` -> change only the contact-zone size;
+- `THRESHOLD CHATTER` -> consider one minimal hysteresis falsifier;
+- `VISUAL UNCLEAR` -> preserve input and change only presentation;
+- `REJECT` -> return to accepted `main`.
 
 ## 5. Longitudinal handling — separate
 
-Small brake input dominating full throttle and broad low vehicle power belong to a dedicated handling/longitudinal slice. They are not evidence against the accepted pedal input foundation and should not be mixed into contact/mechanical presentation.
+Small brake input dominating full throttle and broad low vehicle power belong to a dedicated handling/longitudinal slice. They are not evidence against the accepted pedal input foundation and must not be mixed into contact/mechanical presentation.
 
 ## 6. Fault localization
 
 ```text
 cyan overlay on custom touch control    -> browser/touch presentation polish (accepted fix exists)
 D/R second-finger intent missed         -> D/R pointer acquisition/lifecycle
-D/R event arrives but sign is wrong     -> D/R command semantics
 gas drops during unrelated D/R touch    -> pointer ownership/lifecycle
 cannot acquire pedal at exact zero      -> pedal contact-zone tuning
-pedal value correct but contact unclear -> pedal presentation/mechanical feedback
-small brake overwhelms full throttle    -> handling/longitudinal
+contact looks like pressure at zero      -> pedal presentation state separation
+threshold chatters under slow finger     -> possible contact-zone hysteresis, only after device evidence
+pedal value correct but looks wrong      -> pedal presentation/mechanical feedback
+small brake overwhelms full throttle     -> handling/longitudinal
 ```
 
 ## 7. Living sequence
 
-- pedal mechanical/contact-zone grounding -> smallest falsifier;
-- accept/reject/tune from Owner device evidence;
+- Owner-test active pedal contact/mechanical V1;
+- accept/tune/reject from device evidence;
+- if accepted, structural integration close;
 - desktop/mobile capability hygiene;
 - portrait composition;
 - steering/pedal industrial-design convergence and later steering feel tuning;
