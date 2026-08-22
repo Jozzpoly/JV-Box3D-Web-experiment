@@ -15,7 +15,7 @@ jobs:
   close:
     runs-on: windows-latest
     env:
-      CANDIDATE_SHA: e8e879a3185ca61cb924acf5490c24781dc84ad8
+      CANDIDATE_SHA: 315e41aa3e68baaa74ab107d3ef0b82c14a2eb84
     steps:
       - name: Record integration close pending
         shell: pwsh
