@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "1b25cf242a007b84f236155e6067539c825876ec",
+  "sourceCommit": "4961cee419a88dc54a5f0ee743cc1ee65886a734",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner Preview steering A/B with accepted JSPREV2 parity"
+  "purpose": "Dual-mode steering foundation integration close with accepted JSPREV2 parity"
 }
