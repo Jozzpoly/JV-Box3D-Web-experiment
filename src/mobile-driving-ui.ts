@@ -41,6 +41,8 @@ const NEUTRAL_STATE: Readonly<MobileDrivingPresentationState> = Object.freeze({
   direction: "D",
 });
 
+const PEDAL_ACTUATION_EPSILON = 1e-6;
+
 function clamp01(value: number): number {
   if (!Number.isFinite(value)) {
     return 0;
@@ -203,17 +205,26 @@ export class MobileDrivingUi {
           : "CENTER",
     );
 
+    const throttleActuated =
+      this.#state.throttleActive &&
+      this.#state.throttle > PEDAL_ACTUATION_EPSILON;
+    const brakeActuated =
+      this.#state.brakeActive &&
+      this.#state.brake > PEDAL_ACTUATION_EPSILON;
+
     this.#commitPedal(
       this.#targets.throttle,
       this.#state.throttle,
       this.#state.throttleActive,
-      this.#state.brakeActive && !this.#state.throttleActive,
+      throttleActuated,
+      brakeActuated && !this.#state.throttleActive,
     );
     this.#commitPedal(
       this.#targets.brake,
       this.#state.brake,
       this.#state.brakeActive,
-      this.#state.throttleActive && !this.#state.brakeActive,
+      brakeActuated,
+      throttleActuated && !this.#state.brakeActive,
     );
 
     const reverse = this.#state.direction === "R";
@@ -232,11 +243,13 @@ export class MobileDrivingUi {
     target: MobileDrivingStyleTarget,
     value: number,
     active: boolean,
+    actuated: boolean,
     peerActive: boolean,
   ): void {
     const percentage = Math.round(value * 100);
     target.style.setProperty("--pedal-value", value.toFixed(4));
     target.toggleAttribute("data-active", active);
+    target.toggleAttribute("data-actuated", actuated);
     target.toggleAttribute("data-peer-active", peerActive);
     target.setAttribute("aria-valuenow", String(percentage));
     target.setAttribute("aria-valuetext", `${percentage}%`);
