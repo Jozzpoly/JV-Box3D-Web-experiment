@@ -8,7 +8,7 @@ export interface PointerAnalogPedalTarget extends EventTarget {
   setPointerCapture(pointerId: number): void;
   releasePointerCapture(pointerId: number): void;
   hasPointerCapture(pointerId: number): boolean;
-  getBoundingClientRect(): Readonly<{ height: number }>;
+  getBoundingClientRect(): Readonly<{ top: number; height: number }>;
 }
 
 export interface PointerAnalogDriveControls {
@@ -34,34 +34,21 @@ interface ActivePedalPointer {
   readonly pointerId: number;
   readonly pedal: AnalogDrivePedal;
   readonly target: PointerAnalogPedalTarget;
-  readonly originY: number;
-  readonly travelPx: number;
+  readonly topY: number;
+  readonly heightPx: number;
   value: number;
 }
 
-const PEDAL_TRAVEL_RATIO = 0.82;
-const MIN_PEDAL_TRAVEL_PX = 72;
-const MAX_PEDAL_TRAVEL_PX = 132;
-const DEFAULT_PEDAL_START_SLOP_PX = 6;
 const VALUE_EPSILON = 1e-6;
 
 function pointerButtonIsSupported(event: PointerEvent): boolean { return event.button === 0 || event.button === -1; }
 
-export function resolvePointerAnalogPedalTravelPx(height: number): number {
-  if (!Number.isFinite(height) || height <= 0) throw new RangeError("Pedal target height must be finite and positive.");
-  return Math.max(MIN_PEDAL_TRAVEL_PX, Math.min(MAX_PEDAL_TRAVEL_PX, height * PEDAL_TRAVEL_RATIO));
-}
-
-export function resolvePointerAnalogPedalValue(clientY: number, originY: number, travelPx: number, startSlopPx = DEFAULT_PEDAL_START_SLOP_PX): number {
-  if (!Number.isFinite(clientY) || !Number.isFinite(originY) || !Number.isFinite(travelPx) || travelPx <= 0) {
-    throw new RangeError("Pedal gesture geometry must be finite and positive.");
+export function resolvePointerAnalogPedalValue(clientY: number, topY: number, heightPx: number): number {
+  if (!Number.isFinite(clientY) || !Number.isFinite(topY) || !Number.isFinite(heightPx) || heightPx <= 0) {
+    throw new RangeError("Pedal acquisition geometry must be finite and positive.");
   }
-  if (!Number.isFinite(startSlopPx) || startSlopPx < 0 || startSlopPx >= travelPx) {
-    throw new RangeError("Pedal start slop must be in [0, travelPx).");
-  }
-  const upwardTravelPx = originY - clientY;
-  if (upwardTravelPx <= startSlopPx) return 0;
-  return Math.max(0, Math.min(1, (upwardTravelPx - startSlopPx) / (travelPx - startSlopPx)));
+  const bottomY = topY + heightPx;
+  return Math.max(0, Math.min(1, (bottomY - clientY) / heightPx));
 }
 
 export class PointerAnalogDriveAdapter {
@@ -131,20 +118,30 @@ export class PointerAnalogDriveAdapter {
 
   #handlePointerDown(pedal: AnalogDrivePedal, target: PointerAnalogPedalTarget, event: PointerEvent): void {
     if (this.#disposed || !pointerButtonIsSupported(event) || this.#pointers.has(event.pointerId) || this.#pointerByPedal.has(pedal)) return;
-    let travelPx: number;
-    try { travelPx = resolvePointerAnalogPedalTravelPx(target.getBoundingClientRect().height); } catch { return; }
+    let topY: number;
+    let heightPx: number;
+    let value: number;
+    try {
+      const rect = target.getBoundingClientRect();
+      topY = rect.top;
+      heightPx = rect.height;
+      value = resolvePointerAnalogPedalValue(event.clientY, topY, heightPx);
+    } catch {
+      return;
+    }
     event.preventDefault(); event.stopPropagation();
     try { target.setPointerCapture(event.pointerId); } catch { return; }
-    const state: ActivePedalPointer = { pointerId: event.pointerId, pedal, target, originY: event.clientY, travelPx, value: 0 };
+    const state: ActivePedalPointer = { pointerId: event.pointerId, pedal, target, topY, heightPx, value };
     this.#pointers.set(event.pointerId, state); this.#pointerByPedal.set(pedal, event.pointerId);
-    this.#onPedalStateChange?.(pedal, 0, true);
+    this.#enqueuePedal(pedal, value, this.#safeTimestamp(), this.#sourceId(event.pointerId));
+    this.#onPedalStateChange?.(pedal, value, true);
   }
 
   #handlePointerMove(event: PointerEvent): void {
     if (this.#disposed) return;
     const state = this.#pointers.get(event.pointerId); if (state === undefined) return;
     let value: number;
-    try { value = resolvePointerAnalogPedalValue(event.clientY, state.originY, state.travelPx); } catch { return; }
+    try { value = resolvePointerAnalogPedalValue(event.clientY, state.topY, state.heightPx); } catch { return; }
     event.preventDefault(); event.stopPropagation();
     if (Math.abs(value - state.value) <= VALUE_EPSILON) return;
     state.value = value;
