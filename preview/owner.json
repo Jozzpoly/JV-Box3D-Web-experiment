@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "bf655ff096c12889b934d4b52daaf3043cded85d",
+  "sourceCommit": "0df631871d9260753aa197107b678487ae9adf8e",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Accepted main baseline after pedal contact V1/V1.1 deferral; desktop/mobile capability hygiene grounding next"
+  "purpose": "Owner Preview desktop/mobile capability hygiene: hide pointer-steering-only toolbar controls off the mobile driving surface"
 }
