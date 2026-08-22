@@ -31,6 +31,27 @@ test("mobile scene can shrink below the historical desktop 420px floor", async (
   );
 });
 
+test("mobile-only toolbar controls follow the same visibility boundary as the mobile driving surface", async () => {
+  const [desktopCss, mobileCss] = await Promise.all([
+    read("src/style.css"),
+    read("src/mobile-driving-controls.css"),
+  ]);
+
+  assert.match(
+    desktopCss,
+    /\[data-mobile-driving-only\]\s*\{[^}]*display:\s*none;/,
+    "mobile-driving-only product controls must be hidden on the normal desktop surface",
+  );
+  assert.match(
+    mobileCss,
+    /@media \(hover: none\) and \(pointer: coarse\), \(max-width: 620px\) \{[\s\S]*?\.product-control-group\[data-mobile-driving-only\]\s*\{[^}]*display:\s*grid;/,
+  );
+  assert.match(
+    mobileCss,
+    /@media \(hover: none\) and \(pointer: coarse\), \(max-width: 620px\) \{[\s\S]*?\.product-choice\[data-mobile-driving-only\]\s*\{[^}]*display:\s*block;/,
+  );
+});
+
 test("P1.2 mobile HUD uses scene-level named composition zones without shrinking the canvas", async () => {
   const mobileCss = await read("src/mobile-driving-controls.css");
 
