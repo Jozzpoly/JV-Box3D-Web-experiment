@@ -88,9 +88,11 @@ function createRig(options = {}) {
   };
 }
 
-test('pedal mapping is absolute inside the frozen acquisition rectangle', () => {
+test('pedal mapping reserves the lower ten percent for exact-zero contact', () => {
   assert.equal(resolvePointerAnalogPedalValue(140, 20, 120), 0);
-  near(resolvePointerAnalogPedalValue(80, 20, 120), 0.5);
+  assert.equal(resolvePointerAnalogPedalValue(134, 20, 120), 0);
+  assert.equal(resolvePointerAnalogPedalValue(128, 20, 120), 0);
+  near(resolvePointerAnalogPedalValue(80, 20, 120), 4 / 9);
   assert.equal(resolvePointerAnalogPedalValue(20, 20, 120), 1);
   assert.equal(resolvePointerAnalogPedalValue(-100, 20, 120), 1);
   assert.equal(resolvePointerAnalogPedalValue(300, 20, 120), 0);
@@ -101,12 +103,36 @@ test('invalid absolute pedal geometry is rejected explicitly', () => {
   assert.throws(() => resolvePointerAnalogPedalValue(10, 0, 0), RangeError);
 });
 
-test('pointer-down immediately applies the value represented by touch position', () => {
+test('pointer-down inside the contact zone owns the pedal while command remains zero', () => {
+  const rig = createRig();
+  rig.throttle.dispatchEvent(pointerEvent('pointerdown', { id: 41, y: 134 }));
+  const sample = rig.timeline.consumeInterval(0, 10);
+  assert.equal(sample.command.throttle, 0);
+  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 0, true]);
+  assert.deepEqual([...rig.throttle.captures], [41]);
+  rig.adapter.dispose();
+});
+
+test('crossing the contact threshold rolls smoothly into analog actuation', () => {
+  const rig = createRig();
+  rig.throttle.dispatchEvent(pointerEvent('pointerdown', { id: 42, y: 134 }));
+  rig.setNow(1);
+  rig.throttle.dispatchEvent(pointerEvent('pointermove', { id: 42, y: 117.2 }));
+  const sample = rig.timeline.consumeInterval(0, 10);
+  const analog = sample.consumedEvents.filter(
+    (event) => event.kind === 'LONGITUDINAL_ANALOG_THROTTLE',
+  );
+  near(analog.at(-1).value, 0.1);
+  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 0.1, true]);
+  rig.adapter.dispose();
+});
+
+test('pointer-down immediately applies the value represented above the contact zone', () => {
   const rig = createRig();
   rig.throttle.dispatchEvent(pointerEvent('pointerdown', { id: 4, y: 80 }));
   const sample = rig.timeline.consumeInterval(0, 10);
-  near(sample.command.throttle, 0.5);
-  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 0.5, true]);
+  near(sample.command.throttle, 4 / 9);
+  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 4 / 9, true]);
   assert.deepEqual([...rig.throttle.captures], [4]);
   rig.adapter.dispose();
 });
@@ -123,8 +149,8 @@ test('active pedal keeps pointer-down geometry frozen while target layout change
   const analog = sample.consumedEvents.filter(
     (event) => event.kind === 'LONGITUDINAL_ANALOG_THROTTLE',
   );
-  near(analog.at(-1).value, 0.75);
-  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 0.75, true]);
+  near(analog.at(-1).value, 13 / 18);
+  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 13 / 18, true]);
   rig.adapter.dispose();
 });
 
@@ -192,14 +218,14 @@ test('D to R while throttle is held re-signs the current absolute value at toggl
   rig.adapter.dispose();
 });
 
-test('throttle and brake are independent multitouch captures with immediate absolute values', () => {
+test('throttle and brake are independent multitouch captures with immediate contact-zone values', () => {
   const rig = createRig();
   rig.throttle.dispatchEvent(pointerEvent('pointerdown', { id: 1, y: 80 }));
   rig.brake.dispatchEvent(pointerEvent('pointerdown', { id: 2, y: 110 }));
 
   const sample = rig.timeline.consumeInterval(0, 10);
-  near(sample.command.throttle, 0.5);
-  near(sample.command.brake, 0.25);
+  near(sample.command.throttle, 4 / 9);
+  near(sample.command.brake, 1 / 6);
   assert.deepEqual([...rig.throttle.captures], [1]);
   assert.deepEqual([...rig.brake.captures], [2]);
   rig.adapter.dispose();
@@ -218,7 +244,7 @@ test('a second pointer cannot steal an already-owned pedal', () => {
   const analog = sample.consumedEvents.filter(
     (event) => event.kind === 'LONGITUDINAL_ANALOG_THROTTLE',
   );
-  near(analog.at(-1).value, 2 / 3);
+  near(analog.at(-1).value, 17 / 27);
   rig.adapter.dispose();
 });
 
