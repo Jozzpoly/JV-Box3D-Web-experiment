@@ -2,7 +2,7 @@
 
 Updated: 2026-08-22
 Owner: Jozz
-Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT POLISH ACCEPTED IN MAIN / PEDAL CONTACT V1-V1.1 NOT ACCEPTED + DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / DESKTOP-MOBILE CAPABILITY HYGIENE NEXT / JURE PAUSED`
+Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT POLISH ACCEPTED IN MAIN / PEDAL CONTACT V1-V1.1 DEFERRED / DESKTOP-MOBILE CAPABILITY HYGIENE CANDIDATE ON OWNER PREVIEW / OWNER VERDICT OPEN / JURE PAUSED`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is current-state authority, not project archaeology.
 
@@ -23,14 +23,17 @@ accepted absolute-position pedal integration executable:
 accepted dual-mode steering integration executable:
   4961cee419a88dc54a5f0ee743cc1ee65886a734
 
-rejected/deferred pedal contact V1 machine-green candidate:
+rejected/deferred pedal contact V1:
   8690368aa19242bb37b9476737ee9b1f5374724a
 
-rejected/deferred pedal contact V1.1 observability candidate:
+rejected/deferred pedal contact V1.1:
   6312906d5ad3c6781605859cd1d9613d7f2e220a
 
-ordinary active product lane:
-  NONE
+active ordinary product lane:
+  work/desktop-mobile-capability-hygiene@cde805d8d140d2b07fc7519e1ce4a8274c3ab467
+
+Owner Preview pointer source:
+  cde805d8d140d2b07fc7519e1ce4a8274c3ab467
 
 Owner Preview accepted JSPREV2 static layer:
   Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f
@@ -58,49 +61,63 @@ Preserve unless a focused later slice explicitly changes them:
 
 Do not use UI/control polish as a reason to change drivetrain, motor/brake balance, vehicle physics or rig authority.
 
-## 3. Pedal Contact + Mechanical Feedback V1/V1.1 — closed without integration
+## 3. Pedal contact V1/V1.1 — deferred
 
-Accepted `main` does **not** contain this experiment. The accepted pedal foundation remains absolute-position mapping without the experimental contact-zone.
-
-Evidence path:
-
-- RED `6e228f103148b88c78f46a7cfc56bf2a0020c2c7` proved the accepted baseline did not satisfy the proposed contact/actuation contract;
-- logic GREEN `0c259fe67d10c1a23479968fd0ab86f2d7bfce35` followed a test-only floating-point oracle correction;
-- V1 `8690368a...` passed focused causal validation and bundle build;
-- live-identity evidence proved Owner Preview really served exact V1;
-- Owner A53/Chrome testing found that the practical zero/contact region was barely perceptible, roughly around 1% or less of the useful pedal interaction in feel, despite the nominal 10% transfer-function zone;
-- V1.1 `6312906d...` changed only presentation observability and was also independently confirmed live;
-- Owner then explicitly judged the feature not worth further effort and requested rapid grounding and continuation to higher-value work.
+Accepted `main` does **not** contain the contact-zone experiment. Owner A53/Chrome evidence showed that a zero region existed, but its practical value was too small to justify continued tuning/presentation work.
 
 Classification:
 
 `OWNER VERDICT — PEDAL CONTACT V1/V1.1 NOT ACCEPTED / DEFERRED FOR NOW`
 
-Durable meaning:
+Do not integrate or continue percentage/hysteresis/contact-presentation tuning by default. Accepted absolute-position pedals remain the baseline. Revisit only if later pedal geometry/industrial design materially changes the value proposition.
 
-- do **not** integrate `8690368a...` or `6312906d...` into accepted `main`;
-- do not continue tuning percentages, hysteresis or contact presentation merely because the experiment exists;
-- accepted absolute-position pedals remain the current product foundation;
-- the idea may be revisited only if later pedal geometry/industrial design makes a meaningful contact zone valuable again.
+## 4. Active experiment — Desktop/Mobile Capability Hygiene V1
 
-This is a value/prioritization rejection, not evidence that the implementation was technically broken.
+Grounding found that the large `.mobile-controls` driving surface is already hidden on standard desktop and becomes visible only for coarse-pointer devices or viewports at/below 620 px. Blanket mobile-UI hiding would therefore be incorrect.
 
-## 4. Next stage — Desktop/Mobile Capability Hygiene Grounding
+The high-confidence mismatch is narrower: `product-controls.ts` installed pointer-steering-only toolbar controls on every platform even when the steering touch surface itself was absent on standard desktop.
 
-Do not start with broad CSS hiding.
+Candidate `cde805d8...` is limited to:
 
-First inventory controls and functions that are present on desktop/mobile but have no useful effect, misleading semantics or duplicated ownership. For each item classify:
+- `src/product-controls.ts`;
+- `tests/product-entry.test.mjs`;
+- `tests/mobile-ui-contract.test.mjs`.
 
-- useful on both desktop and mobile;
-- mobile-only capability that should be hidden/disabled on desktop;
-- desktop-only capability that should not pollute mobile;
-- shared capability with different presentation needs;
-- unclear / requires Owner evidence.
+V1 contract:
 
-The first implementation slice should be the smallest high-confidence hygiene fix from that inventory. Preserve accepted mobile driving controls, steering/pedal/D-R semantics, physics, drivetrain and rig.
+- `Kierownica: Obrót / Przeciąganie` is explicitly mobile-driving-surface-only;
+- `Tło kier. ON/OFF` is explicitly mobile-driving-surface-only;
+- shared `Grid` remains visible on desktop;
+- locations, Pixel/Smooth and Fullscreen remain shared;
+- visibility follows the same responsive condition as the mobile driving surface: `(hover: none) and (pointer: coarse), (max-width: 620px)`;
+- visibility resynchronizes on media-query changes rather than being fixed once at startup;
+- steering/pedal/D-R input semantics are unchanged.
 
-## 5. Separate later work
+The exact Preview pointer selects `cde805d8...`. Normal Owner Preview provides canonical install/typecheck/portable-build validation. No full milestone gate is justified before Owner render/device judgement for this localized UI-capability slice.
 
+Classification: `DESKTOP-MOBILE CAPABILITY HYGIENE V1 / OWNER VERDICT OPEN`.
+
+## 5. Owner checkpoint
+
+Validate both sides of the responsive contract:
+
+Desktop, normal-width window:
+
+1. `Kierownica` group is absent;
+2. `Tło kier.` button is absent;
+3. Plac/Offroad/JSPREV2, Pixel/Smooth, Grid and Fullscreen remain usable.
+
+Mobile / narrow/coarse-pointer surface:
+
+1. `Obrót / Przeciąganie` remain present;
+2. `Tło kier.` remains present;
+3. steering, pedals and D/R remain functional.
+
+If this passes, integrate as a small hygiene close. Do not expand the slice into a broad toolbar redesign.
+
+## 6. Separate later work
+
+- continue capability inventory only from concrete mismatches;
 - portrait-specific composition;
 - steering/pedal industrial-design convergence and later steering feel tuning;
 - small brake dominating full throttle / broad low power -> dedicated longitudinal/handling stage;
