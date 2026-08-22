@@ -16,7 +16,7 @@ jobs:
       - name: Checkout exact logic candidate
         uses: actions/checkout@v4
         with:
-          ref: e575d01ebe7cca92df6b80ab45f8ab5328acd427
+          ref: 0c259fe67d10c1a23479968fd0ab86f2d7bfce35
           fetch-depth: 0
 
       - name: Set up Node
@@ -60,7 +60,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const sha = 'e575d01ebe7cca92df6b80ab45f8ab5328acd427';
+            const sha = '0c259fe67d10c1a23479968fd0ab86f2d7bfce35';
             const items = [
               ['jv/pedal-contact-compile', '${{ steps.compile.outcome }}'],
               ['jv/pedal-contact-analog', '${{ steps.analog.outcome }}'],
