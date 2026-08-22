@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-22
-Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + TAP-HIGHLIGHT POLISH ACCEPTED / PEDAL CONTACT + MECHANICAL V1 ACTIVE / OWNER DEVICE VERDICT OPEN / JURE PAUSED`
+Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + TAP-HIGHLIGHT POLISH ACCEPTED / PEDAL CONTACT + MECHANICAL V1.1 ACTIVE / FIRST OWNER ATTEMPT INCONCLUSIVE ON OBSERVABILITY / OWNER DEVICE VERDICT OPEN / JURE PAUSED`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file.
 
@@ -12,10 +12,12 @@ Compact router only. Live Git, executed evidence and direct Owner observation ou
 - accepted D/R integration executable: `bd8980eba3e62b5a4b48df528be2db275addf7b4`;
 - accepted pedal integration executable: `315e41aa3e68baaa74ab107d3ef0b82c14a2eb84`;
 - accepted steering integration executable: `4961cee419a88dc54a5f0ee743cc1ee65886a734`;
-- active lane: `work/pedal-contact-mechanics@8690368aa19242bb37b9476737ee9b1f5374724a`;
+- active lane: `work/pedal-contact-mechanics@6312906d5ad3c6781605859cd1d9613d7f2e220a`;
 - pedal contact RED: `6e228f103148b88c78f46a7cfc56bf2a0020c2c7`;
 - pedal contact logic GREEN: `0c259fe67d10c1a23479968fd0ab86f2d7bfce35`;
-- Preview source: `8690368aa19242bb37b9476737ee9b1f5374724a`;
+- machine-green V1: `8690368aa19242bb37b9476737ee9b1f5374724a`;
+- live V1.1: `6312906d5ad3c6781605859cd1d9613d7f2e220a`;
+- Preview source: `6312906d5ad3c6781605859cd1d9613d7f2e220a`;
 - Preview JSPREV2: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
 - accepted Friends/Public: `279dd4eec8599ad12c95e03b50a52c478e8a50e7`.
 
@@ -32,39 +34,41 @@ Compact router only. Live Git, executed evidence and direct Owner observation ou
 
 ## Active pedal falsifier
 
-`Pedal Contact + Mechanical Feedback V1` is **not accepted yet**.
+`Pedal Contact + Mechanical Feedback V1.1` is **not accepted yet**.
 
-Candidate `8690368a...` tests:
+Input model remains:
 
-- lower 10% of frozen pedal height as exact-zero contact space;
-- remaining 90% linearly rescaled to full 0..1;
-- contact/ownership remains represented by `data-active`;
-- real actuation is derived separately as `data-actuated`;
-- contact at value zero does not dim the peer pedal or move the mechanism;
-- inner pedal mechanism moves only from `--pedal-value`; outer input geometry remains stable.
-
-10% is intentionally a visible experiment, not a final product number.
+- lower 10% of frozen pedal height = exact-zero contact space;
+- remaining 90% rescaled linearly to full 0..1;
+- `data-active` = contact/ownership;
+- `data-actuated` = real actuation above zero;
+- contact-only does not dim peer or mechanically depress the pedal;
+- outer input geometry remains stable.
 
 Evidence path:
 
-- RED `6e228f10...` failed on the accepted old contract;
-- first logic gate isolated an analog test failure to exact floating-point comparison, not product logic; compile and UI already passed;
-- test-only tolerance fix produced `0c259fe...` with compile/analog/UI PASS;
-- exact final `8690368a...` passed typecheck, analog-drive, mobile-driving-ui, mobile integration, viewport lifecycle, clean-browser analog contract, D/R multitouch regression and bundle build; `jv/pedal-contact-causal = success`;
-- temporary helper retired; normal Owner Preview selects the candidate.
+- RED `6e228f10...` failed on accepted baseline;
+- logic GREEN `0c259fe...` followed a test-only float tolerance correction;
+- V1 `8690368a...` passed typecheck, focused analog/UI/lifecycle/host/D-R integration suites and bundle build;
+- first Owner A53 attempt said the change was not meaningfully visible;
+- live-identity probe proved exact V1 was actually served, so deployment/cache was ruled out;
+- recording review classified V1 as `INCONCLUSIVE — OBSERVABILITY/DISCOVERABILITY INSUFFICIENT`, not product failure;
+- V1.1 `6312906d...` keeps mapping unchanged and changes only CSS to make the lower 10% contact shelf and contact-only state explicit;
+- a second live-identity probe confirmed exact V1.1 is live; helper was removed.
 
 Owner device evidence is now required. Do not integrate before it.
 
 ## Owner questions
 
-- can the pedal be acquired at exact zero near the bottom?
+- is the contact shelf visibly discoverable?
+- can the pedal be acquired there at exact zero?
 - is 0 -> low analog roll-in smooth?
-- does repeated slow threshold crossing chatter?
+- does repeated threshold crossing chatter?
 - is 100% still practical?
 - is contact visually distinct from real actuation?
 - do throttle+brake, steering+pedal and pedal+D/R still work?
 
-Possible next action depends on evidence: accept/integrate, retune only the zone, adjust only presentation, add hysteresis only if chatter is real, or reject.
+Possible next action depends on evidence: accept/integrate, retune only zone size, adjust only presentation, add hysteresis only if chatter is real, or reject.
 
 ## Later boundaries
 
