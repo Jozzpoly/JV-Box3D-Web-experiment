@@ -1,65 +1,59 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-22
-Status: `STEERING + ABSOLUTE PEDALS ACCEPTED IN MAIN / D-R MULTITOUCH CANDIDATE ACTIVE / OWNER DEVICE VERDICT OPEN / PEDAL TUNING OPEN / JURE PAUSED`
+Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH ACCEPTED IN MAIN / MOBILE TAP-HIGHLIGHT POLISH ACTIVE / PEDAL TUNING OPEN / JURE PAUSED`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file.
 
 ## Current authority
 
 - source/product authority: live `main` of `Jozzpoly/JV-Box3D-Web-experiment`;
-- accepted source before active D/R experiment: `77eee609cf317dc135ec3e0fd9b8b107d90917ef`;
+- accepted D/R integration executable: `bd8980eba3e62b5a4b48df528be2db275addf7b4`;
+- Owner-tested D/R candidate: `3f6acc821c9db9d4cd77845b8eb81f4625aaaef7`;
+- D/R RED anchor: `9a4ed88113eea28ff14a0bc410843122c3bd6dbd`;
 - accepted pedal integration executable: `315e41aa3e68baaa74ab107d3ef0b82c14a2eb84`;
 - accepted steering integration executable: `4961cee419a88dc54a5f0ee743cc1ee65886a734`;
-- active ordinary lane: `work/dr-multitouch-acquisition`;
-- D/R RED anchor: `9a4ed88113eea28ff14a0bc410843122c3bd6dbd`;
-- active D/R candidate: `3f6acc821c9db9d4cd77845b8eb81f4625aaaef7`;
-- Owner Preview pointer source: `3f6acc821c9db9d4cd77845b8eb81f4625aaaef7`;
-- Preview JSPREV2 layer: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
+- active lane: `work/mobile-touch-highlight-polish@a8fb118bb75c3b15fbec20bd2537d4354077a16a`;
+- Owner Preview pointer source: `a8fb118bb75c3b15fbec20bd2537d4354077a16a`;
+- Preview JSPREV2: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
 - accepted Friends/Public: `279dd4eec8599ad12c95e03b50a52c478e8a50e7`.
 
 ## Accepted foundations
 
-Dual-mode steering and absolute-position pedals are accepted source foundations. Steering tuning remains open. Pedal lower zero/contact buffer, value curve and mechanical feedback remain open.
+- dual-mode steering: `Obrót / DIRECT_ROTATION` + `Przeciąganie / RELATIVE_X`; tuning open;
+- absolute-position pedals with frozen acquisition geometry and immediate represented value; contact-zone/value-curve/mechanical tuning open;
+- independent throttle/brake pointers and steering+pedal multitouch;
+- D/R explicit pointer ownership/lifecycle, with held-throttle re-sign semantics preserved;
+- Camera Manual Rig V1, Fullscreen V1, current mobile composition, Plac E2R, Offroad, JSPREV2 and accepted A53 render-1x boundary.
 
-## Active D/R experiment
+## D/R close
 
-Owner A53 evidence showed D/R does not switch while throttle is held by another finger.
+Old D/R depended on browser `click` after `pointerdown`, so second-finger multitouch was not a real pointer contract.
 
-Root-cause grounding:
+- RED `9a4ed881...`: held throttle + second D/R pointer failed.
+- GREEN `3f6acc82...`: explicit D/R capture/pointerup toggle, cancel/lost-capture fail-closed, no double-toggle, keyboard click fallback; focused causal suites PASS.
+- Owner A53/Chrome video: throttle + brake + D/R + steering can coexist; Owner explicitly says this is the required capability.
+- integration `bd8980eb...`: exact D/R runtime/test blobs + current docs; Windows full `npm run build` PASS, status `jv/dr-integration-close = success`.
 
-- old D/R path stopped `pointerdown` propagation but toggled only on `click`;
-- tests dispatched `click()` directly and did not prove second-finger pointer acquisition;
-- multi-pointer web semantics make click/compatibility-mouse behavior unsafe as the only non-primary touch contract;
-- core sign semantics remain separately valid if a toggle reaches the adapter.
+Classification: `OWNER ACCEPTED — D/R MULTITOUCH ACQUISITION FOUNDATION IN SOURCE`.
 
-RED `9a4ed881...`: held throttle + second D/R pointerdown/pointerup failed as expected.
+## Active highlight polish
 
-GREEN `3f6acc82...`:
+Owner video also shows an intermittent cyan overlay on the throttle touch target around ~13 s. Pedals already disable text selection, and the whole-target translucent overlay is more consistent with browser tap highlight than product fill state.
 
-- D/R owns one explicit pointer via capture;
-- owned pointerup toggles;
-- cancel/lost capture/lifecycle loss releases without toggle;
-- pedal pointer remains independently owned;
-- pointer-generated click cannot double-toggle;
-- keyboard/assistive click fallback remains;
-- existing held-throttle re-sign function is unchanged.
+Candidate `a8fb118b...` is CSS-only: on mobile/coarse-pointer surfaces, `.mobile-control` and `.mobile-steering-joystick` use `-webkit-tap-highlight-color: transparent`. No pointer/input/physics change.
 
-Exact candidate differs from accepted source only in `src/input/pointer-analog-drive-adapter.ts` and new `tests/dr-multitouch-acquisition.test.mjs`.
-
-Focused validation: exact checkout, repo Node/npm, `npm ci`, typecheck, new D/R tests plus analog-drive, viewport lifecycle, host analog contract and mobile integration tests — PASS; status `jv/dr-multitouch-causal = success`.
-
-Owner Preview selects the candidate; Owner A53 verdict is still open. Do not merge before that evidence.
+Owner Preview selects the candidate. Owner A53 verdict is open. If the artifact remains, do not blindly add broader callout/selection suppression; re-ground the actual mechanism.
 
 ## Later boundaries
 
-- pedal zero/contact buffer ~5–10% is a hypothesis, not frozen;
+- pedal lower zero/contact buffer ~5–10% is only a tuning hypothesis;
 - pedal mechanical feedback should distinguish contact from actuation;
-- small brake dominating full throttle / low power is later handling work;
+- brake dominance / low power is later handling;
 - Friends/Public does not auto-advance with source.
 
 ## Roadmap
 
-`D/R Owner validation + close -> pedal mechanical feedback + neutral-zone tuning -> desktop/mobile hygiene -> portrait -> control industrial-design convergence -> later JURE/rig/handling`
+`touch-highlight Owner check + close -> pedal mechanical feedback + neutral/contact tuning -> desktop/mobile hygiene -> portrait -> control industrial-design convergence -> later JURE/rig/handling`
 
 Performance only from measured need.
