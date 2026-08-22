@@ -6,6 +6,7 @@ import type {
   PointerDriveDirection,
 } from "./input/pointer-analog-drive-adapter.js";
 import type { SteeringCommand } from "./input/steering-command.js";
+import type { PointerSteeringInteraction } from "./input/pointer-steering-joystick-adapter.js";
 import { MobileDrivingUi } from "./mobile-driving-ui.js";
 import { M6ProductRenderer } from "./render/m6-product-renderer.js";
 import {
@@ -301,6 +302,30 @@ try {
 
 let host: F4VehicleHost | null = null;
 let startupGeneration = 0;
+
+export type ProductSteeringInteraction = Extract<
+  PointerSteeringInteraction,
+  "DIRECT_ROTATION" | "RELATIVE_X"
+>;
+
+let selectedSteeringInteraction: ProductSteeringInteraction =
+  "DIRECT_ROTATION";
+
+export function getProductSteeringInteraction(): ProductSteeringInteraction {
+  return selectedSteeringInteraction;
+}
+
+export function setProductSteeringInteraction(
+  interaction: ProductSteeringInteraction,
+): void {
+  if (
+    interaction !== "DIRECT_ROTATION" &&
+    interaction !== "RELATIVE_X"
+  ) {
+    throw new Error(`Unsupported product steering interaction: ${String(interaction)}`);
+  }
+  selectedSteeringInteraction = interaction;
+}
 let observationOrigin: Readonly<{
   generation: number;
   x: number;
@@ -528,6 +553,7 @@ async function startHost(): Promise<void> {
         mobileDrivingUi.setDirection(generation, direction);
       },
       steeringJoystick,
+      getSteeringInteraction: () => selectedSteeringInteraction,
       onSteeringJoystickStateChange: (value: number, active: boolean) => {
         mobileDrivingUi.setSteering(generation, value, active);
       },

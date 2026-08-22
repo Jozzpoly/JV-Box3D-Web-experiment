@@ -21,6 +21,7 @@ class FakeEventTarget {
         pointerId: 0,
         button: 0,
         clientX: 50,
+        clientY: 50,
         code: "",
         repeat: false,
         preventDefault() {},
@@ -49,7 +50,7 @@ class FakePointerTarget extends FakeEventTarget {
 
 class FakeJoystickTarget extends FakePointerTarget {
   getBoundingClientRect() {
-    return { left: 0, width: 100 };
+    return { left: 0, top: 0, width: 100, height: 100 };
   }
 }
 
@@ -88,7 +89,7 @@ function controls() {
   };
 }
 
-test("position joystick drives steering while digital RATE input keeps explicit priority", () => {
+test("direct wheel rotation drives POSITION while digital RATE input keeps explicit priority", () => {
   const windowTarget = new FakeEventTarget();
   const documentTarget = new FakeEventTarget();
   const animationFrames = new FakeAnimationFrames();
@@ -114,30 +115,106 @@ test("position joystick drives steering while digital RATE input keeps explicit 
     },
   });
 
+  // Grabbing the right edge owns steering without jumping from center.
   steeringJoystick.dispatch("pointerdown", {
     pointerId: 41,
-    clientX: 0,
+    clientX: 100,
+    clientY: 50,
   });
   animationFrames.runNext(0);
   now = 1000 / 60;
   animationFrames.runNext(1000 / 60);
-  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: 1 });
+  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: 0 });
 
-  steeringJoystick.dispatch("pointerup", {
+  // A quarter-turn clockwise maps one-to-one to 90 / 120 = 0.75 of lock.
+  steeringJoystick.dispatch("pointermove", {
     pointerId: 41,
-    clientX: 0,
+    clientX: 50,
+    clientY: 100,
   });
   now = 1000 / 30;
   animationFrames.runNext(1000 / 30);
+  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: -0.75 });
+
+  steeringJoystick.dispatch("pointerup", {
+    pointerId: 41,
+    clientX: 50,
+    clientY: 100,
+  });
+  now = 50;
+  animationFrames.runNext(50);
   assert.deepEqual(observed.at(-1), { mode: "POSITION", value: 0 });
 
   pointerControls.steerRight.dispatch("pointerdown", { pointerId: 42 });
-  now = 50;
-  animationFrames.runNext(50);
+  now = 200 / 3;
+  animationFrames.runNext(200 / 3);
   assert.deepEqual(observed.at(-1), { mode: "RATE", value: -1 });
 
   assert.deepEqual(joystickStates.at(-1), { value: 0, active: false });
   host.dispose();
   assert.equal(steeringJoystick.captured.size, 0);
   assert.equal(pointerControls.steerRight.captured.size, 0);
+});
+
+
+test("steering interaction provider switches on the next grab without restarting the browser host", () => {
+  const windowTarget = new FakeEventTarget();
+  const documentTarget = new FakeEventTarget();
+  const animationFrames = new FakeAnimationFrames();
+  const steeringJoystick = new FakeJoystickTarget();
+  const observed = [];
+  let interaction = "DIRECT_ROTATION";
+  let now = 0;
+
+  const host = CleanBrowserHost.start({
+    windowTarget,
+    documentTarget,
+    animationFrames,
+    steeringJoystick,
+    getSteeringInteraction: () => interaction,
+    now: () => now,
+    isDocumentHidden: () => false,
+    onStep(_step, steering) {
+      observed.push(steering.command);
+    },
+  });
+
+  steeringJoystick.dispatch("pointerdown", {
+    pointerId: 51,
+    clientX: 100,
+    clientY: 50,
+  });
+  animationFrames.runNext(0);
+  now = 1000 / 60;
+  animationFrames.runNext(1000 / 60);
+  steeringJoystick.dispatch("pointermove", {
+    pointerId: 51,
+    clientX: 50,
+    clientY: 100,
+  });
+  now = 1000 / 30;
+  animationFrames.runNext(1000 / 30);
+  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: -0.75 });
+  steeringJoystick.dispatch("pointerup", { pointerId: 51, clientX: 50, clientY: 100 });
+
+  interaction = "RELATIVE_X";
+  now = 55;
+  steeringJoystick.dispatch("pointerdown", {
+    pointerId: 52,
+    clientX: 50,
+    clientY: 10,
+  });
+  steeringJoystick.dispatch("pointermove", {
+    pointerId: 52,
+    clientX: 60,
+    clientY: 10,
+  });
+  now = 200 / 3;
+  animationFrames.runNext(200 / 3);
+  assert.equal(observed.at(-1).mode, "POSITION");
+  assert.ok(observed.at(-1).value < 0);
+  assert.ok(Math.abs(observed.at(-1).value) < 0.2);
+
+  steeringJoystick.dispatch("pointerup", { pointerId: 52, clientX: 60, clientY: 10 });
+  host.dispose();
 });

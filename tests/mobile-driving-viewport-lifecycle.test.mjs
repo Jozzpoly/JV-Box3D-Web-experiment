@@ -18,7 +18,9 @@ class FakeSteering extends EventTarget {
   setPointerCapture(id) { this.captures.add(id); }
   releasePointerCapture(id) { this.captures.delete(id); }
   hasPointerCapture(id) { return this.captures.has(id); }
-  getBoundingClientRect() { return { left: 0, width: 100 }; }
+  getBoundingClientRect() {
+    return { left: 0, top: 0, width: 100, height: 100 };
+  }
 }
 
 function pointer(type, id, x, y) {
@@ -81,7 +83,9 @@ test("fullscreen change self-centers an active steering gesture", () => {
     isDocumentHidden: () => false,
   });
 
-  target.dispatchEvent(pointer("pointerdown", 7, 0, 0));
+  target.dispatchEvent(pointer("pointerdown", 7, 100, 50));
+  now = 1;
+  target.dispatchEvent(pointer("pointermove", 7, 50, 100));
   now = 3;
   documentTarget.dispatchEvent(new Event("fullscreenchange"));
 

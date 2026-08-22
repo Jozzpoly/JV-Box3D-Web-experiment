@@ -18,7 +18,10 @@ import type {
   PointerAnalogDriveControls,
   PointerDriveDirection,
 } from "../input/pointer-analog-drive-adapter.js";
-import type { PointerSteeringJoystickTarget } from "../input/pointer-steering-joystick-adapter.js";
+import type {
+  PointerSteeringInteraction,
+  PointerSteeringJoystickTarget,
+} from "../input/pointer-steering-joystick-adapter.js";
 import type {
   PointerVehicleControlId,
   PointerVehicleControlTargets,
@@ -73,6 +76,7 @@ export interface F4VehicleHostOptions {
     direction: PointerDriveDirection,
   ) => void;
   readonly steeringJoystick?: PointerSteeringJoystickTarget;
+  readonly getSteeringInteraction?: () => PointerSteeringInteraction;
   readonly onSteeringJoystickStateChange?: (
     value: number,
     active: boolean,
@@ -261,6 +265,9 @@ export class F4VehicleHost {
         ...(options.steeringJoystick === undefined
           ? {}
           : { steeringJoystick: options.steeringJoystick }),
+        ...(options.getSteeringInteraction === undefined
+          ? {}
+          : { getSteeringInteraction: options.getSteeringInteraction }),
         ...(options.onSteeringJoystickStateChange === undefined
           ? {}
           : {

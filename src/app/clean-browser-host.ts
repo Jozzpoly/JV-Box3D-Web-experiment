@@ -21,6 +21,7 @@ import {
 } from "../input/pointer-analog-drive-adapter.js";
 import {
   PointerSteeringJoystickAdapter,
+  type PointerSteeringInteraction,
   type PointerSteeringJoystickTarget,
 } from "../input/pointer-steering-joystick-adapter.js";
 import {
@@ -60,6 +61,7 @@ export interface CleanBrowserHostOptions {
     direction: PointerDriveDirection,
   ) => void;
   readonly steeringJoystick?: PointerSteeringJoystickTarget;
+  readonly getSteeringInteraction?: () => PointerSteeringInteraction;
   readonly onSteeringJoystickStateChange?: (
     value: number,
     active: boolean,
@@ -183,6 +185,9 @@ export class CleanBrowserHost {
           documentTarget: options.documentTarget,
           target: options.steeringJoystick,
           timeline: steeringPositionTimeline,
+          ...(options.getSteeringInteraction === undefined
+            ? {}
+            : { getInteraction: options.getSteeringInteraction }),
           now: options.now,
           isDocumentHidden: options.isDocumentHidden,
           ...(options.onSteeringJoystickStateChange === undefined

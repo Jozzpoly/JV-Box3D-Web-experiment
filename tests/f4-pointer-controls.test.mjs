@@ -70,6 +70,7 @@ test("vehicle host forwards pointer controls, joystick, and state callbacks unch
   const steeringJoystick = joystickTarget();
   const onPointerControlStateChange = () => {};
   const onSteeringJoystickStateChange = () => {};
+  const getSteeringInteraction = () => "DIRECT_ROTATION";
   let browserOptions = null;
   let browserDisposals = 0;
   let worldDisposals = 0;
@@ -87,6 +88,7 @@ test("vehicle host forwards pointer controls, joystick, and state callbacks unch
       pointerControls,
       onPointerControlStateChange,
       steeringJoystick,
+      getSteeringInteraction,
       onSteeringJoystickStateChange,
       onVehicleStep() {},
     },
@@ -144,6 +146,10 @@ test("vehicle host forwards pointer controls, joystick, and state callbacks unch
     onPointerControlStateChange,
   );
   assert.equal(browserOptions.steeringJoystick, steeringJoystick);
+  assert.equal(
+    browserOptions.getSteeringInteraction,
+    getSteeringInteraction,
+  );
   assert.equal(
     browserOptions.onSteeringJoystickStateChange,
     onSteeringJoystickStateChange,

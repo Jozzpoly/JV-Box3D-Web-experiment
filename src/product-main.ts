@@ -1,6 +1,7 @@
 import "./style.css";
 import "./mobile-driving-controls.css";
 import "./mobile-driving-polish.css";
+import "./direct-rotation-steering.css";
 import "./utility-drawer.css";
 
 import {
@@ -133,7 +134,7 @@ if (spawnTarget !== "map") {
   globalThis.fetch = productFetch;
 }
 
-await import("./main.js");
+const productRuntime = await import("./main.js");
 
 const scenePanel = document.querySelector<HTMLElement>(".scene-panel");
 if (scenePanel === null) {
@@ -178,6 +179,10 @@ installProductControls({
     grid: true,
     steeringPlate: true,
     fullscreen: true,
+  },
+  steeringInteraction: {
+    get: productRuntime.getProductSteeringInteraction,
+    set: productRuntime.setProductSteeringInteraction,
   },
 });
 installUtilityDrawer();

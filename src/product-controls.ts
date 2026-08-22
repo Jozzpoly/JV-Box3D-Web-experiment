@@ -1,3 +1,4 @@
+import type { PointerSteeringInteraction } from "./input/pointer-steering-joystick-adapter.js";
 import {
   getJvProductViewSettings,
   setJvGridVisible,
@@ -23,8 +24,19 @@ export interface ProductControlCapabilities {
   readonly fullscreen?: boolean;
 }
 
+export type ProductSteeringInteraction = Extract<
+  PointerSteeringInteraction,
+  "DIRECT_ROTATION" | "RELATIVE_X"
+>;
+
+export interface ProductSteeringInteractionControls {
+  readonly get: () => ProductSteeringInteraction;
+  readonly set: (interaction: ProductSteeringInteraction) => void;
+}
+
 export interface InstallProductControlsOptions {
   readonly capabilities: ProductControlCapabilities;
+  readonly steeringInteraction?: ProductSteeringInteractionControls;
 }
 
 function rememberTextureFilter(mode: JvTextureFilterMode): void {
@@ -101,7 +113,7 @@ export function installProductControls(
   const { capabilities } = options;
   const controls = document.createElement("section");
   controls.className = "product-controls";
-  controls.setAttribute("aria-label", "JV product view controls");
+  controls.setAttribute("aria-label", "JV product controls");
 
   const notice = document.createElement("p");
   notice.className = "product-control-notice";
@@ -221,6 +233,48 @@ export function installProductControls(
 
     viewGroup.append(viewChoices);
     controls.append(viewGroup);
+  }
+
+  const steeringButtons = new Map<
+    ProductSteeringInteraction,
+    HTMLButtonElement
+  >();
+  const steeringInteraction = options.steeringInteraction;
+  const syncSteeringButtons = (): void => {
+    if (steeringInteraction === undefined) {
+      return;
+    }
+    const active = steeringInteraction.get();
+    for (const [mode, button] of steeringButtons) {
+      setChoiceActive(button, mode === active);
+    }
+  };
+  if (steeringInteraction !== undefined) {
+    const steeringGroup = controlGroup("Kierownica");
+    const steeringChoices = document.createElement("div");
+    steeringChoices.className = "product-choice-row";
+    const interactions: readonly Readonly<{
+      id: ProductSteeringInteraction;
+      label: string;
+    }>[] = [
+      { id: "DIRECT_ROTATION", label: "Obrót" },
+      { id: "RELATIVE_X", label: "Przeciąganie" },
+    ];
+    for (const interaction of interactions) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "product-choice";
+      button.textContent = interaction.label;
+      button.addEventListener("click", () => {
+        steeringInteraction.set(interaction.id);
+        syncSteeringButtons();
+      });
+      steeringButtons.set(interaction.id, button);
+      steeringChoices.append(button);
+    }
+    steeringGroup.append(steeringChoices);
+    controls.append(steeringGroup);
+    syncSteeringButtons();
   }
 
   let fullscreenButton: HTMLButtonElement | null = null;
