@@ -4,17 +4,20 @@ import type { InputReleaseReason } from "./raw-device-event.js";
 export type AnalogDrivePedal = "THROTTLE" | "BRAKE";
 export type PointerDriveDirection = "D" | "R";
 
-export interface PointerAnalogPedalTarget extends EventTarget {
+export interface PointerCaptureTarget extends EventTarget {
   setPointerCapture(pointerId: number): void;
   releasePointerCapture(pointerId: number): void;
   hasPointerCapture(pointerId: number): boolean;
+}
+
+export interface PointerAnalogPedalTarget extends PointerCaptureTarget {
   getBoundingClientRect(): Readonly<{ top: number; height: number }>;
 }
 
 export interface PointerAnalogDriveControls {
   readonly throttle: PointerAnalogPedalTarget;
   readonly brake: PointerAnalogPedalTarget;
-  readonly direction: EventTarget;
+  readonly direction: PointerCaptureTarget;
 }
 
 export interface PointerAnalogDriveAdapterOptions {
@@ -43,6 +46,11 @@ const VALUE_EPSILON = 1e-6;
 
 function pointerButtonIsSupported(event: PointerEvent): boolean { return event.button === 0 || event.button === -1; }
 
+function clickDetail(event: Event): number {
+  const detail = (event as Event & { readonly detail?: unknown }).detail;
+  return typeof detail === "number" && Number.isFinite(detail) ? detail : 0;
+}
+
 export function resolvePointerAnalogPedalValue(clientY: number, topY: number, heightPx: number): number {
   if (!Number.isFinite(clientY) || !Number.isFinite(topY) || !Number.isFinite(heightPx) || heightPx <= 0) {
     throw new RangeError("Pedal acquisition geometry must be finite and positive.");
@@ -64,6 +72,7 @@ export class PointerAnalogDriveAdapter {
   readonly #listeners: InstalledListener[] = [];
   readonly #pointers = new Map<number, ActivePedalPointer>();
   readonly #pointerByPedal = new Map<AnalogDrivePedal, number>();
+  #directionPointerId: number | null = null;
   #direction: PointerDriveDirection = "D";
   #disposed = false;
 
@@ -80,10 +89,7 @@ export class PointerAnalogDriveAdapter {
 
     this.#installPedal("THROTTLE", this.#controls.throttle);
     this.#installPedal("BRAKE", this.#controls.brake);
-    const onDirectionPointerDown: EventListener = event => event.stopPropagation();
-    const onDirectionClick: EventListener = event => this.#toggleDirection(event);
-    this.#listen(this.#controls.direction, "pointerdown", onDirectionPointerDown);
-    this.#listen(this.#controls.direction, "click", onDirectionClick);
+    this.#installDirection(this.#controls.direction);
     this.#listen(this.#windowTarget, "blur", () => this.#releaseAll("BLUR"));
     this.#listen(this.#windowTarget, "pagehide", () => this.#releaseAll("PAGE_HIDE"));
     this.#listen(this.#windowTarget, "orientationchange", () =>
@@ -114,10 +120,24 @@ export class PointerAnalogDriveAdapter {
     this.#listen(target, "lostpointercapture", event => this.#releasePointer(event as PointerEvent, false));
   }
 
+  #installDirection(target: PointerCaptureTarget): void {
+    this.#listen(target, "pointerdown", event => this.#handleDirectionPointerDown(target, event as PointerEvent));
+    this.#listen(target, "pointerup", event => this.#handleDirectionPointerUp(target, event as PointerEvent));
+    this.#listen(target, "pointercancel", event => this.#releaseDirectionPointer(target, event as PointerEvent, true));
+    this.#listen(target, "lostpointercapture", event => this.#releaseDirectionPointer(target, event as PointerEvent, false));
+    this.#listen(target, "click", event => this.#handleDirectionClick(event));
+  }
+
   #listen(target: EventTarget, type: string, listener: EventListener): void { target.addEventListener(type, listener); this.#listeners.push({ target, type, listener }); }
 
   #handlePointerDown(pedal: AnalogDrivePedal, target: PointerAnalogPedalTarget, event: PointerEvent): void {
-    if (this.#disposed || !pointerButtonIsSupported(event) || this.#pointers.has(event.pointerId) || this.#pointerByPedal.has(pedal)) return;
+    if (
+      this.#disposed ||
+      !pointerButtonIsSupported(event) ||
+      this.#pointers.has(event.pointerId) ||
+      this.#directionPointerId === event.pointerId ||
+      this.#pointerByPedal.has(pedal)
+    ) return;
     let topY: number;
     let heightPx: number;
     let value: number;
@@ -160,9 +180,44 @@ export class PointerAnalogDriveAdapter {
     this.#onPedalStateChange?.(state.pedal, 0, false);
   }
 
-  #toggleDirection(event: Event): void {
+  #handleDirectionPointerDown(target: PointerCaptureTarget, event: PointerEvent): void {
+    if (
+      this.#disposed ||
+      !pointerButtonIsSupported(event) ||
+      this.#directionPointerId !== null ||
+      this.#pointers.has(event.pointerId)
+    ) return;
+    event.preventDefault(); event.stopPropagation();
+    try { target.setPointerCapture(event.pointerId); } catch { return; }
+    this.#directionPointerId = event.pointerId;
+  }
+
+  #handleDirectionPointerUp(target: PointerCaptureTarget, event: PointerEvent): void {
+    if (this.#disposed || this.#directionPointerId !== event.pointerId) return;
+    event.preventDefault(); event.stopPropagation();
+    this.#directionPointerId = null;
+    try { if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId); } catch { /* pointer edge already resolved */ }
+    this.#toggleDirection();
+  }
+
+  #releaseDirectionPointer(target: PointerCaptureTarget, event: PointerEvent, releaseCapture: boolean): void {
+    if (this.#directionPointerId !== event.pointerId) return;
+    event.preventDefault(); event.stopPropagation();
+    this.#directionPointerId = null;
+    if (releaseCapture) {
+      try { if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId); } catch { /* no semantic direction change to roll back */ }
+    }
+  }
+
+  #handleDirectionClick(event: Event): void {
     if (this.#disposed) return;
     event.preventDefault(); event.stopPropagation();
+    if (clickDetail(event) > 0) return;
+    this.#toggleDirection();
+  }
+
+  #toggleDirection(): void {
+    if (this.#disposed) return;
     this.#direction = this.#direction === "D" ? "R" : "D";
     const timestampMs = this.#safeTimestamp();
     const throttleId = this.#pointerByPedal.get("THROTTLE");
@@ -176,7 +231,7 @@ export class PointerAnalogDriveAdapter {
   }
 
   #releaseAll(reason: InputReleaseReason): void {
-    if (this.#pointers.size === 0) return;
+    if (this.#pointers.size === 0 && this.#directionPointerId === null) return;
     const timestampMs = this.#safeTimestamp();
     for (const state of this.#pointers.values()) {
       this.#timeline.enqueueReleaseAll(timestampMs, reason, this.#sourceId(state.pointerId));
@@ -184,6 +239,15 @@ export class PointerAnalogDriveAdapter {
       this.#onPedalStateChange?.(state.pedal, 0, false);
     }
     this.#pointers.clear(); this.#pointerByPedal.clear();
+    const directionPointerId = this.#directionPointerId;
+    this.#directionPointerId = null;
+    if (directionPointerId !== null) {
+      try {
+        if (this.#controls.direction.hasPointerCapture(directionPointerId)) {
+          this.#controls.direction.releasePointerCapture(directionPointerId);
+        }
+      } catch { /* direction state is unchanged */ }
+    }
   }
 
   #enqueuePedal(pedal: AnalogDrivePedal, value: number, timestampMs: number, sourceId: string): void {
