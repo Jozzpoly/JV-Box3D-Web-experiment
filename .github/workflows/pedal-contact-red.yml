@@ -1,4 +1,4 @@
-name: JV pedal contact logic gate
+name: JV pedal contact logic diagnostics
 
 on:
   push:
@@ -10,22 +10,9 @@ permissions:
   statuses: write
 
 jobs:
-  pedal-contact-logic:
+  pedal-contact-diagnostics:
     runs-on: windows-latest
     steps:
-      - name: Mark candidate pending
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: 'e575d01ebe7cca92df6b80ab45f8ab5328acd427',
-              state: 'pending',
-              context: 'jv/pedal-contact-logic',
-              description: 'Pedal contact logic gate running'
-            });
-
       - name: Checkout exact logic candidate
         uses: actions/checkout@v4
         with:
@@ -46,27 +33,47 @@ jobs:
         shell: pwsh
         run: npm ci
 
-      - name: Run focused logic suites
-        id: logic
+      - name: Compile and typecheck
+        id: compile
+        continue-on-error: true
         shell: pwsh
         run: |
           npm run typecheck
           npx tsc -p tsconfig.test.json
-          node --test tests/analog-drive.test.mjs tests/mobile-driving-ui.test.mjs
 
-      - name: Record logic result
+      - name: Run analog mapping suite
+        id: analog
+        if: steps.compile.outcome == 'success'
+        continue-on-error: true
+        shell: pwsh
+        run: node --test tests/analog-drive.test.mjs
+
+      - name: Run UI state suite
+        id: ui
+        if: steps.compile.outcome == 'success'
+        continue-on-error: true
+        shell: pwsh
+        run: node --test tests/mobile-driving-ui.test.mjs
+
+      - name: Record diagnostic statuses
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
-            const outcome = '${{ steps.logic.outcome }}';
-            await github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: 'e575d01ebe7cca92df6b80ab45f8ab5328acd427',
-              state: outcome === 'success' ? 'success' : outcome === 'failure' ? 'failure' : 'error',
-              context: 'jv/pedal-contact-logic',
-              description: outcome === 'success'
-                ? 'Pedal contact logic focused suites PASS'
-                : 'Pedal contact logic focused suites failed'
-            });
+            const sha = 'e575d01ebe7cca92df6b80ab45f8ab5328acd427';
+            const items = [
+              ['jv/pedal-contact-compile', '${{ steps.compile.outcome }}'],
+              ['jv/pedal-contact-analog', '${{ steps.analog.outcome }}'],
+              ['jv/pedal-contact-ui', '${{ steps.ui.outcome }}']
+            ];
+            for (const [contextName, outcome] of items) {
+              const state = outcome === 'success' ? 'success' : outcome === 'failure' ? 'failure' : 'error';
+              await github.rest.repos.createCommitStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                sha,
+                state,
+                context: contextName,
+                description: `${contextName}: ${outcome}`
+              });
+            }
