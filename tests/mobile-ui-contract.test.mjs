@@ -44,11 +44,11 @@ test("mobile-only toolbar controls track the same responsive boundary as the mob
   );
   assert.match(
     controls,
-    /mobileDrivingSurface\.addEventListener\("change",\s*syncMobileDrivingOnlyControls\)/,
+    /mobileDrivingSurface\.addEventListener\(\s*"change",\s*syncMobileDrivingOnlyControls\)/,
   );
   assert.match(
     controls,
-    /mobileDrivingSurface\.removeEventListener\("change",\s*syncMobileDrivingOnlyControls\)/,
+    /mobileDrivingSurface\.removeEventListener\(\s*"change",\s*syncMobileDrivingOnlyControls\)/,
   );
 });
 
