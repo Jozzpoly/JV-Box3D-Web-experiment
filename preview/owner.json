@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "3728476f5365cc34e2aa9fc8910dbb9efa323b5a",
+  "sourceCommit": "bd4f6ad5df097b65536f7cb63d4fcb88691d9042",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
