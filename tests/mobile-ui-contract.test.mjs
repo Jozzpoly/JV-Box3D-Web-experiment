@@ -31,24 +31,24 @@ test("mobile scene can shrink below the historical desktop 420px floor", async (
   );
 });
 
-test("mobile-only toolbar controls follow the same visibility boundary as the mobile driving surface", async () => {
-  const [desktopCss, mobileCss] = await Promise.all([
-    read("src/style.css"),
-    read("src/mobile-driving-controls.css"),
-  ]);
+test("mobile-only toolbar controls track the same responsive boundary as the mobile driving surface", async () => {
+  const controls = await read("src/product-controls.ts");
 
   assert.match(
-    desktopCss,
-    /\[data-mobile-driving-only\]\s*\{[^}]*display:\s*none;/,
-    "mobile-driving-only product controls must be hidden on the normal desktop surface",
+    controls,
+    /window\.matchMedia\(\s*"\(hover: none\) and \(pointer: coarse\), \(max-width: 620px\)"\s*\)/,
   );
   assert.match(
-    mobileCss,
-    /@media \(hover: none\) and \(pointer: coarse\), \(max-width: 620px\) \{[\s\S]*?\.product-control-group\[data-mobile-driving-only\]\s*\{[^}]*display:\s*grid;/,
+    controls,
+    /element\.hidden\s*=\s*!mobileDrivingSurface\.matches/,
   );
   assert.match(
-    mobileCss,
-    /@media \(hover: none\) and \(pointer: coarse\), \(max-width: 620px\) \{[\s\S]*?\.product-choice\[data-mobile-driving-only\]\s*\{[^}]*display:\s*block;/,
+    controls,
+    /mobileDrivingSurface\.addEventListener\("change",\s*syncMobileDrivingOnlyControls\)/,
+  );
+  assert.match(
+    controls,
+    /mobileDrivingSurface\.removeEventListener\("change",\s*syncMobileDrivingOnlyControls\)/,
   );
 });
 
