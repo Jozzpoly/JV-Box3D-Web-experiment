@@ -1,164 +1,129 @@
 # JV Web — mobile driving polish grounding
 
-Status: `CURRENT MOBILE FOUNDATION OWNER-ACCEPTED / DUAL-MODE STEERING + ABSOLUTE-POSITION PEDALS ACCEPTED IN SOURCE / D-R MULTITOUCH GROUNDING NEXT / FUTURE CONTROL TUNING OPEN / NOT A SCHEDULER`
+Status: `CURRENT MOBILE FOUNDATION OWNER-ACCEPTED / DUAL-MODE STEERING + ABSOLUTE PEDALS ACCEPTED / D-R MULTITOUCH ACQUISITION FALSIFIER ACTIVE / FUTURE CONTROL TUNING OPEN / NOT A SCHEDULER`
 Owner: Jozz
 Updated: 2026-08-22
 
-This document preserves durable Owner intent and fault-localization rules for future mobile driving polish. It does **not** define a mandatory numbered scheduler and does not authorize vehicle-physics, final rig or JURE-authored geometry changes.
+This document preserves durable Owner intent and fault-localization rules. It does not define a mandatory numbered scheduler and does not authorize vehicle-physics, final rig or JURE-authored geometry changes.
 
-## 1. Accepted evidence boundary
+## 1. Accepted foundations
 
 ```text
-accepted dual-mode steering integration executable:
+steering integration executable:
   4961cee419a88dc54a5f0ee743cc1ee65886a734
 
-Owner-tested absolute-position pedal runtime:
-  e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4
-
-accepted absolute-position pedal integration executable:
+absolute-position pedal integration executable:
   315e41aa3e68baaa74ab107d3ef0b82c14a2eb84
 
-device/browser Owner evidence:
-  Samsung Galaxy A53 / Chrome
+current accepted source before D/R experiment:
+  77eee609cf317dc135ec3e0fd9b8b107d90917ef
 ```
 
-Dual-mode steering and absolute-position pedals are accepted source foundations. Final steering tuning and final pedal neutral-zone/value-curve/mechanical feedback remain open.
+Protect:
 
-## 2. Protected current baseline
+- `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X`;
+- absolute-position pedals with frozen acquisition geometry and immediate represented value;
+- independent throttle/brake ownership;
+- steering + pedal multitouch;
+- fail-closed continuous-control lifecycle;
+- core D/R sign semantics;
+- Camera, Fullscreen, Plac E2R, Offroad, JSPREV2, owner vehicle and accepted A53 performance boundary.
 
-Preserve unless a focused later slice explicitly changes it:
+## 2. D/R real-device failure and root boundary
 
-- useful central world/vehicle visibility and current mobile HUD composition;
-- minimal persistent driving HUD + transient utility drawer;
-- `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X` as retained Owner-facing steering modes;
-- absolute-position analog throttle/brake mapping inside frozen acquisition geometry;
-- immediate pointer-down pedal command represented by touch position;
-- independent throttle/brake pointer ownership and simultaneous use;
-- steering + pedal multitouch foundation;
-- fail-closed release/cancel/lifecycle behavior;
-- core D/R command/sign semantics;
-- Camera Manual Rig V1 and Fullscreen V1;
-- Plac E2R, Offroad, approved JSPREV2 and owner vehicle;
-- accepted A53/Chrome render-1x performance boundary.
+Owner A53/Chrome test: hold throttle with one finger, operate D/R with another -> D/R does not switch.
 
-Do not use control polish as a reason to change drivetrain, vehicle physics, rig topology or JURE authority.
-
-## 3. Pedal input semantics — accepted foundation, tuning open
-
-Accepted source semantics:
+The old implementation was not a true multitouch pointer contract:
 
 ```text
-pointer-down -> freeze pedal top + height
-current Y    -> direct [0,1] inside frozen geometry
-bottom       -> low command
-top          -> high command
-range exit   -> clamp 0/1
-release/lifecycle loss -> 0
+D/R pointerdown -> stop propagation only
+browser click   -> actual toggle
 ```
 
-Owner judged this model better than the previous relative-from-touch mapping after real-device low/mid/high acquisition, micro-adjustment, full sweep/reversal, throttle+brake multitouch and steering+pedal tests.
+This is weaker than steering/pedals. Existing tests proved what happens after a click reaches the adapter, not whether a non-primary second touch reliably produces that click while another touch remains active.
 
-Do not reopen the basic mapping choice without contradictory Owner evidence.
+Do not classify this as a drivetrain failure. If `#toggleDirection` is invoked, held throttle is already re-signed correctly.
 
-### Open neutral/contact-zone tuning
-
-Owner wants to be able to touch the pedal at exact zero and then roll smoothly into analog input. A likely later falsifier is roughly a lower **5–10%** zero/contact buffer with continuous remapping above the actuation threshold.
-
-This percentage is **not frozen**. Keep two concepts distinct:
-
-1. **contact / buffer** — finger has acquired the pedal but command remains exactly zero;
-2. **actuation** — command has begun and should be visually/mechanically legible.
-
-Tune this together with mechanical feedback so presentation and semantics agree. Do not let animated pedal geometry become command authority.
-
-## 4. D/R multitouch — next functional boundary
-
-Owner real-device testing showed that D/R does not switch while throttle remains held.
-
-Current source architecture:
-
-- D/R `pointerdown` stops propagation only;
-- direction toggle occurs on `click`;
-- D/R lacks explicit pointer ownership/lifecycle comparable to steering/pedals;
-- if the toggle event does arrive, core D/R semantics correctly re-sign the current held throttle at the toggle timestamp.
-
-Classification:
-
-`OWNER OBSERVED — D/R MULTITOUCH ACQUISITION GAP / ROOT CAUSE NOT YET FULLY PROVEN`
-
-First falsifier for the next slice:
-
-- reproduce on accepted source with one finger holding throttle and another operating D/R;
-- distinguish browser click-suppression/acquisition behavior from command semantics;
-- establish the smallest explicit pointer contract that makes the intent reliable;
-- preserve held throttle value, direction sign semantics and all existing steering/pedal ownership.
-
-Do not change vehicle gearing, motor power or drivetrain behavior in this slice.
-
-## 5. Pedal mechanical feedback — later separate Owner target
-
-The current progress-fill feedback is functional alpha, not the desired final metaphor. Preferred future presentation is a mechanically legible pedal whose visible depression tracks actuation.
-
-Keep separate:
-
-1. stable invisible acquisition geometry — command authority;
-2. contact/actuation semantic state — input meaning;
-3. visible pedal mechanism — presentation only.
-
-Possible visual variables include hinge rotation/foreshortening, translation, linkage/arm motion and restrained depth/contact cues. Do not make animated hitbox geometry authoritative.
-
-## 6. Steering — accepted foundation, tuning open
-
-`DIRECT_ROTATION / Obrót` and `RELATIVE_X / Przeciąganie` are accepted source foundation modes. Preserve no-jump/fail-closed principles and tune each only through focused real-driving evidence. Relative-X current `1 -> 4` progressive gain remains a tuning hypothesis, not frozen truth. `X_POSITION` is historical/regression reference only.
-
-## 7. Longitudinal handling — separate future scope
-
-Owner observed that very small brake input can dominate full throttle and reiterated broad low vehicle power. This is not pedal-input evidence.
-
-Treat as later vehicle/handling work involving brake/motor balance and longitudinal dynamics. Do not tune it while fixing D/R acquisition or pedal presentation.
-
-## 8. Fault localization
+## 3. Active falsifier
 
 ```text
-controls clipped/overlap actions        -> responsive composition
-initial pedal value feels wrong         -> pedal mapping/tuning
-cannot acquire pedal at exact zero      -> neutral/contact-zone tuning
-stationary finger changes pedal command -> acquisition geometry bug
-pedal value correct but looks wrong     -> pedal presentation
-D/R misses second-finger intent         -> D/R pointer acquisition/lifecycle
-Direct feels wrong                      -> Direct gesture/tuning
-Relative feels wrong                    -> Relative gain/gesture tuning
-brake/motor balance feels wrong         -> vehicle/handling stage
-scan/frame-rate problem                  -> performance/render stage with new evidence
+RED:
+  9a4ed88113eea28ff14a0bc410843122c3bd6dbd
+
+GREEN candidate:
+  3f6acc821c9db9d4cd77845b8eb81f4625aaaef7
+
+lane:
+  work/dr-multitouch-acquisition
 ```
 
-A failure in one layer is not justification to discard the whole control stack.
+RED models:
 
-## 9. Work-selection rule / living roadmap
+1. pointer 1 acquires and holds throttle;
+2. pointer 2 performs D/R pointerdown/pointerup;
+3. D/R must toggle without releasing pointer 1;
+4. held throttle value must be re-signed at the toggle timestamp.
 
-There is no fixed remaining P-stage scheduler.
+Old click-only source failed this test as expected.
 
-Current recommended sequence:
+Candidate contract:
 
-- D/R multitouch grounding and acquisition hardening;
-- pedal mechanical feedback + neutral/contact-zone tuning;
-- dual-mode steering refinement when concrete feel evidence calls for it;
-- steering/pedal industrial-design convergence;
+- D/R pointerdown acquires one explicit pointer capture;
+- only the owned pointerup toggles;
+- pointercancel/lost capture/lifecycle loss clears the in-flight D/R pointer without toggle;
+- different pedal pointers remain independently owned;
+- a pointer-generated click after the pointer gesture cannot double-toggle;
+- keyboard/assistive click activation remains supported as a detail-zero fallback;
+- command/sign semantics stay in the existing toggle path.
+
+Focused candidate evidence: `npm ci`, typecheck, D/R tests, analog-drive, viewport lifecycle, host analog-drive contract and mobile integration contract — PASS on repo-declared toolchain; status `jv/dr-multitouch-causal = success`.
+
+## 4. Owner falsifier still required
+
+On A53/Chrome, judge only acquisition/reliability:
+
+- hold throttle -> second finger D -> R;
+- keep throttle -> second finger R -> D;
+- throttle should not drop merely because D/R is operated;
+- steering + throttle + D/R should coexist;
+- ordinary single D/R tap should remain natural.
+
+Do not use this checkpoint to tune power, brake torque, pedal dead zone or steering sensitivity.
+
+## 5. Pedal neutral/contact tuning — later
+
+Absolute-position pedal semantics are already accepted. Owner wants the ability to touch at exact zero and roll smoothly into actuation. Rough lower 5–10% zero/contact buffer remains a hypothesis, not a frozen value.
+
+Future mechanical feedback should make three states legible:
+
+1. acquired/contact;
+2. actuation threshold crossed;
+3. mechanical depression proportional to command.
+
+Animated geometry must remain presentation-only.
+
+## 6. Longitudinal handling — later
+
+Small brake input dominating full throttle and broad low vehicle power belong to a dedicated handling/longitudinal slice, not D/R acquisition.
+
+## 7. Fault localization
+
+```text
+D/R second-finger intent missed          -> D/R pointer acquisition/lifecycle
+D/R event arrives but sign is wrong      -> D/R command semantics
+gas drops during unrelated D/R touch     -> pointer ownership/lifecycle
+cannot acquire pedal at exact zero       -> pedal contact-zone tuning
+pedal value correct but looks wrong      -> pedal presentation
+small brake overwhelms full throttle     -> handling/longitudinal
+```
+
+## 8. Living sequence
+
+- resolve current D/R candidate from Owner evidence;
+- if retained, integrate/close it before another product lane;
+- pedal mechanical feedback + neutral/contact tuning;
 - desktop/mobile capability hygiene;
-- portrait-specific composition;
+- portrait composition;
+- steering/pedal industrial-design convergence and later steering feel tuning;
 - later JURE/rig/handling;
-- performance/scan scaling only from measured new need.
-
-Default loop:
-
-1. verify live refs/current state;
-2. select one concrete Owner need;
-3. state hypothesis and falsifier;
-4. make the smallest coherent source change;
-5. run a causal check matching the blast radius;
-6. deploy through Owner Preview;
-7. judge on real device/render evidence;
-8. keep, locally revise or reject;
-9. run full canonical close only at a real foundation/release boundary.
-
-Owner intervention is for appearance, feel and real-device behavior — not release-script mechanics.
+- performance only from measured need.

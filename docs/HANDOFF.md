@@ -1,124 +1,96 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-22
-Status: `HANDOFF READY / DUAL-MODE STEERING + ABSOLUTE-POSITION PEDALS ACCEPTED IN MAIN / PEDAL TUNING OPEN / D-R MULTITOUCH GAP OWNER-OBSERVED / D-R GROUNDING NEXT / JURE PAUSED`
+Status: `HANDOFF READY / STEERING + ABSOLUTE PEDALS ACCEPTED / D-R MULTITOUCH CANDIDATE ACTIVE ON PREVIEW / OWNER DEVICE VERDICT OPEN / JURE PAUSED`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
 ## Fresh entry
 
-1. Resolve live `main` of `Jozzpoly/JV-Box3D-Web-experiment`.
-2. Resolve `preview/owner-control` and read `preview/owner.json`.
-3. Resolve `Jozzpoly/JV-Box3D-Web-Public/main`.
-4. Read `AGENTS.md`.
-5. Read `docs/PROJECT_STATE.md`.
-6. Read this handoff.
+1. Resolve live source `main`.
+2. Resolve `work/dr-multitouch-acquisition`.
+3. Resolve `preview/owner-control` and read `preview/owner.json`.
+4. Resolve `Jozzpoly/JV-Box3D-Web-Public/main`.
+5. Read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`.
 
-Do not infer active work from old branch names. Closed `work/direct-rotation-steering` and `work/pedal-absolute-position` refs are navigation/history only once they resolve into accepted ancestry.
-
-## Exact accepted boundary
+## Accepted boundary
 
 ```text
-absolute-position pedal integration executable:
+accepted source before D/R experiment:
+  77eee609cf317dc135ec3e0fd9b8b107d90917ef
+
+accepted pedal integration executable:
   315e41aa3e68baaa74ab107d3ef0b82c14a2eb84
 
-pedal merge parent:
-  e8e879a3185ca61cb924acf5490c24781dc84ad8
-
-Owner-tested pedal runtime candidate:
-  e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4
-
-accepted dual-mode steering integration executable:
+accepted steering integration executable:
   4961cee419a88dc54a5f0ee743cc1ee65886a734
 
-Owner Preview JSPREV2 layer:
+active D/R lane:
+  work/dr-multitouch-acquisition
+
+RED D/R falsifier:
+  9a4ed88113eea28ff14a0bc410843122c3bd6dbd
+
+GREEN D/R candidate:
+  3f6acc821c9db9d4cd77845b8eb81f4625aaaef7
+
+Owner Preview JSPREV2:
   Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f
 
-accepted Friends/public artifact main:
+accepted Friends/Public:
   279dd4eec8599ad12c95e03b50a52c478e8a50e7
 ```
 
-`main` is accepted source/product authority. Public/Friends `main` is artifact/release authority. `preview/owner-control` is operational control only.
+`main` remains source/product authority. Preview is operational. Friends/Public remains separate older artifact authority.
 
-## Steering foundation
+## Accepted controls
 
-Source `main` contains both retained Owner-facing steering modes:
+- `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X` are accepted steering foundation modes; final tuning open.
+- Absolute-position pedals are accepted in source: pointer Y maps inside frozen acquisition geometry; immediate acquisition value is retained; final zero/contact buffer and mechanical feedback open.
+- Independent pedals, steering+pedal multitouch and fail-closed lifecycle are protected.
 
-- `Obrót` = `DIRECT_ROTATION`;
-- `Przeciąganie` = `RELATIVE_X`.
+## D/R problem and grounding
 
-Classification:
+Owner A53/Chrome evidence: with throttle held by one finger, D/R did not switch under a second finger.
 
-`OWNER ACCEPTED — DUAL-MODE STEERING FOUNDATION IN SOURCE / FINAL TUNING OPEN`
+Old adapter path depended on `click`: D/R `pointerdown` only stopped propagation. Existing tests injected `click()` and did not cover second-pointer acquisition. This is an acquisition/lifecycle gap, not evidence that drivetrain sign semantics are wrong.
 
-Do not restart steering integration or force a single mode without new Owner evidence.
+Source-only RED test `9a4ed881...` modeled held throttle + second pointer `pointerdown/pointerup` on D/R and failed as expected.
 
-## Pedal foundation — integration closed
+Candidate `3f6acc82...` gives D/R a scoped pointer lifecycle:
 
-Accepted source now uses absolute position inside frozen pedal acquisition geometry:
+- pointerdown capture;
+- owned pointerup toggles;
+- cancel/lost capture/lifecycle loss releases without toggle;
+- pointer-generated click cannot double-toggle;
+- keyboard/assistive click fallback remains;
+- existing held-throttle re-sign path remains unchanged.
 
-- `top + height` are frozen at pointer-down;
-- current pointer Y maps directly to `[0,1]`;
-- pointer-down immediately applies the represented value;
-- outside range clamps to 0/1;
-- release/lifecycle loss returns command to zero;
-- independent throttle/brake ownership and steering coexistence remain protected.
+Focused validation on exact `3f6acc82...`: exact checkout, repo Node/npm, `npm ci`, typecheck, D/R causal test plus analog/lifecycle/mobile integration suites — PASS, status `jv/dr-multitouch-causal = success`.
 
-Owner-tested runtime `e2d67ea1...` passed focused 30/30 causal tests and Owner Samsung Galaxy A53 / Chrome judgement for low/mid/high acquisition, micro-correction, full sweep/reversal, throttle+brake multitouch and steering+pedal coexistence. Owner judged the model **better** than relative-from-touch.
+Only adapter + new D/R test differ from accepted source. No CSS, pedal mapping, steering, drivetrain or physics changes.
 
-The mechanical merge preserved exact runtime/test blobs from that candidate plus current documentation. The first full Windows close caught one stale viewport test fake that lacked the new `top` geometry field; only that test fixture was corrected. Exact `315e41aa...` then passed repo-declared Node/npm, `npm ci` and full `npm run build` with status `jv/pedal-integration-close = success`.
+## Owner checkpoint
 
-Classification:
+Owner Preview pointer selects exact `3f6acc82...` + accepted JSPREV2.
 
-`OWNER ACCEPTED — ABSOLUTE-POSITION PEDAL FOUNDATION IN SOURCE / TUNING OPEN`
+Need real A53 judgement:
 
-Still open: lower zero/contact buffer, final value curve, visual/mechanical actuation feedback and final pedal industrial design.
+1. hold throttle, second finger D -> R;
+2. keep throttle held, second finger R -> D;
+3. verify throttle stays continuous;
+4. steering + throttle + D/R coexistence;
+5. normal D/R tap still behaves naturally.
 
-## Pedal zero/contact intent
+Do not integrate from machine evidence alone.
 
-Owner wants the ability to touch the pedal at exact zero and then roll smoothly into analog input. Current future hypothesis is roughly a lower 5–10% zero/contact buffer with smooth remapping after actuation starts.
+## Separate later work
 
-Do not freeze that percentage. The future visual system should distinguish contact/buffer from actual actuation so input semantics and physical-looking feedback agree.
-
-## D/R next
-
-Owner real-device testing failed when attempting to switch D/R while throttle remained held.
-
-Current source path:
-
-- D/R `pointerdown` only stops propagation;
-- actual toggle relies on `click`;
-- no explicit D/R pointer ownership/lifecycle exists;
-- core command semantics correctly re-sign held throttle if a toggle event arrives.
-
-Classification:
-
-`OWNER OBSERVED — REAL-DEVICE D/R MULTITOUCH ACQUISITION GAP / NOT ATTRIBUTED TO PEDAL MAPPING / ACCEPTED-MAIN DEVICE REPRO NOT YET RUN`
-
-The next work should first ground/reproduce the acquisition failure on accepted source, then implement the smallest robust pointer contract without changing D/R drivetrain semantics.
-
-## Longitudinal handling observation
-
-Very small brake input was observed to dominate full throttle; Owner also notes broad low vehicle power. Keep this outside D/R/pedal-input work and revisit under a dedicated handling/vehicle stage.
-
-## Preview / Friends discipline
-
-Owner Preview remains the default iterative test surface and must preserve accepted capabilities unrelated to the current experiment, including JSPREV2.
-
-Temporary causal/integration workflows used for pedal validation have been removed. Normal Preview remains lightweight.
-
-Friends/Public remains separately accepted and currently predates the later steering and pedal source foundations. Source acceptance does not auto-publish Friends.
-
-ZIP/local-Windows preview remains forensic/emergency fallback only.
-
-## Living roadmap
-
-No fixed P-stage scheduler. Current sequence:
-
-`D/R multitouch grounding + hardening -> pedal mechanical feedback + zero/contact tuning -> desktop/mobile hygiene -> portrait -> control industrial-design convergence -> later JURE/rig/handling`
-
-Performance/LOD/streaming only from new measured need.
+- pedal lower ~5–10% zero/contact buffer is a future tuning hypothesis, not frozen;
+- pedal mechanical feedback should make contact vs actuation legible;
+- brake dominance / low vehicle power belongs to later handling;
+- Friends/Public promotion remains a separate release decision.
 
 ## Next checkpoint
 
-**Ground the Owner-observed D/R multitouch failure on accepted `main`, preserving drivetrain semantics and all accepted steering/pedal behavior. Do not start mechanical pedal redesign or vehicle-power tuning in the same slice.**
+**Obtain Owner real-device verdict on exact `3f6acc82...`. If PASS, structurally close D/R acquisition into accepted source before starting pedal mechanical/neutral-zone polish.**
