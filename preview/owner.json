@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4",
+  "sourceCommit": "77eee609cf317dc135ec3e0fd9b8b107d90917ef",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner Preview pedal semantics falsifier: absolute pointer position in frozen acquisition geometry"
+  "purpose": "Accepted main after absolute-position pedal foundation close; D/R multitouch grounding next"
 }
