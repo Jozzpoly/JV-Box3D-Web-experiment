@@ -111,6 +111,16 @@ export function installProductControls(
   }
 
   const { capabilities } = options;
+  const mobileDrivingSurface = window.matchMedia(
+    "(hover: none) and (pointer: coarse), (max-width: 620px)",
+  );
+  const mobileDrivingOnlyControls: HTMLElement[] = [];
+  const syncMobileDrivingOnlyControls = (): void => {
+    for (const element of mobileDrivingOnlyControls) {
+      element.hidden = !mobileDrivingSurface.matches;
+    }
+  };
+
   const controls = document.createElement("section");
   controls.className = "product-controls";
   controls.setAttribute("aria-label", "JV product controls");
@@ -223,6 +233,8 @@ export function installProductControls(
       steeringPlateButton = document.createElement("button");
       steeringPlateButton.type = "button";
       steeringPlateButton.className = "product-choice";
+      steeringPlateButton.setAttribute("data-mobile-driving-only", "");
+      mobileDrivingOnlyControls.push(steeringPlateButton);
       steeringPlateButton.addEventListener("click", () => {
         const visible = !getJvProductViewSettings().steeringPlateVisible;
         setJvSteeringPlateVisible(visible);
@@ -251,6 +263,8 @@ export function installProductControls(
   };
   if (steeringInteraction !== undefined) {
     const steeringGroup = controlGroup("Kierownica");
+    steeringGroup.setAttribute("data-mobile-driving-only", "");
+    mobileDrivingOnlyControls.push(steeringGroup);
     const steeringChoices = document.createElement("div");
     steeringChoices.className = "product-choice-row";
     const interactions: readonly Readonly<{
@@ -314,6 +328,9 @@ export function installProductControls(
     controls.append(fullscreenButton);
   }
 
+  syncMobileDrivingOnlyControls();
+  mobileDrivingSurface.addEventListener("change", syncMobileDrivingOnlyControls);
+
   controls.append(notice);
   mount.append(controls);
 
@@ -336,6 +353,10 @@ export function installProductControls(
     "pagehide",
     () => {
       unsubscribe();
+      mobileDrivingSurface.removeEventListener(
+        "change",
+        syncMobileDrivingOnlyControls,
+      );
       if (syncFullscreenButton !== null) {
         document.removeEventListener("fullscreenchange", syncFullscreenButton);
       }
