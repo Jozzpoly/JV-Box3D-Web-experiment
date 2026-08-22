@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "3f6acc821c9db9d4cd77845b8eb81f4625aaaef7",
+  "sourceCommit": "a8fb118bb75c3b15fbec20bd2537d4354077a16a",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner Preview D/R multitouch acquisition candidate with accepted steering, pedals and JSPREV2"
+  "purpose": "Owner Preview mobile driving tap-highlight polish on accepted steering/pedals/D-R foundation"
 }
