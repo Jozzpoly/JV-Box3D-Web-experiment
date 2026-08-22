@@ -15,7 +15,7 @@ jobs:
   pedal_causal:
     runs-on: ubuntu-latest
     env:
-      CANDIDATE_SHA: c6015892bf860847bea4d16407dc67d5ba8ef9d9
+      CANDIDATE_SHA: e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Record causal check pending
