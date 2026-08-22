@@ -1,4 +1,4 @@
-name: JV pedal contact logic diagnostics
+name: JV pedal contact mechanics causal gate
 
 on:
   push:
@@ -10,13 +10,26 @@ permissions:
   statuses: write
 
 jobs:
-  pedal-contact-diagnostics:
+  pedal-contact-causal:
     runs-on: windows-latest
     steps:
-      - name: Checkout exact logic candidate
+      - name: Mark candidate pending
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '8690368aa19242bb37b9476737ee9b1f5374724a',
+              state: 'pending',
+              context: 'jv/pedal-contact-causal',
+              description: 'Pedal contact mechanics causal gate running'
+            });
+
+      - name: Checkout exact candidate
         uses: actions/checkout@v4
         with:
-          ref: 0c259fe67d10c1a23479968fd0ab86f2d7bfce35
+          ref: 8690368aa19242bb37b9476737ee9b1f5374724a
           fetch-depth: 0
 
       - name: Set up Node
@@ -33,47 +46,28 @@ jobs:
         shell: pwsh
         run: npm ci
 
-      - name: Compile and typecheck
-        id: compile
-        continue-on-error: true
+      - name: Run causal validation
+        id: causal
         shell: pwsh
         run: |
           npm run typecheck
           npx tsc -p tsconfig.test.json
+          node --test tests/analog-drive.test.mjs tests/mobile-driving-ui.test.mjs tests/mobile-driving-integration-contract.test.mjs tests/mobile-viewport-lifecycle.test.mjs tests/clean-browser-analog-drive-contract.test.mjs tests/dr-multitouch-acquisition.test.mjs
+          npm run build:bundle
 
-      - name: Run analog mapping suite
-        id: analog
-        if: steps.compile.outcome == 'success'
-        continue-on-error: true
-        shell: pwsh
-        run: node --test tests/analog-drive.test.mjs
-
-      - name: Run UI state suite
-        id: ui
-        if: steps.compile.outcome == 'success'
-        continue-on-error: true
-        shell: pwsh
-        run: node --test tests/mobile-driving-ui.test.mjs
-
-      - name: Record diagnostic statuses
+      - name: Record causal result
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
-            const sha = '0c259fe67d10c1a23479968fd0ab86f2d7bfce35';
-            const items = [
-              ['jv/pedal-contact-compile', '${{ steps.compile.outcome }}'],
-              ['jv/pedal-contact-analog', '${{ steps.analog.outcome }}'],
-              ['jv/pedal-contact-ui', '${{ steps.ui.outcome }}']
-            ];
-            for (const [contextName, outcome] of items) {
-              const state = outcome === 'success' ? 'success' : outcome === 'failure' ? 'failure' : 'error';
-              await github.rest.repos.createCommitStatus({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                sha,
-                state,
-                context: contextName,
-                description: `${contextName}: ${outcome}`
-              });
-            }
+            const outcome = '${{ steps.causal.outcome }}';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '8690368aa19242bb37b9476737ee9b1f5374724a',
+              state: outcome === 'success' ? 'success' : outcome === 'failure' ? 'failure' : 'error',
+              context: 'jv/pedal-contact-causal',
+              description: outcome === 'success'
+                ? 'Pedal contact mechanics causal validation PASS'
+                : 'Pedal contact mechanics causal validation failed'
+            });
