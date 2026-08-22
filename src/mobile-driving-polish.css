@@ -12,6 +12,25 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Pedal ownership/contact is not mechanical actuation. Keep the stable outer
+     acquisition target fixed and let only inner presentation follow value. */
+  .mobile-pedal[data-active] .mobile-pedal-mechanism {
+    transform: translateY(0) scale(1);
+    border-color: rgba(228, 241, 255, .38);
+  }
+
+  .mobile-pedal[data-active]:not([data-actuated]) .mobile-pedal-mechanism {
+    box-shadow:
+      inset 0 1px rgba(255,255,255,.14),
+      inset 0 -18px 32px rgba(0,0,0,.16),
+      0 0 0 1px rgba(202, 224, 244, .08);
+  }
+
+  .mobile-pedal[data-actuated] .mobile-pedal-mechanism {
+    transform: translateY(calc(var(--pedal-value) * 5px)) scale(1);
+    border-color: rgba(228, 241, 255, .56);
+  }
+
   /* Persistent actions belong to the top edge, not a permanent right rail. */
   .scene-actions {
     position: absolute;
