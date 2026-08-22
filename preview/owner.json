@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "a8fb118bb75c3b15fbec20bd2537d4354077a16a",
+  "sourceCommit": "2e8771c03bbf43ec5549f09c138fd63fb9491ad1",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner Preview mobile driving tap-highlight polish on accepted steering/pedals/D-R foundation"
+  "purpose": "Accepted main baseline after D/R multitouch and mobile tap-highlight closes; pedal mechanical/contact grounding next"
 }
