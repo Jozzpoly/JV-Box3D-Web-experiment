@@ -10,7 +10,7 @@ class FakePedal extends EventTarget {
   setPointerCapture(id) { this.captures.add(id); }
   releasePointerCapture(id) { this.captures.delete(id); }
   hasPointerCapture(id) { return this.captures.has(id); }
-  getBoundingClientRect() { return { height: 120 }; }
+  getBoundingClientRect() { return { top: 0, height: 120 }; }
 }
 
 class FakeSteering extends EventTarget {
