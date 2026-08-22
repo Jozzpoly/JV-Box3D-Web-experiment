@@ -112,6 +112,7 @@ test("continuous updates coalesce to one frame and commit only the latest state"
   assert.equal(rig.steering.style.values.get("--steering-angle"), "48.00deg");
   assert.equal(rig.throttle.attr("aria-valuenow"), "80");
   assert.equal(rig.throttle.style.values.get("--pedal-value"), "0.8000");
+  assert.equal(rig.throttle.has("data-actuated"), true);
 });
 
 test("new generation synchronously neutralizes HUD and rejects stale callbacks", () => {
@@ -126,6 +127,7 @@ test("new generation synchronously neutralizes HUD and rejects stale callbacks",
   rig.ui.beginGeneration(2);
   assert.equal(rig.frames.pending, 0);
   assert.equal(rig.throttle.attr("aria-valuenow"), "0");
+  assert.equal(rig.throttle.has("data-actuated"), false);
   assert.equal(rig.direction.attr("data-direction"), "D");
 
   rig.ui.setPedal(1, "THROTTLE", 1, true);
@@ -142,21 +144,43 @@ test("generation numbers must increase monotonically", () => {
   assert.throws(() => rig.ui.beginGeneration(1), RangeError);
 });
 
-test("single active pedal dims only its peer; simultaneous pedals remain equally active", () => {
+test("contact-only pedal state is active without actuation and does not dim its peer", () => {
+  const rig = createUi();
+  rig.ui.beginGeneration(1);
+
+  rig.ui.setPedal(1, "THROTTLE", 0, true);
+  rig.frames.flush();
+
+  assert.equal(rig.throttle.has("data-active"), true);
+  assert.equal(rig.throttle.has("data-actuated"), false);
+  assert.equal(rig.throttle.attr("aria-valuenow"), "0");
+  assert.equal(rig.brake.has("data-peer-active"), false);
+
+  rig.ui.setPedal(1, "THROTTLE", 0.2, true);
+  rig.frames.flush();
+  assert.equal(rig.throttle.has("data-actuated"), true);
+  assert.equal(rig.brake.has("data-peer-active"), true);
+});
+
+test("single actuated pedal dims only its peer; simultaneous actuation remains equally active", () => {
   const rig = createUi();
   rig.ui.beginGeneration(1);
 
   rig.ui.setPedal(1, "THROTTLE", 0.5, true);
   rig.frames.flush();
   assert.equal(rig.throttle.has("data-active"), true);
+  assert.equal(rig.throttle.has("data-actuated"), true);
   assert.equal(rig.throttle.has("data-peer-active"), false);
   assert.equal(rig.brake.has("data-active"), false);
+  assert.equal(rig.brake.has("data-actuated"), false);
   assert.equal(rig.brake.has("data-peer-active"), true);
 
   rig.ui.setPedal(1, "BRAKE", 0.4, true);
   rig.frames.flush();
   assert.equal(rig.throttle.has("data-active"), true);
   assert.equal(rig.brake.has("data-active"), true);
+  assert.equal(rig.throttle.has("data-actuated"), true);
+  assert.equal(rig.brake.has("data-actuated"), true);
   assert.equal(rig.throttle.has("data-peer-active"), false);
   assert.equal(rig.brake.has("data-peer-active"), false);
 });
