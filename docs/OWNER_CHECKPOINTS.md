@@ -282,9 +282,49 @@ Still not accepted/frozen:
 - exact lower zero/contact buffer size or current 5–10% hypothesis;
 - final value curve;
 - final pedal mechanical feedback / industrial design;
-- D/R multitouch acquisition behavior;
+- D/R multitouch acquisition behavior at this historical checkpoint;
 - longitudinal motor/brake balance;
 - Friends/Public promotion of the pedal source foundation.
+
+## D-R-MULTITOUCH-FOUNDATION-01 — explicit second-finger acquisition
+
+Date: 2026-08-22
+Classification: `OWNER ACCEPTED — D/R MULTITOUCH ACQUISITION FOUNDATION IN SOURCE`
+
+Exact evidence boundary:
+
+```text
+RED reproducer:
+  9a4ed88113eea28ff14a0bc410843122c3bd6dbd
+
+Owner-tested GREEN candidate:
+  3f6acc821c9db9d4cd77845b8eb81f4625aaaef7
+
+accepted integration executable:
+  bd8980eba3e62b5a4b48df528be2db275addf7b4
+
+device/browser:
+  Samsung Galaxy A53 / Chrome
+```
+
+Evidence:
+
+- Owner first observed that D/R did not switch when throttle was held by another finger;
+- source grounding localized the weakness to click-dependent acquisition rather than drivetrain sign semantics;
+- RED test modeled held throttle plus a second D/R pointerdown/pointerup and failed on the old click-only path as expected;
+- GREEN candidate gives D/R explicit pointer capture, toggles only on owned pointerup, cancels/lost-capture/lifecycle loss without toggle, prevents pointer-generated click double-toggle and keeps keyboard/assistive click fallback;
+- focused exact-candidate validation passed with repo toolchain, `npm ci`, typecheck and D/R/analog/lifecycle/mobile integration suites; status `jv/dr-multitouch-causal = success`;
+- Owner supplied A53/Chrome recording and explicitly confirmed simultaneous throttle, brake, D/R and steering operation. The accepted claim is capability/reliability, not that four-finger operation is ergonomically simple;
+- mechanical integration `bd8980eb...` preserved exact D/R runtime/test blobs plus current docs and passed `windows-latest`, repo-declared Node/npm, `npm ci`, full `npm run build`; status `jv/dr-integration-close = success`.
+
+Durable meaning:
+
+- D/R is now a real pointer-owned multitouch control rather than a click-dependent second-finger hope;
+- throttle/brake/steering ownership remains independent;
+- D/R command/sign and held-throttle re-sign semantics remain the existing product semantics;
+- future D/R work should be ergonomics/presentation only unless contradictory input evidence appears.
+
+Not accepted/frozen here: vehicle power/brake balance, pedal neutral/contact tuning, pedal mechanical design, final steering feel, or Friends/Public promotion.
 
 ## Durable method
 
