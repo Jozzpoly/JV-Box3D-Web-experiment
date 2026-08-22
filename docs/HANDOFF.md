@@ -1,7 +1,7 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-22
-Status: `HANDOFF READY / DUAL-MODE STEERING ACCEPTED IN MAIN / ABSOLUTE-POSITION PEDAL FALSIFIER ACTIVE / OWNER PEDAL FEEL OPEN / JURE PAUSED`
+Status: `HANDOFF READY / DUAL-MODE STEERING ACCEPTED IN MAIN / ABSOLUTE-POSITION PEDALS OWNER-PREFERRED / PEDAL INTEGRATION OPEN / D-R MULTITOUCH GAP OWNER-OBSERVED / JURE PAUSED`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
@@ -15,7 +15,7 @@ Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 6. Read `docs/PROJECT_STATE.md`.
 7. Read this handoff.
 
-Do not infer active work from old branch names. `work/direct-rotation-steering` is closed historical navigation after steering integration.
+`work/direct-rotation-steering` is closed historical navigation. The current ordinary active product lane is `work/pedal-absolute-position`.
 
 ## Exact current boundary
 
@@ -29,7 +29,7 @@ accepted dual-mode steering integration executable:
 active pedal branch:
   work/pedal-absolute-position
 
-active pedal candidate:
+Owner-tested pedal candidate:
   e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4
 
 Owner Preview pointer source:
@@ -42,11 +42,11 @@ accepted Friends/public artifact main:
   279dd4eec8599ad12c95e03b50a52c478e8a50e7
 ```
 
-`main` remains accepted source/product authority. The pedal branch is experimental. Public/Friends `main` remains artifact/release authority. Preview is operational control only.
+`main` remains accepted source/product authority. Public/Friends `main` remains artifact/release authority. Preview is operational control only.
 
 ## Accepted steering foundation
 
-Source `main` contains both retained Owner-facing modes:
+Source `main` contains both retained Owner-facing steering modes:
 
 - `Obrót` = `DIRECT_ROTATION`;
 - `Przeciąganie` = `RELATIVE_X`.
@@ -55,52 +55,62 @@ Classification: `OWNER ACCEPTED — DUAL-MODE STEERING FOUNDATION IN SOURCE / FI
 
 Do not restart steering integration or force a single mode without new Owner evidence.
 
-## Active pedal falsifier
+## Pedal semantics verdict
 
-Accepted pedals on `main` are relative-from-touch: pointer-down begins at semantic zero and command follows displacement from `originY`.
+Accepted pre-experiment pedals are relative-from-touch. Exact candidate `e2d67ea1...` tests absolute position inside frozen pedal acquisition geometry and changes only the pedal adapter + direct tests.
 
-Candidate `e2d67ea1...` changes only pedal mapping + direct tests:
+Machine evidence on exact candidate: repo-declared Node/npm, `npm ci`, three focused suites, **30/30 PASS**, status `jv/pedal-absolute-causal = success`. The predecessor 29/30 run was a bad test oracle only; product source was unchanged before the successful rerun.
 
-- freeze pedal `top + height` at pointer-down;
-- derive `[0,1]` directly from current pointer Y;
-- pointer-down immediately applies low/mid/high according to touch position;
-- clamp outside the frozen rectangle;
-- release/lifecycle still zeroes the command.
+Owner tested the candidate on Samsung Galaxy A53 / Chrome and confirmed:
 
-No pedal CSS/mechanical redesign, D/R redesign, steering, physics or drivetrain changes are part of this slice.
+- low/mid/high initial touch works;
+- small up/down correction works;
+- full-range sweep/reversal works;
+- throttle + brake multitouch works;
+- steering + pedal coexistence works;
+- overall result is **better** than relative-from-touch.
 
-Focused causal evidence on exact `e2d67ea1...`: repository-declared Node/npm, `npm ci`, three relevant suites, **30/30 PASS**, status `jv/pedal-absolute-causal = success`. A predecessor 29/30 failure was a bad test oracle only; product source did not change before the successful rerun. The temporary causal workflow has been removed.
+Classification:
 
-## Owner Preview / next judgement
+`OWNER ACCEPTED — ABSOLUTE-POSITION PEDAL PRODUCT DIRECTION / INTEGRATION + TUNING OPEN`.
 
-Owner Preview V2 **pointer** selects exact `e2d67ea1...` + accepted JSPREV2. The pointer change is verified in live Git, but this session does not independently prove the final Pages build identity after that deployment request.
+Do not merge future dead-zone or presentation ideas into the integration close merely because they are already discussed.
 
-The active question is therefore both live/device confirmation and feel. Owner should judge:
+## Future pedal zero/contact-zone intent
 
-- low / middle / high initial touch;
-- small up/down corrections;
-- full-range sweep and reversal;
-- throttle + brake multitouch;
-- steering + pedal coexistence;
-- quick D/R while throttle held as regression smoke.
+Owner wants a later way to touch the pedal at semantic zero and roll smoothly into input. Current hypothesis is an approximately **5–10% lower acquisition buffer** that remains `0`, with a smooth analog remap after actuation begins.
 
-Result should be classified `better`, `worse` or `ambiguous`. If ambiguous, introduce A/B only then. Do not merge merely because tests pass.
+This is not a frozen percentage/spec. The visible pedal should eventually distinguish “contact in the zero/buffer zone” from “actuation has begun”, so tune this together with mechanical feedback rather than as an invisible magic threshold.
 
-## D/R after pedals
+## D/R multitouch finding
 
-Core D/R command semantics already re-sign held throttle correctly. The remaining weak boundary is touch acquisition: D/R toggles on `click` and lacks explicit pointer ownership/lifecycle comparable to steering and pedals. That is a grounded likely next experiment, but not yet a proven regression.
+Owner's regression smoke failed when trying to switch D/R while throttle remained held on A53.
 
-Recommended order if absolute pedal semantics are retained:
+The direction event path is unchanged between accepted `main` and the pedal candidate: D/R `pointerdown` only stops propagation and actual toggle depends on `click`. D/R has no explicit pointer ownership/lifecycle comparable to steering/pedals. The pedal candidate does not change that path.
 
-`pedal semantics -> D/R multitouch acquisition hardening -> pedal mechanical feedback`
+Classification:
 
-Keep drivetrain/vehicle physics outside those control slices.
+`OWNER OBSERVED — REAL-DEVICE D/R MULTITOUCH ACQUISITION GAP / NOT ATTRIBUTED TO PEDAL-MAPPING DELTA / ACCEPTED-MAIN DEVICE REPRO NOT YET RUN`.
+
+Core command semantics are still valid when a toggle event actually arrives: held throttle is re-signed at the toggle timestamp. The likely next functional slice is therefore input acquisition/lifecycle hardening, not drivetrain redesign.
+
+## Longitudinal/handling observation
+
+Owner observed that even very small brake input can dominate full throttle and reiterated that the vehicle is generally underpowered. Keep this as separate future longitudinal/handling evidence. Do not change motor/brake physics while closing pedal input semantics or D/R multitouch.
+
+## Recommended next sequence
+
+1. **Pedal semantics integration close** — integrate exact `e2d67ea1...` semantics into accepted `main` with appropriate integration validation, while leaving dead-zone/feedback tuning open.
+2. **D/R multitouch acquisition grounding + hardening** — reproduce the real-device failure and improve pointer ownership/lifecycle without changing D/R drivetrain semantics.
+3. **Pedal mechanical feedback + zero/contact-zone tuning** — make physical actuation and the future buffer threshold visually coherent.
+
+Then return to desktop/mobile hygiene, portrait, control industrial-design convergence and later JURE/rig/handling as evidence directs.
 
 ## Preview / Friends discipline
 
-Owner Preview remains the default iterative test surface and must preserve accepted capabilities unrelated to the experiment, including JSPREV2. Friends/Public remains separately accepted and does not auto-advance with source `main` or Preview candidates.
+Owner Preview remains the default iterative test surface and preserves accepted JSPREV2 as a separately pinned static layer. Friends/Public remains separately accepted and does not auto-advance with source `main` or Preview candidates.
 
-ZIP/local-Windows preview is forensic/emergency fallback only.
+ZIP/local-Windows preview remains forensic/emergency fallback only.
 
 ## Ref discipline
 
@@ -114,4 +124,4 @@ Without contradictory evidence, do not reopen recovery/publication campaigns, Ca
 
 ## Next checkpoint
 
-**Obtain Owner real-device confirmation and feel judgement on the exact absolute-position pedal candidate. Do not implement D/R hardening or pedal mechanical polish until that semantics verdict is understood.**
+**Prepare and validate a clean pedal-semantics integration close from the exact Owner-tested candidate. Do not implement D/R hardening, dead-zone tuning or pedal mechanical polish in the same close.**

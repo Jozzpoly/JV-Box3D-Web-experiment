@@ -34,7 +34,9 @@ Source `main` contains the accepted dual-mode steering foundation:
 
 Both modes are retained; final feel/tuning/design remains open. `X_POSITION` is internal historical/regression reference only.
 
-There is currently no ordinary active product lane ahead of `main`. The strongest grounded next direction is pedal semantics, beginning with a falsifiable comparison between the current relative-from-touch mapping and the Owner-targeted absolute-position mapping inside frozen pedal geometry.
+The current ordinary product lane is `work/pedal-absolute-position`. Its absolute-position pedal mapping has passed focused machine validation and Owner A53 driving judgement as **better than the accepted relative-from-touch mapping**. The direction is Owner-preferred, while integration into `main`, lower neutral-zone/value-curve tuning and final pedal feedback remain open.
+
+The next structural checkpoint is to integrate that exact pedal foundation without mixing in new tuning. After that, the strongest functional follow-up is D/R multitouch acquisition: Owner real-device testing showed that D/R does not switch reliably while throttle is held, despite the core command/sign semantics being correct in source tests.
 
 ## Canonical toolchain
 

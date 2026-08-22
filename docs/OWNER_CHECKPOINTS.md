@@ -147,7 +147,7 @@ Protected meaning:
 - P1.3 minimal persistent driving HUD + transient utility drawer is the current chrome model;
 - P1.3.1 compact top actions, larger physical-wheel presentation and opt-in steering plate are the present surface foundation;
 - X-only `POSITION` remains the accepted historical/reference steering path;
-- analog pedals, independent multitouch ownership, fail-closed lifecycle, D/R semantics, Camera Manual Rig V1, Fullscreen V1, Plac E2R, Offroad, JSPREV2 and owner vehicle remain protected unless a later focused slice explicitly changes them.
+- analog pedals, independent multitouch ownership, fail-closed lifecycle, D/R command semantics, Camera Manual Rig V1, Fullscreen V1, Plac E2R, Offroad, JSPREV2 and owner vehicle remain protected unless a later focused slice explicitly changes them.
 
 Still open at this checkpoint: final pedal mapping/mechanics/industrial design, final steering gesture/industrial design, final portrait-specific composition, final rig geometry and handling.
 
@@ -175,12 +175,7 @@ device/browser:
   Samsung Galaxy A53 / Chrome
 ```
 
-Owner drove both current Owner-facing interactions:
-
-- `Obrót` / `DIRECT_ROTATION`;
-- `Przeciąganie` / `RELATIVE_X`.
-
-Owner explicitly judged **both modes currently worth retaining and developing gradually**.
+Owner drove `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X` and explicitly judged **both modes currently worth retaining and developing gradually**.
 
 Durable meaning:
 
@@ -206,29 +201,56 @@ Evidence:
 
 - merge commit preserves exact steering/test blobs from `1b25cf242a007b84f236155e6067539c825876ec` and current pre-close `main` documentation through separate parents;
 - exact integration candidate passed repository-declared Node/npm on `windows-latest`, `npm ci`, and full `npm run build`; recorded status context: `jv/integration-close-windows = success`;
-- Owner regression-tested the exact candidate on Samsung Galaxy A53 / Chrome and explicitly returned PASS for:
-  - `Obrót`;
-  - `Przeciąganie`;
-  - steering + pedal multitouch;
-  - JSPREV2;
-  - fullscreen / basic UI;
-  - overall preservation of the previously accepted behavior.
+- Owner regression-tested the exact candidate on Samsung Galaxy A53 / Chrome and explicitly returned PASS for `Obrót`, `Przeciąganie`, steering + pedal multitouch, JSPREV2, fullscreen/basic UI and overall preservation of accepted behavior.
 
 Durable meaning:
 
-- both Owner-facing steering modes are now accepted as a source-product foundation in `main`;
-- the earlier X-only `POSITION` path remains historical/regression reference rather than the current Owner-facing product;
-- no ordinary steering integration branch is required for further work;
+- both Owner-facing steering modes are accepted as a source-product foundation in `main`;
+- the earlier X-only `POSITION` path remains historical/regression reference;
 - future steering work should be small tuning/feel/design slices rather than reopening integration.
 
-Still **not** accepted/frozen:
+Still not accepted/frozen: final Direct tuning, final Relative-X gain curve, final full-lock/reversal/edge behavior, final sensitivity/haptics/self-centering/industrial design, steering physics/handling, or Friends/Public promotion of the dual-mode source foundation.
 
-- final Direct tuning;
-- final Relative-X gain curve or current `1 -> 4` progression;
-- final full-lock/reversal/edge/micro-correction behavior;
-- final sensitivity, haptics/self-centering or industrial design;
-- steering physics or vehicle handling;
-- Friends/Public promotion of the dual-mode source foundation.
+## PEDAL-ABSOLUTE-DIRECTION-01 — absolute-position pedal semantics
+
+Date: 2026-08-22
+Classification: `OWNER ACCEPTED — ABSOLUTE-POSITION PEDAL PRODUCT DIRECTION / INTEGRATION + TUNING OPEN`
+
+Exact Owner-tested candidate:
+
+```text
+e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4
+```
+
+Machine evidence:
+
+- repository-declared Node 24.16.0 / npm 11.13.0;
+- `npm ci`;
+- focused `analog-drive`, analog-host-contract and mobile-integration suites;
+- **30/30 PASS**;
+- status context `jv/pedal-absolute-causal = success`.
+
+Owner real-device evidence on Samsung Galaxy A53 / Chrome:
+
+- low/mid/high initial touch: PASS;
+- small up/down correction: PASS;
+- full-range sweep/reversal: PASS;
+- throttle + brake multitouch: PASS;
+- steering + pedal coexistence: PASS;
+- overall comparison to relative-from-touch: **better**.
+
+Durable meaning:
+
+- absolute position inside frozen pedal acquisition geometry is the preferred pedal-input direction;
+- immediate pointer-down value is valuable and should be preserved unless later evidence contradicts it;
+- final integration into `main` remains a separate structural close;
+- final dead-zone/value curve and mechanical presentation remain open.
+
+Owner also identified a future tuning need: likely reserve roughly the lower **5–10%** as a zero/contact buffer so the finger can acquire the pedal at exact zero and then roll smoothly into analog actuation. This percentage is not frozen. Future presentation should make contact/buffer versus actual actuation legible.
+
+During the same device smoke, D/R did **not** switch while throttle remained held. Source evidence shows that D/R acquisition relies on `click` and is unchanged by the pedal mapping candidate, so record this separately as an Owner-observed D/R multitouch acquisition gap, not as rejection of absolute pedal semantics. Accepted-main device reproduction is still open.
+
+Owner also observed that very small brake input can dominate full throttle and reiterated broad low vehicle power. That belongs to a later longitudinal/handling stage, not this pedal-input checkpoint.
 
 ## Durable method
 

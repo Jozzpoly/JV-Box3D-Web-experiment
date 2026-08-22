@@ -17,7 +17,7 @@ JV Web is the browser product line for Jozz Vehicle. The product goal is a build
 - `docs/PROJECT_STATE.md` names the active work lane when work is intentionally ahead of `main`. A branch name alone never activates work or grants authority.
 - During an explicit grounding/handoff freeze, no new product implementation begins until current state and Owner intent are reconstructed.
 
-Owner acceptance is scoped. A working Pages build does not make provisional steering tuning, rig geometry, handling or UI final truth.
+Owner acceptance is scoped. A working Pages build does not make provisional tuning, rig geometry, handling or UI final truth.
 
 ## 2. Accepted product and Friends boundaries
 
@@ -29,14 +29,15 @@ Preserve unless the current task explicitly changes them:
 - P1.2/P1.3/P1.3.1 mobile composition, utility drawer and steering-surface foundation;
 - dual-mode source steering foundation: Owner-facing `DIRECT_ROTATION` / `Obrót` and `RELATIVE_X` / `Przeciąganie`, with final tuning still open;
 - `X_POSITION` as internal historical/regression reference only;
-- analog throttle/brake foundation, independent multitouch ownership, fail-closed lifecycle behavior and current D/R semantics;
+- analog throttle/brake foundation, independent throttle/brake ownership and fail-closed lifecycle behavior;
+- core D/R command/sign semantics; real-device second-finger D/R acquisition while another control is held is a separately open input-boundary issue;
 - tested Samsung Galaxy A53 / Chrome render-1x scan performance boundary.
 
 Do not generalize the A53 performance result to larger worlds, other devices or higher render scales.
 
 The accepted Friends/Public artifact currently predates the dual-mode steering source integration. Do not imply that accepted source changes are already present in Friends/Public until a separate release is built, promoted and Owner-accepted.
 
-Known product debt includes pedal mapping/mechanics/design, final steering tuning/design, portrait-specific composition, final rig geometry and handling.
+Current product debt/open work includes integration of the Owner-preferred absolute-position pedal semantics, later pedal neutral-zone/value-curve/mechanical feedback tuning, D/R multitouch acquisition, final steering tuning/design, portrait-specific composition, final rig geometry and handling.
 
 ## 3. JURE boundary
 
@@ -104,7 +105,7 @@ A `checkpoint/*` ref requires a concrete rollback/evidence purpose. Once safely 
 
 Git history/tags are the archive; branch names are working/navigation state, not trophies. Do not infer authority from names such as `golden`, `candidate`, `repair`, `checkpoint` or old `work/*` refs.
 
-After the 2026-08-22 dual-mode steering close there is no ordinary active product lane. A still-visible `work/direct-rotation-steering` ref is historical/redundant navigation, not active steering work.
+`work/direct-rotation-steering` is historical/redundant navigation after the accepted steering close. The current ordinary active product lane, when any, is the one named by `docs/PROJECT_STATE.md`; as of this update it is `work/pedal-absolute-position`.
 
 ## 7. Preview and release discipline
 

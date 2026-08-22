@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-22
-Status: `DUAL-MODE STEERING ACCEPTED IN MAIN / ABSOLUTE-POSITION PEDAL FALSIFIER ACTIVE / OWNER PEDAL FEEL OPEN / JURE PAUSED`
+Status: `DUAL-MODE STEERING ACCEPTED IN MAIN / ABSOLUTE-POSITION PEDALS OWNER-PREFERRED / PEDAL INTEGRATION OPEN / D-R MULTITOUCH GAP OWNER-OBSERVED / JURE PAUSED`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file.
 
@@ -17,43 +17,41 @@ Compact router only. Live Git, executed evidence and direct Owner observation ou
 
 ## Accepted steering foundation
 
-Source `main` exposes `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X`. Both are retained Owner-facing foundation modes; final tuning remains open. `X_POSITION` is historical/regression reference only.
+Source `main` exposes `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X`. Both remain retained Owner-facing modes; final tuning remains open.
 
-Integration executable `4961cee4...` passed full Windows `npm ci + npm run build` on the repo-declared toolchain and Owner A53/Chrome smoke for both steering modes, steering+pedal multitouch, JSPREV2, fullscreen and basic UI.
+## Pedal verdict
 
-## Active pedal experiment
+Exact candidate `e2d67ea1...` maps current pointer Y directly to `[0,1]` inside pedal geometry frozen at pointer-down. It changes only the pedal adapter and `tests/analog-drive.test.mjs`.
 
-Accepted `main` pedals are relative-from-touch: pointer-down starts at zero and command grows from displacement relative to `originY`.
+Focused evidence: repo-declared Node 24.16.0 / npm 11.13.0, `npm ci`, analog-drive + analog host contract + mobile integration suites: **30/30 PASS**. Status `jv/pedal-absolute-causal = success`.
 
-Exact candidate `e2d67ea1...` tests absolute position in frozen acquisition geometry:
+Owner A53/Chrome judgement passed low/mid/high initial touch, micro-adjustment, full sweep/reversal, throttle+brake multitouch and steering+pedal coexistence. Owner judged the absolute-position model **better**.
 
-- freeze `top + height` on pointer-down;
-- map current Y directly to `[0,1]`;
-- pointer-down immediately applies the represented value;
-- clamp outside range;
-- preserve release/lifecycle zeroing, independent throttle/brake ownership, D/R semantics and steering coexistence.
+Classification: `OWNER ACCEPTED — ABSOLUTE-POSITION PEDAL PRODUCT DIRECTION / INTEGRATION + TUNING OPEN`.
 
-Only the pedal adapter and `tests/analog-drive.test.mjs` differ from accepted `main`. No CSS, mechanical presentation, D/R redesign, steering, physics or drivetrain changes.
+Not yet accepted/frozen: integration into `main`, exact dead-zone/value curve, mechanical presentation or final pedal design.
 
-Focused causal evidence: repository-declared Node 24.16.0 / npm 11.13.0, `npm ci`, `analog-drive`, analog host contract and mobile integration suites: **30/30 PASS**. Status `jv/pedal-absolute-causal = success` on exact `e2d67ea1...`.
+Owner wants a later lower zero/contact buffer of roughly **5–10%** so a finger can touch at exact zero and then roll smoothly into analog input. Treat the percentage as a tuning hypothesis, not a spec. Visual feedback should eventually distinguish contact/buffer from actual actuation.
 
-The first predecessor run was 29/30 due only to a bad test oracle comparing a final event value with a time-integrated interval command. The product adapter did not change before the successful rerun. Temporary causal CI was retired afterward.
+## D/R finding
 
-Owner Preview V2 pointer selects the exact candidate + accepted JSPREV2. Final live Pages identity after the pointer update was not independently read back in this session; Owner device confirmation therefore remains part of the checkpoint. Owner feel judgement is still open. Do not merge the candidate from machine evidence alone.
+Owner real-device smoke failed when switching D/R while throttle remained held.
 
-## D/R next candidate
+The D/R event path is unchanged between accepted `main` and the pedal candidate: `pointerdown` only stops propagation, actual switch relies on `click`, and no explicit D/R pointer ownership/lifecycle exists. The pedal mapping delta does not modify that path.
 
-Core D/R semantics already re-sign held throttle at toggle time and throttle/brake ownership is independent. The weaker touch boundary is D/R acquisition: it relies on `click` after pointerdown rather than explicit pointer ownership/lifecycle, and lacks strong real-device second-finger evidence while other controls remain held.
+Classification: `OWNER OBSERVED — REAL-DEVICE D/R MULTITOUCH ACQUISITION GAP / NOT ATTRIBUTED TO PEDAL DELTA / ACCEPTED-MAIN DEVICE REPRO NOT YET RUN`.
 
-Classification: `GROUNDED NEXT CANDIDATE / NOT YET IMPLEMENTED / NOT A PROVEN REGRESSION`.
+Core command semantics remain tested if the toggle event arrives: held throttle is re-signed at the toggle timestamp.
 
-Current recommendation if pedal semantics are retained:
+## Handling observation
 
-`pedal semantics -> D/R multitouch acquisition hardening -> pedal mechanical feedback`
+Owner observed that very small brake input dominates full throttle and that the vehicle is broadly underpowered. Keep this as separate future longitudinal/handling evidence; do not change motor/brake physics during pedal integration or D/R acquisition work.
 
-## Roadmap
+## Next sequence
 
-No fixed P-stage scheduler. After the active pedal/D-R control work: pedal mechanical feedback, desktop/mobile capability hygiene, portrait composition, steering/pedal industrial-design convergence, later JURE/rig/handling. Performance scaling only from measured need.
+`pedal semantics integration close -> D/R multitouch acquisition hardening -> pedal mechanical feedback + zero/contact-zone tuning`
+
+After that: desktop/mobile hygiene, portrait composition, control industrial-design convergence, later JURE/rig/handling. Performance scaling only from measured need.
 
 ## Takeover route
 
@@ -61,4 +59,4 @@ Resolve live `main`, `work/pedal-absolute-position`, Owner Preview V2 pointer/co
 
 `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`
 
-Use `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` for durable control intent and `docs/OWNER_CHECKPOINTS.md` only for already-established Owner acceptance.
+Use `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` for durable control intent and `docs/OWNER_CHECKPOINTS.md` for scoped Owner acceptance.
