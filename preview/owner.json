@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "6312906d5ad3c6781605859cd1d9613d7f2e220a",
+  "sourceCommit": "bf655ff096c12889b934d4b52daaf3043cded85d",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner Preview pedal contact-zone + mechanical feedback V1.1 with explicit zero/contact shelf"
+  "purpose": "Accepted main baseline after pedal contact V1/V1.1 deferral; desktop/mobile capability hygiene grounding next"
 }
