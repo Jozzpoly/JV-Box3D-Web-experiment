@@ -215,7 +215,10 @@ test('a second pointer cannot steal an already-owned pedal', () => {
   rig.throttle.dispatchEvent(pointerEvent('pointermove', { id: 2, y: 20 }));
   rig.throttle.dispatchEvent(pointerEvent('pointermove', { id: 1, y: 60 }));
   const sample = rig.timeline.consumeInterval(0, 10);
-  near(sample.command.throttle, 2 / 3);
+  const analog = sample.consumedEvents.filter(
+    (event) => event.kind === 'LONGITUDINAL_ANALOG_THROTTLE',
+  );
+  near(analog.at(-1).value, 2 / 3);
   rig.adapter.dispose();
 });
 
