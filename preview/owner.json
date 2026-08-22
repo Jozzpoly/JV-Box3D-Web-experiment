@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "bd4f6ad5df097b65536f7cb63d4fcb88691d9042",
+  "sourceCommit": "e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Accepted main after dual-mode steering foundation close with accepted JSPREV2 parity"
+  "purpose": "Owner Preview pedal semantics falsifier: absolute pointer position in frozen acquisition geometry"
 }
