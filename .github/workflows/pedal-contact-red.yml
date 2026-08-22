@@ -1,4 +1,4 @@
-name: JV pedal contact RED falsifier
+name: JV pedal contact logic gate
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   statuses: write
 
 jobs:
-  pedal-contact-red:
+  pedal-contact-logic:
     runs-on: windows-latest
     steps:
       - name: Mark candidate pending
@@ -20,16 +20,16 @@ jobs:
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: '6e228f103148b88c78f46a7cfc56bf2a0020c2c7',
+              sha: 'e575d01ebe7cca92df6b80ab45f8ab5328acd427',
               state: 'pending',
-              context: 'jv/pedal-contact-red',
-              description: 'Pedal contact-zone RED falsifier running'
+              context: 'jv/pedal-contact-logic',
+              description: 'Pedal contact logic gate running'
             });
 
-      - name: Checkout exact RED candidate
+      - name: Checkout exact logic candidate
         uses: actions/checkout@v4
         with:
-          ref: 6e228f103148b88c78f46a7cfc56bf2a0020c2c7
+          ref: e575d01ebe7cca92df6b80ab45f8ab5328acd427
           fetch-depth: 0
 
       - name: Set up Node
@@ -46,26 +46,27 @@ jobs:
         shell: pwsh
         run: npm ci
 
-      - name: Run focused RED suites
-        id: red
+      - name: Run focused logic suites
+        id: logic
         shell: pwsh
         run: |
+          npm run typecheck
           npx tsc -p tsconfig.test.json
           node --test tests/analog-drive.test.mjs tests/mobile-driving-ui.test.mjs
 
-      - name: Record RED result
+      - name: Record logic result
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
-            const outcome = '${{ steps.red.outcome }}';
+            const outcome = '${{ steps.logic.outcome }}';
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              sha: '6e228f103148b88c78f46a7cfc56bf2a0020c2c7',
-              state: outcome === 'failure' ? 'failure' : outcome === 'success' ? 'success' : 'error',
-              context: 'jv/pedal-contact-red',
-              description: outcome === 'failure'
-                ? 'RED reproduced: current foundation violates new contract'
-                : 'Unexpected RED result: focused suites did not fail'
+              sha: 'e575d01ebe7cca92df6b80ab45f8ab5328acd427',
+              state: outcome === 'success' ? 'success' : outcome === 'failure' ? 'failure' : 'error',
+              context: 'jv/pedal-contact-logic',
+              description: outcome === 'success'
+                ? 'Pedal contact logic focused suites PASS'
+                : 'Pedal contact logic focused suites failed'
             });
