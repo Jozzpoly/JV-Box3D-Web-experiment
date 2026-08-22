@@ -41,7 +41,7 @@ Friends executable source remains:
 
 `4961cee4...` is the exact dual-mode integration executable that received new machine and Owner evidence. Later docs-only `main` descendants do not inherit that execution evidence; they preserve the same product bytes while updating current truth.
 
-There is currently **no ordinary active product lane ahead of `main`**. The still-visible `work/direct-rotation-steering` ref is historical/redundant navigation after integration and is not active work or authority. Do not reactivate it merely because the branch name exists.
+There is currently **no ordinary active product lane ahead of `main`**. The still-visible `work/direct-rotation-steering` ref is historical/redundant navigation after integration and is not active work or authority. It has been fast-forwarded to the current `main` so it does not carry a competing tree. Do not reactivate it merely because the branch name exists.
 
 ## 2. Dual-mode steering foundation — accepted in source, tuning open
 
@@ -56,7 +56,7 @@ Evidence chain:
 
 - exact A/B steering parent `1b25cf24...` / tree `20bf084a...` had fresh causal **80/80 PASS**;
 - independently reconstructed Direct-only baseline had **63/63 PASS**;
-- integration commit `4961cee4...` mechanically combines current `main` documentation with the exact steering/test blobs from `1b25cf24...` and has both parents in ancestry;
+- integration commit `4961cee4...` mechanically combines current pre-close `main` documentation with exact steering/test blobs from `1b25cf24...` and has both parents in ancestry;
 - relative to the previous accepted `main`, the integration delta is limited to 15 steering/input/host/UI/test paths;
 - exact `4961cee4...` passed `windows-latest` with repository-declared Node/npm, `npm ci`, and full `npm run build`; status context: `jv/integration-close-windows = success`;
 - Owner regression smoke on Samsung Galaxy A53 / Chrome passed `Obrót`, `Przeciąganie`, steering+pedal multitouch, JSPREV2, fullscreen and basic UI on the exact integration candidate.
@@ -104,7 +104,7 @@ Preview V2 separates executable source from preserved approved static data. It m
 
 The previous JSPREV2 Preview capability gap is closed. Accepted capabilities unrelated to the active experiment should not disappear silently from Preview. ZIP/local-Windows preview remains forensic/emergency fallback only.
 
-The temporary full Windows integration gate used for the steering milestone was evidence machinery for this close, not the normal Preview cadence; restore the ordinary lightweight Preview workflow after close.
+The temporary full Windows integration gate used for the steering milestone has been removed after recording its PASS. `preview/owner-control` is back on the ordinary lightweight Preview workflow and currently points at accepted `main` plus the accepted JSPREV2 layer.
 
 ## 5. Friends/Public boundary
 

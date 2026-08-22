@@ -14,7 +14,7 @@ Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 5. Read `docs/PROJECT_STATE.md`.
 6. Read this handoff.
 
-Do not infer active work from old branch names. `work/direct-rotation-steering` is no longer an active product lane after integration.
+Do not infer active work from old branch names. `work/direct-rotation-steering` is no longer an active product lane after integration and has been fast-forwarded to current `main` only to avoid carrying a competing tree.
 
 ## Exact current boundary
 
@@ -72,7 +72,7 @@ Owner Preview is the default iterative test surface:
 
 Preview V2 keeps executable and preserved static provenance separate. JSPREV2 remains an exact approved static layer from Public anchor `a325c279...`; it must be validated against the accepted receipt before deploy.
 
-The heavy Windows gate temporarily attached to Preview for this integration close is not the normal iterative workflow. After the close, return Preview to its lightweight source identity/typecheck/portable-build/static-layer validation path.
+The temporary heavy Windows gate used only for this steering milestone has already been removed after PASS. `preview/owner-control` is back on the ordinary lightweight Preview workflow and points at accepted `main` plus JSPREV2.
 
 ZIP/local-Windows preview remains forensic/emergency fallback only.
 
@@ -96,7 +96,7 @@ Current pedal implementation is relative-from-touch displacement: pointer-down b
 
 ## Ref discipline
 
-There is currently no ordinary product lane ahead of `main`. The still-visible `work/direct-rotation-steering` branch is historical/redundant navigation, not active work. Do not rebase, revive or build new work on it just because it remains visible.
+There is currently no ordinary product lane ahead of `main`. The still-visible `work/direct-rotation-steering` branch is historical/redundant navigation and currently resolves to the same tree/ref state as `main`; it is not active work. Do not revive it just because the name remains visible.
 
 `preview/owner-control` remains the permanent special operational lane and must not be merged into source `main` for symmetry.
 
