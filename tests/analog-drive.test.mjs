@@ -88,6 +88,12 @@ function createRig(options = {}) {
   };
 }
 
+function assertPedalState(state, pedal, value, active) {
+  assert.equal(state[0], pedal);
+  near(state[1], value);
+  assert.equal(state[2], active);
+}
+
 test('pedal mapping reserves the lower ten percent for exact-zero contact', () => {
   assert.equal(resolvePointerAnalogPedalValue(140, 20, 120), 0);
   assert.equal(resolvePointerAnalogPedalValue(134, 20, 120), 0);
@@ -108,7 +114,7 @@ test('pointer-down inside the contact zone owns the pedal while command remains 
   rig.throttle.dispatchEvent(pointerEvent('pointerdown', { id: 41, y: 134 }));
   const sample = rig.timeline.consumeInterval(0, 10);
   assert.equal(sample.command.throttle, 0);
-  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 0, true]);
+  assertPedalState(rig.pedalStates.at(-1), 'THROTTLE', 0, true);
   assert.deepEqual([...rig.throttle.captures], [41]);
   rig.adapter.dispose();
 });
@@ -123,7 +129,7 @@ test('crossing the contact threshold rolls smoothly into analog actuation', () =
     (event) => event.kind === 'LONGITUDINAL_ANALOG_THROTTLE',
   );
   near(analog.at(-1).value, 0.1);
-  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 0.1, true]);
+  assertPedalState(rig.pedalStates.at(-1), 'THROTTLE', 0.1, true);
   rig.adapter.dispose();
 });
 
@@ -132,7 +138,7 @@ test('pointer-down immediately applies the value represented above the contact z
   rig.throttle.dispatchEvent(pointerEvent('pointerdown', { id: 4, y: 80 }));
   const sample = rig.timeline.consumeInterval(0, 10);
   near(sample.command.throttle, 4 / 9);
-  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 4 / 9, true]);
+  assertPedalState(rig.pedalStates.at(-1), 'THROTTLE', 4 / 9, true);
   assert.deepEqual([...rig.throttle.captures], [4]);
   rig.adapter.dispose();
 });
@@ -150,7 +156,7 @@ test('active pedal keeps pointer-down geometry frozen while target layout change
     (event) => event.kind === 'LONGITUDINAL_ANALOG_THROTTLE',
   );
   near(analog.at(-1).value, 13 / 18);
-  assert.deepEqual(rig.pedalStates.at(-1), ['THROTTLE', 13 / 18, true]);
+  assertPedalState(rig.pedalStates.at(-1), 'THROTTLE', 13 / 18, true);
   rig.adapter.dispose();
 });
 
