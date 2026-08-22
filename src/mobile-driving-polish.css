@@ -4,6 +4,14 @@
    target width directly to [-1,+1]. */
 
 @media (hover: none) and (pointer: coarse), (max-width: 620px) {
+  /* These are custom continuous-driving controls with their own explicit
+     active/focus feedback. Suppress the browser's translucent tap overlay so
+     it cannot masquerade as pedal/steering state on touch devices. */
+  .mobile-control,
+  .mobile-steering-joystick {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* Persistent actions belong to the top edge, not a permanent right rail. */
   .scene-actions {
     position: absolute;
