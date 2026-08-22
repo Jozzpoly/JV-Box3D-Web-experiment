@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "8690368aa19242bb37b9476737ee9b1f5374724a",
+  "sourceCommit": "6312906d5ad3c6781605859cd1d9613d7f2e220a",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner Preview pedal contact-zone + mechanical feedback V1 on accepted steering/pedals/D-R baseline"
+  "purpose": "Owner Preview pedal contact-zone + mechanical feedback V1.1 with explicit zero/contact shelf"
 }
