@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "77eee609cf317dc135ec3e0fd9b8b107d90917ef",
+  "sourceCommit": "3f6acc821c9db9d4cd77845b8eb81f4625aaaef7",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Accepted main after absolute-position pedal foundation close; D/R multitouch grounding next"
+  "purpose": "Owner Preview D/R multitouch acquisition candidate with accepted steering, pedals and JSPREV2"
 }
