@@ -29,15 +29,16 @@ Preserve unless the current task explicitly changes them:
 - P1.2/P1.3/P1.3.1 mobile composition, utility drawer and steering-surface foundation;
 - dual-mode source steering foundation: Owner-facing `DIRECT_ROTATION` / `Obrót` and `RELATIVE_X` / `Przeciąganie`, with final tuning still open;
 - `X_POSITION` as internal historical/regression reference only;
-- analog throttle/brake foundation, independent throttle/brake ownership and fail-closed lifecycle behavior;
-- core D/R command/sign semantics; real-device second-finger D/R acquisition while another control is held is a separately open input-boundary issue;
+- absolute-position analog throttle/brake foundation using frozen acquisition geometry, with final neutral-zone/value-curve/mechanical feedback tuning still open;
+- independent throttle/brake pointer ownership and fail-closed lifecycle behavior;
+- core D/R command/sign semantics; real-device second-finger D/R acquisition while another control is held remains a separately open input-boundary issue;
 - tested Samsung Galaxy A53 / Chrome render-1x scan performance boundary.
 
 Do not generalize the A53 performance result to larger worlds, other devices or higher render scales.
 
-The accepted Friends/Public artifact currently predates the dual-mode steering source integration. Do not imply that accepted source changes are already present in Friends/Public until a separate release is built, promoted and Owner-accepted.
+The accepted Friends/Public artifact currently predates the later dual-mode steering and absolute-position pedal source integrations. Do not imply that accepted source changes are already present in Friends/Public until a separate release is built, promoted and Owner-accepted.
 
-Current product debt/open work includes integration of the Owner-preferred absolute-position pedal semantics, later pedal neutral-zone/value-curve/mechanical feedback tuning, D/R multitouch acquisition, final steering tuning/design, portrait-specific composition, final rig geometry and handling.
+Current product debt/open work includes pedal neutral/contact-zone and mechanical-feedback tuning, D/R multitouch acquisition, final steering tuning/design, portrait-specific composition, final rig geometry and handling.
 
 ## 3. JURE boundary
 
@@ -105,7 +106,7 @@ A `checkpoint/*` ref requires a concrete rollback/evidence purpose. Once safely 
 
 Git history/tags are the archive; branch names are working/navigation state, not trophies. Do not infer authority from names such as `golden`, `candidate`, `repair`, `checkpoint` or old `work/*` refs.
 
-`work/direct-rotation-steering` is historical/redundant navigation after the accepted steering close. The current ordinary active product lane, when any, is the one named by `docs/PROJECT_STATE.md`; as of this update it is `work/pedal-absolute-position`.
+Do not hardcode the current active ordinary lane in this operating contract. `docs/PROJECT_STATE.md` is the current authority. Closed `work/*` refs may remain as redundant navigation but must not be revived merely because their names are visible.
 
 ## 7. Preview and release discipline
 
@@ -119,7 +120,7 @@ Owner Preview is an R&D/testing surface produced from one exact committed execut
 - A failed Preview candidate or static-layer validation must fail closed and must not replace the previously deployed working Preview.
 - Do not patch compiled Preview JavaScript/CSS as a substitute for source integration.
 
-The temporary heavy Windows integration gate used for a milestone close is not normal Preview cadence. Keep ordinary Preview lightweight unless the current blast radius genuinely requires a broader gate.
+Temporary heavy integration gates are not normal Preview cadence. Keep ordinary Preview lightweight unless the current blast radius genuinely requires a broader gate, and retire one-off validation helpers after recording their result.
 
 Accepted Friends releases are separate artifacts produced from accepted source.
 

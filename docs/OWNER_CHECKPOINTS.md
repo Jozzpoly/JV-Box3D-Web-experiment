@@ -252,6 +252,40 @@ During the same device smoke, D/R did **not** switch while throttle remained hel
 
 Owner also observed that very small brake input can dominate full throttle and reiterated broad low vehicle power. That belongs to a later longitudinal/handling stage, not this pedal-input checkpoint.
 
+## PEDAL-ABSOLUTE-FOUNDATION-02 — integrated source foundation
+
+Date: 2026-08-22
+Classification: `OWNER ACCEPTED — ABSOLUTE-POSITION PEDAL FOUNDATION IN SOURCE / TUNING OPEN`
+
+Exact integration executable:
+
+```text
+315e41aa3e68baaa74ab107d3ef0b82c14a2eb84
+```
+
+Evidence:
+
+- mechanical merge `e8e879a3185ca61cb924acf5490c24781dc84ad8` preserves the exact pedal adapter/direct-test blobs from Owner-tested `e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4` while taking current documentation from `main`;
+- first full Windows integration run exposed one stale viewport test fixture whose fake pedal omitted the newly required `top` geometry field; product runtime was not changed;
+- the fixture-only follow-up `315e41aa...` adds `top: 0` to that fake pedal and leaves the Owner-tested adapter unchanged;
+- exact `315e41aa...` passed repository-declared Node/npm on `windows-latest`, `npm ci`, and full `npm run build`; recorded status context: `jv/pedal-integration-close = success`.
+
+Durable meaning:
+
+- absolute-position pedal semantics are now part of accepted source `main`;
+- the earlier relative-from-touch mapping is historical baseline rather than the accepted current product path;
+- immediate pointer-down value and frozen acquisition geometry are accepted foundation behavior;
+- future pedal work should be tuning/presentation slices rather than reopening the mapping choice without contradictory Owner evidence.
+
+Still not accepted/frozen:
+
+- exact lower zero/contact buffer size or current 5–10% hypothesis;
+- final value curve;
+- final pedal mechanical feedback / industrial design;
+- D/R multitouch acquisition behavior;
+- longitudinal motor/brake balance;
+- Friends/Public promotion of the pedal source foundation.
+
 ## Durable method
 
 For future Owner-visible slices, record only the durable verdict and exact evidence boundary. Do not append runner logs or rebuild project chronology here. Prefer small source change -> causal check -> faithful Owner Preview/device evidence -> Owner judgement.
