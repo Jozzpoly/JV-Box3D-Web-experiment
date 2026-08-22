@@ -2,7 +2,7 @@
 
 Updated: 2026-08-22
 Owner: Jozz
-Status: `DUAL-MODE STEERING FOUNDATION ACCEPTED IN MAIN / ABSOLUTE-POSITION PEDAL FALSIFIER LIVE ON OWNER PREVIEW / PEDAL OWNER FEEL OPEN / JURE PAUSED`
+Status: `DUAL-MODE STEERING FOUNDATION ACCEPTED IN MAIN / ABSOLUTE-POSITION PEDAL FALSIFIER SELECTED ON OWNER PREVIEW / LIVE DEVICE + PEDAL FEEL OPEN / JURE PAUSED`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is current-state authority, not project archaeology.
 
@@ -11,7 +11,7 @@ Git/current source, executed evidence and direct Owner observation outrank this 
 Accepted source/product authority is live `main` of `Jozzpoly/JV-Box3D-Web-experiment`.
 
 ```text
-accepted source main before pedal experiment:
+accepted executable/source head before pedal experiment:
   bd4f6ad5df097b65536f7cb63d4fcb88691d9042
 
 accepted dual-mode steering integration executable:
@@ -26,7 +26,7 @@ active pedal candidate:
 Owner Preview control lane:
   preview/owner-control
 
-Owner Preview executable candidate:
+Owner Preview pointer source:
   e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4
 
 Owner Preview accepted JSPREV2 static layer:
@@ -38,7 +38,7 @@ accepted Friends/public artifact authority:
   279dd4eec8599ad12c95e03b50a52c478e8a50e7
 ```
 
-`main` still owns accepted product truth. The pedal branch is an experiment only. Preview deployment does not grant acceptance.
+`main` still owns accepted product truth. The pedal branch is an experiment only. Preview selection/deployment does not grant acceptance.
 
 ## 2. Accepted foundation protected during this slice
 
@@ -95,9 +95,11 @@ The one-off causal workflow was retired after recording the result. It is not pe
 
 ## 5. Owner Preview and validation boundary
 
-Owner Preview V2 currently points at exact `e2d67ea1...` plus the unchanged accepted JSPREV2 layer. Normal lightweight Preview machinery remains the default delivery path.
+Owner Preview V2 **pointer** is set to exact `e2d67ea1...` plus the unchanged accepted JSPREV2 layer. Normal lightweight Preview machinery remains the intended delivery path.
 
-Technical validation does **not** answer the product question. Still NOT VALIDATED by Owner/device evidence:
+The pointer/deploy request is verified from live Git. This session does **not** independently prove the final live Pages build identity after that pointer change. Live delivery plus real-device behavior therefore remain part of the Owner checkpoint rather than being pre-claimed here.
+
+Technical validation does not answer the product question. Still NOT VALIDATED by Owner/device evidence:
 
 - whether immediate low/mid/high touch values feel more direct and intentional than relative-from-touch;
 - micro-adjustment up/down while held;
@@ -144,7 +146,7 @@ Recover these truths:
 - dual-mode steering is accepted in source `main`, tuning open;
 - accepted pedals are still relative-from-touch;
 - exact `e2d67ea1...` is the active absolute-position falsifier with focused **30/30 PASS**;
-- Owner Preview points at that exact candidate + accepted JSPREV2;
+- Owner Preview pointer selects that exact candidate + accepted JSPREV2, while final live/device proof remains open until observed;
 - pedal feel is not yet Owner-accepted;
 - D/R multitouch hardening is a grounded likely next slice, not an already-proven failure;
 - Friends/Public remains a separate older accepted artifact.

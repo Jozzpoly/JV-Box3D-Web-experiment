@@ -20,7 +20,7 @@ Do not infer active work from old branch names. `work/direct-rotation-steering` 
 ## Exact current boundary
 
 ```text
-accepted source main before pedal experiment:
+accepted executable/source head before pedal experiment:
   bd4f6ad5df097b65536f7cb63d4fcb88691d9042
 
 accepted dual-mode steering integration executable:
@@ -32,7 +32,7 @@ active pedal branch:
 active pedal candidate:
   e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4
 
-Owner Preview executable:
+Owner Preview pointer source:
   e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4
 
 Owner Preview JSPREV2 layer:
@@ -73,9 +73,9 @@ Focused causal evidence on exact `e2d67ea1...`: repository-declared Node/npm, `n
 
 ## Owner Preview / next judgement
 
-Owner Preview V2 points at exact `e2d67ea1...` + accepted JSPREV2.
+Owner Preview V2 **pointer** selects exact `e2d67ea1...` + accepted JSPREV2. The pointer change is verified in live Git, but this session does not independently prove the final Pages build identity after that deployment request.
 
-The active question is feel, not machine correctness. Owner should judge:
+The active question is therefore both live/device confirmation and feel. Owner should judge:
 
 - low / middle / high initial touch;
 - small up/down corrections;
@@ -114,4 +114,4 @@ Without contradictory evidence, do not reopen recovery/publication campaigns, Ca
 
 ## Next checkpoint
 
-**Obtain Owner real-device judgement on the exact absolute-position pedal candidate. Do not implement D/R hardening or pedal mechanical polish until that semantics verdict is understood.**
+**Obtain Owner real-device confirmation and feel judgement on the exact absolute-position pedal candidate. Do not implement D/R hardening or pedal mechanical polish until that semantics verdict is understood.**

@@ -8,10 +8,10 @@ Compact router only. Live Git, executed evidence and direct Owner observation ou
 ## Current authority
 
 - accepted source/product authority: live `main` of `Jozzpoly/JV-Box3D-Web-experiment`;
-- accepted source head before current pedal experiment: `bd4f6ad5df097b65536f7cb63d4fcb88691d9042`;
+- accepted executable/source head before current pedal experiment: `bd4f6ad5df097b65536f7cb63d4fcb88691d9042`;
 - accepted dual-mode steering integration executable: `4961cee419a88dc54a5f0ee743cc1ee65886a734`;
 - active ordinary product lane: `work/pedal-absolute-position@e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4`;
-- Owner Preview executable: `e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4`;
+- Owner Preview pointer source: `e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4`;
 - Owner Preview JSPREV2 layer: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
 - accepted Friends/public artifact: `Jozzpoly/JV-Box3D-Web-Public/main@279dd4eec8599ad12c95e03b50a52c478e8a50e7`.
 
@@ -39,7 +39,7 @@ Focused causal evidence: repository-declared Node 24.16.0 / npm 11.13.0, `npm ci
 
 The first predecessor run was 29/30 due only to a bad test oracle comparing a final event value with a time-integrated interval command. The product adapter did not change before the successful rerun. Temporary causal CI was retired afterward.
 
-Owner feel/device judgement is still open. Do not merge the candidate from machine evidence alone.
+Owner Preview V2 pointer selects the exact candidate + accepted JSPREV2. Final live Pages identity after the pointer update was not independently read back in this session; Owner device confirmation therefore remains part of the checkpoint. Owner feel judgement is still open. Do not merge the candidate from machine evidence alone.
 
 ## D/R next candidate
 
@@ -57,7 +57,7 @@ No fixed P-stage scheduler. After the active pedal/D-R control work: pedal mecha
 
 ## Takeover route
 
-Resolve live `main`, `work/pedal-absolute-position`, Owner Preview V2 composition and Friends/Public `main`, then read:
+Resolve live `main`, `work/pedal-absolute-position`, Owner Preview V2 pointer/composition and Friends/Public `main`, then read:
 
 `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`
 
