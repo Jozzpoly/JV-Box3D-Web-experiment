@@ -1,72 +1,64 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-22
-Status: `DUAL-MODE STEERING FOUNDATION ACCEPTED IN MAIN / TUNING OPEN / JSPREV2 LIVE / NO ORDINARY ACTIVE PRODUCT LANE / JURE PAUSED`
+Status: `DUAL-MODE STEERING ACCEPTED IN MAIN / ABSOLUTE-POSITION PEDAL FALSIFIER ACTIVE / OWNER PEDAL FEEL OPEN / JURE PAUSED`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file.
 
 ## Current authority
 
 - accepted source/product authority: live `main` of `Jozzpoly/JV-Box3D-Web-experiment`;
+- accepted source head before current pedal experiment: `bd4f6ad5df097b65536f7cb63d4fcb88691d9042`;
 - accepted dual-mode steering integration executable: `4961cee419a88dc54a5f0ee743cc1ee65886a734`;
-- exact pre-integration steering evidence parent: `1b25cf242a007b84f236155e6067539c825876ec`, tree `20bf084af97fe0c3b780e621467c53362b779303`;
-- older accepted P1.2/P1.3/P1.3.1 executable anchor: `cd7f5f89e8cfb872ff6bddc619e3fb78f2124af4`;
-- ordinary active product lane: **none**;
-- `work/direct-rotation-steering` is historical/redundant navigation after integration, not active work;
-- Owner Preview control: `preview/owner-control`;
+- active ordinary product lane: `work/pedal-absolute-position@e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4`;
+- Owner Preview executable: `e2d67ea1c675caf7c7467e1bd2df6bff0f948dc4`;
 - Owner Preview JSPREV2 layer: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
-- Owner Preview URL: `https://jozzpoly.github.io/JV-Box3D-Web-experiment/`;
-- accepted Friends/public artifact: `Jozzpoly/JV-Box3D-Web-Public/main@279dd4eec8599ad12c95e03b50a52c478e8a50e7`;
-- Friends executable source still remains `cd7f5f89...`; dual-mode steering is not yet promoted to Friends/Public.
+- accepted Friends/public artifact: `Jozzpoly/JV-Box3D-Web-Public/main@279dd4eec8599ad12c95e03b50a52c478e8a50e7`.
 
-## Dual-mode steering foundation
+## Accepted steering foundation
 
-Source `main` now exposes:
+Source `main` exposes `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X`. Both are retained Owner-facing foundation modes; final tuning remains open. `X_POSITION` is historical/regression reference only.
 
-- `Obrót` / `DIRECT_ROTATION`;
-- `Przeciąganie` / `RELATIVE_X`.
+Integration executable `4961cee4...` passed full Windows `npm ci + npm run build` on the repo-declared toolchain and Owner A53/Chrome smoke for both steering modes, steering+pedal multitouch, JSPREV2, fullscreen and basic UI.
 
-`X_POSITION` is internal regression/reference only.
+## Active pedal experiment
 
-Integration evidence on exact `4961cee4...`:
+Accepted `main` pedals are relative-from-touch: pointer-down starts at zero and command grows from displacement relative to `originY`.
 
-- mechanical merge preserving exact steering/test blobs from `1b25cf24...` and current documentation from the previous `main`;
-- previous A/B evidence **80/80 PASS** and Direct-only **63/63 PASS** remain attributable to their exact anchors;
-- fresh `windows-latest` integration close used repository-declared Node/npm, `npm ci`, and full `npm run build`; status `jv/integration-close-windows = success`;
-- Owner A53/Chrome regression smoke passed both steering modes, steering+pedal multitouch, JSPREV2, fullscreen and basic UI.
+Exact candidate `e2d67ea1...` tests absolute position in frozen acquisition geometry:
 
-Classification:
+- freeze `top + height` on pointer-down;
+- map current Y directly to `[0,1]`;
+- pointer-down immediately applies the represented value;
+- clamp outside range;
+- preserve release/lifecycle zeroing, independent throttle/brake ownership, D/R semantics and steering coexistence.
 
-`OWNER ACCEPTED — DUAL-MODE STEERING FOUNDATION IN SOURCE / FINAL TUNING OPEN`.
+Only the pedal adapter and `tests/analog-drive.test.mjs` differ from accepted `main`. No CSS, mechanical presentation, D/R redesign, steering, physics or drivetrain changes.
 
-Still open: Direct tuning, Relative-X gain including current `1 -> 4`, reversal/full-lock/edge/micro-correction tuning, sensitivity, haptics/self-centering, final steering industrial design and any steering-physics/handling work.
+Focused causal evidence: repository-declared Node 24.16.0 / npm 11.13.0, `npm ci`, `analog-drive`, analog host contract and mobile integration suites: **30/30 PASS**. Status `jv/pedal-absolute-causal = success` on exact `e2d67ea1...`.
 
-Do not collapse back to one Owner-facing mode without new Owner evidence.
+The first predecessor run was 29/30 due only to a bad test oracle comparing a final event value with a time-integrated interval command. The product adapter did not change before the successful rerun. Temporary causal CI was retired afterward.
 
-## Owner Preview
+Owner feel/device judgement is still open. Do not merge the candidate from machine evidence alone.
 
-Pages is the default iterative testing surface. Preview V2 separates exact executable identity from preserved accepted static data. JSPREV2 remains separately pinned and validated by receipt/hash before deploy.
+## D/R next candidate
 
-The previous JSPREV2 gap is closed. The temporary heavy Windows integration gate used for the steering milestone should not become the default Preview cadence; normal Preview remains the lightweight iterative path.
+Core D/R semantics already re-sign held throttle at toggle time and throttle/brake ownership is independent. The weaker touch boundary is D/R acquisition: it relies on `click` after pointerdown rather than explicit pointer ownership/lifecycle, and lacks strong real-device second-finger evidence while other controls remain held.
 
-ZIP/local-Windows preview is forensic/emergency fallback only.
+Classification: `GROUNDED NEXT CANDIDATE / NOT YET IMPLEMENTED / NOT A PROVEN REGRESSION`.
 
-## Roadmap / next checkpoint
+Current recommendation if pedal semantics are retained:
 
-There is no fixed remaining `P1.4 -> P2 -> P3` scheduler. Old numbered roadmap/readiness documents are historical planning evidence, not a work queue.
+`pedal semantics -> D/R multitouch acquisition hardening -> pedal mechanical feedback`
 
-The steering structural close is complete. The strongest already-grounded next direction is **pedal semantics**, followed separately by pedal mechanical feedback.
+## Roadmap
 
-Current pedal code is relative-from-touch displacement: pointer-down starts at zero and command grows from vertical travel relative to `originY`. The durable Owner hypothesis to falsify next is absolute pointer position inside frozen pedal acquisition geometry, preserving independent throttle/brake, multitouch, D/R and fail-closed lifecycle semantics while leaving physics unchanged.
-
-Other independent directions: desktop/mobile capability hygiene, portrait composition, control industrial-design convergence, and later JURE/rig/handling. Performance/LOD/streaming remains evidence-driven only.
+No fixed P-stage scheduler. After the active pedal/D-R control work: pedal mechanical feedback, desktop/mobile capability hygiene, portrait composition, steering/pedal industrial-design convergence, later JURE/rig/handling. Performance scaling only from measured need.
 
 ## Takeover route
 
-Resolve live source `main`, Owner Preview V2 composition and Friends/Public `main`, then read:
+Resolve live `main`, `work/pedal-absolute-position`, Owner Preview V2 composition and Friends/Public `main`, then read:
 
 `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`
 
-Use `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` for durable control intent and `docs/OWNER_CHECKPOINTS.md` for scoped Owner acceptance.
-
-Do not restart old recovery/publication, Camera/Fullscreen, P1 close, steering integration, Preview JSPREV2 restoration, ZIP-preview or accepted-A53 optimization campaigns without contradictory evidence.
+Use `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` for durable control intent and `docs/OWNER_CHECKPOINTS.md` only for already-established Owner acceptance.
