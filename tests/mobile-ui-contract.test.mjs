@@ -52,6 +52,15 @@ test("mobile-only toolbar controls track the same responsive boundary as the mob
   );
 });
 
+test("hidden product-control groups stay hidden despite their grid display rule", async () => {
+  const css = await read("src/style.css");
+
+  assert.match(
+    css,
+    /\.product-control-group\[hidden\]\s*\{[^}]*display:\s*none;/,
+  );
+});
+
 test("P1.2 mobile HUD uses scene-level named composition zones without shrinking the canvas", async () => {
   const mobileCss = await read("src/mobile-driving-controls.css");
 
