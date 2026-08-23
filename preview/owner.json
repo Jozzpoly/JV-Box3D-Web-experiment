@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "cde805d8d140d2b07fc7519e1ce4a8274c3ab467",
+  "sourceCommit": "cf20f5ba8f3da7d5f47f1a81bc28bb66ef9afe1d",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner Preview desktop/mobile capability hygiene: hide pointer-steering-only toolbar controls off the mobile driving surface"
+  "purpose": "Owner Preview desktop/mobile capability hygiene: hidden mobile-driving-only toolbar groups must stay hidden on desktop"
 }
