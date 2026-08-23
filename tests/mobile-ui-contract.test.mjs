@@ -52,12 +52,12 @@ test("mobile-only toolbar controls track the same responsive boundary as the mob
   );
 });
 
-test("hidden product-control groups stay hidden despite their grid display rule", async () => {
-  const css = await read("src/style.css");
+test("hidden mobile-driving-only groups stay hidden despite their grid display rule", async () => {
+  const css = await read("src/direct-rotation-steering.css");
 
   assert.match(
     css,
-    /\.product-control-group\[hidden\]\s*\{[^}]*display:\s*none;/,
+    /\[data-mobile-driving-only\]\[hidden\]\s*\{[^}]*display:\s*none;/,
   );
 });
 
