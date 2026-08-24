@@ -101,6 +101,12 @@ summary { padding: 12px 0; cursor: pointer; color: #c7d0dc; font-size: .74rem; f
 .mobile-steering-joystick small { position: absolute; z-index: 3; left: 50%; bottom: 9%; transform: translateX(-50%); font-size: .54rem; font-weight: 850; letter-spacing: .11em; text-shadow: 0 1px 3px rgba(0,0,0,.55); pointer-events: none; }
 .mobile-steering-joystick:focus-visible, .mobile-control:focus-visible, .scene-action:focus-visible, .product-choice:focus-visible { outline: 2px solid rgba(165,211,255,.95); outline-offset: 2px; }
 
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) {
+  .scene-header { display: none; }
+  .product-toolbar { top: 16px; }
+  .scene-actions { top: 16px; }
+}
+
 @media (max-width: 900px) {
   .product-toolbar { max-width: calc(100vw - 36px); right: 18px; top: 72px; overflow-x: auto; }
   .scene-actions { top: auto; right: 18px; bottom: 52px; }
