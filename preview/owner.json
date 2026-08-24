@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "cf20f5ba8f3da7d5f47f1a81bc28bb66ef9afe1d",
+  "sourceCommit": "c0aed26582cfc6d7dbb6a073234cbfe276061474",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner Preview desktop/mobile capability hygiene: hidden mobile-driving-only toolbar groups must stay hidden on desktop"
+  "purpose": "Accepted main baseline after desktop/mobile capability hygiene close; Codex transition ready; desktop HUD header cleanup grounding next"
 }
