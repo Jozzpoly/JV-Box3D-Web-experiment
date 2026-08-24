@@ -1,7 +1,7 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-24
-Status: `HANDOFF READY / STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE ACCEPTED / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE LANE / DESKTOP HUD HEADER CLEANUP NEXT GROUNDING TARGET / CODEX TRANSITION READY / JURE PAUSED`
+Status: `HANDOFF SNAPSHOT / STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP ACCEPTED / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING + WORKFLOW HARDENING NEXT / FINAL CODEX HANDOFF NOT YET FROZEN / JURE PAUSED`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
@@ -10,12 +10,19 @@ Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 1. Resolve live source `main`.
 2. Resolve `preview/owner-control` and read `preview/owner.json`.
 3. Resolve `Jozzpoly/JV-Box3D-Web-Public/main`.
-4. Read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`.
-5. Do not revive closed steering, pedal, D/R, tap-highlight, contact-zone or desktop-capability experiments merely because historical refs remain visible.
+4. Resolve any ordinary branch actually ahead of source `main` and any open PR before assuming the work queue is empty.
+5. Read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`.
+6. Do not revive closed steering, pedal, D/R, tap-highlight, desktop-capability/HUD or pedal-contact experiments merely because historical refs remain visible.
 
 ## Exact accepted anchors
 
 ```text
+accepted wide-desktop HUD cleanup executable:
+  4a68b462580f32f97a9702eb1e0dd46d64600948
+
+Owner-tested wide-desktop HUD candidate:
+  7ad78797456dd9c3fb5e421e2eeacd2a98c5cc68
+
 accepted desktop/mobile capability-hygiene executable:
   319f25de3fe280c3a3b5bf4f4563d2fdb71e2a7c
 
@@ -44,7 +51,7 @@ accepted Friends/Public:
   279dd4eec8599ad12c95e03b50a52c478e8a50e7
 ```
 
-There is currently **no ordinary active product lane**. Friends/Public remains a separate older artifact and does not automatically inherit later accepted source work.
+There should currently be **no ordinary active product lane ahead of `main`** after the HUD close; verify this live rather than trusting the snapshot. Friends/Public remains a separate older artifact and does not automatically inherit later accepted source work.
 
 ## Accepted product boundary
 
@@ -57,62 +64,60 @@ Protect:
 - D/R explicit pointer acquisition/lifecycle while other controls remain held;
 - fail-closed lifecycle behavior and existing D/R sign/re-sign semantics;
 - tap-highlight suppression on custom mobile driving controls;
-- desktop/mobile capability hygiene: standard desktop hides mobile-only steering toolbar controls while mobile/narrow/coarse-pointer retains them;
+- standard desktop hides mobile-only steering toolbar controls while mobile/narrow/coarse-pointer retains them;
+- wide fine-pointer desktop hides the redundant ordinary header row and reuses that row for toolbar/actions;
+- medium-width and mobile composition are not redefined by the wide-desktop HUD rule;
 - current camera/fullscreen/mobile composition and accepted map/scan/A53 performance foundations.
 
-Keep drivetrain, motor/brake balance, vehicle physics and rig/JURE out of unrelated UI hygiene work.
+Keep drivetrain, motor/brake balance, vehicle physics and rig/JURE out of unrelated UI or handoff-hardening work.
 
-## Pedal Contact V1/V1.1 — closed without acceptance
+## Closed/deferred pedal contact experiment
 
-V1/V1.1 tested a lower zero/contact region on top of the accepted absolute-position pedal foundation.
+V1/V1.1 tested a lower zero/contact region on top of the accepted absolute-position pedal foundation. Machine evidence was technically green, but Owner A53/Chrome use found the practical value too small to justify further tuning/presentation work.
 
-Machine evidence was technically green, but Owner A53/Chrome use found the practical value too small to justify further tuning/presentation work.
-
-Classification:
-
-`OWNER VERDICT — NOT ACCEPTED / DEFERRED FOR NOW`
+Classification: `OWNER VERDICT — NOT ACCEPTED / DEFERRED FOR NOW`.
 
 Do not integrate or continue the experiment by default. Accepted absolute-position pedal semantics remain the current baseline.
 
-## Desktop/Mobile Capability Hygiene V1 — accepted
+## Latest accepted UI closes
 
-The large touch-driving surface was already correctly absent on standard desktop. The real mismatch was that pointer-steering toolbar controls remained exposed when their touch surface was absent.
+### Desktop/Mobile Capability Hygiene V1
 
-Final accepted behavior:
+Owner confirmed normal desktop hides `Kierownica: Obrót / Przeciąganie` and `Tło kier.` while shared controls remain; mobile/narrow/coarse-pointer retains those mobile-driving controls. Final accepted integration: `319f25de...`.
 
-- normal desktop hides `Kierownica: Obrót / Przeciąganie` and `Tło kier.`;
-- shared locations, Pixel/Smooth, Grid and Fullscreen remain available;
-- mobile/narrow/coarse-pointer retains steering modes and steering-plate control;
-- visibility follows the same responsive boundary as the mobile driving surface and resynchronizes without reload;
-- steering/pedal/D/R semantics are untouched.
+### Wide Desktop HUD Header Cleanup V1
 
-Owner explicitly confirmed both desktop and mobile states on 2026-08-24. An earlier desktop screenshot exposed a CSS hidden/display regression; final accepted candidate fixed it and added regression coverage before integration `319f25de...`.
+On exact Owner-tested `7ad78797...`, normal wide desktop showed:
 
-## Next checkpoint — Desktop HUD Header Cleanup grounding
+- redundant `M6 Drive / LIVE · GENERATION · CONTACTS` row removed;
+- toolbar at the reclaimed top-left row;
+- `Camera / Reset / Debug` at the top-right row;
+- no observed overlap;
+- Debug still operational and rendering telemetry;
+- no observed scene/camera regression.
 
-Owner desktop evidence marks the top `scene-header` row as unnecessary ordinary product chrome:
+The rule is desktop-only: `(min-width: 901px) and (hover: hover) and (pointer: fine)`. Medium/mobile rules remain outside this slice. Mechanical accepted merge: `4a68b462...`.
 
-- `JV Box3D Web · R1 / M6 Drive` on the left;
-- `LIVE · GENERATION ... · CONTACTS` on the right.
+## Next stage — Pre-Codex Grounding + Workflow Hardening
 
-Do **not** treat the dark region as an HTML spacer. The canvas already fills the scene and the renderer uses the full canvas viewport; the dark region is scene background above the horizon.
+**Do not treat this snapshot as the final Codex handoff.** The project is intentionally entering a separate preparation stage first.
 
-`Generation` and `Contacts` already exist in Debug telemetry. The likely smallest product direction is to hide/remove the ordinary `.scene-header` row on standard desktop and move the useful toolbar/actions upward. This remains a grounding hypothesis, not yet an accepted implementation.
+Before any Codex takeover is frozen, independently audit:
 
-Keep the first slice desktop-only unless device evidence requires mobile changes. Do not start a broad toolbar redesign.
+1. live source `main`, Preview control/pointer, Public `main`, branches ahead of `main` and open PRs;
+2. source vs Preview vs Friends/Public vs JSPREV2 authority;
+3. accepted / experimental / rejected-deferred / future work labels;
+4. causal-test vs milestone-build vs Owner/device evidence rules;
+5. Owner Preview workflow, exact-candidate identity and accepted-static-layer parity;
+6. `AGENTS.md`, `PROJECT_STATE`, `HANDOFF`, AI memory, README/architecture/workflow docs for drift or duplication;
+7. branch/ref hygiene only to the extent it can change takeover safety;
+8. explicit responsibility split between Owner, ChatGPT/orchestrator and Codex/executor;
+9. living roadmap and anti-restart rules for closed recovery/publication campaigns;
+10. useful lessons from JURE, JV_CORE and other projects only after their own current groundings are available; never treat cross-project history as JV-Web proof.
 
-## Codex transition
+The output of that stage should be a coherent verdict about readiness, a hardened workflow contract where needed, and only then a final Codex handoff.
 
-Codex should start from live Git, not from this snapshot. Before write:
-
-1. resolve source `main`, `preview/owner-control`, Public `main` and any branch ahead of source `main`;
-2. confirm accepted current state from `AGENTS.md` and `docs/PROJECT_STATE.md`;
-3. independently inspect `src/main.ts`, `src/style.css`, debug telemetry duplication and the desktop screenshot evidence;
-4. ground and freeze the smallest Desktop HUD Header Cleanup falsifier;
-5. use test/render evidence proportional to the UI-only blast radius;
-6. keep Friends/Public promotion separate.
-
-## Separate later work
+## Separate later product work
 
 - capability inventory only from concrete mismatches;
 - portrait-specific composition;
