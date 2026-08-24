@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "81d397df2e9b6f732abadc081eedd1d2fc5b13b3",
+  "sourceCommit": "ef6946e94636b5082bb9fc0d9ae36d7378e11c1f",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Accepted main after wide-desktop HUD close and pre-Codex factual hardening pass; final Codex handoff not yet frozen"
+  "purpose": "Accepted main after product close and pre-Codex grounding pass A; cross-project synthesis and final canonical close still pending"
 }
