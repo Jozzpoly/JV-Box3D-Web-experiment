@@ -31,6 +31,36 @@ test("mobile scene can shrink below the historical desktop 420px floor", async (
   );
 });
 
+test("mobile-only toolbar controls track the same responsive boundary as the mobile driving surface", async () => {
+  const controls = await read("src/product-controls.ts");
+
+  assert.match(
+    controls,
+    /window\.matchMedia\(\s*"\(hover: none\) and \(pointer: coarse\), \(max-width: 620px\)"\s*\)/,
+  );
+  assert.match(
+    controls,
+    /element\.hidden\s*=\s*!mobileDrivingSurface\.matches/,
+  );
+  assert.match(
+    controls,
+    /mobileDrivingSurface\.addEventListener\(\s*"change",\s*syncMobileDrivingOnlyControls\)/,
+  );
+  assert.match(
+    controls,
+    /mobileDrivingSurface\.removeEventListener\(\s*"change",\s*syncMobileDrivingOnlyControls\)/,
+  );
+});
+
+test("hidden mobile-driving-only groups stay hidden despite their grid display rule", async () => {
+  const css = await read("src/direct-rotation-steering.css");
+
+  assert.match(
+    css,
+    /\[data-mobile-driving-only\]\[hidden\]\s*\{[^}]*display:\s*none;/,
+  );
+});
+
 test("P1.2 mobile HUD uses scene-level named composition zones without shrinking the canvas", async () => {
   const mobileCss = await read("src/mobile-driving-controls.css");
 

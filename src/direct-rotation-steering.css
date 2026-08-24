@@ -17,3 +17,9 @@
   border-radius: 50%;
   pointer-events: auto;
 }
+
+/* Product control groups have an explicit grid display, so the responsive
+   hidden state needs an author-level rule to remain non-rendered. */
+[data-mobile-driving-only][hidden] {
+  display: none;
+}

@@ -82,3 +82,24 @@ test("browser boots through the explicit car map scan product entry", async () =
     /getJvProductViewSettings\(\)\.gridVisible/,
   );
 });
+
+test("pointer-steering toolbar controls are explicitly scoped to the mobile driving surface", async () => {
+  const controls = await readFile(
+    resolve(root, "src/product-controls.ts"),
+    "utf8",
+  );
+
+  assert.match(
+    controls,
+    /steeringGroup\.setAttribute\("data-mobile-driving-only",\s*""\)/,
+  );
+  assert.match(
+    controls,
+    /steeringPlateButton\.setAttribute\("data-mobile-driving-only",\s*""\)/,
+  );
+  assert.doesNotMatch(
+    controls,
+    /gridButton\.setAttribute\("data-mobile-driving-only"/,
+    "Grid is a shared desktop/mobile capability and must stay visible on desktop",
+  );
+});
