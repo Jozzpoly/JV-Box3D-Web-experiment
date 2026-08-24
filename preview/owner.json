@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "c0aed26582cfc6d7dbb6a073234cbfe276061474",
+  "sourceCommit": "7ad78797456dd9c3fb5e421e2eeacd2a98c5cc68",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Accepted main baseline after desktop/mobile capability hygiene close; Codex transition ready; desktop HUD header cleanup grounding next"
+  "purpose": "Owner Preview wide-desktop HUD header cleanup: hide redundant scene header and reclaim the top row for toolbar/actions"
 }
