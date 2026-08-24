@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Owner: Jozz
-Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP ACCEPTED IN MAIN / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING IN PROGRESS / FACTUAL HARDENING PASS 1 COMPLETE / CROSS-PROJECT SYNTHESIS + FINAL CANONICAL CLOSE PENDING / FINAL CODEX HANDOFF NOT YET FROZEN`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED STEERING + PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING IN PROGRESS / DONOR CLOSURE + CROSS-PROJECT SYNTHESIS + FINAL CANONICAL CLOSE PENDING / FINAL CODEX HANDOFF NOT YET FROZEN`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is current-state authority, not project archaeology.
 
@@ -53,7 +53,31 @@ accepted Friends/Public artifact:
 
 Resolve live `preview/owner.json` for the exact Preview source pointer; do not infer it from this snapshot. Friends/Public remains a separate older artifact and does not automatically inherit later accepted source work.
 
-## 2. Accepted control and UI foundations
+## 2. Program-level Owner directive — JV-Web as heir
+
+JV-Web is now the priority product of the Jozz Vehicle program and the intended heir of useful work across the surrounding projects. The target is not parity with an older implementation. JV-Web should become the highest-quality version we can build: useful as R&D, strong on desktop and phone, materially better to drive and inspect, and eventually credible as an Owner showcase/public product.
+
+Current donor roles:
+
+- **JV_CORE / Native** — primary donor and research record for rig, feel, wheel/contact, physics, assets, controls and historical Owner evidence. Native is a source of evidence and lessons, not a quality ceiling and not code that must be ported 1:1.
+- **JURE** — optional authoring-tool/donor for authored neutral rig/geometric truth. JURE must prove practical value and must not become a mandatory dependency for completing JV-Web. Codex may later decide to use it, narrow its role or ignore it.
+- **JV-Web** — HEIR / PRODUCT. Current accepted Web behavior is protected until a focused later slice deliberately improves it.
+- **Codex** — future repo-native execution/synthesis context after the pre-Codex preparation passes. It is not authority over live Git or Owner judgement and may rewrite/reject donor implementations when evidence supports a better JV-Web design.
+
+Inheritance rules:
+
+1. Preserve **Owner product truth**: what looked, felt and behaved better in real use, within the scope actually observed.
+2. Extract **portable mechanical/semantic truth**: frames, relations, control semantics, invariants, failure modes and validated constraints.
+3. Treat **behavioural implementation** as a candidate technique, not sacred architecture.
+4. Treat **legacy code** as the least authoritative layer: copy only when it remains the best justified implementation.
+5. Cross-project state never becomes JV-Web proof merely by being current or accepted in its donor repository.
+6. Do not build a unified three-project schema before concrete donor evidence requires one.
+
+After JV_CORE and JURE finish their own donor/pre-Codex closures, construct a cross-project **Inheritance Matrix** before fundamental JV-Web redesign. Minimum columns: capability, donor, evidence, Owner status, portable truth, target JV-Web concern and Codex decision. This matrix is not frozen yet because donor closure is still in progress.
+
+Unless the Owner redirects or a critical regression appears, do not start a new substantial JV-Web runtime slice before donor closure and cross-project synthesis are coherent.
+
+## 3. Accepted control and UI foundations
 
 Preserve unless a focused later slice explicitly changes them:
 
@@ -73,7 +97,7 @@ Preserve unless a focused later slice explicitly changes them:
 
 Do not use UI/control polish as a reason to change drivetrain, motor/brake balance, vehicle physics or rig authority.
 
-## 3. Latest accepted UI closes
+## 4. Latest accepted UI closes
 
 ### Desktop/Mobile Capability Hygiene V1
 
@@ -104,7 +128,7 @@ Owner evidence on exact `7ad78797...` confirmed the row is gone, toolbar/actions
 
 Classification: `OWNER ACCEPTED — WIDE DESKTOP HUD HEADER CLEANUP V1`.
 
-## 4. Pedal contact V1/V1.1 — deferred
+## 5. Pedal contact V1/V1.1 — deferred
 
 Accepted `main` does **not** contain the contact-zone experiment. Owner A53/Chrome evidence showed that a zero region existed, but its practical value was too small to justify continued tuning/presentation work.
 
@@ -112,7 +136,7 @@ Classification: `OWNER VERDICT — PEDAL CONTACT V1/V1.1 NOT ACCEPTED / DEFERRED
 
 Do not integrate or continue percentage/hysteresis/contact-presentation tuning by default. Accepted absolute-position pedals remain the baseline. Revisit only if later pedal geometry/industrial design materially changes the value proposition.
 
-## 5. Pre-Codex Grounding — verified findings so far
+## 6. Pre-Codex Grounding — verified findings so far
 
 ### Git/work queue
 
@@ -150,7 +174,7 @@ Audit verdict: **keep this workflow; do not redesign it merely for Codex transit
 
 ### Documentation hardening pass 1
 
-Udowodniony drift został usunięty z stable/current docs:
+Proven drift was removed from stable/current docs:
 
 - `AGENTS.md` no longer calls accepted D/R multitouch an open issue and now records accepted capability/HUD boundaries;
 - `README.md` no longer routes work to the closed D/R problem and explicitly marks the pre-Codex preparation stage;
@@ -159,32 +183,36 @@ Udowodniony drift został usunięty z stable/current docs:
 
 `docs/ARCHITECTURE.md` and the Owner Preview workflow were audited and did not require a change in this pass.
 
-## 6. Next stage inside the pre-Codex preparation
+## 7. Next stage inside the pre-Codex preparation
 
 The final Codex handoff is **not yet frozen**.
 
 Next work should proceed in this order:
 
-1. receive/ground the current outputs of the separate JURE and JV_CORE pre-Codex preparations;
-2. extract only transferable practices/contracts that concretely improve JV-Web; cross-project state is never JV-Web proof;
-3. design and freeze the execution-context split between Owner, browser ChatGPT/orchestrator and Codex/repo executor;
-4. decide whether branch/ref cleanup is worth doing with ordinary Git access or whether classification alone is safer;
-5. complete remaining documentation consistency checks, including concise durable Owner acceptance for the newest UI closes if useful;
-6. run one final canonical source validation on the exact post-hardening `main` (`npm ci` + `npm run build`) so tests, docs links, third-party and portable artifact contracts share one close anchor;
-7. repoint/verify Owner Preview to that exact final accepted main + accepted JSPREV2;
-8. perform a **read-only Codex cold-takeover dry run** and compare its reconstructed accepted/open/next state against live evidence;
-9. only after that PASS freeze the final Codex handoff and allow the first new product slice.
+1. receive/ground the final current outputs of the separate JV_CORE and JURE donor/pre-Codex closures;
+2. build the Inheritance Matrix and resolve donor conflicts at the level of evidence/semantics, not repository prestige;
+3. define the first fundamental JV-Web quality program and explicitly challenge any proposed Native/JURE inheritance before implementation;
+4. design and freeze the execution-context split between Owner, browser ChatGPT/orchestrator and Codex/repo executor;
+5. decide whether branch/ref cleanup is worth doing with ordinary Git access or whether classification alone is safer;
+6. complete remaining documentation consistency checks, including concise durable Owner acceptance for the newest UI closes if useful;
+7. run one final canonical source validation on the exact post-hardening `main` (`npm ci` + `npm run build`) so tests, docs links, third-party and portable artifact contracts share one close anchor;
+8. repoint/verify Owner Preview to that exact final accepted main + accepted JSPREV2;
+9. perform a **read-only Codex cold-takeover dry run** and compare its reconstructed accepted/open/next state against live evidence and the Inheritance Matrix;
+10. only after that PASS freeze the final Codex handoff and allow the first new fundamental product slice.
 
 Do not modify product runtime merely to prepare the handoff.
 
-## 7. Separate later product work
+## 8. Separate later product work
 
-- further desktop/mobile capability inventory only from concrete mismatches;
-- portrait-specific composition;
+These remain candidate concerns, not a frozen implementation order:
+
+- rigorous rig/visual-mechanical correction using donor evidence;
+- wheel/contact and suspension/handling improvement;
 - steering/pedal industrial-design convergence and later steering feel tuning;
-- small brake dominating full throttle / broad low power -> dedicated longitudinal/handling stage;
-- later JURE/rig integration and handling;
+- small brake dominating full throttle / broad low power -> dedicated longitudinal/handling work;
+- portrait-specific composition and further capability hygiene from concrete mismatches;
 - performance scaling only from measured need;
+- future JURE map-authoring integration if it becomes valuable after core vehicle quality;
 - Friends/Public promotion remains a separate release decision.
 
-No fixed P-stage scheduler.
+No fixed P-stage scheduler. Native/JV_CORE parity is an instrument, not the final JV-Web quality target.
