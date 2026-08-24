@@ -23,26 +23,39 @@ Owner Preview Pages is the default iterative Owner-testing surface. It should pr
 
 Rig authoring belongs to the separate Jozz Universal Rig Editor (JURE). JV Web consumes explicit authored neutral truth through `docs/contracts/JURE_CONSUMER_BOUNDARY.md`; it must not grow a second rig editor.
 
-## Current product direction
+## Current accepted product direction
 
 Accepted source `main` contains:
 
 - dual-mode steering foundation: `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X`, with final tuning open;
-- absolute-position analog pedal foundation: current pointer Y maps directly inside pedal geometry frozen at pointer-down, with final neutral/contact-zone, value-curve and mechanical-feedback tuning open;
+- absolute-position analog pedal foundation using pedal geometry frozen at pointer-down;
 - independent throttle/brake ownership and fail-closed lifecycle behavior;
-- existing core D/R command/sign semantics.
+- explicit pointer-owned D/R multitouch acquisition while other controls remain held;
+- browser tap-highlight suppression on custom mobile driving controls;
+- desktop/mobile capability hygiene that hides mobile-only steering toolbar controls on standard desktop while preserving them on mobile/narrow/coarse-pointer layouts;
+- wide fine-pointer desktop HUD cleanup that removes the redundant ordinary header row and reuses the top row for toolbar/actions;
+- Camera Manual Rig V1, Fullscreen V1, current mobile composition, Plac E2R, Offroad, JSPREV2 and the accepted A53/Chrome render-1x boundary.
 
-The next functional control problem is D/R multitouch acquisition. Owner real-device testing showed that D/R does not switch reliably while throttle remains held. Source evidence localizes the weak boundary to click-dependent acquisition rather than drivetrain semantics; treat it as a focused input/lifecycle problem.
+Pedal Contact + Mechanical Feedback V1/V1.1 was technically viable but **not accepted**: Owner device use judged its practical value too small to justify more tuning/presentation work. Accepted absolute-position pedals remain the baseline; do not resume that experiment by default.
 
-The current Friends artifact predates the later steering and pedal source integrations. Do not infer that source `main` and Friends/Public are at feature parity.
+The current Friends artifact predates several later accepted source changes. Do not infer feature parity between source `main` and Friends/Public.
 
-Exact moving anchors and the current active lane belong in `docs/PROJECT_STATE.md`, not here.
+Exact moving anchors, active/deferred work and current next-stage routing belong in `docs/PROJECT_STATE.md`, not here.
+
+## Current project stage
+
+JV Web is currently entering a **Pre-Codex Grounding + Workflow Hardening** stage before any final Codex handoff is frozen.
+
+This is not a product feature stage and does not authorize a broad redesign. The goal is to make live authority, accepted/deferred state, validation tiers, Preview/release rules, documentation and executor/Owner responsibility boundaries self-explanatory to a separate execution context.
+
+A change of executor does not create new product truth. Live Git and current evidence must still be resolved before writes.
 
 ## Canonical toolchain
 
 ```text
 Node 24.16.0
 npm >=11.13.0 <12
+packageManager npm@11.13.0
 TypeScript 7.0.2
 Vite 8.1.5
 box3d.js 0.0.2
@@ -59,7 +72,7 @@ Use checks proportional to causal blast radius. Use full `npm run build` for fou
 
 ## Start here
 
-A fresh agent normally reads:
+A fresh executor normally reads:
 
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
@@ -82,6 +95,6 @@ Prefer:
 
 `small need -> smallest coherent source change -> causal check -> Owner Preview Pages -> faithful render/device proof -> Owner judgement -> continue`
 
-Use temporary branches/checkpoints only for a concrete isolation or rollback need. Do not create process machinery merely because a new agent, conversation or small polish iteration exists.
+Use temporary branches/checkpoints only for a concrete isolation or rollback need. Do not create process machinery merely because a new executor, conversation or small polish iteration exists.
 
 Third-party notices are in `THIRD_PARTY_NOTICES.md`.
