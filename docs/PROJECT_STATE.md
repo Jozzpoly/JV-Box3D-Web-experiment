@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Owner: Jozz
-Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP ACCEPTED IN MAIN / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING + WORKFLOW HARDENING NEXT / HANDOFF NOT YET FROZEN / JURE PAUSED`
+Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP ACCEPTED IN MAIN / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING IN PROGRESS / FACTUAL HARDENING PASS 1 COMPLETE / CROSS-PROJECT SYNTHESIS + FINAL CANONICAL CLOSE PENDING / FINAL CODEX HANDOFF NOT YET FROZEN`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is current-state authority, not project archaeology.
 
@@ -73,9 +73,9 @@ Preserve unless a focused later slice explicitly changes them:
 
 Do not use UI/control polish as a reason to change drivetrain, motor/brake balance, vehicle physics or rig authority.
 
-## 3. Desktop/Mobile Capability Hygiene V1 — accepted
+## 3. Latest accepted UI closes
 
-Grounding found that `.mobile-controls` was already correctly absent on standard desktop; the actual mismatch was pointer-steering toolbar controls exposed when their touch surface was absent.
+### Desktop/Mobile Capability Hygiene V1
 
 Accepted behavior:
 
@@ -90,40 +90,21 @@ Owner confirmed both desktop and mobile states. An earlier screenshot exposed a 
 
 Classification: `OWNER ACCEPTED — DESKTOP/MOBILE CAPABILITY HYGIENE V1`.
 
-Do not expand this result into blanket platform hiding. Continue capability hygiene only from concrete observed mismatches.
+### Wide Desktop HUD Header Cleanup V1
 
-## 4. Wide Desktop HUD Header Cleanup V1 — accepted
+Source grounding proved that the perceived top strip is scene background, not reserved HTML layout. The accepted presentation-only rule applies only to `(min-width: 901px) and (hover: hover) and (pointer: fine)`:
 
-Owner evidence identified the first ordinary-product row as redundant on a normal wide desktop:
+- redundant `.scene-header` hidden;
+- `.product-toolbar` at `top:16px`;
+- `.scene-actions` at `top:16px`;
+- `<=900px` and mobile/coarse/narrow rules unchanged;
+- DOM, camera, renderer, canvas sizing, input semantics and physics untouched.
 
-- `JV Box3D Web · R1 / M6 Drive` on the left;
-- `LIVE · GENERATION ... · CONTACTS` on the right.
-
-Source grounding proved that the canvas already fills the scene and WebGL renders across its full viewport; the dark region above the horizon is scene background, not a reserved HTML strip. `Generation` and `Contacts` remain available in Debug telemetry.
-
-The accepted change is deliberately presentation-only and scoped to `(min-width: 901px) and (hover: hover) and (pointer: fine)`:
-
-- `.scene-header` is hidden;
-- `.product-toolbar` moves to `top:16px`;
-- `.scene-actions` moves to `top:16px`;
-- `<=900px` layout rules remain unchanged;
-- mobile/coarse/narrow rules remain unchanged;
-- DOM, camera, renderer, canvas sizing, input semantics and physics are untouched.
-
-Owner wide-desktop evidence on exact `7ad78797...` confirmed:
-
-1. redundant first row absent;
-2. toolbar correctly occupies the reclaimed top-left row;
-3. `Camera / Reset / Debug` correctly occupies the top-right row;
-4. no overlap observed;
-5. Debug still opens and renders telemetry;
-6. no observed scene/camera regression; mobile had already remained correct under the explicit desktop-only media boundary.
-
-Mechanical integration `4a68b462...` preserves exact Owner-tested CSS/test blobs plus current documentation ancestry.
+Owner evidence on exact `7ad78797...` confirmed the row is gone, toolbar/actions occupy the reclaimed row without observed overlap, Debug still opens with telemetry and no scene/camera regression was observed. Mechanical integration `4a68b462...` preserves the exact Owner-tested CSS/test blobs plus current documentation ancestry.
 
 Classification: `OWNER ACCEPTED — WIDE DESKTOP HUD HEADER CLEANUP V1`.
 
-## 5. Pedal contact V1/V1.1 — deferred
+## 4. Pedal contact V1/V1.1 — deferred
 
 Accepted `main` does **not** contain the contact-zone experiment. Owner A53/Chrome evidence showed that a zero region existed, but its practical value was too small to justify continued tuning/presentation work.
 
@@ -131,26 +112,70 @@ Classification: `OWNER VERDICT — PEDAL CONTACT V1/V1.1 NOT ACCEPTED / DEFERRED
 
 Do not integrate or continue percentage/hysteresis/contact-presentation tuning by default. Accepted absolute-position pedals remain the baseline. Revisit only if later pedal geometry/industrial design materially changes the value proposition.
 
-## 6. Next stage — Pre-Codex Grounding + Workflow Hardening
+## 5. Pre-Codex Grounding — verified findings so far
 
-The next stage is **not yet Codex takeover** and is not a new product feature.
+### Git/work queue
 
-Purpose: make JV-Web self-explanatory, operationally safe and high-quality for a separate execution context while preserving Owner intent and the current accepted product baseline.
+- open PRs: **NONE**;
+- open issues: **NONE**;
+- ordinary active product lane: **NONE**;
+- integrated historical work branches checked so far are behind-only and contain no newer product truth;
+- `checkpoint/p1-3-1-handoff-2026-08-18` is a historical divergent checkpoint whose unique delta is documentation only, not lost runtime;
+- `work/pedal-contact-mechanics` is intentionally divergent with unmerged V1/V1.1 product/test commits; it is **rejected/deferred evidence**, not work to recover or merge;
+- accidental refs such as `DO_NOT_USE*`, `PLEASE_IGNORE`, `noop*` and `__tmp_noop` are behind-only inert clutter. Current connector access cannot delete branch refs safely. They are not authority and must not trigger a cleanup/recovery campaign.
 
-The stage should independently audit and, only where evidence justifies it, harden:
+### Validation/toolchain
 
-1. live source `main`, `preview/owner-control`, Public `main`, active/ahead branches and open PRs;
-2. authority boundaries between source, Preview, Friends/Public and accepted JSPREV2;
-3. accepted / experimental / rejected-deferred / future work classification;
-4. test/build contracts: causal checks vs milestone close vs Owner/device evidence;
-5. Owner Preview workflow and rules for exact candidate identity/static-layer parity;
-6. `AGENTS.md`, `PROJECT_STATE`, `HANDOFF`, AI memory, architecture/README and workflow documentation for drift or duplication;
-7. branch/ref hygiene, including redundant historical/accidental refs, without launching a cleanup campaign that cannot change takeover safety;
-8. responsibilities of ChatGPT/orchestrator, Codex/executor and Owner;
-9. the living roadmap and explicit non-goals so Codex does not restart closed recovery/publication work or invent a fixed P-stage scheduler;
-10. lessons worth importing from JURE, JV_CORE and other projects **only after their own current groundings produce reliable conclusions**. Cross-project memory is guidance, not proof of JV-Web state.
+- canonical repository toolchain is explicit: Node `24.16.0`, `packageManager: npm@11.13.0`, npm `>=11.13 <12`, `engine-strict=true`;
+- `npm run check` = typecheck + repository tests + docs links + third-party checks;
+- `npm run build` = `check` + portable build/validation;
+- source `main` currently has no standing Actions CI workflow; this is not automatically a product gap;
+- milestone/foundation/release machine evidence should use exact repo toolchain and `npm run build`; ordinary polish should use causal checks proportional to risk;
+- browser/render/device evidence remains separate from machine build evidence.
 
-Do not freeze the Codex handoff until this audit has a coherent verdict. Do not modify product runtime merely to prepare the handoff.
+### Owner Preview
+
+`preview/owner-control` remains a special operational lane. Preview V2:
+
+- requires exact 40-character source SHA;
+- exact-checks out a clean committed candidate;
+- installs the repository-declared Node/npm;
+- typechecks and builds/validates the portable executable;
+- pins the accepted JSPREV2 layer to an exact Public commit/receipt;
+- verifies all recorded scan runtime files/hashes before composition;
+- preserves executable identity separately from static-layer provenance;
+- fails before deploy when candidate/static-layer validation fails.
+
+Audit verdict: **keep this workflow; do not redesign it merely for Codex transition**.
+
+### Documentation hardening pass 1
+
+Udowodniony drift został usunięty z stable/current docs:
+
+- `AGENTS.md` no longer calls accepted D/R multitouch an open issue and now records accepted capability/HUD boundaries;
+- `README.md` no longer routes work to the closed D/R problem and explicitly marks the pre-Codex preparation stage;
+- mobile-driving grounding no longer schedules already-accepted capability hygiene and keeps pedal-contact V1/V1.1 deferred;
+- JURE consumer boundary keeps the durable geometry/authority rules but now labels 2026-08-16 JURE refs as historical evidence only.
+
+`docs/ARCHITECTURE.md` and the Owner Preview workflow were audited and did not require a change in this pass.
+
+## 6. Next stage inside the pre-Codex preparation
+
+The final Codex handoff is **not yet frozen**.
+
+Next work should proceed in this order:
+
+1. receive/ground the current outputs of the separate JURE and JV_CORE pre-Codex preparations;
+2. extract only transferable practices/contracts that concretely improve JV-Web; cross-project state is never JV-Web proof;
+3. design and freeze the execution-context split between Owner, browser ChatGPT/orchestrator and Codex/repo executor;
+4. decide whether branch/ref cleanup is worth doing with ordinary Git access or whether classification alone is safer;
+5. complete remaining documentation consistency checks, including concise durable Owner acceptance for the newest UI closes if useful;
+6. run one final canonical source validation on the exact post-hardening `main` (`npm ci` + `npm run build`) so tests, docs links, third-party and portable artifact contracts share one close anchor;
+7. repoint/verify Owner Preview to that exact final accepted main + accepted JSPREV2;
+8. perform a **read-only Codex cold-takeover dry run** and compare its reconstructed accepted/open/next state against live evidence;
+9. only after that PASS freeze the final Codex handoff and allow the first new product slice.
+
+Do not modify product runtime merely to prepare the handoff.
 
 ## 7. Separate later product work
 
