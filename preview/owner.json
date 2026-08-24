@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "d9c7b5b2e3912c9ef0bd8a2277a41de4211f99d9",
+  "sourceCommit": "81d397df2e9b6f732abadc081eedd1d2fc5b13b3",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Accepted main baseline after wide-desktop HUD cleanup; pre-Codex grounding and workflow hardening next"
+  "purpose": "Accepted main after wide-desktop HUD close and pre-Codex factual hardening pass; final Codex handoff not yet frozen"
 }
