@@ -1,8 +1,8 @@
 # JV Web — mobile driving polish grounding
 
-Status: `CURRENT MOBILE FOUNDATION OWNER-ACCEPTED / PEDAL CONTACT V1-V1.1 NOT ACCEPTED + DEFERRED / DESKTOP-MOBILE CAPABILITY HYGIENE NEXT / FUTURE CONTROL TUNING OPEN / NOT A SCHEDULER`
+Status: `CURRENT MOBILE FOUNDATION OWNER-ACCEPTED / D-R MULTITOUCH + DESKTOP-MOBILE CAPABILITY HYGIENE ACCEPTED / PEDAL CONTACT V1-V1.1 NOT ACCEPTED + DEFERRED / FUTURE CONTROL TUNING OPEN / NOT A SCHEDULER`
 Owner: Jozz
-Updated: 2026-08-22
+Updated: 2026-08-24
 
 This document preserves durable Owner intent and fault-localization rules. It does not define a mandatory numbered scheduler and does not authorize vehicle-physics, final rig or JURE-authored geometry changes.
 
@@ -20,6 +20,9 @@ D/R multitouch integration executable:
 
 mobile tap-highlight integration executable:
   86c99911a878136abee6485c88cd3ca2a18ed9fc
+
+desktop/mobile capability-hygiene executable:
+  319f25de3fe280c3a3b5bf4f4563d2fdb71e2a7c
 ```
 
 Protect:
@@ -32,6 +35,7 @@ Protect:
 - fail-closed continuous-control lifecycle;
 - core D/R sign/re-sign semantics;
 - product-owned active/focus/mechanical feedback without browser tap-highlight overlay;
+- standard desktop hides mobile-driving-only steering toolbar controls while mobile/narrow/coarse-pointer retains them;
 - Camera, Fullscreen, Plac E2R, Offroad, JSPREV2, owner vehicle and accepted A53 performance boundary.
 
 ## 2. Pedal Contact + Mechanical Feedback V1/V1.1 — closed experiment
@@ -61,43 +65,47 @@ Durable rules:
 
 This outcome is a prioritization/value decision, not proof that the experiment was technically invalid.
 
-## 3. Next grounding target — desktop/mobile capability hygiene
+## 3. Desktop/mobile capability hygiene — accepted outcome
 
-Before implementation, inventory actual controls/functions across desktop and mobile.
+Grounding showed that the large touch-driving surface was already correctly absent on standard desktop. The real mismatch was narrower: mobile pointer-steering toolbar controls were still visible when their touch surface was absent.
 
-For each item classify:
+Accepted result:
 
-- `SHARED`: useful and semantically correct on both;
-- `MOBILE_ONLY`: should not appear as an inert/misleading desktop control;
-- `DESKTOP_ONLY`: should not pollute mobile;
-- `SHARED_DIFFERENT_PRESENTATION`: same capability, different surface/layout;
-- `UNCLEAR`: needs Owner/device evidence before change.
+- normal desktop hides `Kierownica: Obrót / Przeciąganie` and `Tło kier.`;
+- shared location, texture, Grid and Fullscreen controls remain;
+- mobile/narrow/coarse-pointer retains steering modes and steering-plate control;
+- responsive visibility follows the same mobile-driving boundary and resynchronizes without reload;
+- steering, pedals and D/R semantics are unchanged.
 
-Do not begin with broad selectors or blanket hiding. Prefer one smallest high-confidence mismatch, then test only its real blast radius.
-
-Protect driving semantics, pointer ownership, steering/pedals/D-R, drivetrain, vehicle physics and rig authority.
+Owner explicitly confirmed both desktop and mobile states. Do not generalize this into blanket platform hiding; future capability hygiene must begin from a concrete observed mismatch.
 
 ## 4. Longitudinal handling — separate
 
-Small brake input dominating full throttle and broad low vehicle power belong to a dedicated handling/longitudinal slice. They are not evidence against the accepted pedal input foundation and must not be mixed into UI capability hygiene.
+Small brake input dominating full throttle and broad low vehicle power belong to a dedicated handling/longitudinal slice. They are not evidence against the accepted pedal input foundation and must not be mixed into UI capability hygiene or presentation work.
 
 ## 5. Fault localization
 
 ```text
 cyan overlay on custom touch control    -> browser/touch presentation polish (accepted fix exists)
-D/R second-finger intent missed         -> D/R pointer acquisition/lifecycle
+D/R second-finger intent missed         -> D/R pointer acquisition/lifecycle; accepted fix exists, investigate only if contradictory evidence returns
 gas drops during unrelated D/R touch    -> pointer ownership/lifecycle
 absolute pedal mapping feels wrong      -> pedal input semantics/tuning
 contact-zone idea low-value             -> deferred; do not reopen without new goal
-mobile-only control inert on desktop    -> desktop/mobile capability hygiene
+mobile-only control inert on desktop    -> desktop/mobile capability hygiene; accepted focused fix exists
 small brake overwhelms full throttle    -> handling/longitudinal
 ```
 
-## 6. Living sequence
+## 6. Living direction — not a scheduler
 
-- desktop/mobile capability hygiene grounding -> smallest high-confidence fix;
+There is currently no mandatory next mobile-control slice.
+
+Potential later directions, selected only from current product need/evidence:
+
 - portrait-specific composition;
 - steering/pedal industrial-design convergence and later steering feel tuning;
-- later JURE/rig/handling;
-- performance only from measured need;
+- new pedal presentation/geometry work only when it provides more value than the deferred contact-zone experiment;
+- later JURE/rig/handling integration;
+- performance/scaling only from measured need;
 - Friends/Public promotion remains a separate release decision.
+
+During the current pre-Codex preparation stage, do not invent mobile-control work merely to keep this document's sequence moving.
