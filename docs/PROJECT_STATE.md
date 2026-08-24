@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Owner: Jozz
-Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE ACCEPTED IN MAIN / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / DESKTOP HUD HEADER CLEANUP NEXT GROUNDING TARGET / CODEX TRANSITION READY / JURE PAUSED`
+Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE ACCEPTED IN MAIN / PEDAL CONTACT V1-V1.1 DEFERRED / DESKTOP HUD HEADER CLEANUP CANDIDATE ON OWNER PREVIEW / OWNER VERDICT OPEN / PRE-CODEX CLOSE IN PROGRESS / JURE PAUSED`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is current-state authority, not project archaeology.
 
@@ -32,8 +32,11 @@ rejected/deferred pedal contact V1:
 rejected/deferred pedal contact V1.1:
   6312906d5ad3c6781605859cd1d9613d7f2e220a
 
-ordinary active product lane:
-  NONE
+active ordinary product lane:
+  work/desktop-hud-header-cleanup@7ad78797456dd9c3fb5e421e2eeacd2a98c5cc68
+
+Owner Preview pointer source:
+  7ad78797456dd9c3fb5e421e2eeacd2a98c5cc68
 
 Owner Preview accepted JSPREV2 static layer:
   Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f
@@ -96,30 +99,50 @@ Classification:
 
 Do not integrate or continue percentage/hysteresis/contact-presentation tuning by default. Accepted absolute-position pedals remain the baseline. Revisit only if later pedal geometry/industrial design materially changes the value proposition.
 
-## 5. Next grounding target — Desktop HUD Header Cleanup
+## 5. Active experiment — Desktop HUD Header Cleanup V1
 
-Owner desktop evidence identifies the first-row HUD as unnecessary ordinary-product chrome:
+Owner desktop evidence identified the first-row ordinary-product HUD as redundant:
 
 - left overlay: `JV Box3D Web · R1 / M6 Drive`;
 - right overlay: `LIVE · GENERATION ... · CONTACTS`.
 
-Source grounding shows the canvas already fills the full scene and WebGL renders across it. The dark area above the horizon is scene background, not reserved HTML layout. Therefore do **not** change camera, canvas sizing or renderer merely to remove the perceived top strip.
+Source grounding shows that the canvas already fills the full scene and WebGL renders across its full viewport. The dark area above the horizon is scene background, not reserved HTML layout. `Generation` and `Contacts` already exist in Debug telemetry. Therefore the experiment does **not** touch camera, canvas sizing, renderer, input semantics or mobile composition.
 
-The runtime `Generation` and `Contacts` information already exists in Debug telemetry. The next slice should first ground whether ordinary desktop should simply hide `.scene-header` and pull the useful toolbar/actions upward into the recovered HUD row. Keep mobile composition out of this slice unless direct device evidence requires it.
+Exact candidate:
 
-This is a next-target hypothesis, not an accepted implementation plan.
+```text
+work/desktop-hud-header-cleanup@7ad78797456dd9c3fb5e421e2eeacd2a98c5cc68
+```
 
-## 6. Codex transition
+Candidate delta is intentionally limited to:
 
-The project is ready to continue in Codex from live `main`. Codex must independently resolve live refs before write and treat this file as routing context rather than proof.
+- `src/style.css`: six lines of wide-desktop-only presentation CSS;
+- `tests/desktop-hud-header-contract.test.mjs`: contract coverage.
 
-Recommended first Codex activity:
+V1 applies only to `(min-width: 901px) and (hover: hover) and (pointer: fine)`:
 
-1. resolve live `main`, `preview/owner-control`, and Public `main`;
-2. confirm no ordinary product lane is ahead of `main`;
-3. inspect the desktop header/toolbar/action layout and current debug telemetry duplication;
-4. design the smallest Desktop HUD Header Cleanup falsifier;
-5. do not implement a broad UI redesign, publication campaign, physics change or mobile re-layout without new evidence.
+- `.scene-header` is hidden;
+- `.product-toolbar` moves from `top:78px` to `top:16px`;
+- `.scene-actions` moves from `top:78px` to `top:16px`;
+- medium-width `<=900px` rules remain unchanged;
+- mobile/coarse/narrow rules remain unchanged.
+
+Owner Preview selects exact `7ad78797...` plus the accepted JSPREV2 layer.
+
+Classification: `DESKTOP HUD HEADER CLEANUP V1 / OWNER VERDICT OPEN`.
+
+Owner checkpoint: on a normal wide desktop confirm that the redundant first row is gone, toolbar and actions share the reclaimed top row without overlap, Debug still opens, and the scene/camera are unchanged. Mobile does not require a new broad regression pass; only sanity-check it if evidence suggests the desktop-only media query leaked.
+
+## 6. Pre-Codex transition — pending current slice close
+
+Do not hand active product work to Codex while this V1 remains unjudged. After Owner PASS or rejection:
+
+1. integrate or discard this exact slice;
+2. return Preview to accepted `main`;
+3. ensure no ordinary product lane is ahead of `main`;
+4. then perform a separate broad pre-Codex grounding and documentation/workflow audit.
+
+The later pre-Codex stage must independently resolve live source `main`, `preview/owner-control`, Public `main`, active branches, workflow contracts and current documentation. Its purpose is to make the repository self-explanatory to a separate execution context, not to restart old recovery/publication campaigns.
 
 ## 7. Separate later work
 
