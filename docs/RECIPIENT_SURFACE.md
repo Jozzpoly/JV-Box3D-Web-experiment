@@ -264,3 +264,73 @@ After JV_CORE and JURE donor closures are grounded:
 Until donor closure is available, do **not** implement a new substantial vehicle physics/rig/contact/drivetrain architecture from this document alone.
 
 Useful pre-donor work is limited to recipient grounding, evidence correction and small non-behavioral preparation that reduces uncertainty for later synthesis. If new current-source evidence contradicts this map, correct the map before planning from it.
+
+## 8. Existing causal validation map
+
+This is a **test-selection map**, not a requirement to run the full repository suite for every donor experiment. Select the smallest group that covers the changed causal surface, then add browser/render/Owner evidence when the result is user-visible.
+
+### Accepted controls and product interaction
+
+Use these as protected-behavior regression evidence when a mechanical donor slice should not change input semantics:
+
+- `tests/analog-drive.test.mjs` — absolute pedal mapping, frozen acquisition geometry, independent throttle/brake ownership, D/R re-signing and fail-closed pointer/lifecycle behavior;
+- `tests/dr-multitouch-acquisition.test.mjs` — second-finger D/R switching while throttle remains owned, D/R capture lifecycle and duplicate-click prevention;
+- `tests/mobile-driving-integration-contract.test.mjs` — active mobile presentation layers, analog product path, selectable Direct/Relative-X steering wiring and session-scoped steering mode;
+- `tests/pointer-steering-joystick-adapter.test.mjs`, `tests/steering-wheel-manipulation.test.mjs` and `tests/direct-rotation-steering-lifecycle.test.mjs` — steering acquisition/manipulation/lifecycle family;
+- `tests/desktop-hud-header-contract.test.mjs`, `tests/mobile-ui-contract.test.mjs` and `tests/utility-drawer-contract.test.mjs` — accepted responsive/UI capability boundaries.
+
+These tests protect current Web product behavior. They do not make the current vehicle mechanics final.
+
+### Current mechanical fixture
+
+Use these when changing the legacy runtime or when proving that a replacement actually supersedes a known bridge:
+
+- `tests/m6-topology-world.test.mjs` — current body/joint/topology/runtime-world invariants;
+- `tests/m6-dynamic-steering-validation.test.mjs` — current dynamic steering behavior;
+- `tests/m6-provisional-steering-range.test.mjs` — current provisional rack/angle range;
+- `tests/r1-drive-temporary-symmetric-bridge.test.mjs` — temporary FR bridge topology plus straight/left/right behavior with explicit non-claim of final handling;
+- `tests/legacy-ts-m6-backend.test.mjs` and `tests/vehicle-runtime-backend.test.mjs` — explicit backend role/parity/authority contract.
+
+Passing these tests means the current reference fixture still behaves as encoded. A future coherent replacement may intentionally invalidate some of them; such invalidation must be deliberate and replaced by stronger evidence, not mechanically preserved.
+
+### Longitudinal drive
+
+Use `tests/m6-drive.test.mjs` and `tests/product-e2r-drive.test.mjs` to protect deterministic current drive direction/motor/brake execution and product-level ability to move on the Web surface.
+
+Do not interpret their PASS as Native semantic parity. The active backend separately records the `maxDriveSpeed` semantic mismatch.
+
+### JURE/neutral geometry boundary
+
+Use:
+
+- `tests/jure-neutral-geometry.test.mjs`;
+- `tests/jure-neutral-graph-invariants.test.mjs`;
+- `tools/validate-neutral-rig-foundation.mjs` when its exact gate is relevant.
+
+These cover engine-neutrality, explicit JV rig space, coherent FL wishbone projection, deterministic/provenanced diagnostic receipts and exclusion of Box3D/dynamics policy from neutral truth.
+
+For a future JURE fragment, these are only the recipient-side baseline. New schema/provenance/placement/coherence checks must cover the exact exported fragment before runtime substitution.
+
+### Owner R3 visual rig
+
+Use the smallest relevant R3 group rather than all visual tests blindly:
+
+- `tests/owner-vehicle-full-rig-r3-front-reference.test.mjs` — deterministic R3 derivation, constrained geometry/source blast radius, front reference treatments and visual-only pilot semantics;
+- `tests/owner-vehicle-rear-reference-calibration-r3.test.mjs` — rear calibration family;
+- `tests/owner-vehicle-cardan-reference-calibration-r3.test.mjs` and `tests/owner-vehicle-cardan-package-r3.test.mjs` — cardan mapping/package family;
+- `tests/owner-vehicle-wheel-interface-r3.test.mjs` — wheel visual mount interface;
+- `tests/owner-vehicle-full-rig-runtime-motion.test.mjs` — all 59 real R3 roots resolve on live M6 motion and remain spatially attached during settle/steer/drive;
+- `tests/owner-vehicle-whole-car-static-r3.test.mjs` and `tests/owner-vehicle-draw-plan.test.mjs` — whole-car/static draw-plan coverage.
+
+If donor work changes actual mechanical geometry, a PASS here can still mean only that the visual mapping follows the changed runtime. Mechanical correctness must be proven separately.
+
+### World, browser and publication surfaces
+
+Only include these when the donor slice reaches their causal surface:
+
+- `tests/jv-world-physics.test.mjs`, `tests/product-world*.test.mjs` and `tests/product-e2r-drive.test.mjs` for world/vehicle integration;
+- `tests/jv-world-renderer-mobile.test.mjs`, scan/render/performance tests for rendering or JSPREV2 impact;
+- portable/runtime-asset/build-identity validators for artifact/path/provenance changes;
+- Owner Preview Pages plus real-device/render evidence for user-visible changes.
+
+A mechanical donor experiment that only changes an isolated runtime unit should not automatically trigger publication/release validation. Expand validation only when the causal blast radius expands.
