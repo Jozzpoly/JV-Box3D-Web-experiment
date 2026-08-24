@@ -1,6 +1,6 @@
 # JV Web — operating contract
 
-Updated: 2026-08-22
+Updated: 2026-08-24
 Owner: Jozz
 
 JV Web is the browser product line for Jozz Vehicle. The product goal is a build that is useful and enjoyable to launch, drive and show on desktop and phone, while remaining a practical R&D surface for later improvements.
@@ -29,16 +29,21 @@ Preserve unless the current task explicitly changes them:
 - P1.2/P1.3/P1.3.1 mobile composition, utility drawer and steering-surface foundation;
 - dual-mode source steering foundation: Owner-facing `DIRECT_ROTATION` / `Obrót` and `RELATIVE_X` / `Przeciąganie`, with final tuning still open;
 - `X_POSITION` as internal historical/regression reference only;
-- absolute-position analog throttle/brake foundation using frozen acquisition geometry, with final neutral-zone/value-curve/mechanical feedback tuning still open;
+- absolute-position analog throttle/brake foundation using frozen acquisition geometry;
 - independent throttle/brake pointer ownership and fail-closed lifecycle behavior;
-- core D/R command/sign semantics; real-device second-finger D/R acquisition while another control is held remains a separately open input-boundary issue;
+- D/R explicit pointer acquisition/lifecycle, including Owner-confirmed second-finger switching while other continuous controls remain held;
+- browser tap-highlight suppression on custom mobile driving controls;
+- desktop/mobile capability hygiene: standard desktop hides mobile-driving-only steering toolbar controls while mobile/narrow/coarse-pointer retains them;
+- wide fine-pointer desktop HUD cleanup: redundant ordinary header row hidden and the reclaimed top row used by product toolbar/actions, without redefining medium/mobile layout;
 - tested Samsung Galaxy A53 / Chrome render-1x scan performance boundary.
 
 Do not generalize the A53 performance result to larger worlds, other devices or higher render scales.
 
-The accepted Friends/Public artifact currently predates the later dual-mode steering and absolute-position pedal source integrations. Do not imply that accepted source changes are already present in Friends/Public until a separate release is built, promoted and Owner-accepted.
+The accepted Friends/Public artifact predates later accepted source work including dual-mode steering, absolute-position pedals, D/R multitouch and subsequent UI hygiene. Do not imply that accepted source changes are already present in Friends/Public until a separate release is built, promoted and Owner-accepted.
 
-Current product debt/open work includes pedal neutral/contact-zone and mechanical-feedback tuning, D/R multitouch acquisition, final steering tuning/design, portrait-specific composition, final rig geometry and handling.
+Pedal Contact + Mechanical Feedback V1/V1.1 is **not accepted** and is deferred. Do not resume percentage/hysteresis/contact-zone tuning by default. Accepted absolute-position pedals remain the baseline; later pedal geometry/industrial-design work may justify a new experiment from a new goal.
+
+Current future product work includes final steering/pedal industrial design and tuning, portrait-specific composition, longitudinal motor/brake balance, final rig geometry/handling and later evidence-backed scaling work. `docs/PROJECT_STATE.md` owns the current next-stage routing.
 
 ## 3. JURE boundary
 
@@ -62,9 +67,9 @@ See `docs/contracts/JURE_CONSUMER_BOUNDARY.md` for the durable cross-project bou
 
 ## 4. Work style
 
-Jozz defines vision, priorities and Owner-visible acceptance. The agent is responsible for programming, repository work, technical analysis, build/CI mechanics, deployment and engineering troubleshooting.
+Jozz defines vision, priorities and Owner-visible acceptance. The active engineering executor is responsible for programming, repository work, technical analysis, build/CI mechanics, deployment and engineering troubleshooting.
 
-Do not ask Jozz to apply patches, run terminal commands, debug CI, install dependencies or repair local engineering machinery that the agent can handle. Owner intervention is for genuinely irreplaceable visual/feel/device judgement, inaccessible files or unavoidable Owner-side platform actions.
+Do not ask Jozz to apply patches, run terminal commands, debug CI, install dependencies or repair local engineering machinery that the executor can handle. Owner intervention is for genuinely irreplaceable visual/feel/device judgement, inaccessible files or unavoidable Owner-side platform actions.
 
 Default product loop:
 
@@ -78,9 +83,11 @@ Validation claims must name evidence actually executed. Keep source/unit/type, b
 
 Avoid speculative abstractions. Prefer one clean implementation that can be extended later over infrastructure for hypothetical variants. Do not mix product redesign, recovery, delivery-harness invention and repository cleanup into one slice. Helper/tooling failure is not automatically product failure.
 
+A change of execution context (for example browser ChatGPT -> Codex) does not itself authorize a takeover rewrite, new branch family, new gates or new abstractions. The new executor must independently resolve live Git before writes, then continue the current product/workflow contract unless a focused grounding proves a change is useful.
+
 ## 5. Documentation discipline
 
-A fresh agent normally needs only:
+A fresh executor normally needs only:
 
 1. `AGENTS.md`;
 2. `docs/PROJECT_STATE.md`;
@@ -107,6 +114,8 @@ A `checkpoint/*` ref requires a concrete rollback/evidence purpose. Once safely 
 Git history/tags are the archive; branch names are working/navigation state, not trophies. Do not infer authority from names such as `golden`, `candidate`, `repair`, `checkpoint` or old `work/*` refs.
 
 Do not hardcode the current active ordinary lane in this operating contract. `docs/PROJECT_STATE.md` is the current authority. Closed `work/*` refs may remain as redundant navigation but must not be revived merely because their names are visible.
+
+Known accidental/ref-clutter names are not authority. If a connector cannot delete them safely, classify and ignore them; remove them later only through ordinary Git/ref access when deletion is trivial. Do not create a cleanup campaign around inert refs.
 
 ## 7. Preview and release discipline
 
