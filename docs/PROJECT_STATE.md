@@ -2,7 +2,7 @@
 
 Updated: 2026-08-24
 Owner: Jozz
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED STEERING + PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING IN PROGRESS / DONOR CLOSURE + CROSS-PROJECT SYNTHESIS + FINAL CANONICAL CLOSE PENDING / FINAL CODEX HANDOFF NOT YET FROZEN`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED STEERING + PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING IN PROGRESS / RECIPIENT SURFACE GROUNDED / DONOR CLOSURE + CROSS-PROJECT SYNTHESIS + FINAL CANONICAL CLOSE PENDING / FINAL CODEX HANDOFF NOT YET FROZEN`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is current-state authority, not project archaeology.
 
@@ -183,9 +183,26 @@ Proven drift was removed from stable/current docs:
 
 `docs/ARCHITECTURE.md` and the Owner Preview workflow were audited and did not require a change in this pass.
 
+### Recipient surface grounding
+
+`docs/RECIPIENT_SURFACE.md` now records the current JV-Web vehicle as the recipient of future donor evidence without claiming donor state or freezing the Inheritance Matrix.
+
+Current source-level findings include:
+
+- the active `legacy_ts_m6` backend is explicitly a `REFERENCE_BROWSER_FIXTURE`, has `productPhysicsAuthority: false`, does not accept new product physics and has native parity `NOT_PROVEN`;
+- the active wheel contact implementation is explicitly `legacy_m6_split_sphere_sidewall`;
+- general wishbone hardpoints remain procedural while front-left steering uses a source-registered provisional special case;
+- front-right steering remains an explicitly temporary symmetric kinematic bridge and the rack->angle/full-lock mapping is provisional;
+- the neutral JURE-facing mechanism is a read-only comparison/lowering seam, not authored truth or a frozen JURE schema;
+- current product visuals use build-generated R3, which is a deterministic calibrated derivative of R2 and can bind 59 real moving roots to the live M6;
+- R3 visual calibration is not mechanical authority: tested treatments include visual-only mappings with physics unchanged;
+- current visual binding/frame contracts already provide useful part/segment/part-pair seams and should be challenged only when a real donor rig proves a missing semantic.
+
+This recipient map is the baseline against which final JV_CORE/JURE donor evidence should be challenged before implementation. It does not authorize a substantial runtime slice while donor closure remains pending.
+
 ## 7. Next stage inside the pre-Codex preparation
 
-The final Codex handoff is **not yet frozen**.
+The final Codex handoff is **not yet frozen**. Recipient grounding is available; the cross-project Inheritance Matrix still waits for exact donor closure.
 
 Next work should proceed in this order:
 
