@@ -1,9 +1,22 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-24
-Status: `STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP ACCEPTED / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING + WORKFLOW HARDENING NEXT / FINAL CODEX HANDOFF NOT YET FROZEN / JURE PAUSED`
+Status: `JV-WEB PRIORITY HEIR / CURRENT CONTROL + UI FOUNDATIONS ACCEPTED / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / DONOR CLOSURE + CROSS-PROJECT SYNTHESIS + PRE-CODEX HARDENING IN PROGRESS / FINAL CODEX HANDOFF NOT YET FROZEN`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file.
+
+## Program directive
+
+JV-Web is the priority Jozz Vehicle product and intended heir of useful work across the surrounding projects. The target is not Native parity: JV-Web should eventually exceed earlier implementations and become credible as the Owner's showcase/public product.
+
+- JV_CORE / Native = primary donor/research record, not a quality ceiling and not code to port 1:1.
+- JURE = optional authoring donor for authored neutral rig/geometry truth; it must prove value and is not required for JV-Web completion.
+- JV-Web = accepted Web product authority.
+- Codex = future repo-native executor/synthesis context after preparation; may rewrite/reject donor implementations while respecting validated Owner/semantic truth.
+
+Inheritance priority: `Owner product truth -> portable mechanical/semantic truth -> candidate behavioural implementation -> legacy code`.
+
+After donor closure, build an Inheritance Matrix before fundamental redesign. Cross-project state is guidance/evidence only and never JV-Web proof by itself.
 
 ## Current authority
 
@@ -15,7 +28,7 @@ Compact router only. Live Git, executed evidence and direct Owner observation ou
 - accepted D/R integration executable: `bd8980eba3e62b5a4b48df528be2db275addf7b4`;
 - accepted pedal integration executable: `315e41aa3e68baaa74ab107d3ef0b82c14a2eb84`;
 - accepted steering integration executable: `4961cee419a88dc54a5f0ee743cc1ee65886a734`;
-- ordinary active product lane: none expected after the HUD close; verify live;
+- ordinary active product lane: none expected; verify live;
 - Preview control lane: `preview/owner-control`;
 - Preview JSPREV2: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
 - accepted Friends/Public: `279dd4eec8599ad12c95e03b50a52c478e8a50e7`.
@@ -34,51 +47,37 @@ Compact router only. Live Git, executed evidence and direct Owner observation ou
 - medium-width/mobile layout remains outside that wide-desktop HUD rule;
 - Camera Manual Rig V1, Fullscreen V1, current mobile composition, Plac E2R, Offroad, JSPREV2 and accepted A53 render-1x boundary.
 
-## Pedal contact experiment — durable outcome
+## Deferred evidence
 
-V1 `8690368a...` and V1.1 `6312906d...` explored a lower zero/contact region on top of accepted absolute-position pedals. The implementation was technically viable, but Owner A53/Chrome use judged the practical value too small to justify continued tuning/presentation effort.
+Pedal-contact V1 `8690368a...` and V1.1 `6312906d...` were technically viable but Owner judged their real-device value too small for continued work. Classification: `NOT ACCEPTED / DEFERRED`. Do not recover/merge them by default.
 
-Classification: `OWNER VERDICT — PEDAL CONTACT V1/V1.1 NOT ACCEPTED / DEFERRED`.
+`work/pedal-contact-mechanics` may remain divergent as evidence; it is not an active lane.
 
-Do not integrate or continue percentage/hysteresis/contact-presentation tuning by default. Revisit only if later pedal geometry/industrial design materially changes the value proposition.
+## Pre-Codex grounding findings
 
-## Latest accepted UI outcomes
+- open PRs: none;
+- open issues: none;
+- ordinary active product lane: none;
+- accepted historical work branches checked are behind-only;
+- accidental `DO_NOT_USE* / PLEASE_IGNORE / noop* / __tmp_noop` refs are behind-only clutter, not authority;
+- canonical repo toolchain and `npm run check` / `npm run build` semantics are explicit;
+- Owner Preview V2 exact-source + pinned-JSPREV2 composition is healthy and should be preserved;
+- factual documentation hardening pass 1 removed stale D/R/capability routing and current-vs-historical JURE ambiguity.
 
-### Desktop/mobile capability hygiene
+## Next work — donor closure and synthesis, not takeover yet
 
-- normal desktop hides `Kierownica: Obrót / Przeciąganie` and `Tło kier.`;
-- shared controls remain;
-- mobile/narrow/coarse-pointer retains steering modes and steering-plate control;
-- input semantics unchanged.
+1. receive current grounded outputs from JV_CORE and JURE;
+2. build/challenge the Inheritance Matrix;
+3. identify the first fundamental JV-Web quality program without assuming Native parity or JURE usage;
+4. freeze Owner / browser-ChatGPT / Codex responsibility boundaries;
+5. finish remaining documentation/evidence consistency work;
+6. run one final exact-toolchain `npm ci` + `npm run build` on post-hardening `main`;
+7. verify Owner Preview on that exact source + accepted JSPREV2;
+8. run read-only Codex cold-takeover dry run;
+9. only after PASS freeze final Codex handoff and begin fundamental runtime work.
 
-Accepted integration: `319f25de...`.
+Until then, do not start a substantial new JV-Web runtime slice unless the Owner redirects or a critical regression appears.
 
-### Wide desktop HUD cleanup
+## Candidate later quality areas
 
-Owner wide-desktop evidence on exact `7ad78797...` confirmed the redundant `M6 Drive / LIVE · GENERATION · CONTACTS` first row is absent, toolbar/actions reuse that row without observed overlap, Debug still opens, and the scene/camera remain sane. The implementation is six lines of wide-desktop-only CSS plus contract coverage; accepted mechanical integration: `4a68b462...`.
-
-## Next work — pre-Codex preparation, not takeover
-
-Perform **Pre-Codex Grounding + Workflow Hardening** before freezing any final Codex handoff.
-
-Audit live authority, branch/PR topology, accepted/deferred classification, validation tiers, Preview/static-layer contract, documentation drift, branch/ref hygiene, Owner/ChatGPT/Codex responsibility boundaries and the living roadmap.
-
-Important transition principles:
-
-- Codex must still verify live Git before write; a handoff is routing context, not proof;
-- do not restart old recovery/publication campaigns or re-open rejected/deferred experiments from historical refs;
-- small changes should keep the product loop: smallest source change -> causal validation -> faithful render/device evidence -> Owner judgement;
-- full canonical validation belongs to foundation/milestone/release boundaries, not every polish iteration;
-- Owner is primarily needed for look/feel/real-device evidence; executor owns code, repo work and machine validation;
-- useful lessons from JURE, JV_CORE and other projects may be imported after their current groundings, but they are not evidence of JV-Web state.
-
-The final Codex handoff is **not yet frozen**.
-
-## Later product boundaries
-
-- further capability hygiene only from concrete mismatches;
-- portrait composition;
-- steering/pedal industrial-design convergence and later steering feel;
-- small brake dominating full throttle / low power -> longitudinal handling;
-- later JURE/rig/handling;
-- Friends/Public does not auto-advance with source.
+Not a fixed order: rig/visual-mechanical correction, suspension/wheel/contact/handling, steering/pedal feel and industrial design, longitudinal power/brake balance, portrait/capability polish, performance from measured need, optional future JURE map authoring, and later Friends/Public promotion.
