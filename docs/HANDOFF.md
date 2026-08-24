@@ -1,7 +1,7 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-24
-Status: `HANDOFF SNAPSHOT / STEERING + ABSOLUTE PEDALS + D-R MULTITOUCH + TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP ACCEPTED / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING + WORKFLOW HARDENING NEXT / FINAL CODEX HANDOFF NOT YET FROZEN / JURE PAUSED`
+Status: `HANDOFF SNAPSHOT / JV-WEB PRIORITY HEIR / CURRENT CONTROL + UI FOUNDATIONS ACCEPTED / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / DONOR CLOSURE + CROSS-PROJECT SYNTHESIS + PRE-CODEX HARDENING IN PROGRESS / FINAL CODEX HANDOFF NOT YET FROZEN`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
@@ -13,6 +13,24 @@ Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 4. Resolve any ordinary branch actually ahead of source `main` and any open PR before assuming the work queue is empty.
 5. Read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`.
 6. Do not revive closed steering, pedal, D/R, tap-highlight, desktop-capability/HUD or pedal-contact experiments merely because historical refs remain visible.
+7. Do not treat JV_CORE/Native or JURE as JV-Web source authority. Donor evidence must be independently grounded and deliberately inherited.
+
+## Program-level Owner directive
+
+JV-Web is now the program priority and intended **HEIR / PRODUCT**. The long-term target is a version that can exceed Native/JV_CORE, exploit useful JURE authoring where justified, and eventually be strong enough to serve as an Owner showcase/public product.
+
+Donor roles:
+
+- **JV_CORE / Native** — primary donor/research record for rig, feel, wheel/contact, physics, assets, controls, known defects and Owner evidence. Native behaviour may be a valuable reference; Native implementation is not automatically the target.
+- **JURE** — optional rig/geometry authoring donor. It must prove practical value and is not a required dependency for completing JV-Web.
+- **JV-Web** — accepted product authority for Web. Existing accepted behaviour remains protected until a focused later slice intentionally improves it.
+- **Codex** — future repo-native executor/synthesis context after preparation. Codex may port, rewrite, combine or reject donor implementations, but must preserve validated Owner/semantic truth unless contradictory evidence justifies change.
+
+Inheritance order:
+
+`Owner product truth -> portable mechanical/semantic truth -> candidate behavioural implementation -> legacy code`
+
+Do not copy whole projects, freeze a unified schema prematurely or use parity with Native as the final success criterion. After donor closure, create an **Inheritance Matrix** covering capability, donor, evidence, Owner status, portable truth, target JV-Web concern and Codex decision.
 
 ## Exact accepted anchors
 
@@ -51,7 +69,7 @@ accepted Friends/Public:
   279dd4eec8599ad12c95e03b50a52c478e8a50e7
 ```
 
-There should currently be **no ordinary active product lane ahead of `main`** after the HUD close; verify this live rather than trusting the snapshot. Friends/Public remains a separate older artifact and does not automatically inherit later accepted source work.
+There should currently be **no ordinary active product lane ahead of `main`**; verify this live rather than trusting the snapshot. Friends/Public remains a separate older artifact and does not automatically inherit later accepted source work.
 
 ## Accepted product boundary
 
@@ -87,41 +105,44 @@ Owner confirmed normal desktop hides `Kierownica: Obrót / Przeciąganie` and `T
 
 ### Wide Desktop HUD Header Cleanup V1
 
-On exact Owner-tested `7ad78797...`, normal wide desktop showed:
+On exact Owner-tested `7ad78797...`, normal wide desktop showed the redundant first row removed, toolbar/actions sharing the reclaimed top row without observed overlap, Debug operational and no observed scene/camera regression. Mechanical accepted merge: `4a68b462...`.
 
-- redundant `M6 Drive / LIVE · GENERATION · CONTACTS` row removed;
-- toolbar at the reclaimed top-left row;
-- `Camera / Reset / Debug` at the top-right row;
-- no observed overlap;
-- Debug still operational and rendering telemetry;
-- no observed scene/camera regression.
+## Pre-Codex state already grounded
 
-The rule is desktop-only: `(min-width: 901px) and (hover: hover) and (pointer: fine)`. Medium/mobile rules remain outside this slice. Mechanical accepted merge: `4a68b462...`.
+Verified so far:
 
-## Next stage — Pre-Codex Grounding + Workflow Hardening
+- no open PRs;
+- no open issues;
+- no ordinary active product lane;
+- accepted historical work branches checked are behind-only;
+- `work/pedal-contact-mechanics` is intentionally divergent rejected/deferred evidence, not work to recover;
+- accidental `DO_NOT_USE* / PLEASE_IGNORE / noop* / __tmp_noop` refs are inert behind-only clutter, not authority;
+- canonical Node/npm and build contracts are explicit in the repository;
+- Owner Preview V2 exact-source + accepted-JSPREV2 composition is healthy and should not be redesigned merely for Codex;
+- factual documentation hardening pass 1 removed stale D/R/capability routing and historical-current JURE ambiguity.
 
-**Do not treat this snapshot as the final Codex handoff.** The project is intentionally entering a separate preparation stage first.
+## Next stage — donor closure and cross-project synthesis
 
-Before any Codex takeover is frozen, independently audit:
+**Do not treat this snapshot as the final Codex handoff.** Before freezing takeover:
 
-1. live source `main`, Preview control/pointer, Public `main`, branches ahead of `main` and open PRs;
-2. source vs Preview vs Friends/Public vs JSPREV2 authority;
-3. accepted / experimental / rejected-deferred / future work labels;
-4. causal-test vs milestone-build vs Owner/device evidence rules;
-5. Owner Preview workflow, exact-candidate identity and accepted-static-layer parity;
-6. `AGENTS.md`, `PROJECT_STATE`, `HANDOFF`, AI memory, README/architecture/workflow docs for drift or duplication;
-7. branch/ref hygiene only to the extent it can change takeover safety;
-8. explicit responsibility split between Owner, ChatGPT/orchestrator and Codex/executor;
-9. living roadmap and anti-restart rules for closed recovery/publication campaigns;
-10. useful lessons from JURE, JV_CORE and other projects only after their own current groundings are available; never treat cross-project history as JV-Web proof.
+1. receive independently grounded donor closures from JV_CORE and JURE;
+2. construct the Inheritance Matrix and challenge each proposed inheritance;
+3. identify the first fundamental JV-Web quality program without assuming Native parity or JURE usage as goals;
+4. freeze the Owner / browser-ChatGPT / Codex responsibility split;
+5. finish remaining documentation/evidence consistency work;
+6. run one final canonical `npm ci` + `npm run build` on the exact post-hardening `main`;
+7. verify Owner Preview on that exact final source + accepted JSPREV2;
+8. run a read-only Codex cold-takeover dry run;
+9. only after that PASS freeze the final Codex handoff and begin new fundamental runtime work.
 
-The output of that stage should be a coherent verdict about readiness, a hardened workflow contract where needed, and only then a final Codex handoff.
+## Candidate later quality areas
 
-## Separate later product work
+Not a frozen order:
 
-- capability inventory only from concrete mismatches;
-- portrait-specific composition;
-- steering/pedal industrial-design convergence and later steering tuning;
-- small brake dominating full throttle / broad low power -> longitudinal handling;
-- JURE/rig/handling later;
+- rig and visual-mechanical correction using donor evidence;
+- suspension/wheel/contact/handling improvement;
+- steering and pedal feel/industrial-design convergence;
+- longitudinal power/brake balance;
+- portrait/capability/UI refinements from concrete evidence;
+- future JURE map-authoring integration only after core vehicle quality justifies it;
 - Friends/Public promotion remains a separate release decision.
