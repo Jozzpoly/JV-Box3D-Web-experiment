@@ -1,17 +1,17 @@
 # JURE -> JV-Web consumer boundary
 
-Updated: 2026-08-16
-Status: `JV CONSUMER FOUNDATION IN MAIN / JURE PAUSED / CONCRETE JURE DATA SCHEMA NOT YET FROZEN`
+Updated: 2026-08-24
+Status: `JV CONSUMER FOUNDATION IN MAIN / CURRENT JURE STATE MUST BE RESOLVED LIVE / CONCRETE JURE DATA SCHEMA NOT YET FROZEN`
 
 This contract defines ownership and integration invariants between Jozz Universal Rig Editor (JURE) and JV Web. It deliberately does **not** define the final serialized JURE consumer schema yet.
 
-JURE is currently paused. Its accepted `main` and frozen recovery/product checkpoints remain separate project authority; re-resolve them live only when authored-rig work resumes.
+This document does not claim current operational JURE refs. Historical JURE evidence is retained only to explain how this boundary was derived. Before any new JURE -> JV work, resolve JURE live from its own current authority and grounding; conversation memory or dated anchors here are not proof of JURE state.
 
 ## 1. Shared program purpose
 
 JURE and JV are complementary parts of the same vehicle-R&D direction.
 
-The practical goal is that the Owner can eventually build, inspect, correct and export a complete vehicle rig through JURE itself: exact part placement, frames, mechanical relations, suspension/steering geometry and representation intent for moving real parts such as wishbones, steering links, dampers and springs. The agent may implement the tooling, difficult math, diagnostics and automation, but must not remain a mandatory manual rig operator.
+The practical goal is that the Owner can eventually build, inspect, correct and export a complete vehicle rig through JURE itself: exact part placement, frames, mechanical relations, suspension/steering geometry and representation intent for moving real parts such as wishbones, steering links, dampers and springs. The engineering executor may implement the tooling, difficult math, diagnostics and automation, but must not remain a mandatory manual rig operator.
 
 JV is the first demanding consumer/falsifier. It should consume deterministic authored neutral truth without contaminating that truth with browser, Box3D or runtime convenience.
 
@@ -97,7 +97,7 @@ The neutral representation contains no Box3D IDs, mass, density, collision, damp
 
 ## 6. Requirements for a future JURE consumer fragment
 
-When JURE resumes and freezes a concrete consumer format, it must make explicit at least:
+When current JURE work eventually freezes a concrete consumer format, it must make explicit at least:
 
 - schema/version identity;
 - exact producer/source provenance;
@@ -116,7 +116,7 @@ Exact field names and JSON/package layout are **not authority yet**. JV must not
 When authored-rig work becomes necessary again:
 
 ```text
-freeze exact JURE fragment + producer
+resolve current JURE authority and freeze exact JURE fragment + producer
 -> obtain exact bytes
 -> strict independent parse
 -> schema / units / basis / provenance validation
@@ -124,7 +124,7 @@ freeze exact JURE fragment + producer
 -> internal neutral geometry proof
 -> lower into the JV neutral consumer representation
 -> compare coherent authored and procedural units
--> only then private runtime/Box3D substitution experiment
+-> only then isolated runtime/Box3D substitution experiment
 -> browser/runtime proof
 -> separate public-release decision
 ```
@@ -137,23 +137,23 @@ A temporary branch is justified only when an actual risky integration/runtime ex
 
 Reject the fragment/experiment if schema, units, basis or provenance are ambiguous; required locators are non-unique; placement requires guessing; identity placement is assumed; values are non-finite/incomplete; authored and procedural shapes are mixed; relation kinds need reinterpretation; or consumer runtime dynamics would have to be written back into authored neutral truth.
 
-## 9. Paused JURE recovery anchors
+## 9. Historical JURE anchors — evidence only
 
-Current pause anchors from 2026-08-16:
+The following refs describe the JURE state used when this JV-side boundary was established on 2026-08-16. They are **historical evidence, not current JURE authority**:
 
 ```text
-JURE accepted main:
+historical JURE accepted main observed then:
   d971b8bef5dd7c65b78884b6b449e1f5ab0e7425
 
-clean validated foundation candidate / closed PR #3:
+historical clean validated foundation candidate / closed PR #3:
   4db04eee4da0216f6bd3df6b6b0c82aa20afab5a
 
-paused real-JV authoring checkpoint / closed PR #4:
+historical paused real-JV authoring checkpoint / closed PR #4:
   checkpoint/paused-jv-authoring-2026-08-16
   @f0f8cd91aca583610dc2dedd34e537a145a01b61
 ```
 
-Closed PR #2 retains the long recovery/foundation evidence history. None of these JURE lines was merged into JURE `main` during the pause.
+Do not use these refs to plan new integration without independently resolving JURE's current live Git and current project-state documentation. If JURE's own pre-Codex grounding produces a newer frozen consumer boundary, compare it explicitly against this JV contract before changing either side.
 
 ## 10. Exit condition for full rig integration
 
