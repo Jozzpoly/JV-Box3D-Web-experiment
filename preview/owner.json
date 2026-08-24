@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "ef6946e94636b5082bb9fc0d9ae36d7378e11c1f",
+  "sourceCommit": "3ef7e98ca78475c9a75a7d32030bcc6c5386031d",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Accepted main after product close and pre-Codex grounding pass A; cross-project synthesis and final canonical close still pending"
+  "purpose": "Accepted JV-Web heir baseline during donor closure and pre-Codex synthesis; final canonical close and handoff still pending"
 }
