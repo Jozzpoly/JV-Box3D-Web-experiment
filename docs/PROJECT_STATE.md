@@ -1,8 +1,8 @@
 # JV Web — current project state
 
-Updated: 2026-08-24
+Updated: 2026-08-25
 Owner: Jozz
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED STEERING + PEDALS + D-R MULTITOUCH + MOBILE TAP-HIGHLIGHT + DESKTOP-MOBILE CAPABILITY HYGIENE + WIDE-DESKTOP HUD CLEANUP / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / PRE-CODEX GROUNDING IN PROGRESS / RECIPIENT SURFACE GROUNDED / DONOR CLOSURE + CROSS-PROJECT SYNTHESIS + FINAL CANONICAL CLOSE PENDING / FINAL CODEX HANDOFF NOT YET FROZEN`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED CONTROL + UI FOUNDATIONS PROTECTED / PEDAL CONTACT V1-V1.1 DEFERRED / NO ORDINARY ACTIVE PRODUCT LANE / JV_CORE SEALED DONOR + JURE/JV_CORE INHERITANCE MATRIX GROUNDED / FIRST FUNDAMENTAL MECHANICAL STAGE DEFINED FOR PLANNING / NO RUNTIME START / PRE-CODEX FINAL CLOSE PENDING`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file is current-state authority, not project archaeology.
 
@@ -55,27 +55,28 @@ Resolve live `preview/owner.json` for the exact Preview source pointer; do not i
 
 ## 2. Program-level Owner directive — JV-Web as heir
 
-JV-Web is now the priority product of the Jozz Vehicle program and the intended heir of useful work across the surrounding projects. The target is not parity with an older implementation. JV-Web should become the highest-quality version we can build: useful as R&D, strong on desktop and phone, materially better to drive and inspect, and eventually credible as an Owner showcase/public product.
+JV-Web is the priority product of the Jozz Vehicle program and the intended heir of useful work across the surrounding projects. The target is not parity with an older implementation. JV-Web should become the highest-quality version we can build: useful as R&D, strong on desktop and phone, materially better to drive and inspect, and eventually credible as an Owner showcase/public product.
 
-Current donor roles:
+Current project roles:
 
-- **JV_CORE / Native** — primary donor and research record for rig, feel, wheel/contact, physics, assets, controls and historical Owner evidence. Native is a source of evidence and lessons, not a quality ceiling and not code that must be ported 1:1.
-- **JURE** — optional authoring-tool/donor for authored neutral rig/geometric truth. JURE must prove practical value and must not become a mandatory dependency for completing JV-Web. Codex may later decide to use it, narrow its role or ignore it.
-- **JV-Web** — HEIR / PRODUCT. Current accepted Web behavior is protected until a focused later slice deliberately improves it.
-- **Codex** — future repo-native execution/synthesis context after the pre-Codex preparation passes. It is not authority over live Git or Owner judgement and may rewrite/reject donor implementations when evidence supports a better JV-Web design.
+- **JV_CORE / Native** — **SEALED DONOR / RESEARCH RECORD**. Active Native development is stopped under the current Owner directive. It remains the primary donor for rig, feel, wheel/contact, physics, assets, controls, known defects and historical Owner evidence, but is neither a quality ceiling nor code to port 1:1.
+- **JURE** — optional authoring-tool/donor for authored neutral rig/geometric truth. JURE has earned influence through proven provenance, owner-local frames and neutral relations, but is not a required dependency for completing JV-Web.
+- **JV-Web** — HEIR / PRODUCT. Current accepted Web behavior remains protected until a focused later slice deliberately improves it.
+- **Codex** — future repo-native execution/synthesis context after the remaining pre-Codex preparation passes. Codex may rewrite/reject donor implementations when evidence supports a better JV-Web design, but does not outrank Owner truth or live Git.
 
 Inheritance rules:
 
-1. Preserve **Owner product truth**: what looked, felt and behaved better in real use, within the scope actually observed.
+1. Preserve **Owner product truth** within the scope actually observed.
 2. Extract **portable mechanical/semantic truth**: frames, relations, control semantics, invariants, failure modes and validated constraints.
 3. Treat **behavioural implementation** as a candidate technique, not sacred architecture.
-4. Treat **legacy code** as the least authoritative layer: copy only when it remains the best justified implementation.
+4. Treat **legacy code/defaults/docs** as the least authoritative layer.
 5. Cross-project state never becomes JV-Web proof merely by being current or accepted in its donor repository.
-6. Do not build a unified three-project schema before concrete donor evidence requires one.
+6. Do not build a unified three-project schema before a concrete donor fragment proves the need.
+7. Primary-donor status does not win conflicts automatically; Owner truth and evidence decide.
 
-After JV_CORE and JURE finish their own donor/pre-Codex closures, construct a cross-project **Inheritance Matrix** before fundamental JV-Web redesign. Minimum columns: capability, donor, evidence, Owner status, portable truth, target JV-Web concern and Codex decision. This matrix is not frozen yet because donor closure is still in progress.
+The existing `docs/INHERITANCE_MATRIX.md` now contains both JURE donor intake #1 and the sealed JV_CORE donor intake. `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` is the canonical Web-side receipt for Native closure.
 
-Unless the Owner redirects or a critical regression appears, do not start a new substantial JV-Web runtime slice before donor closure and cross-project synthesis are coherent.
+No substantial new runtime slice starts merely because donor closure is complete. The matrix now defines the first fundamental stage for planning and falsification; physical mating and the narrow lowering contract still require deliberate resolution before runtime substitution.
 
 ## 3. Accepted control and UI foundations
 
@@ -95,7 +96,9 @@ Preserve unless a focused later slice explicitly changes them:
 - Camera Manual Rig V1, Fullscreen V1 and current mobile composition;
 - Plac E2R, Offroad, JSPREV2, owner vehicle and accepted A53/Chrome render-1x boundary.
 
-Do not use UI/control polish as a reason to change drivetrain, motor/brake balance, vehicle physics or rig authority.
+These accepted controls/product UX are explicitly **outside the blast radius** of the first mechanical foundation stage.
+
+Do not use donor intake or UI/control polish as a reason to opportunistically change drivetrain, motor/brake balance, wheel/contact architecture or unrelated product behavior.
 
 ## 4. Latest accepted UI closes
 
@@ -136,17 +139,17 @@ Classification: `OWNER VERDICT — PEDAL CONTACT V1/V1.1 NOT ACCEPTED / DEFERRED
 
 Do not integrate or continue percentage/hysteresis/contact-presentation tuning by default. Accepted absolute-position pedals remain the baseline. Revisit only if later pedal geometry/industrial design materially changes the value proposition.
 
-## 6. Pre-Codex Grounding — verified findings so far
+## 6. Pre-Codex Grounding — verified findings
 
 ### Git/work queue
 
-- open PRs: **NONE**;
-- open issues: **NONE**;
+- open PRs: **NONE** at the last grounding pass;
+- open issues: **NONE** at the last grounding pass;
 - ordinary active product lane: **NONE**;
-- integrated historical work branches checked so far are behind-only and contain no newer product truth;
+- integrated historical work branches checked are behind-only and contain no newer product truth;
 - `checkpoint/p1-3-1-handoff-2026-08-18` is a historical divergent checkpoint whose unique delta is documentation only, not lost runtime;
 - `work/pedal-contact-mechanics` is intentionally divergent with unmerged V1/V1.1 product/test commits; it is **rejected/deferred evidence**, not work to recover or merge;
-- accidental refs such as `DO_NOT_USE*`, `PLEASE_IGNORE`, `noop*` and `__tmp_noop` are behind-only inert clutter. Current connector access cannot delete branch refs safely. They are not authority and must not trigger a cleanup/recovery campaign.
+- accidental refs such as `DO_NOT_USE*`, `PLEASE_IGNORE`, `noop*` and `__tmp_noop` are behind-only inert clutter and must not trigger a cleanup/recovery campaign.
 
 ### Validation/toolchain
 
@@ -172,59 +175,119 @@ Do not integrate or continue percentage/hysteresis/contact-presentation tuning b
 
 Audit verdict: **keep this workflow; do not redesign it merely for Codex transition**.
 
-### Documentation hardening pass 1
-
-Proven drift was removed from stable/current docs:
-
-- `AGENTS.md` no longer calls accepted D/R multitouch an open issue and now records accepted capability/HUD boundaries;
-- `README.md` no longer routes work to the closed D/R problem and explicitly marks the pre-Codex preparation stage;
-- mobile-driving grounding no longer schedules already-accepted capability hygiene and keeps pedal-contact V1/V1.1 deferred;
-- JURE consumer boundary keeps the durable geometry/authority rules but now labels 2026-08-16 JURE refs as historical evidence only.
-
-`docs/ARCHITECTURE.md` and the Owner Preview workflow were audited and did not require a change in this pass.
-
 ### Recipient surface grounding
 
-`docs/RECIPIENT_SURFACE.md` now records the current JV-Web vehicle as the recipient of future donor evidence without claiming donor state or freezing the Inheritance Matrix.
+`docs/RECIPIENT_SURFACE.md` records the current JV-Web vehicle as the recipient of donor evidence.
 
-Current source-level findings include:
+Important current source-level findings remain:
 
-- the active `legacy_ts_m6` backend is explicitly a `REFERENCE_BROWSER_FIXTURE`, has `productPhysicsAuthority: false`, does not accept new product physics and has native parity `NOT_PROVEN`;
-- the active wheel contact implementation is explicitly `legacy_m6_split_sphere_sidewall`;
+- active `legacy_ts_m6` backend is explicitly a `REFERENCE_BROWSER_FIXTURE`, has `productPhysicsAuthority: false`, does not accept new product physics and has native parity `NOT_PROVEN`;
+- active wheel contact is `legacy_m6_split_sphere_sidewall`;
 - general wishbone hardpoints remain procedural while front-left steering uses a source-registered provisional special case;
-- front-right steering remains an explicitly temporary symmetric kinematic bridge and the rack->angle/full-lock mapping is provisional;
-- the neutral JURE-facing mechanism is a read-only comparison/lowering seam, not authored truth or a frozen JURE schema;
-- current product visuals use build-generated R3, which is a deterministic calibrated derivative of R2 and can bind 59 real moving roots to the live M6;
-- R3 visual calibration is not mechanical authority: tested treatments include visual-only mappings with physics unchanged;
-- current visual binding/frame contracts already provide useful part/segment/part-pair seams and should be challenged only when a real donor rig proves a missing semantic.
+- front-right steering remains an explicitly temporary symmetric kinematic bridge and rack->angle/full-lock mapping is provisional;
+- current neutral JURE-facing mechanism is a read-only comparison/lowering seam, not authored truth or a frozen JURE schema;
+- current product visuals use build-generated R3, a deterministic calibrated derivative of R2 that can bind 59 real moving roots to live M6;
+- R3 visual calibration is not mechanical authority;
+- current visual binding/frame contracts provide useful part/segment/part-pair seams but must be challenged by real donor semantics rather than replaced speculatively.
 
-This recipient map is the baseline against which final JV_CORE/JURE donor evidence should be challenged before implementation. It does not authorize a substantial runtime slice while donor closure remains pending.
+### JURE donor intake #1
 
-## 7. Next stage inside the pre-Codex preparation
+JURE contributes proven authoring/provenance capabilities and semantic pressure:
 
-The final Codex handoff is **not yet frozen**. Recipient grounding is available; the cross-project Inheritance Matrix still waits for exact donor closure.
+- independent owner-local frames;
+- neutral revolute/spherical relations separated from dynamics;
+- deterministic Save/Open/relink;
+- Owner-correctable relation/frame workflow with diagnostics + Undo/Redo.
 
-Next work should proceed in this order:
+But current outboard X-min candidates remain Owner-open and JURE is not a mandatory Web dependency.
 
-1. receive/ground the final current outputs of the separate JV_CORE and JURE donor/pre-Codex closures;
-2. build the Inheritance Matrix and resolve donor conflicts at the level of evidence/semantics, not repository prestige;
-3. define the first fundamental JV-Web quality program and explicitly challenge any proposed Native/JURE inheritance before implementation;
-4. design and freeze the execution-context split between Owner, browser ChatGPT/orchestrator and Codex/repo executor;
-5. decide whether branch/ref cleanup is worth doing with ordinary Git access or whether classification alone is safer;
-6. complete remaining documentation consistency checks, including concise durable Owner acceptance for the newest UI closes if useful;
-7. run one final canonical source validation on the exact post-hardening `main` (`npm ci` + `npm run build`) so tests, docs links, third-party and portable artifact contracts share one close anchor;
-8. repoint/verify Owner Preview to that exact final accepted main + accepted JSPREV2;
-9. perform a **read-only Codex cold-takeover dry run** and compare its reconstructed accepted/open/next state against live evidence and the Inheritance Matrix;
-10. only after that PASS freeze the final Codex handoff and allow the first new fundamental product slice.
+### JV_CORE / Native donor closure
+
+Native authority was independently resolved at `recovery/jv-reconstruction@b0a0082252cb1f3c964f804162233bc82254bc4b`. Owner-provided N2-B manifest integrity was independently checked 25/25.
+
+The sealed donor adds decisive constraints:
+
+- real M6 role topology corroborates a coherent wishbone relation graph;
+- independent relation-local ownership is portable and corroborates JURE;
+- an additional invented physical carrier body is rejected;
+- G-RIG is Owner-sealed with known legacy representation debt but does **not** solve every final mating coordinate;
+- historical G-FEEL source is anchored at `checkpoint/owner-feel-source-5b92e9c -> 5b92e9c...`; physical mechanism intent transfers, incomplete session tuning does not become fabricated precision;
+- artificial rack centering remains OFF by default;
+- deterministic mode5 large-angle anti-centering is preserved as known debt/source-localization evidence, not tuned away;
+- mode5/new analytic real-width wheel is the Owner-selected current product/donor direction;
+- live Native split-sphere factory default is stale implementation truth and is rejected as Web product target;
+- mode5 itself is not final tire architecture and must be challenged later in Web.
+
+Native program state:
+
+```text
+JV_CORE ACTIVE DEVELOPMENT = STOPPED
+JV_CORE ROLE = SEALED DONOR / RESEARCH RECORD
+```
+
+Reopen Native only when a specific Web decision cannot be made from preserved evidence and the missing fact is genuinely cheaper/more reliable to obtain there.
+
+## 7. First fundamental Web stage — defined, not yet implemented
+
+The cross-project matrix now defines:
+
+**Rig Truth Intake & Mechanical Foundation — Front Mechanical Unit 01**
+
+Target: one coherent front suspension/wishbone mechanical unit, not a whole-car rewrite.
+
+The stage deliberately excludes opportunistic wheel/contact redesign, G-FEEL tuning, drivetrain changes and accepted controls/UI.
+
+### A. Truth intake
+
+- select one front unit and name physical roles explicitly;
+- map JV_CORE roles to JURE neutral elements by semantics, not donor names;
+- reject any extra fictitious carrier and the common outboard surrogate;
+- compare JV_CORE relation ownership, JURE authored frames and current Web procedural/source-registered hardpoints;
+- expose unresolved physical mating as Owner-open rather than guessing;
+- determine the minimum frame orientation/provenance needed by the real fragment;
+- freeze a narrow lowering receipt only from proven needs.
+
+### B. Owner physical mating / neutral coherence
+
+Resolve the still-open outboard physical mating positions in an inspectable/correctable authoring path. JURE may supply that path if it remains useful, but cannot become a mandatory product dependency.
+
+Require provenance, deterministic reopen/relink or equivalent receipt, neutral diagnostics and explicit Owner physical/visual judgement.
+
+### C. Web lowering / visual placement
+
+Lower only the accepted neutral fragment with explicit coordinate conversion and provenance. Validate neutral coherence and visual placement before changing runtime physics. Do not mix one donor hardpoint with incompatible procedural Web geometry.
+
+### D. Isolated runtime mechanical substitution
+
+Only after A-C pass may one coherent front unit replace its procedural counterpart behind protected product behavior.
+
+Evidence must exceed `legacy_ts_m6` parity and include exact source/build identity, runtime relation/constraint identity, rendered coherence and no regression in protected controls/UI/scene capability. Owner judgement remains required for look/feel claims.
+
+Wheel/contact enters this stage only if a concrete mechanical incompatibility makes validation impossible without a separately scoped contact change.
+
+## 8. Remaining pre-Codex close
+
+The final Codex handoff is **not yet frozen**. Donor closure and cross-project synthesis are now sufficiently grounded; remaining preparation should avoid turning into another product project.
+
+Next work should proceed roughly in this order:
+
+1. challenge the selected Front Mechanical Unit 01 roles/frames against live source once more when implementation planning begins;
+2. resolve the Owner-open physical mating needed for that unit and freeze the narrow lowering/space-conversion receipt;
+3. freeze the Owner / browser-ChatGPT / Codex responsibility split so Codex gets repository execution authority without becoming product-truth authority;
+4. finish only material documentation/evidence consistency gaps revealed by that handoff preparation;
+5. run one final canonical source validation on exact post-hardening `main` (`npm ci` + `npm run build`);
+6. repoint/verify Owner Preview to that exact final source + accepted JSPREV2 if the final handoff requires it;
+7. perform a **read-only Codex cold-takeover dry run** and compare its reconstructed accepted/open/next state against live evidence and `docs/INHERITANCE_MATRIX.md`;
+8. only after that PASS freeze the final Codex handoff and allow the first new fundamental runtime slice.
 
 Do not modify product runtime merely to prepare the handoff.
 
-## 8. Separate later product work
+## 9. Separate later product work
 
 These remain candidate concerns, not a frozen implementation order:
 
-- rigorous rig/visual-mechanical correction using donor evidence;
-- wheel/contact and suspension/handling improvement;
+- wheel/contact architecture: mode5 is current Owner-selected donor direction but Web is expected to challenge/beat it;
+- suspension/handling/G-FEEL improvement using historical Native feel and known-defect receipts as references/falsifiers;
 - steering/pedal industrial-design convergence and later steering feel tuning;
 - small brake dominating full throttle / broad low power -> dedicated longitudinal/handling work;
 - portrait-specific composition and further capability hygiene from concrete mismatches;
