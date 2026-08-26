@@ -1,7 +1,7 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-26
-Status: `CURRENT HANDOFF / JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / JV_CORE SEALED / GATES 0-7 COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / GATE 8 CURRENT / IMPLEMENTATION NOT AUTHORIZED / FINAL CODEX HANDOFF NOT FROZEN`
+Status: `CURRENT HANDOFF / JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / JV_CORE SEALED / GATES 0-8 COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / GATE 9 FINAL PRE-CODEX SOURCE+DOCUMENT CLOSE CURRENT / IMPLEMENTATION NOT AUTHORIZED / FINAL CODEX HANDOFF NOT YET FROZEN`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
@@ -14,7 +14,8 @@ Before any write:
 3. resolve `Jozzpoly/JV-Box3D-Web-Public/main` when release identity matters;
 4. resolve any ordinary branch actually ahead of source `main` and open PR/issues;
 5. read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`;
-6. use `docs/FIRST_FALSIFIER.md`, `docs/ARCHITECTURE_HYPOTHESES.md`, `docs/INHERITANCE_MATRIX.md`, `docs/RECIPIENT_SURFACE.md`, `docs/OWNER_CHECKPOINTS.md` and donor seal as evidence surfaces only when relevant.
+6. read `docs/FIRST_FALSIFIER.md` before any work on the selected experiment;
+7. use `docs/ARCHITECTURE_HYPOTHESES.md`, `docs/INHERITANCE_MATRIX.md`, `docs/RECIPIENT_SURFACE.md`, `docs/OWNER_CHECKPOINTS.md` and donor seal as evidence surfaces only when relevant.
 
 Do not restart closed recovery/publication campaigns merely because historical refs remain visible.
 
@@ -29,7 +30,7 @@ Jozzpoly/JV-Box3D-Web-experiment
 4b07b66eb9b8103f74ec426979de12022f9817b9
 ```
 
-The selected Gate 7 falsifier is grounded against unchanged runtime/product bytes represented by:
+The selected falsifier is grounded against unchanged runtime/product bytes represented by:
 
 ```text
 2f50c6a994978942b432b45e99d3ce42f49261e9
@@ -58,7 +59,7 @@ Latest grounding found no ordinary active runtime/product lane. Re-resolve live 
 - **JV-Web** — HEIR / PRODUCT and accepted Web source authority.
 - **JV_CORE / Native** — **SEALED PRIMARY DONOR / RESEARCH RECORD**; active Native development stopped.
 - **JURE** — optional authoring/mechanical-truth donor and current useful correction/inspection tool; not a required dependency and not frozen as final authoring application/schema.
-- **Codex** — future repo-native executor after the remaining analytical/handoff preparation. It may challenge implementation architecture but not silently override live evidence or scoped Owner truth.
+- **Codex** — future repo-native executor after the remaining pre-Codex close. It may challenge implementation technique but not silently override live evidence, scoped Owner truth, the selected experiment question or its fixed result semantics.
 
 Inheritance order:
 
@@ -166,48 +167,60 @@ Why it won the first slot:
 - avoids choosing new A1 mechanics prematurely;
 - avoids building A2 native/Emscripten/ABI infrastructure merely to ask the first question.
 
-Competing directions remain alive:
-
-- C0 longitudinal semantics = cheap direct product control/later slice;
-- A1 = serious Web-native authority hypothesis;
-- A2 = serious compiled/native-derived authority hypothesis.
-
 Interpretation is deliberately narrow:
 
 - PASS = structural isolation is viable enough at front-corner granularity to continue M1-style evidence gathering;
 - PASS does not accept current FL geometry, extra carrier, split wheel, provisional steering or A1;
 - FAIL = this corner granularity is not a trustworthy low-blast boundary; it does not automatically select A2;
-- current legacy internals may remain inside the extracted unit only as control-equivalence evidence during this probe.
+- INCONCLUSIVE = unrelated source/environment/tooling blocker prevented the question from being answered.
 
 The historical `Front Mechanical Unit 01` is **not** the selected first implementation stage. The selected falsifier is narrower and introduces no new mechanical truth.
 
 Implementation remains **NOT AUTHORIZED** until the remaining pre-Codex gates are complete.
 
-## 8. Current work — Gate 8
+## 8. Gate 8 verdict — responsibility boundary
 
-### Responsibility Boundary
+Gate 8 is complete. `AGENTS.md` owns the durable responsibility contract. No new protocol/framework document was introduced.
 
-Freeze responsibilities for executing the selected falsifier, not architecture.
+For the selected falsifier:
 
-Gate 8 must define:
+- **orchestrator** owns experiment question, protected baseline, causal scope, result classification and post-result routing;
+- **Codex / repo-native executor** owns source inspection, implementation/refactor technique, focused tests, baseline/RED/GREEN evidence, Git/build/CI/toolchain troubleshooting and exact diff review;
+- **machine evidence** may judge the no-behavior structural result when it establishes ownership/teardown, explicit cross-unit authority, topology/trace/determinism equivalence, relevant checks/build and clean-source browser smoke;
+- **Owner** is required only for genuinely qualitative/unavailable truth: visible/feel decisions, real-device-only evidence, unresolved authored mechanical choices and strategic scope/priority decisions. Routine engineering/debugging stays with executor/orchestrator.
 
-- what the orchestrator owns before Codex execution;
-- what repo-native implementation/refactor/testing belongs to Codex;
-- what can be decided from machine evidence without Owner involvement;
-- exactly when Owner judgement/device evidence is actually required;
-- stop/re-ground conditions when source/tooling/evidence diverges;
-- protection against Codex widening the experiment or reinterpreting PASS/FAIL/INCONCLUSIVE.
+Executor autonomy is asymmetric by design: implementation technique may change, experiment meaning may not. If a materially wider authority unit is necessary, PASS needs a behavior delta, exact mating must be guessed, a generic framework is needed merely to proceed, or live source invalidates assumptions, stop/re-ground instead of silently widening/reinterpreting the slice.
 
-Do not implement during Gate 8 and do not create architecture/framework machinery merely to describe responsibility.
+## 9. Current work — Gate 9
 
-Then:
+### Final pre-Codex source/document close + canonical validation
 
-9. Final pre-Codex source/document close + canonical validation.
+Close only material inconsistencies that could mislead the Codex cold takeover.
+
+Known candidate cleanup:
+
+- stale `src/vehicle/neutral-mechanism.ts` wording that overstates JURE authority;
+- any remaining current-router or contract wording that contradicts the selected falsifier/responsibility boundary.
+
+Then validate the exact final pre-Codex source with the repository-declared canonical toolchain.
+
+Gate 9 must not:
+
+- implement `FRONT-CORNER-AUTHORITY-ISOLATION-01`;
+- reopen donor analysis;
+- choose A1/A2;
+- build a universal framework or new schema family;
+- repoint Owner Preview merely for cosmetic SHA parity;
+- start general documentation cleanup unrelated to Codex-readiness.
+
+After Gate 9:
+
 10. Read-only Codex cold-takeover dry run.
-11. Only after the dry run passes, begin fundamental implementation of the selected falsifier.
+11. Only after the dry run passes, begin fundamental repo-native implementation of the selected falsifier.
 
-## 9. Evidence surfaces and known historical status
+## 10. Evidence surfaces and known historical status
 
+- `AGENTS.md` owns the current operating/responsibility contract.
 - `docs/PROJECT_STATE.md` owns current routing.
 - `docs/FIRST_FALSIFIER.md` owns the selected Gate 7 experiment, scope and PASS/FAIL/INCONCLUSIVE semantics.
 - `docs/ARCHITECTURE_HYPOTHESES.md` is Gate 6 comparison authority; no final architecture winner.
@@ -217,16 +230,15 @@ Then:
 - `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` contains rationale and explicit non-decisions.
 - `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` is the canonical Web-side Native closure receipt; its historical first-stage wording is not current routing.
 
-## 10. Codex readiness
+## 11. Codex readiness
 
-Not ready for fundamental implementation yet, but the major evidence reconstruction, architecture comparison and first-falsifier selection are complete.
+Not ready for fundamental implementation yet, but Gates 0-8 are complete: evidence reconstruction, architecture comparison, first-falsifier selection and responsibility boundary are closed.
 
-Before final Codex execution:
+Before Codex execution:
 
-- close Owner/orchestrator/Codex responsibility boundaries in Gate 8;
-- close remaining material documentation/source inconsistencies in Gate 9;
-- run final exact-toolchain `npm ci` + `npm run build` on the final post-hardening source SHA;
+- complete Gate 9 material source/document consolidation;
+- run final exact-toolchain dependency install/check/build on the final post-hardening source SHA;
 - deliberately verify/repoint Owner Preview only if useful for the final handoff;
-- perform a read-only Codex cold takeover and compare its reconstruction against live evidence and Owner intent.
+- perform Gate 10 read-only Codex cold takeover and compare its reconstruction against live evidence and Owner intent.
 
 Do not reopen Native, build a universal framework, freeze a new schema family, redesign Preview, merge deferred pedal work or start tire R&D merely because execution is moving toward Codex.
