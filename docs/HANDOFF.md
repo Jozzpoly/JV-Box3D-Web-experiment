@@ -1,7 +1,7 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-26
-Status: `CURRENT HANDOFF / JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / JV_CORE SEALED / GATES 0-6 COMPLETE / GATE 7 CURRENT / FIRST FALSIFIER NOT YET SELECTED / FINAL CODEX HANDOFF NOT FROZEN`
+Status: `CURRENT HANDOFF / JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / JV_CORE SEALED / GATES 0-7 COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / GATE 8 CURRENT / IMPLEMENTATION NOT AUTHORIZED / FINAL CODEX HANDOFF NOT FROZEN`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
@@ -14,7 +14,7 @@ Before any write:
 3. resolve `Jozzpoly/JV-Box3D-Web-Public/main` when release identity matters;
 4. resolve any ordinary branch actually ahead of source `main` and open PR/issues;
 5. read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`;
-6. use `docs/ARCHITECTURE_HYPOTHESES.md`, `docs/INHERITANCE_MATRIX.md`, `docs/RECIPIENT_SURFACE.md`, `docs/OWNER_CHECKPOINTS.md` and donor seal as evidence surfaces only when relevant.
+6. use `docs/FIRST_FALSIFIER.md`, `docs/ARCHITECTURE_HYPOTHESES.md`, `docs/INHERITANCE_MATRIX.md`, `docs/RECIPIENT_SURFACE.md`, `docs/OWNER_CHECKPOINTS.md` and donor seal as evidence surfaces only when relevant.
 
 Do not restart closed recovery/publication campaigns merely because historical refs remain visible.
 
@@ -22,14 +22,20 @@ Do not restart closed recovery/publication campaigns merely because historical r
 
 Accepted source/product authority is live `main`; resolve its exact SHA on entry.
 
-Last runtime/product-grounded source before the current documentation/analysis pass:
+Last runtime/product-grounded source before the documentation/analysis pass:
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
 4b07b66eb9b8103f74ec426979de12022f9817b9
 ```
 
-Later `main` descendants produced solely by the current analysis/documentation passes do not imply runtime/product behavior change.
+The selected Gate 7 falsifier is grounded against unchanged runtime/product bytes represented by:
+
+```text
+2f50c6a994978942b432b45e99d3ce42f49261e9
+```
+
+Later `main` descendants produced solely by current analysis/documentation do not imply runtime/product behavior change.
 
 Owner Preview operational pointer at the latest grounding:
 
@@ -109,12 +115,11 @@ Still open:
 - final wheel/contact model;
 - final renderer;
 - large-world architecture;
-- final authoring-tool split;
-- first runtime falsifier.
+- final authoring-tool split.
 
 ## 6. Gate 6 comparison set
 
-`docs/ARCHITECTURE_HYPOTHESES.md` owns detailed strongest-case/attack/falsifier analysis.
+`docs/ARCHITECTURE_HYPOTHESES.md` owns detailed strongest-case/attack analysis.
 
 Gate 6 found a **multi-axis** decision rather than a flat list.
 
@@ -125,7 +130,7 @@ Gate 6 found a **multi-axis** decision rather than a flat list.
 
 ### Migration / necessity axis
 
-- **M1 — coherent-subsystem replacement:** one complete mechanical unit is replaced inside the current solver world. This can gather evidence for A1 or A2; it is not a third final authority architecture.
+- **M1 — coherent-subsystem replacement:** one complete mechanical unit is replaced/isolated inside the current solver world. This can gather evidence for A1 or A2; it is not a third final authority architecture.
 - **C0 — conservative semantic correction:** one local A/B control tests whether a specific Owner pain requires fundamental architecture work at all.
 
 Important source facts:
@@ -135,74 +140,91 @@ Important source facts:
 - current Box3D browser package is already WebAssembly-backed, so A1/A2 is about **vehicle topology/controller/mechanical authority**, not simply JavaScript versus WebAssembly solver execution;
 - current M6 runtime builder is coupled enough that M1's low blast radius must be proven, not assumed.
 
-Current falsifier candidates are not authorizations:
+## 7. Gate 7 verdict — selected first falsifier
 
-- A1 -> `WEB-NATIVE-CAPABILITY-SLICE`;
-- A2 -> `NATIVE-CORE-BROWSER-VERTICAL-SLICE`;
-- M1 -> `COHERENT-UNIT-ISOLATION-PROBE`;
-- C0 -> one local semantic A/B control.
+Gate 7 is complete. `docs/FIRST_FALSIFIER.md` owns the exact experiment contract.
 
-`Front Mechanical Unit 01 = STRONG BOUNDED FALSIFIER CANDIDATE — NOT RANKED / NOT SELECTED`.
+Selected falsifier:
 
-## 7. Current work — Gate 7
+**`FRONT-CORNER-AUTHORITY-ISOLATION-01`**
 
-### First Next-Generation Falsifier Selection
+Classification:
 
-Select **one experiment**, not a permanent architecture.
+`M1 STRUCTURAL FALSIFIER / CONTROL-EQUIVALENCE PROBE / NOT PRODUCT-MECHANICS ACCEPTANCE`
 
-Compare candidate falsifiers by:
+Question:
 
-- architecture information gain;
-- direct Owner/product value if successful;
-- causal blast radius;
-- reversibility/rollback quality;
-- dependence on open Owner truth such as exact mating;
-- deterministic machine-evidence quality;
-- risk that the test mainly measures tooling/implementation stamina instead of the hypothesis;
-- premature commitment required just to run it.
+> Can the current front-left M6 corner's physical construction and ownership be isolated behind one explicit owned-unit boundary inside the existing browser Box3D world, while preserving exact current control behavior and without moving unrelated browser/product/world authority into that unit?
 
-Do not privilege A1, A2, M1, C0 or FMU01 by historical order or naming.
+Why it won the first slot:
 
-Gate 7 exit must provide:
+- high architecture information gain at low-to-medium causal blast radius;
+- PASS and FAIL both materially route later architecture work;
+- high rollback quality;
+- strong existing deterministic corner/topology/trace controls;
+- no dependency on unresolved final outboard mating;
+- avoids choosing new A1 mechanics prematurely;
+- avoids building A2 native/Emscripten/ABI infrastructure merely to ask the first question.
 
-- exact question;
-- exact selected falsifier;
-- why competing falsifiers lost **for now**;
-- PASS / FAIL / inconclusive meaning;
-- smallest valid source/runtime scope;
-- protected baseline;
-- validation ladder;
-- conditions that reopen competing hypotheses;
-- no architecture claim broader than the experiment supports.
+Competing directions remain alive:
 
-Do not implement during Gate 7 selection.
+- C0 longitudinal semantics = cheap direct product control/later slice;
+- A1 = serious Web-native authority hypothesis;
+- A2 = serious compiled/native-derived authority hypothesis.
+
+Interpretation is deliberately narrow:
+
+- PASS = structural isolation is viable enough at front-corner granularity to continue M1-style evidence gathering;
+- PASS does not accept current FL geometry, extra carrier, split wheel, provisional steering or A1;
+- FAIL = this corner granularity is not a trustworthy low-blast boundary; it does not automatically select A2;
+- current legacy internals may remain inside the extracted unit only as control-equivalence evidence during this probe.
+
+The historical `Front Mechanical Unit 01` is **not** the selected first implementation stage. The selected falsifier is narrower and introduces no new mechanical truth.
+
+Implementation remains **NOT AUTHORIZED** until the remaining pre-Codex gates are complete.
+
+## 8. Current work — Gate 8
+
+### Responsibility Boundary
+
+Freeze responsibilities for executing the selected falsifier, not architecture.
+
+Gate 8 must define:
+
+- what the orchestrator owns before Codex execution;
+- what repo-native implementation/refactor/testing belongs to Codex;
+- what can be decided from machine evidence without Owner involvement;
+- exactly when Owner judgement/device evidence is actually required;
+- stop/re-ground conditions when source/tooling/evidence diverges;
+- protection against Codex widening the experiment or reinterpreting PASS/FAIL/INCONCLUSIVE.
+
+Do not implement during Gate 8 and do not create architecture/framework machinery merely to describe responsibility.
 
 Then:
 
-8. Freeze responsibility boundaries, not architecture.
 9. Final pre-Codex source/document close + canonical validation.
 10. Read-only Codex cold-takeover dry run.
-11. Only after PASS begin fundamental implementation.
+11. Only after the dry run passes, begin fundamental implementation of the selected falsifier.
 
-## 8. Evidence surfaces and known historical status
+## 9. Evidence surfaces and known historical status
 
 - `docs/PROJECT_STATE.md` owns current routing.
-- `docs/ARCHITECTURE_HYPOTHESES.md` is Gate 6 comparison authority; no winner.
-- `docs/INHERITANCE_MATRIX.md` is Gate 5 decision synthesis; two later wording corrections remain binding until final consolidation: no assumed 1:1 authored/runtime mapping, and FMU01 not ranked.
+- `docs/FIRST_FALSIFIER.md` owns the selected Gate 7 experiment, scope and PASS/FAIL/INCONCLUSIVE semantics.
+- `docs/ARCHITECTURE_HYPOTHESES.md` is Gate 6 comparison authority; no final architecture winner.
+- `docs/INHERITANCE_MATRIX.md` is Gate 5 decision synthesis; later hardening/selection supersedes stale wording where needed.
 - `docs/RECIPIENT_SURFACE.md` is Recipient V1 evidence and its old phase-status is historical.
 - `docs/OWNER_CHECKPOINTS.md` records scoped Owner truth, supersession and negative knowledge.
 - `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` contains rationale and explicit non-decisions.
-- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` is the canonical Web-side Native closure receipt.
+- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` is the canonical Web-side Native closure receipt; its historical first-stage wording is not current routing.
 
-## 9. Codex readiness
+## 10. Codex readiness
 
-Not ready for fundamental implementation yet, but the major evidence-reconstruction and architecture-comparison passes are complete.
+Not ready for fundamental implementation yet, but the major evidence reconstruction, architecture comparison and first-falsifier selection are complete.
 
-Before final Codex handoff:
+Before final Codex execution:
 
-- explicitly select the first falsifier in Gate 7;
-- close Owner/orchestrator/Codex responsibility boundaries;
-- close remaining material documentation/source inconsistencies;
+- close Owner/orchestrator/Codex responsibility boundaries in Gate 8;
+- close remaining material documentation/source inconsistencies in Gate 9;
 - run final exact-toolchain `npm ci` + `npm run build` on the final post-hardening source SHA;
 - deliberately verify/repoint Owner Preview only if useful for the final handoff;
 - perform a read-only Codex cold takeover and compare its reconstruction against live evidence and Owner intent.
