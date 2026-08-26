@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 Owner: Jozz
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST COMPLETE / INHERITANCE MATRIX V2 COMPLETE / COMPETING ARCHITECTURE HYPOTHESES COMPLETE / FIRST FALSIFIER SELECTION COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / RESPONSIBILITY BOUNDARY CURRENT / IMPLEMENTATION NOT AUTHORIZED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST COMPLETE / INHERITANCE MATRIX V2 COMPLETE / COMPETING ARCHITECTURE HYPOTHESES COMPLETE / FIRST FALSIFIER SELECTION COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / RESPONSIBILITY BOUNDARY COMPLETE / FINAL PRE-CODEX SOURCE+DOCUMENT CLOSE CURRENT / IMPLEMENTATION NOT AUTHORIZED / PRE-CODEX ANALYSIS ACTIVE`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file owns current routing. It is intentionally shorter than the evidence documents it routes to.
 
@@ -234,24 +234,38 @@ Implementation is still **NOT AUTHORIZED** before the remaining pre-Codex gates.
 
 ### Gate 8 — Responsibility Boundary
 
-`CURRENT — NO ARCHITECTURE CHANGE / NO IMPLEMENTATION`
+`COMPLETE — EXECUTION/JUDGEMENT BOUNDARY FROZEN / NO ARCHITECTURE CHANGE`
 
-Freeze execution responsibilities for the selected falsifier without freezing architecture.
+`AGENTS.md` owns the durable executor/orchestrator/Owner boundary. Gate 8 deliberately did not create a new protocol document or workflow framework.
 
-Gate 8 must make explicit:
+For the selected falsifier:
 
-- which decisions/evidence belong to the orchestrator before Codex execution;
-- which repo-native implementation/refactor/test responsibilities belong to Codex;
-- which evidence can be machine-validated without Owner involvement;
-- exactly what would require Owner judgement or real-device evidence;
-- which conditions require stopping/re-grounding rather than asking the Owner to debug tooling or code;
-- how the selected falsifier's PASS/FAIL/INCONCLUSIVE semantics are protected from executor reinterpretation.
+- the **orchestrator** preserves the exact experiment question, protected baseline, causal scope and PASS/FAIL/INCONCLUSIVE interpretation, rejects hidden scope expansion/framework tax and owns post-result routing;
+- the **repo-native executor / Codex** owns source inspection, implementation/refactor technique, focused tests, baseline/RED/GREEN evidence, Git/build/CI/toolchain troubleshooting and exact diff review, while reporting intrinsic coupling rather than silently widening scope;
+- **machine evidence** may judge the intended no-behavior structural result when it establishes ownership/teardown, explicit cross-unit references, topology/trace/determinism equivalence, relevant checks/build and clean-source browser startup/control-path smoke;
+- the **Owner** is reserved for genuinely qualitative or unavailable truth: visible/feel decisions, real-device-only evidence, unresolved authored mechanical choices and strategic scope/priority decisions. Routine engineering/debugging is not Owner work.
 
-Gate 8 must not design the future vehicle core, widen the selected falsifier or turn responsibility assignment into another framework.
+Executor autonomy is intentionally asymmetric: implementation technique is flexible, but the selected question and result semantics are not. A materially wider authority unit, a behavior delta required for PASS, guessed mating, generic framework tax or live-source drift requires stop/re-grounding rather than silent reinterpretation.
 
-### Gates after responsibility close
+### Gate 9 — Final pre-Codex source/document close
 
-9. Final pre-Codex source/document close + exact canonical validation.
+`CURRENT — FINAL CONSOLIDATION + CANONICAL VALIDATION / NO FALSIFIER IMPLEMENTATION`
+
+Close only material source/document inconsistencies that could mislead the Codex cold takeover, then validate the exact final pre-Codex source. Known candidate cleanup includes the stale `src/vehicle/neutral-mechanism.ts` comment that overstates JURE authority and any remaining entry-router wording that contradicts the selected falsifier/current responsibility boundary.
+
+Gate 9 should not reopen donor analysis, redesign architecture, implement the falsifier, repoint Preview for cosmetic SHA parity or start a general documentation cleanup campaign.
+
+Gate 9 exit requires:
+
+- exact live repo/ref and no hidden active product lane;
+- current entry docs agree on selected falsifier, responsibility boundary, remaining non-decisions and implementation prohibition;
+- material stale source comments/contracts that could misroute execution are corrected without runtime semantic change;
+- final diff is audited for causal scope;
+- repository-declared canonical dependency install/check/build succeeds on the final pre-Codex source SHA, or any environment blocker is recorded as such rather than product evidence;
+- Preview/Public are only revalidated or repointed if a real handoff need makes that causally useful.
+
+### Gates after source close
+
 10. Read-only Codex cold-takeover dry run.
 11. Only after the dry run passes, start fundamental repo-native implementation of the selected falsifier.
 
@@ -290,7 +304,7 @@ Vite 8.1.5
 box3d.js 0.0.2
 ```
 
-Use tests proportional to causal blast radius. Gate 7 selection/documentation is docs/analysis-only and does not justify runtime/device validation.
+Use tests proportional to causal blast radius. Gates 7-8 selection/responsibility work is docs/analysis-only and does not justify runtime/device validation.
 
 The later implementation of `FRONT-CORNER-AUTHORITY-ISOLATION-01` is a production vehicle-runtime structural change even though intended behavior is unchanged. Its contract therefore requires focused deterministic baseline/control evidence, focused causal tests, exact diff audit, normal canonical build at material slice close and a faithful clean-source browser smoke. Owner device/feel judgement is not required unless visible/feel behavior actually changes.
 
@@ -298,6 +312,7 @@ No new branch/checkpoint/schema/backend abstraction/consumer adapter/runtime sli
 
 ## 9. Supporting evidence surfaces
 
+- `AGENTS.md` — current operating and selected-falsifier responsibility contract.
 - `docs/FIRST_FALSIFIER.md` — current Gate 7 selected experiment, PASS/FAIL/INCONCLUSIVE semantics, scope and validation ladder.
 - `docs/ARCHITECTURE_HYPOTHESES.md` — Gate 6 source-grounded authority/migration hypotheses, attacks and falsifier candidates; no architecture winner.
 - `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` — rationale and staged next-generation takeover loop; not a competing source of current live anchors.
@@ -315,10 +330,14 @@ Stop and re-ground if:
 - live source/ref differs from the assumed write target;
 - runtime implementation begins before the pre-Codex gates authorize it;
 - the selected falsifier is broadened into new product mechanics, FMU reconstruction or whole-core rewrite;
+- a materially wider authority unit is required and the executor is about to widen scope silently;
+- PASS would require changing behavior or loosening control evidence;
 - PASS is interpreted as acceptance of current FL geometry/carrier/contact/steering or as selection of A1;
 - FAIL is interpreted automatically as selection of A2;
+- an unrelated environment/tooling blocker is being classified as M1 failure;
 - a donor implementation is copied because it is accepted in its own project rather than because its claim survived evidence challenge;
 - JURE or its schema is becoming mandatory without a concrete demonstrated need;
 - unresolved mating/coordinates are being guessed by the agent;
 - accepted controls/UI/world capability changes outside declared scope;
+- routine engineering work is being pushed onto the Owner;
 - process/tooling/doc machinery grows faster than product/evidence value.
