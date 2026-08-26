@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 Owner: Jozz
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 NEXT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE CURRENT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file owns current routing. It is intentionally shorter than the evidence documents it routes to.
 
@@ -141,37 +141,34 @@ These items are a **technical-debt inventory, not an automatic repair queue**. R
 
 ### Gate 2 — JV-Web Technology-Capital / Recipient Map V2
 
-This is the next analytical stage.
+`COMPLETE — ANALYTICAL / READ-ONLY`
 
-Cover at least:
+The current recipient is not one uniformly legacy system. The strongest reusable capital is concentrated in product/browser/evidence surfaces: input ownership and timelines, fixed-step/browser-host discipline, observability, visual-frame/binding capability, world/scan validation, provenance/publication and accepted mobile behavior. Current vehicle mechanics remain a useful control/falsification specimen with multiple explicitly provisional or reference-only surfaces.
 
-- product/UI;
-- input;
-- steering;
-- pedals;
-- drivetrain/powertrain;
-- suspension;
-- wheel/contact/tire;
-- rig truth;
-- visual binding;
-- renderer;
-- camera;
-- assets;
-- scan/world;
-- map authoring;
-- serialization/config;
-- debug/evidence/testing;
-- publication/Preview/mobile.
+Important Gate 2 correction: preserve behavior, evidence and proven techniques without automatically preserving current implementation architecture. In particular, current M6 topology counts, FL-only extra physical carrier representation, procedural wishbones, temporary FR steering bridge and legacy split-wheel contact are not future invariants merely because current tests cover them.
 
-Classify current value separately where necessary as:
+A small source-comment drift remains in `src/vehicle/neutral-mechanism.ts`, where a comment still states that JURE is the authority for generic authored truth. Current canonical policy is broader: JURE is an optional producer/donor, not mandatory architecture. This is epistemic debt, not runtime debt, and should be closed with the next material source/document close rather than as an isolated cleanup campaign.
 
-`KEEP BEHAVIOR / HARDEN / EXTRACT TECHNIQUE / REIMPLEMENT / RESEARCH / REJECT / HISTORICAL`.
+### Gate 3 — Owner Truth + Negative Knowledge
 
-Do not infer that working current code is permanent architecture.
+`CURRENT`
 
-### Gates after Recipient Map V2
+Reconstruct scoped current Owner truth across the major product/mechanical surfaces. Distinguish:
 
-3. Owner Truth + Negative Knowledge pass.
+`PRESERVE / PREFERRED DIRECTION / FOUNDATION ONLY / TEMPORARY OR TOLERATED / REJECTED OR DEFERRED / NEGATIVE KNOWLEDGE / OPEN OR NOT FAIRLY JUDGED`.
+
+Direct Owner observation outranks machine success. Later Owner judgement supersedes earlier narrower checkpoints only where the scopes genuinely conflict. Preserve the reason rejected directions failed, not only their historical status.
+
+Gate 3 must end with a clear separation between:
+
+- Owner-visible product pressure;
+- architecture challenge surfaces from Gate 2;
+- machine-grounded but qualitatively unjudged donor/recipient claims.
+
+Do not choose the first next-generation falsifier during Gate 3.
+
+### Gates after Owner Truth + Negative Knowledge
+
 4. Future-Vision Pressure Test.
 5. Inheritance Matrix V2, adding `Generalization pressure` and `Premature commitment risk`.
 6. Competing architecture hypotheses, each with strongest failure reason and cheapest falsifier.
@@ -203,7 +200,7 @@ Vite 8.1.5
 box3d.js 0.0.2
 ```
 
-Use tests proportional to causal blast radius. A docs/authority-only hardening pass does not justify runtime/device validation. Run full `npm ci` + `npm run build` on the final post-hardening source at the pre-Codex source-close boundary or earlier only if a foundation/toolchain/runtime change makes it causal.
+Use tests proportional to causal blast radius. A docs/authority-only hardening pass does not justify runtime/device validation. Run full `npm ci` + `npm run build` on the final post-hardening JV-Web source at the pre-Codex source-close boundary or earlier only if a foundation/toolchain/runtime change makes it causal.
 
 No new branch/checkpoint/schema/backend abstraction/consumer adapter/runtime slice is authorized merely by a new conversation or executor context.
 
