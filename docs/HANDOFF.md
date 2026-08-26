@@ -1,244 +1,156 @@
-# JV Web — takeover handoff
+# JV Web — strategic Codex takeover handoff
 
 Updated: 2026-08-26
-Status: `CURRENT HANDOFF / JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / JV_CORE SEALED / GATES 0-8 COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / GATE 9 FINAL PRE-CODEX SOURCE+DOCUMENT CLOSE CURRENT / IMPLEMENTATION NOT AUTHORIZED / FINAL CODEX HANDOFF NOT YET FROZEN`
+Status: `CURRENT / READ-ONLY STRATEGIC CODEX TAKEOVER NEXT / PRIOR FALSIFIER NON-BINDING / REPO CONTINUITY OPEN / IMPLEMENTATION NOT AUTHORIZED`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
-## 1. Fresh entry
+## 1. Mandate
 
-Before any write:
+The first Codex session is a **cold strategic reconstruction**, not an implementation handoff.
 
-1. resolve live `Jozzpoly/JV-Box3D-Web-experiment/main`;
-2. resolve `preview/owner-control` + `preview/owner.json` when Preview identity matters;
-3. resolve `Jozzpoly/JV-Box3D-Web-Public/main` when release identity matters;
-4. resolve any ordinary branch actually ahead of source `main` and open PR/issues;
-5. read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`;
-6. read `docs/FIRST_FALSIFIER.md` before any work on the selected experiment;
-7. use `docs/ARCHITECTURE_HYPOTHESES.md`, `docs/INHERITANCE_MATRIX.md`, `docs/RECIPIENT_SURFACE.md`, `docs/OWNER_CHECKPOINTS.md` and donor seal as evidence surfaces only when relevant.
+Do not assume that the current repository should be polished, incrementally migrated, radically refactored or retained as the future implementation home. Do not assume that a new repository is better either.
 
-Do not restart closed recovery/publication campaigns merely because historical refs remain visible.
+The job is to reconstruct the evidence and then recommend what should happen next.
 
-## 2. Current authority snapshot
+Historical plans and architecture documents are prior analysis. They may be confirmed or rejected after independent source grounding.
 
-Accepted source/product authority is live `main`; resolve its exact SHA on entry.
+## 2. Entry protocol
 
-Last runtime/product-grounded source before the documentation/analysis pass:
+Before any write — and the first takeover should make no writes:
 
-```text
-Jozzpoly/JV-Box3D-Web-experiment
-4b07b66eb9b8103f74ec426979de12022f9817b9
-```
+1. resolve live `Jozzpoly/JV-Box3D-Web-experiment/main` and exact SHA;
+2. inspect branch/PR/issue state and identify any genuinely active lane;
+3. read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`;
+4. inspect package/toolchain files and current source/tests directly;
+5. establish canonical install/check/build health in the repo-native environment;
+6. reconstruct the product and evidence before reading the old architecture/falsifier recommendations as guidance.
 
-The selected falsifier is grounded against unchanged runtime/product bytes represented by:
+When useful, inspect Preview/Public identity separately. They are operational/artifact authorities, not source authority.
 
-```text
-2f50c6a994978942b432b45e99d3ce42f49261e9
-```
+## 3. Current product/source facts
 
-Later `main` descendants produced solely by current analysis/documentation do not imply runtime/product behavior change.
+JV-Web is a working browser product and R&D/evidence corpus with demonstrated desktop/mobile behavior, world/scan capability, current vehicle runtime, visual binding, provenance/publication infrastructure and substantial tests/telemetry.
 
-Owner Preview operational pointer at the latest grounding:
+The current repo also contains explicitly provisional/reference-only vehicle mechanics and integration choices. Do not confuse “working current product” with “future architecture”.
+
+Latest pre-strategic-reset main before the router changes was:
 
 ```text
-preview/owner-control@6f2832b7c7dbe4d6ea73e69f36e62ab26dfb88e0
-sourceCommit = 3ef7e98ca78475c9a75a7d32030bcc6c5386031d
-JSPREV2 static layer = Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f
+18fd523d7ab8792d8f83e8885deb2e122f8cc002
 ```
 
-Friends/Public authority:
+Resolve live again; later documentation-only descendants do not imply runtime behavior change.
 
-```text
-Jozzpoly/JV-Box3D-Web-Public/main@279dd4eec8599ad12c95e03b50a52c478e8a50e7
-```
+Latest grounding before this handoff found:
 
-Latest grounding found no ordinary active runtime/product lane. Re-resolve live before acting.
+- open PRs: `0`;
+- open issues: `0`;
+- ordinary active runtime/product lane: `NONE`.
 
-## 3. Program roles
+Historical `work/*`, checkpoint and accidental/noop refs are evidence/history, not authority.
 
-- **JV-Web** — HEIR / PRODUCT and accepted Web source authority.
-- **JV_CORE / Native** — **SEALED PRIMARY DONOR / RESEARCH RECORD**; active Native development stopped.
-- **JURE** — optional authoring/mechanical-truth donor and current useful correction/inspection tool; not a required dependency and not frozen as final authoring application/schema.
-- **Codex** — future repo-native executor after the remaining pre-Codex close. It may challenge implementation technique but not silently override live evidence, scoped Owner truth, the selected experiment question or its fixed result semantics.
+## 4. Program evidence sources
 
-Inheritance order:
+- **current JV-Web repo** — current browser product/source and recipient evidence;
+- **JV_CORE / Native** — sealed primary donor/research record, not mandatory architecture or quality ceiling;
+- **JURE** — optional authoring/mechanical-truth donor/tool, not mandatory final app/schema;
+- **Owner evidence** — scoped product/feel/device truth recorded in current evidence docs;
+- **prior ChatGPT/orchestrator analyses** — useful hypotheses and decision records, not commands to Codex.
 
-`Owner truth -> portable semantics/mechanics -> proven recipient/donor technique -> candidate implementation -> legacy implementation/defaults/docs`
+## 5. Prior selected falsifier — historical status only
 
-## 4. Protected accepted Web capital
+Gate 7 previously selected:
 
-Mechanical/fundamental work must not accidentally regress:
+`FRONT-CORNER-AUTHORITY-ISOLATION-01`
 
-- browser/Pages shell and current scenes;
+The complete reasoning and PASS/FAIL contract remain in `docs/FIRST_FALSIFIER.md`.
+
+Under the current Owner directive this selection is now:
+
+**`PRIOR ORCHESTRATOR RECOMMENDATION / NON-BINDING FOR STRATEGIC CODEX REVIEW`**.
+
+Do not execute it merely because it is documented. First determine independently whether bounded migration in the current repo is even the right class of next move.
+
+The same applies to A1/A2/M1/C0 in `docs/ARCHITECTURE_HYPOTHESES.md`: useful prior decomposition, not an exhaustive architecture space.
+
+## 6. Proven/reference capital
+
+Current evidence supports real value in several product surfaces, including:
+
+- browser/Pages product shell;
+- Plac E2R, Offroad and approved JSPREV2;
 - Camera Manual Rig V1 + Fullscreen V1;
-- accepted mobile composition;
 - Direct Rotation + Relative-X steering interaction foundations;
-- absolute-position pedals;
-- independent throttle/brake ownership + multitouch;
-- D/R explicit pointer lifecycle while other controls remain held;
-- fail-closed pointer/lifecycle behavior;
-- tap-highlight suppression;
-- desktop/mobile capability hygiene;
-- wide-desktop HUD cleanup;
-- Plac E2R, Offroad, approved JSPREV2;
-- accepted A53/Chrome render-1x boundary;
+- absolute-position pedals and multitouch ownership/lifecycle;
+- accepted mobile composition and desktop capability/HUD work;
+- accepted A53/Chrome render-1x scan boundary;
 - exact-source Preview/static-layer provenance discipline.
 
-These are protected product evidence, not permanent implementation architecture.
+Treat these as **proven/reference capital**. A future strategy may preserve them, reimplement them or deliberately replace them. Do not mistake historical acceptance for an architecture freeze.
 
-Pedal Contact V1/V1.1 remains rejected/deferred evidence, not active work.
+Pedal Contact V1/V1.1 remains rejected/deferred evidence.
 
-## 5. Gates 0-6 verdict
+## 7. Strong evidence constraints
 
-Evidence reconstruction/synthesis through Gate 5 is complete. Gate 6 source-grounded architecture comparison is also complete.
+Prior work produced several constraints with materially stronger support than the architecture proposals built on top of them:
 
-High-confidence constraints include:
+- relation-local endpoint ownership can be mechanically significant;
+- authored/neutral truth and runtime representation/dynamics are separate concerns;
+- authored-element -> runtime-body/collider 1:1 mapping must not be assumed as an invariant;
+- coherent mechanisms should not combine incompatible partial geometry authorities;
+- provenance/deterministic identity matter for authored truth;
+- visual convenience ownership is not mechanical authority;
+- authoring terminology does not justify an invented extra physical M6 carrier body;
+- natural steering return should not be faked by silent artificial centering.
 
-- distinct real M6 roles: chassis / upper arm / lower arm / knuckle-upright / wheel plus rack-knuckle steering relation;
-- no invented extra physical carrier body;
-- independent owner-local relation endpoint frames;
-- coherent mechanical unit rather than mixed partial geometry authorities;
-- authored/neutral truth separated from runtime dynamics/contact/solver policy;
-- do not assume authored-element -> runtime-body/collider 1:1 mapping as an invariant; exact lowering/body granularity remains open;
-- source provenance + deterministic relink/persistence;
-- stale visual ownership is not mechanical authority;
-- physical steering intent should not be hidden by silent artificial centering;
-- mode5 / analytic real-width wheel is current Owner-selected donor direction, but not final tire architecture;
-- deterministic mode5 anti-centering remains a later falsifier/known debt;
-- accepted Web browser/input/mobile/world/publication behavior is first-class product capital.
+Challenge these if stronger source/evidence contradicts them, but do not discard them merely to achieve a clean-sheet feeling.
 
-Still open:
+## 8. Strategic questions Codex should answer
 
-- exact upper/lower outboard mating;
-- final rig/component ontology and granularity;
-- lowering/consumer architecture;
-- Web-native vs native-derived compiled vehicle authority;
-- final wheel/contact model;
-- final renderer;
-- large-world architecture;
-- final authoring-tool split.
+After independent reconstruction, compare at least the real strategic alternatives exposed by the evidence. The categories themselves are not mandatory, but the decision should address:
 
-## 6. Gate 6 comparison set
+- What is the strongest case for continuing/polishing this repo?
+- What is the strongest case for a radical rebuild while retaining this repo?
+- What is the strongest case for treating this repo mainly as donor/control/reference and starting clean elsewhere?
+- Which current capabilities are valuable product semantics versus accidental implementation?
+- Which current constraints are genuinely durable and which are artifacts of our prior framing?
+- Which prior analyses does Codex independently reproduce, and which does it reject?
+- What smallest next experiment would most reduce the strategic uncertainty?
 
-`docs/ARCHITECTURE_HYPOTHESES.md` owns detailed strongest-case/attack analysis.
+Repo continuity, new repo, language/runtime stack, mechanical boundary, renderer, authoring system and first falsifier all remain open until this review is accepted.
 
-Gate 6 found a **multi-axis** decision rather than a flat list.
+## 9. Output discipline
 
-### Vehicle-authority architecture axis
+The takeover result should clearly separate:
 
-- **A1 — Web-native mechanical core:** new Web repo-native vehicle mechanics over the browser Box3D boundary; `legacy_ts_m6` remains control, not repair target.
-- **A2 — native-derived compiled vehicle core:** Web remains product/input/render host; vehicle mechanical authority moves into a compiled native-derived browser core behind a narrow semantic ABI.
+`FACT / EXECUTED EVIDENCE / OWNER-OBSERVED / PRIOR ANALYSIS / HYPOTHESIS / UNKNOWN`.
 
-### Migration / necessity axis
+It should finish with a recommendation and the strongest falsifier of that recommendation, but **no source write, branch, new repo or implementation**.
 
-- **M1 — coherent-subsystem replacement:** one complete mechanical unit is replaced/isolated inside the current solver world. This can gather evidence for A1 or A2; it is not a third final authority architecture.
-- **C0 — conservative semantic correction:** one local A/B control tests whether a specific Owner pain requires fundamental architecture work at all.
+A takeover that merely paraphrases `FIRST_FALSIFIER.md` or `ARCHITECTURE_HYPOTHESES.md` does not demonstrate independence.
 
-Important source facts:
+## 10. Evidence map
 
-- current `F4VehicleHost` directly asserts `LEGACY_TS_M6_BACKEND` and creates `M6TopologyWorld`; the current descriptor is not an interchangeable backend mechanism;
-- `native_jv_wasm` exists as vocabulary/type possibility but no native-derived JV vehicle WASM backend/build path exists now;
-- current Box3D browser package is already WebAssembly-backed, so A1/A2 is about **vehicle topology/controller/mechanical authority**, not simply JavaScript versus WebAssembly solver execution;
-- current M6 runtime builder is coupled enough that M1's low blast radius must be proven, not assumed.
+Use only as needed after source grounding:
 
-## 7. Gate 7 verdict — selected first falsifier
+- `docs/OWNER_CHECKPOINTS.md` — scoped Owner truth and negative knowledge;
+- `docs/RECIPIENT_SURFACE.md` — detailed current-repo evidence map;
+- `docs/INHERITANCE_MATRIX.md` — prior claim-level synthesis;
+- `docs/ARCHITECTURE_HYPOTHESES.md` — prior architecture comparison;
+- `docs/FIRST_FALSIFIER.md` — prior first-falsifier recommendation;
+- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — Native donor seal;
+- `docs/ARCHITECTURE.md` — current boundaries, not future architecture freeze;
+- `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — prior authored-truth/consumer constraints without mandatory JURE commitment.
 
-Gate 7 is complete. `docs/FIRST_FALSIFIER.md` owns the exact experiment contract.
+## 11. Stop conditions
 
-Selected falsifier:
+Stop rather than implement if:
 
-**`FRONT-CORNER-AUTHORITY-ISOLATION-01`**
-
-Classification:
-
-`M1 STRUCTURAL FALSIFIER / CONTROL-EQUIVALENCE PROBE / NOT PRODUCT-MECHANICS ACCEPTANCE`
-
-Question:
-
-> Can the current front-left M6 corner's physical construction and ownership be isolated behind one explicit owned-unit boundary inside the existing browser Box3D world, while preserving exact current control behavior and without moving unrelated browser/product/world authority into that unit?
-
-Why it won the first slot:
-
-- high architecture information gain at low-to-medium causal blast radius;
-- PASS and FAIL both materially route later architecture work;
-- high rollback quality;
-- strong existing deterministic corner/topology/trace controls;
-- no dependency on unresolved final outboard mating;
-- avoids choosing new A1 mechanics prematurely;
-- avoids building A2 native/Emscripten/ABI infrastructure merely to ask the first question.
-
-Interpretation is deliberately narrow:
-
-- PASS = structural isolation is viable enough at front-corner granularity to continue M1-style evidence gathering;
-- PASS does not accept current FL geometry, extra carrier, split wheel, provisional steering or A1;
-- FAIL = this corner granularity is not a trustworthy low-blast boundary; it does not automatically select A2;
-- INCONCLUSIVE = unrelated source/environment/tooling blocker prevented the question from being answered.
-
-The historical `Front Mechanical Unit 01` is **not** the selected first implementation stage. The selected falsifier is narrower and introduces no new mechanical truth.
-
-Implementation remains **NOT AUTHORIZED** until the remaining pre-Codex gates are complete.
-
-## 8. Gate 8 verdict — responsibility boundary
-
-Gate 8 is complete. `AGENTS.md` owns the durable responsibility contract. No new protocol/framework document was introduced.
-
-For the selected falsifier:
-
-- **orchestrator** owns experiment question, protected baseline, causal scope, result classification and post-result routing;
-- **Codex / repo-native executor** owns source inspection, implementation/refactor technique, focused tests, baseline/RED/GREEN evidence, Git/build/CI/toolchain troubleshooting and exact diff review;
-- **machine evidence** may judge the no-behavior structural result when it establishes ownership/teardown, explicit cross-unit authority, topology/trace/determinism equivalence, relevant checks/build and clean-source browser smoke;
-- **Owner** is required only for genuinely qualitative/unavailable truth: visible/feel decisions, real-device-only evidence, unresolved authored mechanical choices and strategic scope/priority decisions. Routine engineering/debugging stays with executor/orchestrator.
-
-Executor autonomy is asymmetric by design: implementation technique may change, experiment meaning may not. If a materially wider authority unit is necessary, PASS needs a behavior delta, exact mating must be guessed, a generic framework is needed merely to proceed, or live source invalidates assumptions, stop/re-ground instead of silently widening/reinterpreting the slice.
-
-## 9. Current work — Gate 9
-
-### Final pre-Codex source/document close + canonical validation
-
-Close only material inconsistencies that could mislead the Codex cold takeover.
-
-Known candidate cleanup:
-
-- stale `src/vehicle/neutral-mechanism.ts` wording that overstates JURE authority;
-- any remaining current-router or contract wording that contradicts the selected falsifier/responsibility boundary.
-
-Then validate the exact final pre-Codex source with the repository-declared canonical toolchain.
-
-Gate 9 must not:
-
-- implement `FRONT-CORNER-AUTHORITY-ISOLATION-01`;
-- reopen donor analysis;
-- choose A1/A2;
-- build a universal framework or new schema family;
-- repoint Owner Preview merely for cosmetic SHA parity;
-- start general documentation cleanup unrelated to Codex-readiness.
-
-After Gate 9:
-
-10. Read-only Codex cold-takeover dry run.
-11. Only after the dry run passes, begin fundamental repo-native implementation of the selected falsifier.
-
-## 10. Evidence surfaces and known historical status
-
-- `AGENTS.md` owns the current operating/responsibility contract.
-- `docs/PROJECT_STATE.md` owns current routing.
-- `docs/FIRST_FALSIFIER.md` owns the selected Gate 7 experiment, scope and PASS/FAIL/INCONCLUSIVE semantics.
-- `docs/ARCHITECTURE_HYPOTHESES.md` is Gate 6 comparison authority; no final architecture winner.
-- `docs/INHERITANCE_MATRIX.md` is Gate 5 decision synthesis; later hardening/selection supersedes stale wording where needed.
-- `docs/RECIPIENT_SURFACE.md` is Recipient V1 evidence and its old phase-status is historical.
-- `docs/OWNER_CHECKPOINTS.md` records scoped Owner truth, supersession and negative knowledge.
-- `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` contains rationale and explicit non-decisions.
-- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` is the canonical Web-side Native closure receipt; its historical first-stage wording is not current routing.
-
-## 11. Codex readiness
-
-Not ready for fundamental implementation yet, but Gates 0-8 are complete: evidence reconstruction, architecture comparison, first-falsifier selection and responsibility boundary are closed.
-
-Before Codex execution:
-
-- complete Gate 9 material source/document consolidation;
-- run final exact-toolchain dependency install/check/build on the final post-hardening source SHA;
-- deliberately verify/repoint Owner Preview only if useful for the final handoff;
-- perform Gate 10 read-only Codex cold takeover and compare its reconstruction against live evidence and Owner intent.
-
-Do not reopen Native, build a universal framework, freeze a new schema family, redesign Preview, merge deferred pedal work or start tire R&D merely because execution is moving toward Codex.
+- live Git differs materially from the assumed state;
+- canonical environment/source access prevents reliable reconstruction;
+- evidence contradicts the current docs;
+- the review starts creating branches/repos/frameworks before strategy selection;
+- prior plans are being treated as commands rather than hypotheses;
+- Owner evidence is being erased instead of consciously superseded;
+- tooling failure is being interpreted as product/architecture evidence.
