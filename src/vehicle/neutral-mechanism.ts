@@ -70,7 +70,8 @@ export type JvNeutralRelationV1 =
 
 /**
  * Small consumer-side lowering representation, not an authored rig format.
- * JURE remains the authority for generic authored mechanical truth.
+ * Authored mechanical truth may come from JURE or another explicit,
+ * provenance-backed producer; this consumer type does not freeze that tool.
  */
 export interface JvNeutralMechanismV1 {
   readonly schema: "jv-neutral-mechanism/v1";
