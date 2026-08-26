@@ -62,7 +62,7 @@ Current recipient challenge surfaces include:
 - provisional rack/full-lock mapping;
 - `legacy_m6_split_sphere_sidewall` contact representation.
 
-These may be replaced deliberately after a next-generation falsifier is selected. They are not an automatic cleanup queue.
+These may be replaced deliberately when selected evidence requires it. They are not an automatic cleanup queue, and the selected first falsifier is structural isolation/control-equivalence rather than permission to repair current mechanics.
 
 ## 6. Authored neutral truth vs runtime representation
 
@@ -103,7 +103,7 @@ Current high-confidence constraints include:
 - exact outboard physical mating remains Owner-open until explicitly judged;
 - stale visual parenting or common surrogate ownership is not mechanical authority.
 
-`Front Mechanical Unit 01` is a leading future falsifier candidate, **not a selected implementation stage**.
+The historical `Front Mechanical Unit 01` idea is **not** the selected first implementation stage. Gate 7 selected the narrower `FRONT-CORNER-AUTHORITY-ISOLATION-01` structural control-equivalence falsifier before any new mechanical truth is introduced.
 
 ## 8. JURE / authoring boundary
 
@@ -176,18 +176,15 @@ Preview does not grant source/release acceptance. Preserved static layers keep s
 
 ## 14. Next-generation architecture timing
 
-Current pre-Codex work is not an architecture freeze.
+Current pre-Codex work still does not freeze a final vehicle architecture.
 
-Before selecting fundamental implementation:
+Evidence reconstruction, recipient mapping, Owner-truth synthesis, future-pressure testing, Inheritance Matrix V2, competing architecture hypotheses, first-falsifier selection and responsibility assignment are complete through Gate 8.
 
-1. finish JV-Web Technology-Capital / Recipient Map V2;
-2. preserve Owner Truth + Negative Knowledge;
-3. pressure-test inheritance against broader machine/world ambitions;
-4. update the inheritance matrix;
-5. generate competing architecture hypotheses;
-6. select the first falsifier by information gain + product value.
+The selected first experiment is `FRONT-CORNER-AUTHORITY-ISOLATION-01`. It tests whether front-corner structural ownership is a trustworthy low-blast migration boundary while preserving exact current control behavior. It does not choose A1 versus A2, final mechanics, final mating, tire/contact architecture, JURE/lowering or a universal schema.
 
-A JURE -> Web lowering/schema choice belongs to that later design challenge. Pre-Codex preparation freezes evidence, constraints, provenance and unknowns, not a premature consumer architecture.
+Current stage: Gate 9 final pre-Codex source/document consolidation and canonical validation. After that, a read-only Codex cold takeover must independently reconstruct the state before fundamental implementation is authorized.
+
+A JURE -> Web lowering/schema choice remains part of later evidence-driven design. Pre-Codex preparation freezes evidence, constraints, provenance, negative knowledge, selected experiment semantics and unknowns, not a premature consumer architecture.
 
 ## 15. Architecture principles
 
