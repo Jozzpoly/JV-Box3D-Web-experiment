@@ -1,6 +1,6 @@
 # JV Web — owner checkpoints
 
-Updated: 2026-08-22
+Updated: 2026-08-26
 
 Compact ledger of durable Owner-visible acceptance. Git history preserves detailed campaign/test evidence. A passing test is not Owner acceptance; each entry below is limited to what Jozz actually observed or explicitly accepted.
 
@@ -325,6 +325,70 @@ Durable meaning:
 - future D/R work should be ergonomics/presentation only unless contradictory input evidence appears.
 
 Not accepted/frozen here: vehicle power/brake balance, pedal neutral/contact tuning, pedal mechanical design, final steering feel, or Friends/Public promotion.
+
+## GATE3-OWNER-TRUTH-2026-08-26 — scoped current synthesis
+
+Classification: `OWNER TRUTH SYNTHESIS / NEGATIVE KNOWLEDGE / NO NEW PRODUCT ACCEPTANCE`
+
+This section reconciles the durable checkpoints above with later direct Owner feedback. It does not promote machine evidence into Owner truth and does not choose future architecture or the first next-generation falsifier.
+
+### Preserve as current product/stability truth
+
+- browser product can load and drive the owner vehicle across the accepted world surfaces;
+- P1.2/P1.3/P1.3.1 lower-driving composition, minimal persistent HUD and wide utility-drawer model are the current mobile presentation foundation, not permanent layout architecture;
+- Camera Manual Rig V1 and Fullscreen V1 remain useful foundations;
+- Samsung Galaxy A53 / Chrome / render-1x is an accepted JSPREV2 performance boundary, not a universal mobile-performance claim;
+- both `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X` remain Owner-facing steering directions worth retaining and developing; `X_POSITION` is only historical/regression reference;
+- absolute-position throttle/brake with immediate pointer-down value and frozen acquisition geometry is the preferred pedal-input foundation;
+- throttle/brake independent ownership, steering + pedal multitouch, D/R explicit pointer lifecycle and fail-closed lifecycle behavior remain protected capabilities.
+
+### Preferred directions, not final tuning/architecture
+
+- direct mechanical feel should become more natural and precise without hiding vehicle behavior behind silent input-dependent assists;
+- steering return/self-alignment should come from the physical/mechanical/contact system rather than an artificial centering default;
+- the small lower pedal zero/contact buffer remains a useful tuning hypothesis, but its exact size and curve are not frozen;
+- current visual/mechanical authoring should move toward explicit authored sockets/frames/relations and coherent moving parts, without implying that JURE or any current schema is permanent architecture.
+
+### Foundation-only / temporary / tolerated
+
+- R1 symmetric front steering is a successful temporary product bridge, not final steering topology;
+- current owner-vehicle visual package is useful product/rendering evidence but does not establish final physical rig truth;
+- current mobile chrome and portrait/landscape composition may be redesigned deliberately as long as accepted world visibility, controls and transitions are not accidentally regressed.
+
+### Rejected, deferred or superseded directions and why
+
+- relative-from-touch pedal mapping is superseded because absolute-position mapping gave the Owner more direct and predictable control;
+- click-only D/R acquisition is superseded because it failed on real device while another finger held throttle;
+- Pedal Contact + Mechanical Feedback V1/V1.1 is `NOT ACCEPTED / DEFERRED`: technical functionality did not justify the interaction/iteration cost and the later contact-zone attempt produced too little useful zero/contact region to warrant continued struggle. This rejection does **not** reject the separate small zero/contact-buffer tuning hypothesis;
+- large persistent mobile header/toolbar arrangements that consume useful driving view are negative knowledge; the accepted lower-driving composition and utility-drawer model exist partly to avoid that failure mode;
+- unsafe JURE inspect/edit coupling is negative knowledge: inspection must not silently mutate authored truth. SAFE-INSPECT fixes that demonstrated workflow failure but does not constitute Owner acceptance of physical mating;
+- artificial rack centering is not an acceptable default substitute for unresolved physical return/self-alignment;
+- stale visual/mechanical convenience parenting, loose/intersecting suspension presentation and implausible damper/cardan behavior are not acceptable quality targets merely because the visual package renders and moves.
+
+### Current Owner-visible quality pressure
+
+The most material unresolved Owner-visible pressure is not the accepted input lifecycle or publication surface. It clusters around:
+
+1. steering mechanics/return/contact quality;
+2. longitudinal power/brake balance — Owner directly observed broadly low power and very small brake input dominating full throttle;
+3. rig/visual-mechanical coherence, including suspension/damper/cardan behavior and physical-authority clarity;
+4. exact upper/lower outboard mating, which remains not fairly judged after the earlier JURE inspection/clarity failure.
+
+These product pressures may overlap with Gate 2 architecture debt, but the overlap does not choose a solution automatically.
+
+### Explicitly open / not fairly judged
+
+- final Direct Rotation tuning;
+- final Relative-X gain curve;
+- full-lock/reversal/edge behavior;
+- final haptics/self-centering/steering industrial design;
+- steering physics and vehicle handling;
+- final pedal zero/contact buffer, value curve and mechanical presentation;
+- longitudinal motor/brake balance;
+- final rig geometry and physical/visual lowering;
+- exact upper/lower outboard physical mating;
+- final portrait-specific composition;
+- final authored-tool and runtime architecture.
 
 ## Durable method
 
