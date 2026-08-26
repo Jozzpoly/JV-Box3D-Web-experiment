@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 Owner: Jozz
-Status: `JV-WEB CURRENT PRODUCT + EVIDENCE CORPUS / NO ORDINARY ACTIVE RUNTIME LANE / PRIOR GATES 0-8 PRESERVED AS RESEARCH RECORD / PRIOR FRONT-CORNER FALSIFIER NON-BINDING / REPO CONTINUITY OPEN / STRATEGIC CODEX COLD-TAKEOVER PREP CURRENT / IMPLEMENTATION NOT AUTHORIZED`
+Status: `JV-WEB CURRENT PRODUCT + EVIDENCE CORPUS / NO ORDINARY ACTIVE RUNTIME LANE / PRIOR GATES 0-8 PRESERVED AS RESEARCH RECORD / PRIOR FRONT-CORNER FALSIFIER NON-BINDING / REPO CONTINUITY OPEN / STRATEGIC CODEX COLD TAKEOVER READY + NEXT / IMPLEMENTATION NOT AUTHORIZED`
 
 Git/current source, executed evidence and direct scoped Owner observation outrank this document. This file owns current routing.
 
@@ -10,7 +10,7 @@ Git/current source, executed evidence and direct scoped Owner observation outran
 
 Current JV-Web source/product authority is live `main` of `Jozzpoly/JV-Box3D-Web-experiment`. Resolve its exact SHA before acting.
 
-Latest pre-strategic-reset head before this router change:
+Latest pre-strategic-reset head before the router change:
 
 ```text
 18fd523d7ab8792d8f83e8885deb2e122f8cc002
@@ -38,7 +38,7 @@ Owner Preview and Friends/Public remain separate operational/artifact authoritie
 
 The earlier pre-Codex program progressively selected `FRONT-CORNER-AUTHORITY-ISOLATION-01` as the preferred first falsifier under the assumption that the next step would be a bounded migration experiment in the existing JV-Web program.
 
-The Owner has now deliberately **re-opened the strategic decision space before Codex implementation**.
+The Owner has deliberately **re-opened the strategic decision space before Codex implementation**.
 
 Therefore:
 
@@ -135,9 +135,9 @@ The following documents remain useful precisely because Codex should be able to 
 
 Do not erase or rewrite those historical analyses merely because strategy is reopened.
 
-## 7. Current stage — strategic Codex cold-takeover preparation
+## 7. Next stage — read-only strategic Codex cold takeover
 
-The next useful repo-native work is **not implementation**.
+The preparation stage is complete enough to hand the repository to Codex for independent strategic reconstruction. The next repo-native work is **not implementation**.
 
 The first Codex session should be read-only and should independently:
 
