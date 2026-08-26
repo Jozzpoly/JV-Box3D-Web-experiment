@@ -31,13 +31,25 @@ The current Friends artifact predates several later accepted source changes. Do 
 
 JV-Web is the priority heir/product. JV_CORE / Native is a sealed primary donor/research record with active development stopped. JURE is an optional authoring/mechanical-truth donor and useful current tool, not a mandatory dependency or a frozen final authoring architecture.
 
-The project is in a **pre-Codex next-generation analysis/handoff phase**. Donor closure and donor deconstruction are complete enough to proceed, but the first next-generation runtime falsifier and future architecture are deliberately not selected yet.
+Pre-Codex evidence reconstruction, architecture comparison, first-falsifier selection and responsibility assignment are complete through Gate 8.
 
-`Front Mechanical Unit 01` is a **leading falsifier candidate**, not an already-selected implementation stage.
+The selected first next-generation falsifier is:
 
-Do not freeze a JURE -> JV-Web lowering/schema contract before the current donor/recipient/Owner-truth analysis is complete. Pre-Codex work freezes evidence, constraints, provenance, negative knowledge and unknowns; later repo-native design challenge chooses the consumer/lowering architecture.
+`FRONT-CORNER-AUTHORITY-ISOLATION-01`
 
-Current next-stage routing belongs in `docs/PROJECT_STATE.md`.
+Classification:
+
+`M1 STRUCTURAL FALSIFIER / CONTROL-EQUIVALENCE PROBE / NOT PRODUCT-MECHANICS ACCEPTANCE`
+
+It asks whether the current front-left M6 corner can be isolated behind one explicit owned-unit boundary while preserving exact current control behavior. It does **not** introduce new mechanical truth, select A1/A2, accept current FL mechanics or resolve final mating.
+
+The historical `Front Mechanical Unit 01` idea is **not** the selected first implementation stage.
+
+Gate 9 is the current stage: final pre-Codex source/document consolidation plus canonical validation. Fundamental falsifier implementation remains unauthorized until Gate 9 closes and a read-only Codex cold takeover passes.
+
+A JURE -> JV-Web lowering/schema contract is not a pre-Codex freeze requirement. Pre-Codex work freezes evidence, constraints, provenance, negative knowledge, selected experiment semantics and remaining unknowns; later repo-native design challenge may still choose the consumer/lowering architecture.
+
+Current routing belongs in `docs/PROJECT_STATE.md`. The exact selected experiment contract is `docs/FIRST_FALSIFIER.md`.
 
 ## Canonical toolchain
 
@@ -65,15 +77,17 @@ A fresh executor normally reads:
 
 1. `AGENTS.md`
 2. `docs/PROJECT_STATE.md`
-3. source/tests required by the selected task
+3. `docs/FIRST_FALSIFIER.md` when working on the selected experiment
+4. source/tests required by the selected task
 
 During explicit takeover/handoff, read `docs/HANDOFF.md` immediately after `docs/PROJECT_STATE.md`.
 
 Then only when relevant:
 
+- `docs/ARCHITECTURE_HYPOTHESES.md` — Gate 6 authority/migration comparison; no architecture winner;
+- `docs/INHERITANCE_MATRIX.md` — Gate 5 decision synthesis; later current-state corrections outrank stale wording;
 - `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` — rationale and staged next-generation analysis loop;
 - `docs/RECIPIENT_SURFACE.md` — detailed Recipient V1 evidence;
-- `docs/INHERITANCE_MATRIX.md` — provisional donor evidence matrix, not current roadmap authority;
 - `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — sealed Native donor receipt;
 - `docs/ARCHITECTURE.md` — stable current boundaries, not future architecture freeze;
 - `docs/OWNER_CHECKPOINTS.md` — scoped Owner acceptance;
@@ -85,7 +99,7 @@ Then only when relevant:
 
 Prefer:
 
-`small need -> smallest coherent source change -> causal check -> Owner Preview Pages -> faithful render/device proof -> Owner judgement -> continue`
+`small need -> smallest coherent source change -> causal check -> faithful render/device evidence only when causally relevant -> Owner judgement only when genuinely qualitative -> continue`
 
 Do not create process machinery, branches, schemas or abstractions merely because a new executor/conversation exists. Resolve live repo/ref before writes.
 
