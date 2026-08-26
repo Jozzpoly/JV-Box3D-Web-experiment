@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 Owner: Jozz
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE CURRENT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST CURRENT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file owns current routing. It is intentionally shorter than the evidence documents it routes to.
 
@@ -131,7 +131,7 @@ Known challenge surfaces include:
 - the current neutral mechanism is a comparison/lowering seam, not a frozen future schema;
 - the current backend seam is not proof of a final interchangeable physics-plugin architecture.
 
-These items are a **technical-debt inventory, not an automatic repair queue**. Repairing them before Recipient Map V2 and architecture hypotheses would prematurely choose architecture. The safe technical debt closed during the current hardening pass is authority/architecture-contract debt: stale routing and mandatory-tool assumptions.
+These items are a **technical-debt inventory, not an automatic repair queue**. Repairing them before Owner truth, future-vision pressure and competing architecture hypotheses are reconciled would prematurely choose architecture. The safe technical debt closed during the current hardening pass is authority/architecture-contract debt: stale routing and mandatory-tool assumptions.
 
 `docs/RECIPIENT_SURFACE.md` remains the detailed Recipient V1 evidence map. Its old `DONOR OUTPUTS NOT YET INGESTED` status describes the phase in which it was written; use its source findings as evidence, not as current routing.
 
@@ -151,25 +151,43 @@ A small source-comment drift remains in `src/vehicle/neutral-mechanism.ts`, wher
 
 ### Gate 3 — Owner Truth + Negative Knowledge
 
+`COMPLETE — SCOPED OWNER-EVIDENCE SYNTHESIS`
+
+Current durable Owner truth is now separated from historical foundations, provisional bridges and machine-only success. `docs/OWNER_CHECKPOINTS.md` owns the detailed ledger.
+
+Key current synthesis:
+
+- accepted browser/mobile/input/camera/world/publication capabilities remain stability capital, not permanent architecture;
+- both `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X` remain retained Owner-facing steering directions; `X_POSITION` is historical/regression reference;
+- absolute-position pedals supersede relative-from-touch mapping; exact zero/contact buffer and mechanical presentation remain open;
+- D/R explicit pointer-owned multitouch acquisition supersedes click-only acquisition;
+- Pedal Contact + Mechanical Feedback V1/V1.1 remains not accepted/deferred because technical functionality did not justify its interaction/iteration cost; this does not reject a small separate zero/contact-buffer tuning hypothesis;
+- R1 symmetric front remains temporary product evidence rather than accepted final steering topology;
+- exact JURE outboard mating remains not fairly Owner-judged after the earlier clarity/unsafe-inspection failure;
+- artificial steering centering is not accepted as a default substitute for physical return/self-alignment.
+
+The strongest current Owner-visible quality pressure clusters around steering/return/contact quality, longitudinal power/brake balance, rig/visual-mechanical coherence and still-open physical mating. These pressures overlap Gate 2 architecture debt but do not choose implementation automatically.
+
+### Gate 4 — Future-Vision Pressure Test
+
 `CURRENT`
 
-Reconstruct scoped current Owner truth across the major product/mechanical surfaces. Distinguish:
+Challenge the inheritance candidates from Gates 1-3 against the expanded Owner vision **without designing a universal platform**.
 
-`PRESERVE / PREFERRED DIRECTION / FOUNDATION ONLY / TEMPORARY OR TOLERATED / REJECTED OR DEFERRED / NEGATIVE KNOWLEDGE / OPEN OR NOT FAIRLY JUDGED`.
+For each major candidate ask:
 
-Direct Owner observation outranks machine success. Later Owner judgement supersedes earlier narrower checkpoints only where the scopes genuinely conflict. Preserve the reason rejected directions failed, not only their historical status.
+- does it solve a real current-car quality problem?
+- is it deliberately car-specific or does it accidentally hard-lock the product to one double-wishbone M6?
+- can fine authored truth remain independent from runtime body/collider granularity?
+- can the decision plausibly survive a real second-machine case such as a drone, or should generalization wait until that case exists?
+- does it preserve a path toward large photogrammetry worlds and richer desktop authoring while keeping mobile a strong runtime/showcase client?
+- is generalization earned by evidence or merely imagined?
+- what is the cost of keeping the decision open versus freezing it now?
 
-Gate 3 must end with a clear separation between:
+Gate 4 produces strategic pressure and explicit non-decisions, not architecture hypotheses or runtime work.
 
-- Owner-visible product pressure;
-- architecture challenge surfaces from Gate 2;
-- machine-grounded but qualitatively unjudged donor/recipient claims.
+### Gates after Future-Vision Pressure Test
 
-Do not choose the first next-generation falsifier during Gate 3.
-
-### Gates after Owner Truth + Negative Knowledge
-
-4. Future-Vision Pressure Test.
 5. Inheritance Matrix V2, adding `Generalization pressure` and `Premature commitment risk`.
 6. Competing architecture hypotheses, each with strongest failure reason and cheapest falsifier.
 7. Select the first next-generation falsifier.
@@ -210,7 +228,7 @@ No new branch/checkpoint/schema/backend abstraction/consumer adapter/runtime sli
 - `docs/RECIPIENT_SURFACE.md` — detailed Recipient V1 source/evidence map.
 - `docs/INHERITANCE_MATRIX.md` — provisional per-claim donor synthesis; roadmap commitments are subordinate to this current-state file.
 - `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — canonical Web-side Native closure receipt.
-- `docs/OWNER_CHECKPOINTS.md` — scoped Owner acceptance evidence.
+- `docs/OWNER_CHECKPOINTS.md` — scoped Owner acceptance, supersession and negative-knowledge evidence.
 - `docs/ARCHITECTURE.md` — stable current system/authority boundaries, not future architecture freeze.
 - `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — durable authored-truth/consumer separation constraints, not a commitment to JURE as permanent tool or to a preselected consumer schema.
 
