@@ -69,9 +69,8 @@ The exact experiment contract is `docs/FIRST_FALSIFIER.md`. It supersedes older 
 
 Current sequence is owned by `docs/PROJECT_STATE.md`:
 
-- Gates 0-7 evidence reconstruction, architecture comparison and falsifier selection — complete;
-- responsibility boundary — current until closed in routing;
-- final pre-Codex source/document close + canonical validation;
+- Gates 0-8 evidence reconstruction, architecture comparison, falsifier selection and responsibility boundary — complete;
+- final pre-Codex source/document close + canonical validation — current;
 - read-only Codex cold takeover;
 - implementation only after that reconstruction passes.
 
