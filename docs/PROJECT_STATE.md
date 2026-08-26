@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 Owner: Jozz
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST COMPLETE / INHERITANCE MATRIX V2 CURRENT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST COMPLETE / INHERITANCE MATRIX V2 COMPLETE / COMPETING ARCHITECTURE HYPOTHESES CURRENT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file owns current routing. It is intentionally shorter than the evidence documents it routes to.
 
@@ -16,7 +16,7 @@ Last runtime/product-grounded source before this documentation/authority-hardeni
 4b07b66eb9b8103f74ec426979de12022f9817b9
 ```
 
-That commit is documentation-only above the accepted runtime/UI foundations. A later `main` descendant produced solely by this authority-hardening pass does not imply a runtime/product behavior change.
+That commit is documentation-only above the accepted runtime/UI foundations. Later `main` descendants produced solely by the current analysis/documentation passes do not imply a runtime/product behavior change.
 
 Owner Preview is a separate operational control lane, not source authority:
 
@@ -52,7 +52,7 @@ Resolve live refs again before any future write. Exact Preview/Public anchors ab
 
 Inheritance priority:
 
-`Owner product truth -> portable mechanical/semantic truth -> candidate technique -> legacy implementation/defaults/docs`
+`Owner product truth -> portable mechanical/semantic truth -> proven recipient/donor technique -> candidate implementation -> legacy defaults/docs`
 
 Primary-donor status never wins a conflict automatically.
 
@@ -131,11 +131,11 @@ Known challenge surfaces include:
 - the current neutral mechanism is a comparison/lowering seam, not a frozen future schema;
 - the current backend seam is not proof of a final interchangeable physics-plugin architecture.
 
-These items are a **technical-debt inventory, not an automatic repair queue**. Repairing them before the inheritance matrix and competing architecture hypotheses reconcile donor, recipient, Owner and future-pressure evidence would prematurely choose architecture. The safe technical debt closed during the current hardening pass is authority/architecture-contract debt: stale routing and mandatory-tool assumptions.
+These items are a **technical-debt inventory, not an automatic repair queue**. Repairing them before competing architecture hypotheses and explicit falsifier selection reconcile the evidence would prematurely choose architecture.
 
 `docs/RECIPIENT_SURFACE.md` remains the detailed Recipient V1 evidence map. Its old `DONOR OUTPUTS NOT YET INGESTED` status describes the phase in which it was written; use its source findings as evidence, not as current routing.
 
-`docs/INHERITANCE_MATRIX.md` remains the detailed provisional donor matrix. Its per-claim evidence is useful input, but any wording that treats Front Mechanical Unit 01 as already selected is superseded by this file and `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` until Gate 5 updates the matrix.
+`docs/INHERITANCE_MATRIX.md` is now the current Gate 5 decision synthesis. It supersedes its own older donor-intake version and no longer authorizes Front Mechanical Unit 01 or a pre-Codex lowering receipt as predetermined work.
 
 ## 6. Current routing — next work
 
@@ -153,18 +153,7 @@ A small source-comment drift remains in `src/vehicle/neutral-mechanism.ts`, wher
 
 `COMPLETE — SCOPED OWNER-EVIDENCE SYNTHESIS`
 
-Current durable Owner truth is now separated from historical foundations, provisional bridges and machine-only success. `docs/OWNER_CHECKPOINTS.md` owns the detailed ledger.
-
-Key current synthesis:
-
-- accepted browser/mobile/input/camera/world/publication capabilities remain stability capital, not permanent architecture;
-- both `Obrót / DIRECT_ROTATION` and `Przeciąganie / RELATIVE_X` remain retained Owner-facing steering directions; `X_POSITION` is historical/regression reference;
-- absolute-position pedals supersede relative-from-touch mapping; exact zero/contact buffer and mechanical presentation remain open;
-- D/R explicit pointer-owned multitouch acquisition supersedes click-only acquisition;
-- Pedal Contact + Mechanical Feedback V1/V1.1 remains not accepted/deferred because technical functionality did not justify its interaction/iteration cost; this does not reject a small separate zero/contact-buffer tuning hypothesis;
-- R1 symmetric front remains temporary product evidence rather than accepted final steering topology;
-- exact JURE outboard mating remains not fairly Owner-judged after the earlier clarity/unsafe-inspection failure;
-- artificial steering centering is not accepted as a default substitute for physical return/self-alignment.
+Current durable Owner truth is separated from historical foundations, provisional bridges and machine-only success. `docs/OWNER_CHECKPOINTS.md` owns the detailed ledger.
 
 The strongest current Owner-visible quality pressure clusters around steering/return/contact quality, longitudinal power/brake balance, rig/visual-mechanical coherence and still-open physical mating. These pressures overlap Gate 2 architecture debt but do not choose implementation automatically.
 
@@ -172,64 +161,65 @@ The strongest current Owner-visible quality pressure clusters around steering/re
 
 `COMPLETE — STRATEGIC PRESSURE / NO ARCHITECTURE FREEZE`
 
-The expanded future vision was used as a falsifier of inheritance assumptions, not as an equal-priority requirements list. Current car quality remains the primary evidence anchor; possible drone/flight, other machines, fine authoring, large photogrammetry worlds and desktop/mobile role separation apply pressure only where they can materially change a decision.
+Current car quality remains the primary evidence anchor. Broader machine/flight, fine-authoring and large-world ambitions act only as falsifiers of premature coupling.
 
-**General principles earned now:**
+Earned general principles are deliberately few: relation-local ownership, authored/runtime separation, coherent replacement, provenance/deterministic identity, representation independence, world/vehicle separation and browser timing/input/presentation discipline.
 
-- relation endpoints retain independent owner-local truth;
-- authored truth remains separate from runtime body/joint/collider/contact/solver granularity;
-- coherent mechanical units must not be built from incompatible partial geometry authorities;
-- provenance, deterministic identity/persistence and fail-closed interpretation remain durable requirements;
-- mechanical/runtime truth remains separable from visual representation/binding;
-- world/content authority remains separable from vehicle-specific mechanics;
-- browser simulation/input/presentation timing separation remains valuable technique/capability, without freezing current constants/classes.
-
-**Healthy domain specialization:**
-
-- suspension topology, steering mechanics, drivetrain and tire/contact may remain wheeled-vehicle-specific;
-- flight/thrust/aerodynamics should remain a later domain unless a real second-machine case proves shared abstraction;
-- photogrammetry streaming/LOD/import belongs to the world/content domain rather than current car mechanics;
-- advanced authoring UX may be mechanism-specific even when it preserves shared authority principles.
-
-**Explicitly rejected premature generalization:**
-
-- current M6 topology as universal vehicle/machine ontology;
-- current JURE `RigDocument` or Web neutral seam as universal component schema;
-- one authored element = one runtime body;
-- a generic physics-plugin/backend framework without a real second backend need;
-- a shared tire/rotor or universal machine-dynamics abstraction;
-- renderer/world-streaming redesign driven only by long-term scale ambition;
-- mandatory JURE or a forced one-app/multi-app product split before evidence requires it.
-
-**Keep-open budget:**
-
-Cheap to keep open now: TS vs WASM/native-derived runtime, final renderer, final authoring application, one app vs cooperating tools, world streaming/partitioning, backend/plugin architecture, serialized schema, component ontology/granularity and final tire architecture.
-
-More expensive to keep ambiguous and therefore treated as earned constraints: relation-local ownership, authored/runtime separation, coherent-unit replacement and provenance/deterministic identity.
-
-Exact outboard mating is intermediate: it does not block Gates 4-6, but it may block a selected front-mechanics falsifier. Do not resolve it preemptively.
-
-Anti-platform verdict: if drone and `10 x 10 km` world ambitions disappeared tomorrow, the earned authority/separation principles would still be justified by the current car and current product evidence. The speculative universal abstractions would not. That is the current generalization boundary.
+Healthy domain specialization remains allowed for suspension/steering/drivetrain/tire/contact, future flight dynamics and world streaming/LOD/import.
 
 ### Gate 5 — Inheritance Matrix V2
 
+`COMPLETE — CROSS-PROJECT DECISION SYNTHESIS / ARCHITECTURE NEUTRAL`
+
+`docs/INHERITANCE_MATRIX.md` now reconciles Gates 1-4 row by row and explicitly distinguishes:
+
+- evidence strength;
+- Owner/product value;
+- domain scope;
+- generalization pressure;
+- premature commitment risk;
+- cost of keeping a decision open;
+- current disposition.
+
+Key Gate 5 results:
+
+- Web product/browser capital is first-class inheritance alongside donor mechanics;
+- old `first front-unit` and pre-Codex lowering commitments no longer drive decisions;
+- relation-local ownership, authored/runtime separation, coherent-unit replacement and provenance/deterministic identity survive adversarial downgrade as earned constraints;
+- current M6 topology, current JURE/Web schemas, `legacy_ts_m6`, R3 calibration and current renderer remain domain/control/technique evidence rather than universal architecture;
+- Mode5 remains an Owner-selected product direction that still requires research/challenge, not final tire architecture;
+- exact mating remains `OPEN / OWNER JUDGEMENT` and only becomes blocking if a selected experiment depends on it;
+- TypeScript vs WASM, final renderer, final authoring application, lowering/schema, backend/plugin architecture, world streaming and final tire architecture remain deliberately open;
+- architecture and first falsifier remain unselected.
+
+Strong unresolved pressure clusters carried into Gate 6 are front mechanical truth/rig coherence, wheel/contact/steering return, longitudinal semantics and visual/mechanical lowering coherence. They are not a ranked implementation queue.
+
+### Gate 6 — Competing Architecture Hypotheses
+
 `CURRENT`
 
-Update the existing matrix rather than replace it. Reconcile Gates 1-4 row by row and add at least:
+Generate genuinely competing next-generation architecture hypotheses from the Gate 5 matrix rather than converging immediately on the leading FMU01 idea.
 
-- `Generalization pressure`;
-- `Premature commitment risk`.
+Each serious hypothesis must state:
 
-Use dispositions such as:
+- what it keeps from current Web and what it replaces;
+- which earned constraints it satisfies;
+- which domain assumptions it deliberately keeps specialized;
+- how it treats authored truth vs runtime representation;
+- how it preserves accepted product/browser behavior;
+- strongest reason it could be wrong;
+- cheapest high-information falsifier;
+- likely causal blast radius;
+- which currently open decisions it can leave open;
+- what new commitment it would force if adopted.
 
-`PRESERVE BEHAVIOR / INHERIT REQUIREMENT / INHERIT SEMANTIC / INHERIT PRODUCT DIRECTION / EXTRACT TECHNIQUE / REIMPLEMENT / RESEARCH / REJECT / CONTROL / IRRELEVANT-HISTORY`.
+At least two hypotheses must be genuinely different in runtime/mechanical boundary, not cosmetic variants of the same implementation. A third control/conservative hypothesis should be retained when useful so that a rewrite is not assumed to be automatically superior.
 
-Each important row must distinguish product value, evidence strength, domain scope and whether keeping the decision open is cheap or blocking. Do not choose the first falsifier during Gate 5.
+Gate 6 does **not** select the winner. It produces a comparison set suitable for Gate 7.
 
-### Gates after Inheritance Matrix V2
+### Gates after competing hypotheses
 
-6. Competing architecture hypotheses, each with strongest failure reason and cheapest falsifier.
-7. Select the first next-generation falsifier.
+7. Select the first next-generation falsifier by information gain + product value + bounded blast radius.
 8. Freeze Owner / browser-orchestrator / Codex responsibilities, not architecture.
 9. Final pre-Codex source/document close + exact canonical validation.
 10. Read-only Codex cold-takeover dry run.
@@ -239,8 +229,8 @@ Each important row must distinguish product value, evidence strength, domain sco
 
 The following older routing is **superseded**:
 
-- `Front Mechanical Unit 01` is **not** an already-selected first implementation stage. It is the current **leading falsifier candidate** because it is bounded, evidence-rich and product-visible. It must still win Gate 7 against alternatives.
-- A JURE -> Web lowering/space-conversion receipt is **not** a pre-Codex freeze requirement. Pre-Codex work freezes truth, constraints, provenance, negative knowledge and unknowns. Codex-era design challenge chooses lowering/consumer architecture.
+- `Front Mechanical Unit 01` is **not** an already-selected first implementation stage. It remains a leading falsifier candidate because it is bounded, evidence-rich and product-visible, and must still win Gate 7 against alternatives.
+- A JURE -> Web lowering/space-conversion receipt is **not** a pre-Codex freeze requirement.
 - JURE is **not** frozen as the final authoring application or mandatory dependency.
 - Current `RigDocument`, current Web neutral schema, current renderer, current M6 topology and current backend structure are **not** frozen future architecture.
 - Expanded ambitions (other machines, possible drone/flight, very fine authoring, large photogrammetry worlds) are strategic pressure, not permission to build a universal platform upfront.
@@ -257,7 +247,7 @@ Vite 8.1.5
 box3d.js 0.0.2
 ```
 
-Use tests proportional to causal blast radius. A docs/authority-only hardening pass does not justify runtime/device validation. Run full `npm ci` + `npm run build` on the final post-hardening JV-Web source at the pre-Codex source-close boundary or earlier only if a foundation/toolchain/runtime change makes it causal.
+Use tests proportional to causal blast radius. Docs/analysis-only Gate 5 work does not justify runtime/device validation. Run full `npm ci` + `npm run build` on the final post-hardening JV-Web source at the pre-Codex source-close boundary or earlier only if a foundation/toolchain/runtime change makes it causal.
 
 No new branch/checkpoint/schema/backend abstraction/consumer adapter/runtime slice is authorized merely by a new conversation or executor context.
 
@@ -265,7 +255,7 @@ No new branch/checkpoint/schema/backend abstraction/consumer adapter/runtime sli
 
 - `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` — rationale and staged next-generation takeover loop; not a competing source of current live anchors.
 - `docs/RECIPIENT_SURFACE.md` — detailed Recipient V1 source/evidence map.
-- `docs/INHERITANCE_MATRIX.md` — provisional per-claim donor synthesis; roadmap commitments are subordinate to this current-state file until Gate 5 updates the matrix.
+- `docs/INHERITANCE_MATRIX.md` — current Gate 5 cross-project decision matrix and primary input to Gate 6.
 - `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — canonical Web-side Native closure receipt.
 - `docs/OWNER_CHECKPOINTS.md` — scoped Owner acceptance, supersession and negative-knowledge evidence.
 - `docs/ARCHITECTURE.md` — stable current system/authority boundaries, not future architecture freeze.
@@ -277,6 +267,7 @@ Stop and re-ground if:
 
 - live source/ref differs from the assumed write target;
 - implementation begins before the first falsifier is explicitly selected;
+- Gate 6 hypotheses are cosmetic variants rather than materially competing designs;
 - a donor implementation is being copied because it is accepted in its own project rather than because its claim survived evidence challenge;
 - JURE or its schema is becoming mandatory without a concrete demonstrated need;
 - unresolved mating/coordinates are being guessed by the agent;
