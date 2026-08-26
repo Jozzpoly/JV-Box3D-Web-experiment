@@ -1,7 +1,7 @@
 # JV Web — takeover handoff
 
 Updated: 2026-08-26
-Status: `CURRENT HANDOFF / JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / JV_CORE SEALED / GATE 0 + GATE 1 COMPLETE / RECIPIENT MAP V2 NEXT / FIRST FALSIFIER NOT SELECTED / FINAL CODEX HANDOFF NOT FROZEN`
+Status: `CURRENT HANDOFF / JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / JV_CORE SEALED / GATES 0-5 COMPLETE / GATE 6 CURRENT / FIRST FALSIFIER NOT SELECTED / FINAL CODEX HANDOFF NOT FROZEN`
 
 Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
 
@@ -14,7 +14,7 @@ Before any write:
 3. resolve `Jozzpoly/JV-Box3D-Web-Public/main` when release identity matters;
 4. resolve any ordinary branch actually ahead of source `main` and open PR/issues;
 5. read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`;
-6. use `docs/RECIPIENT_SURFACE.md`, `docs/INHERITANCE_MATRIX.md`, donor seal and transition handoff as evidence surfaces only when relevant.
+6. use `docs/INHERITANCE_MATRIX.md`, `docs/RECIPIENT_SURFACE.md`, `docs/OWNER_CHECKPOINTS.md`, donor seal and transition handoff as evidence surfaces only when relevant.
 
 Do not restart closed recovery/publication campaigns merely because historical refs remain visible.
 
@@ -22,14 +22,14 @@ Do not restart closed recovery/publication campaigns merely because historical r
 
 Accepted source/product authority is live `main`; resolve its exact SHA on entry.
 
-Last runtime/product-grounded source before this documentation/authority-hardening pass:
+Last runtime/product-grounded source before the current documentation/authority-hardening pass:
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
 4b07b66eb9b8103f74ec426979de12022f9817b9
 ```
 
-A later `main` descendant produced solely by this hardening pass is documentation/contract change, not evidence of runtime behavior change.
+Later `main` descendants produced solely by the current analysis/documentation passes do not imply runtime/product behavior change.
 
 Owner Preview operational pointer at the latest grounding:
 
@@ -56,7 +56,7 @@ Latest grounding found no open JV-Web PR/issues and no ordinary active runtime/p
 
 Inheritance order:
 
-`Owner truth -> portable semantics/mechanics -> candidate technique -> legacy implementation/defaults/docs`
+`Owner truth -> portable semantics/mechanics -> proven recipient/donor technique -> candidate implementation -> legacy implementation/defaults/docs`
 
 ## 4. Protected accepted Web capital
 
@@ -81,22 +81,24 @@ These are protected product evidence, not permanent implementation architecture.
 
 Pedal Contact V1/V1.1 remains rejected/deferred evidence, not active work.
 
-## 5. Donor deconstruction verdict
+## 5. Gates 0-5 verdict
 
-Gate 1 is complete enough to proceed.
+The pre-Codex evidence reconstruction/synthesis through Gate 5 is complete enough to proceed.
 
-Strong cross-project constraints:
+Strong cross-project constraints include:
 
-- distinct real roles: chassis / upper arm / lower arm / knuckle-upright / wheel plus rack-knuckle steering relation;
+- distinct real M6 roles: chassis / upper arm / lower arm / knuckle-upright / wheel plus rack-knuckle steering relation;
 - no invented extra physical carrier body;
 - independent owner-local relation endpoint frames;
 - coherent mechanical unit rather than mixed partial geometry authorities;
 - authored/neutral truth separated from runtime dynamics/contact/solver policy;
+- do not assume authored-element -> runtime-body/collider 1:1 mapping as an invariant; exact lowering/body granularity remains open;
 - source provenance + deterministic relink/persistence are valuable authored-truth requirements;
 - stale visual ownership (`ridesBody`, arbitrary common surrogate parenting) is not mechanical authority;
 - physical steering intent should not be hidden by silent artificial centering;
 - mode5 / analytic real-width wheel is current Owner-selected donor direction, but not final tire architecture;
-- deterministic mode5 anti-centering remains a later falsifier/known debt, not a solved defect.
+- deterministic mode5 anti-centering remains a later falsifier/known debt, not a solved defect;
+- current Web browser/input/mobile/world/publication capabilities are first-class product capital, not merely recipient baggage.
 
 Still open:
 
@@ -112,7 +114,7 @@ Still open:
 
 ## 6. Critical routing correction
 
-Older current docs previously described:
+Older planning described:
 
 `Rig Truth Intake & Mechanical Foundation — Front Mechanical Unit 01`
 
@@ -122,57 +124,65 @@ That commitment is superseded.
 
 Current status:
 
-`Front Mechanical Unit 01 = LEADING FALSIFIER CANDIDATE — NOT SELECTED IMPLEMENTATION STAGE`.
+`Front Mechanical Unit 01 = STRONG BOUNDED FALSIFIER CANDIDATE — NOT RANKED / NOT SELECTED`.
 
-It remains strong because it is bounded, donor-rich and Owner-visible. It must still win the later falsifier-selection step.
+It is strong because it is bounded, donor-rich and Owner-visible, but it has no precedence before the Gate 6 comparison and Gate 7 selection.
 
-Likewise, **do not freeze a JURE -> Web lowering/space-conversion receipt before Codex**. Pre-Codex work freezes evidence, truth, provenance, constraints, negative knowledge and unknowns. The consumer/lowering architecture remains a repo-native design decision to challenge after donor + recipient reconstruction.
+Likewise, **do not freeze a JURE -> Web lowering/space-conversion receipt before Codex**. Pre-Codex work freezes evidence, truth, provenance, constraints, negative knowledge and unknowns. The consumer/lowering architecture remains a repo-native design decision to challenge later.
 
-JURE also remains optional: do not convert current successful JURE workflows into a mandatory future application boundary.
+JURE remains optional: do not convert current successful JURE workflows into a mandatory future application boundary.
 
-## 7. Next work
+## 7. Current work — Gate 6
 
-Next stage:
+### Competing Architecture Hypotheses
 
-### Gate 2 — JV-Web Technology-Capital / Recipient Map V2
+Generate genuinely competing next-generation architecture hypotheses from `docs/INHERITANCE_MATRIX.md` rather than converging immediately on FMU01 or any one runtime technology.
 
-Map the whole current product across UI/product shell, input, steering, pedals, drivetrain, suspension, wheel/contact, rig truth, visual binding, renderer, camera, assets, scan/world, map, serialization/config, evidence/testing, Preview/publication and mobile.
+Each serious hypothesis must state:
 
-For each surface separate value into:
+- runtime/mechanical authority boundary;
+- what current Web behavior/technique it preserves;
+- what it replaces;
+- which earned constraints it satisfies;
+- what remains deliberately domain-specific;
+- authored-truth vs runtime-representation treatment;
+- strongest reason the hypothesis could be wrong;
+- cheapest high-information falsifier;
+- causal blast radius;
+- decisions it can leave open;
+- new commitment it would force if adopted.
 
-`KEEP BEHAVIOR / HARDEN / EXTRACT TECHNIQUE / REIMPLEMENT / RESEARCH / REJECT / HISTORICAL`.
+At least two hypotheses must differ materially in runtime/mechanical authority boundary, not merely language, naming or class layout. Retain a conservative/control hypothesis when useful so that a rewrite is not assumed superior.
 
-Do not equate working code with permanent architecture.
+Gate 6 **does not select a winner**. It produces the comparison set for Gate 7.
 
 Then:
 
-3. Owner Truth + Negative Knowledge.
-4. Future-Vision Pressure Test.
-5. Inheritance Matrix V2.
-6. Competing architecture hypotheses.
-7. Select first next-generation falsifier.
+7. Select first next-generation falsifier by information gain + product value + bounded blast radius + reversibility.
 8. Freeze responsibility boundaries, not architecture.
 9. Final pre-Codex source/document close + canonical validation.
 10. Read-only Codex cold-takeover dry run.
 11. Only after PASS begin fundamental implementation.
 
-## 8. Evidence surfaces and known staleness
+## 8. Evidence surfaces and known historical status
 
-- `docs/RECIPIENT_SURFACE.md` is Recipient V1 and was written before donor closure. Its source findings remain valuable; its phase-status is historical.
-- `docs/INHERITANCE_MATRIX.md` is provisional donor synthesis V1. Use per-claim evidence, not its older FMU01 roadmap wording, until Gate 5 updates it.
-- `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` contains the rationale for the current staged loop and explicit non-decisions.
+- `docs/PROJECT_STATE.md` owns current routing.
+- `docs/INHERITANCE_MATRIX.md` is the current Gate 5 decision synthesis; its Gate 6 pressure clusters are not a ranked queue.
+- `docs/RECIPIENT_SURFACE.md` is Recipient V1 evidence and its old phase-status is historical.
+- `docs/OWNER_CHECKPOINTS.md` records scoped Owner truth, supersession and negative knowledge.
+- `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` contains rationale and explicit non-decisions.
 - `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` is the canonical Web-side Native closure receipt.
 
 ## 9. Codex readiness
 
-Not ready for fundamental implementation yet.
+Not ready for fundamental implementation yet, but the largest evidence-reconstruction passes are complete.
 
 Before final Codex handoff:
 
-- complete Recipient Map V2 and the following truth/pressure/matrix passes;
-- generate competing architecture hypotheses;
-- explicitly select the first falsifier;
-- close remaining material documentation/evidence inconsistencies;
+- complete Gate 6 competing architecture hypotheses;
+- explicitly select the first falsifier in Gate 7;
+- close Owner/orchestrator/Codex responsibility boundaries;
+- close remaining material documentation/source inconsistencies;
 - run final exact-toolchain `npm ci` + `npm run build` on the final post-hardening source SHA;
 - deliberately verify/repoint Owner Preview only if useful for the final handoff;
 - perform a read-only Codex cold takeover and compare its reconstruction against live evidence and Owner intent.
