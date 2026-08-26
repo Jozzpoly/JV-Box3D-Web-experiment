@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-26
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ACTIVE RUNTIME LANE / JV_CORE SEALED / GATES 0-5 COMPLETE / GATE 6 CURRENT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ACTIVE RUNTIME LANE / JV_CORE SEALED / GATES 0-6 COMPLETE / GATE 7 CURRENT / FIRST FALSIFIER NOT YET SELECTED / PRE-CODEX ANALYSIS ACTIVE`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file. `docs/PROJECT_STATE.md` owns current routing.
 
@@ -22,13 +22,13 @@ Inheritance priority:
 
 Accepted source/product authority is live JV-Web `main`; resolve its exact SHA before writes.
 
-Last runtime/product-grounded source before the current documentation/authority-hardening pass:
+Last runtime/product-grounded source before the current documentation/analysis pass:
 
 ```text
 4b07b66eb9b8103f74ec426979de12022f9817b9
 ```
 
-A later `main` descendant produced only by this hardening/analysis pass is documentation/contract change, not runtime evidence.
+Later `main` descendants produced only by this documentation/analysis pass are not runtime evidence.
 
 Latest grounded operational anchors:
 
@@ -42,7 +42,7 @@ Friends/Public:
   279dd4eec8599ad12c95e03b50a52c478e8a50e7
 ```
 
-No open JV-Web PR/issues and no ordinary active runtime/product lane were found at the last grounding. Re-resolve live before any write.
+No ordinary active runtime/product lane was found at the last grounding. Re-resolve live before any write.
 
 ## Protected accepted product capital
 
@@ -67,80 +67,87 @@ These are stability boundaries, not permanent implementation architecture.
 
 Pedal Contact V1/V1.1 = `NOT ACCEPTED / DEFERRED`.
 
-## Gates 0-5
+## Gates 0-6
 
-Gate 0 cold re-grounding: complete.
+Gates 0-5 evidence reconstruction/synthesis are complete.
 
-Gate 1 donor deconstruction: complete.
-
-Gate 2 JV-Web Technology-Capital / Recipient Map V2: complete.
-
-Gate 3 Owner Truth + Negative Knowledge: complete.
-
-Gate 4 Future-Vision Pressure Test: complete.
-
-Gate 5 Inheritance Matrix V2: complete as architecture-neutral decision synthesis.
+Gate 6 Competing Architecture Hypotheses is complete. See `docs/ARCHITECTURE_HYPOTHESES.md`.
 
 High-confidence constraints carried forward include:
 
 - distinct M6 chassis / upper arm / lower arm / knuckle-upright / wheel roles + rack-knuckle steering relation;
-- no additional physical carrier body in the M6 truth;
+- no additional physical carrier body in M6 truth;
 - independent owner-local relation endpoint frames;
 - coherent-unit replacement rather than mixed partial geometry authorities;
 - authored/neutral truth separate from runtime dynamics/contact/solver policy;
 - do not assume authored-element -> runtime-body/collider 1:1 mapping as an invariant; concrete lowering granularity remains open;
-- provenance + deterministic persistence/relink are valuable authored-truth requirements;
+- provenance + deterministic persistence/relink;
 - stale visual-parenting metadata/surrogates are not mechanical authority;
 - physical steering-return intent must not be hidden by silent centering assist;
 - mode5 / analytic real-width wheel is current Owner-selected donor direction, not final tire architecture;
-- mode5 anti-centering is preserved known debt/falsifier;
-- accepted Web input/mobile/world/publication behavior is first-class stability capital, not merely recipient baggage.
+- mode5 anti-centering remains a known debt/falsifier;
+- accepted Web input/mobile/world/publication behavior is first-class stability capital.
 
-Open: exact mating, final ontology/granularity, lowering architecture, runtime technology, tire/contact, renderer, world streaming, authoring-tool split and first runtime falsifier.
+## Gate 6 comparison set
 
-## Current recipient challenge surfaces
+Gate 6 found a multi-axis option space rather than three flat architecture choices.
 
-- `legacy_ts_m6` = reference browser fixture, not product-physics authority;
-- Native/Web drivetrain semantic mismatch remains;
-- `legacy_m6_split_sphere_sidewall` remains active contact;
-- procedural wishbone geometry;
-- provisional FL source-registered steering case + extra physical carrier bridge;
-- temporary FR symmetric bridge;
-- provisional rack/full-lock mapping;
-- R3 visual calibration != mechanical authority;
-- neutral Web mechanism = comparison/lowering seam, not frozen future schema.
+**Authority architecture axis:**
 
-This is technical-debt inventory, not an automatic repair queue.
+- `A1 WEB-NATIVE MECHANICAL CORE` — new Web repo-native vehicle mechanics over the browser Box3D boundary; legacy TS M6 remains control.
+- `A2 NATIVE-DERIVED COMPILED VEHICLE CORE` — Web remains product/input/render host; vehicle mechanical authority moves behind a compiled browser ABI.
+
+**Migration / necessity axis:**
+
+- `M1 COHERENT-SUBSYSTEM REPLACEMENT` — one complete unit inside the current solver world; migration/falsification strategy, not a third final authority architecture.
+- `C0 CONSERVATIVE SEMANTIC CONTROL` — one local A/B to test whether a specific Owner pain needs architecture work at all.
+
+Source facts important to this comparison:
+
+- current `F4VehicleHost` directly asserts legacy M6 and creates M6 topology; backend vocabulary is not actual interchangeability;
+- `native_jv_wasm` is currently an id/type possibility, not an implemented JV vehicle backend;
+- current Box3D binding is already WebAssembly-backed, so A1/A2 is about where **vehicle policy/topology/controller authority** lives;
+- current M6 runtime builder is coupled enough that low-blast subsystem replacement must be proven, not assumed.
+
+Current falsifier candidates, not authorizations:
+
+- A1: `WEB-NATIVE-CAPABILITY-SLICE`;
+- A2: `NATIVE-CORE-BROWSER-VERTICAL-SLICE`;
+- M1: `COHERENT-UNIT-ISOLATION-PROBE`;
+- C0: one local semantic A/B control.
 
 ## Critical routing correction
 
-**Front Mechanical Unit 01 is not selected implementation work and is not ranked yet.**
+`Front Mechanical Unit 01 = STRONG BOUNDED FALSIFIER CANDIDATE — NOT RANKED / NOT SELECTED`.
 
-Current classification:
-
-`STRONG BOUNDED FALSIFIER CANDIDATE — NOT RANKED / NOT SELECTED`.
-
-Do not freeze JURE -> Web lowering/space-conversion before Codex. Pre-Codex work freezes truth, constraints, provenance, negative knowledge and unknowns; later repo-native design challenge chooses consumer/lowering architecture.
-
-Do not freeze JURE as mandatory/final authoring application.
+Do not freeze JURE -> Web lowering/space-conversion before Codex. Do not freeze JURE as mandatory/final authoring application.
 
 ## Next
 
-**Gate 6 — Competing Architecture Hypotheses**.
+**Gate 7 — First Next-Generation Falsifier Selection**.
 
-Generate genuinely different next-generation runtime/mechanical boundary hypotheses from the Gate 5 matrix. Each serious hypothesis must state what it preserves, what it replaces, how it respects earned authority constraints, strongest failure reason, cheapest high-information falsifier, causal blast radius, commitments forced and decisions that can remain open.
+Select one experiment, not a permanent architecture, by comparing:
 
-At least two hypotheses must differ materially in runtime/mechanical authority boundary; retain a conservative/control hypothesis where useful. Gate 6 does **not** choose a winner.
+- architecture information gain;
+- direct Owner/product value;
+- causal blast radius;
+- reversibility/rollback;
+- dependence on currently open Owner truth such as exact mating;
+- deterministic evidence quality;
+- risk of testing tooling/implementation stamina instead of the hypothesis;
+- premature commitment required just to run the test.
 
-Then: Gate 7 first-falsifier selection -> Gate 8 responsibility boundary -> Gate 9 final source/document close + canonical validation -> Gate 10 read-only Codex cold takeover -> implementation only after PASS.
+Gate 7 exit must define one exact falsifier with PASS/FAIL/inconclusive semantics, smallest valid scope, protected baseline and validation ladder. Do not implement during selection.
+
+Then: Gate 8 responsibility boundary -> Gate 9 final source/document close + canonical validation -> Gate 10 read-only Codex cold takeover -> implementation only after PASS.
 
 ## Evidence routing
 
 - `docs/PROJECT_STATE.md` = current routing authority.
-- `docs/INHERITANCE_MATRIX.md` = current Gate 5 cross-project decision synthesis.
+- `docs/ARCHITECTURE_HYPOTHESES.md` = Gate 6 authority/migration comparison and falsifier candidates; no winner.
+- `docs/INHERITANCE_MATRIX.md` = Gate 5 cross-project decision synthesis; Gate 6 carries two binding wording corrections until final consolidation.
 - `docs/RECIPIENT_SURFACE.md` = Recipient V1 evidence; phase-status is historical.
 - `docs/OWNER_CHECKPOINTS.md` = scoped Owner truth, supersession and negative knowledge.
-- `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` = rationale and staged next-generation loop.
 - `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` = canonical Native closure receipt.
 
 Do not create a new branch/schema/backend abstraction/runtime slice merely because executor context changes.
