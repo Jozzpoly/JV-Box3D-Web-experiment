@@ -53,7 +53,7 @@ No active native-derived JV vehicle WASM implementation or build path exists in 
 
 ## 3. Shared non-negotiable constraints
 
-A serious hypothesis is disqualified if it requires violating these merely for convenience:
+A serious architecture hypothesis is disqualified if it requires violating these merely for convenience:
 
 - preserve accepted Web input/mobile/world/camera/fullscreen/publication behavior outside the declared experiment blast radius;
 - preserve independent relation-local endpoint ownership where relational mechanical truth is involved;
@@ -69,9 +69,9 @@ A serious hypothesis is disqualified if it requires violating these merely for c
 
 These constraints do not imply one runtime technology or one lowering architecture.
 
-## 4. H1 — Web-native mechanical core
+## 4. Architecture axis A1 — Web-native mechanical core
 
-Classification: `SERIOUS HYPOTHESIS / NEW WEB VEHICLE AUTHORITY`
+Classification: `SERIOUS ARCHITECTURE HYPOTHESIS / NEW WEB VEHICLE AUTHORITY`
 
 ### Boundary
 
@@ -109,13 +109,13 @@ When selected, it may replace the current M6 topology/controller/runtime builder
 
 ### Authored truth treatment
 
-Authored relation/frame/provenance truth may be consumed when a real mechanism needs it, but H1 does not require JURE or a frozen serialized schema. Runtime body/collider granularity remains Web-owned and mechanism-specific.
+Authored relation/frame/provenance truth may be consumed when a real mechanism needs it, but A1 does not require JURE or a frozen serialized schema. Runtime body/collider granularity remains Web-owned and mechanism-specific.
 
 ### Healthy specialization
 
 The vehicle core may be deliberately wheeled-vehicle/M6-specific. It must not pretend double-wishbone, tire or rack mechanics are universal machine abstractions.
 
-### Strongest reason H1 could be wrong
+### Strongest reason A1 could be wrong
 
 The browser-facing Box3D API/binding or a TypeScript-owned vehicle layer may be a real capability/iteration ceiling for the mechanics JV wants. If important donor mechanisms require engine features not exposed cleanly by the Web binding, repeated source-level native behavior, or too much per-joint orchestration/translation, a Web-native rewrite could reproduce the same quality ceiling in cleaner code.
 
@@ -154,13 +154,13 @@ FAIL / strong downgrade signal:
 - browser Box3D API is accepted as the near-term execution boundary, subject to later challenge;
 - Native becomes evidence/donor rather than executable vehicle authority.
 
-### Decisions H1 can leave open
+### Decisions A1 can leave open
 
 JURE/tool choice, serialized schema, final tire architecture, renderer, world streaming, one-app/multi-app split and future flight dynamics.
 
-## 5. H2 — native-derived compiled vehicle core
+## 5. Architecture axis A2 — native-derived compiled vehicle core
 
-Classification: `SERIOUS HYPOTHESIS / COMPILED VEHICLE AUTHORITY`
+Classification: `SERIOUS ARCHITECTURE HYPOTHESIS / COMPILED VEHICLE AUTHORITY`
 
 ### Boundary
 
@@ -205,7 +205,7 @@ The compiled core must not own authored-source truth implicitly. It may consume 
 
 The compiled core may be a wheeled-vehicle core, not a universal machine runtime. A future drone core may be separate unless real evidence earns a shared dynamics layer.
 
-### Strongest reason H2 could be wrong
+### Strongest reason A2 could be wrong
 
 The build/ABI/world-integration boundary may cost more than the mechanical value it buys. Because vehicle contact must exist in the same physical world as terrain, a useful compiled core cannot simply be a detached "vehicle algorithm DLL" while current Web owns a separate solver world. It must either own/shared-access the relevant Box3D world or expose a sufficiently coherent integration path.
 
@@ -261,13 +261,13 @@ FAIL / strong downgrade signal:
 - world/contact ownership across that ABI must be explicit;
 - debugging and telemetry must span TypeScript + compiled code.
 
-### Decisions H2 can leave open
+### Decisions A2 can leave open
 
 JURE/tool choice, final serialized authored schema, renderer, world visual streaming, future flight architecture and final tire model — although the compiled engine/binding capability influences the latter.
 
-## 6. H3 — coherent-subsystem replacement in the current solver world
+## 6. Migration axis M1 — coherent-subsystem replacement in the current solver world
 
-Classification: `SERIOUS HYPOTHESIS / INCREMENTAL MECHANICAL AUTHORITY MIGRATION`
+Classification: `MIGRATION / FALSIFICATION HYPOTHESIS — ORTHOGONAL TO FINAL AUTHORITY`
 
 ### Boundary
 
@@ -279,7 +279,9 @@ accepted current Web product + Box3D world
 -> existing trace/visual/product surfaces compare old vs new
 ```
 
-H3 treats whole-core selection as premature. It deliberately migrates one coherent unit at a time inside the current browser solver world, without building a universal backend/plugin framework.
+M1 treats whole-core replacement as potentially premature. It deliberately migrates one coherent unit at a time inside the current browser solver world, without building a universal backend/plugin framework.
+
+M1 is **not a third final authority architecture**. A successful M1 path could migrate toward A1, or it could later prove that a compiled A2 boundary is needed for selected units/the final core. Gate 7 must not score M1 as though it were the same decision dimension as A1/A2.
 
 ### Strongest case
 
@@ -287,7 +289,7 @@ H3 treats whole-core selection as premature. It deliberately migrates one cohere
 - strongest direct A/B comparison with the accepted product/control specimen;
 - preserves current worlds, host, inputs, visuals and telemetry;
 - can target exactly the intersection of Owner pain and architecture debt;
-- allows future runtime technology choice to remain open while gathering better mechanical evidence;
+- allows final runtime authority choice to remain open while gathering better mechanical evidence;
 - fits the project loop: smallest meaningful change -> causal test -> faithful render/device evidence -> Owner judgement.
 
 ### What it preserves
@@ -300,17 +302,17 @@ Only a selected coherent mechanism. It must replace all mutually dependent geome
 
 ### Authored truth treatment
 
-A unit may consume explicit authored frames/relations if required, but H3 does not freeze the producer or schema. Exact runtime representation is chosen for the unit and need not mirror authored element count.
+A unit may consume explicit authored frames/relations if required, but M1 does not freeze the producer or schema. Exact runtime representation is chosen for the unit and need not mirror authored element count.
 
 ### Healthy specialization
 
 Every replacement can remain mechanism/domain-specific. No generic "component plugin" ontology is required.
 
-### Strongest reason H3 could be wrong
+### Strongest reason M1 could be wrong
 
 Current M6 construction is not demonstrably modular. Source already intertwines procedural hardpoints, FL special carrier/steering treatment, wheel creation and control-arm/joint construction. A supposedly local replacement may therefore require changes across topology, steering, contact, trace and visuals.
 
-If so, H3 can become the worst of both worlds:
+If so, M1 can become the worst of both worlds:
 
 - old and new mechanical truths coexist;
 - temporary adapters become permanent;
@@ -345,19 +347,19 @@ This probe can use control geometry; it does not require guessing or prematurely
 
 ### Expected blast radius of falsifier
 
-`LOW-MEDIUM` if performed as structural/runtime isolation evidence. If the chosen unit forces whole-vehicle topology changes, that result itself falsifies the claimed low-blast architecture.
+`LOW-MEDIUM` if performed as structural/runtime isolation evidence. If the chosen unit forces whole-vehicle topology changes, that result itself falsifies the claimed low-blast migration strategy.
 
-### Commitments if adopted
+### Commitments if used
 
 - temporary coexistence of legacy and new mechanical authorities during migration;
 - explicit per-unit authority boundaries and rollback controls;
 - discipline against generic plugin/framework expansion.
 
-### Decisions H3 can leave open
+### Decisions M1 can leave open
 
-TS vs native-derived compiled core for later units, JURE/schema, final tire architecture, renderer, world streaming and future machine architecture.
+A1 vs A2 final authority, JURE/schema, final tire architecture, renderer, world streaming and future machine architecture.
 
-## 7. H0 — conservative semantic-correction control
+## 7. Control C0 — conservative semantic correction
 
 Classification: `CONTROL HYPOTHESIS / NOT A NEXT-GENERATION ARCHITECTURE`
 
@@ -374,32 +376,39 @@ The obvious existing example is the longitudinal `maxDriveSpeed` semantic mismat
 - prevents architecture work from being justified only by aesthetic dislike of legacy code;
 - gives a baseline for how much improvement a local correction can achieve before structural replacement is warranted.
 
-### Strongest reason H0 could be wrong
+### Strongest reason C0 could be wrong
 
-It has low architecture information gain. A successful local fix may polish a backend that is explicitly not product-physics authority, while known suspension/steering/contact/rig debt remains. Repeated H0 slices would become a legacy-polish campaign rather than next-generation work.
+It has low architecture information gain. A successful local fix may polish a backend that is explicitly not product-physics authority, while known suspension/steering/contact/rig debt remains. Repeated C0 slices would become a legacy-polish campaign rather than next-generation work.
 
 ### Cheapest high-information falsifier
 
-A single headless/isolated semantic correction or A/B experiment with no broad product integration. If it cannot materially change the relevant behavior because the defect is structural, H0 is quickly rejected for that pressure cluster.
+A single headless/isolated semantic correction or A/B experiment with no broad product integration. If it cannot materially change the relevant behavior because the defect is structural, C0 is quickly rejected for that pressure cluster.
 
 ### Expected blast radius
 
 `LOW`.
 
-### Commitments if adopted
+### Commitments if used
 
-None beyond the one experiment. H0 must not silently become the future architecture.
+None beyond the one experiment. C0 must not silently become the future architecture.
 
-## 8. Cross-hypothesis comparison
+## 8. Two-axis comparison
 
-| Hypothesis | Vehicle authority | Main upside | Strongest failure reason | Cheapest falsifier | Falsifier blast radius | Major new commitment |
+### Authority architecture axis
+
+| Architecture | Vehicle authority | Main upside | Strongest failure reason | Cheapest falsifier | Falsifier blast radius | Major new commitment |
 | --- | --- | --- | --- | --- | --- | --- |
-| **H1 Web-native mechanical core** | New Web repo-native vehicle core over browser Box3D boundary | fastest product-integrated iteration; one repo/tooling context | browser binding/API or TS-side vehicle logic may be a real capability/semantic ceiling | `WEB-NATIVE-CAPABILITY-SLICE` | low-medium | Web owns vehicle policy; browser Box3D API is near-term execution boundary |
-| **H2 native-derived compiled core** | compiled native-derived vehicle/mechanical core behind Web semantic ABI | closer executable relationship to donor/native mechanics; can own needed engine surface | build/ABI/world integration may overwhelm value and import Native debt | `NATIVE-CORE-BROWSER-VERTICAL-SLICE` | medium | native build + ABI + solver/world ownership become product-critical |
-| **H3 coherent-subsystem replacement** | mixed migration: new coherent unit + legacy outside unit in one solver world | smallest causal blast; direct A/B/rollback; leaves runtime tech open | current topology may be too coupled; hybrid can become permanent patchwork | `COHERENT-UNIT-ISOLATION-PROBE` | low-medium | temporary dual authority and strict per-unit boundaries |
-| **H0 conservative control** | current legacy fixture for one local A/B only | cheapest test that architecture work is actually necessary | low architecture information; can polish a non-authoritative backend | one local semantic A/B | low | none; cannot become architecture by inertia |
+| **A1 Web-native mechanical core** | new Web repo-native vehicle core over browser Box3D boundary | fastest product-integrated iteration; one repo/tooling context | browser binding/API or TS-side vehicle logic may be a real capability/semantic ceiling | `WEB-NATIVE-CAPABILITY-SLICE` | low-medium | Web owns vehicle policy; browser Box3D API is near-term execution boundary |
+| **A2 native-derived compiled core** | compiled native-derived vehicle/mechanical core behind Web semantic ABI | closer executable relationship to donor/native mechanics; can own needed engine surface | build/ABI/world integration may overwhelm value and import Native debt | `NATIVE-CORE-BROWSER-VERTICAL-SLICE` | medium | native build + ABI + solver/world ownership become product-critical |
 
-This table is **not a ranking**.
+### Migration / necessity axis
+
+| Strategy/control | Purpose | Main upside | Strongest failure reason | Cheapest falsifier | Blast radius |
+| --- | --- | --- | --- | --- | --- |
+| **M1 coherent-subsystem replacement** | test/migrate one complete unit before whole-core commitment | smallest causal blast; direct A/B/rollback; leaves A1/A2 open | current topology may be too coupled; hybrid can become permanent patchwork | `COHERENT-UNIT-ISOLATION-PROBE` | low-medium |
+| **C0 conservative semantic correction** | test whether a specific Owner pain needs architecture work at all | cheapest evidence and useful control | low architecture information; can polish a non-authoritative backend | one local semantic A/B | low |
+
+These tables are **not rankings**. Gate 7 may choose a falsifier on the authority axis, the migration axis, or a control if it gives the highest information value per blast radius.
 
 ## 9. Orthogonal decisions deliberately not collapsed into the hypotheses
 
@@ -413,30 +422,30 @@ Gate 6 found that several decisions are orthogonal to runtime-authority location
 - one application vs cooperating tools;
 - future flight dynamics architecture.
 
-Any H1/H2/H3 implementation can be designed to keep these open until real evidence requires commitment.
+A1/A2 and M1 can all be designed to keep these open until real evidence requires commitment.
 
 ## 10. Product-preservation audit
 
-All serious hypotheses can, in principle, preserve the accepted browser product capital.
+Both authority architectures can, in principle, preserve accepted browser product capital.
 
-- H1 has the most direct access to existing Web host/tests but must avoid treating `F4VehicleHost` as already generic.
-- H2 can preserve Web UI/rendering, but physical world ownership is the most dangerous integration surface.
-- H3 has the smallest nominal product blast radius, but only if the chosen unit is genuinely isolatable.
-- H0 naturally preserves the product but does not solve architecture uncertainty.
+- A1 has the most direct access to existing Web host/tests but must avoid treating `F4VehicleHost` as already generic.
+- A2 can preserve Web UI/rendering, but physical world ownership is its most dangerous integration surface.
+- M1 has the smallest nominal product blast radius, but only if the chosen unit is genuinely isolatable.
+- C0 naturally preserves the product but does not solve architecture uncertainty.
 
-No hypothesis earns permission to rewrite input, mobile composition, camera, fullscreen, world loading, renderer or Preview merely because vehicle mechanics are changing.
+No path earns permission to rewrite input, mobile composition, camera, fullscreen, world loading, renderer or Preview merely because vehicle mechanics are changing.
 
 ## 11. Future-pressure / anti-platform audit
 
-None of H1/H2/H3 requires a universal machine ontology.
+Neither A1 nor A2 requires a universal machine ontology.
 
-- H1 can host a deliberately M6/wheeled-vehicle core and later add a separate flight domain.
-- H2 can compile a wheeled-vehicle mechanical core without claiming every future machine must use it.
-- H3 is explicitly per-mechanism/domain.
+- A1 can host a deliberately M6/wheeled-vehicle core and later add a separate flight domain.
+- A2 can compile a wheeled-vehicle mechanical core without claiming every future machine must use it.
+- M1 is explicitly per-mechanism/domain.
 
-A hypothesis fails future-pressure review if it turns current M6 body counts, tire semantics, rack topology or JURE field names into universal machine truth.
+A path fails future-pressure review if it turns current M6 body counts, tire semantics, rack topology or JURE field names into universal machine truth.
 
-Large-world ambition is not a reason to choose H1/H2/H3. The relevant constraint is only that vehicle-core choices must not silently own world rendering/streaming architecture. Physical world/collider ingestion is a real H2 integration concern; visual streaming remains separate.
+Large-world ambition is not a reason to choose A1/A2/M1. The relevant constraint is only that vehicle-core choices must not silently own world rendering/streaming architecture. Physical world/collider ingestion is a real A2 integration concern; visual streaming remains separate.
 
 ## 12. Falsifier-quality review
 
@@ -452,18 +461,18 @@ High-quality falsifiers should:
 - have an explicit failure result that can downgrade a hypothesis;
 - avoid requiring exact Owner-open mating unless the selected information question truly depends on it.
 
-The hypothesis-specific candidates currently are:
+Current candidates are:
 
-- H1: `WEB-NATIVE-CAPABILITY-SLICE`;
-- H2: `NATIVE-CORE-BROWSER-VERTICAL-SLICE`;
-- H3: `COHERENT-UNIT-ISOLATION-PROBE`;
-- H0: one local semantic A/B control.
+- A1: `WEB-NATIVE-CAPABILITY-SLICE`;
+- A2: `NATIVE-CORE-BROWSER-VERTICAL-SLICE`;
+- M1: `COHERENT-UNIT-ISOLATION-PROBE`;
+- C0: one local semantic A/B control.
 
 Gate 7 may refine or reject all of them. Their presence here is not authorization.
 
 ## 13. Gate 6 verdict
 
-The architecture space remains genuinely plural.
+The architecture space remains genuinely plural, but it is **multi-axis rather than a flat list**.
 
 FACT:
 
@@ -471,12 +480,14 @@ FACT:
 - current backend vocabulary is ahead of actual backend interchangeability;
 - no native-derived JV vehicle WASM core currently exists in the repo;
 - current M6 construction is sufficiently coupled that incremental replacement cannot be assumed cheap;
-- no current evidence proves that vehicle authority must live in TypeScript or in a compiled native core.
+- no current evidence proves that vehicle authority must live in Web-native TypeScript or in a compiled native-derived core;
+- coherent-subsystem replacement is a migration/falsification strategy, not evidence of a third final authority architecture.
 
 HYPOTHESIS:
 
-- H1, H2 and H3 are all plausible enough to deserve falsification rather than rhetorical selection;
-- H0 is useful only as a control against unnecessary architecture work.
+- A1 and A2 are both plausible enough to deserve falsification rather than rhetorical selection;
+- M1 may be a lower-blast way to gather evidence for either authority direction, but it must first survive the isolation problem;
+- C0 is useful only as a control against unnecessary architecture work.
 
 NOT VALIDATED:
 
@@ -484,8 +495,9 @@ NOT VALIDATED:
 - whether a compiled native-derived vehicle boundary is operationally cheap enough for the Web product;
 - whether a coherent unit can actually be isolated inside the current coupled M6 runtime;
 - which pressure cluster gives the highest information gain and product value;
-- which hypothesis should be preferred.
+- which falsifier should be executed first;
+- which authority architecture should ultimately be preferred.
 
 **Gate 6 does not choose a winner.**
 
-The next stage is Gate 7: select the **first next-generation falsifier** by information gain + product value + bounded blast radius + reversibility, while preserving the right to discard the architecture hypothesis it tests.
+The next stage is Gate 7: select the **first next-generation falsifier** by information gain + product value + bounded blast radius + reversibility, while preserving the right to discard the architecture or migration hypothesis it tests.
