@@ -1,9 +1,9 @@
 # JV Web — architecture
 
-Updated: 2026-08-22
-Status: `CURRENT STABLE BOUNDARIES`
+Updated: 2026-08-26
+Status: `CURRENT STABLE BOUNDARIES / FUTURE ARCHITECTURE NOT FROZEN`
 
-This document describes stable system boundaries. It is not a roadmap, branch ledger or mechanical-history archive.
+This document describes boundaries that are useful and currently stable. It is not a roadmap and does not freeze the next-generation runtime, renderer, authoring application, schema or vehicle ontology.
 
 ## 1. Product entry
 
@@ -11,178 +11,193 @@ This document describes stable system boundaries. It is not a roadmap, branch le
 index.html
 -> src/product-main.ts
 -> product world selection / product controls
--> runtime host + M6 product renderer
+-> runtime host + current M6 product renderer
 -> world renderer + owner vehicle layer
 ```
 
-The source product supports Plac E2R, Offroad and the approved JSPREV2 scan. Owner Preview should preserve accepted capabilities unrelated to the active experiment. Heavy approved static data may be composed into Preview as an exact pinned artifact layer with explicit provenance instead of being copied into product source. A deliberate capability omission is an explicit scoped Preview gap recorded in `docs/PROJECT_STATE.md`, not the default delivery model.
+The current product supports Plac E2R, Offroad and approved JSPREV2. Owner Preview should preserve accepted capabilities unrelated to the active experiment unless an omission is deliberate, explicit and scoped.
 
 ## 2. World boundary
 
-World data is independent from the vehicle runtime.
+World data is independent from vehicle runtime semantics.
 
 - Plac E2R / Offroad are built product-world inputs.
-- JSPREV2 is an external scan package decoded into the `JvWorldData` scan contract.
-- Product selection changes world/spawn behavior without redefining vehicle mechanics.
+- JSPREV2 is an external scan package decoded into the current `JvWorldData` scan contract.
+- Product world selection changes world/spawn behavior without redefining vehicle mechanics.
 - Render and collision representations are semantically separate even when derived from the same scan source.
 
-## 3. JSPREV2 transport and integrity
+Current scan loading/rendering is not proof of final large-world architecture. There is no current geometric LOD, streaming/residency system or world partitioning. Those remain future evidence-driven questions.
 
-Public scan assets resolve relative to `document.baseURI`, so the same build works under a GitHub Pages project path when the scan payload is included.
+## 3. Runtime/frame boundary
 
-Compressed HTTP `Content-Length` is not logical scan-file integrity. Runtime validates decoded payload/format: byte length, magic/version/tile/group descriptors, counts/triangle relationships, index range and finite numeric streams.
+Current physics uses a fixed 60 Hz simulation step. Browser presentation is decoupled from catch-up: one browser frame may execute multiple simulation steps but presents at most once using final state.
 
-The source/release layer additionally pins exact approved pack identity and file hashes. When JSPREV2 is preserved into Owner Preview as a static artifact layer, Preview composition must pin an exact artifact commit and validate runtime files against the approved release receipt before deploy.
+Telemetry separates browser cadence, presentation, simulation steps and major cost surfaces. Telemetry is diagnostic evidence, not Owner acceptance.
 
-## 4. Scan decode and loading
+Physics-performance work must not silently reduce simulation quality or semantics merely to improve presentation metrics.
 
-Current scan loading uses normal browser caching and a bounded two-tile fetch/parse pipeline while preserving deterministic final tile order.
+## 4. Product input boundary
 
-Finite validation and required group bounds are produced during parser work rather than by later full geometry rescans. Current collision representation remains a merged mesh from scan geometry.
+Device-specific controls emit through product input paths; they do not call current vehicle physics directly.
 
-All current scan render groups are installed at world creation. This is not streaming or world partitioning.
+Current steering interaction exposes `DIRECT_ROTATION` and `RELATIVE_X`, both feeding normalized steering position semantics. Longitudinal controls use the normalized analog path. Steering and throttle/brake ownership remain independent so simultaneous input works.
 
-## 5. Scan rendering
+These interaction behaviors are protected product capital. Their current internal implementation is not declared permanent architecture.
 
-The renderer remains WebGL1-compatible.
+## 5. Current vehicle/runtime boundary
 
-Index upload policy:
+The current browser vehicle uses pinned `box3d.js@0.0.2` and a TypeScript M6 implementation.
 
-- use source Uint32 indices when `OES_element_index_uint` is available;
-- otherwise use direct Uint16 where safe;
-- larger groups retain the safe Uint16 chunk fallback.
+Important authority rule:
 
-Each scan group has bounds for conservative frustum culling. Shared scan matrices/pass-level WebGL state are reused across visible groups while per-group texture/color/buffer state stays explicit.
+`working current vehicle != final vehicle-physics architecture`.
 
-Textures are ordinary browser image textures. There is no geometric LOD, texture streaming/residency system or world partitioning. Those are future scaling tools, not current Friends requirements.
+Current recipient challenge surfaces include:
 
-## 6. Frame/runtime boundary
+- `legacy_ts_m6` reference backend with product physics authority explicitly false;
+- Native/Web drivetrain semantic mismatch;
+- procedural/general wishbone hardpoints;
+- provisional front-left source-registered steering geometry;
+- temporary front-right symmetric steering bridge;
+- provisional rack/full-lock mapping;
+- `legacy_m6_split_sphere_sidewall` contact representation.
 
-Physics keeps a fixed 60 Hz step. Browser presentation is decoupled from fixed-step catch-up: one browser frame may execute multiple required simulation steps but presents at most once using final state.
+These may be replaced deliberately after a next-generation falsifier is selected. They are not an automatic cleanup queue.
 
-Rich M6 trace/visual materialization is deferred to the final presented catch-up state rather than repeated for intermediate steps.
+## 6. Authored neutral truth vs runtime representation
 
-Telemetry distinguishes browser cadence, scene presentation, simulation steps, physics/trace/render/UI time and startup loading/setup phases. Telemetry is diagnostic evidence, not a substitute for Owner-visible/browser validation.
+High-confidence cross-project constraint:
 
-## 7. Mobile compositor boundary
+**authored/neutral mechanical truth and runtime representation are separate layers**.
 
-On coarse-pointer/mobile layouts, live backdrop blur and heavy shadow effects over continuously changing WebGL are deliberately reduced. This is presentation/compositor policy; it does not change simulation, scan geometry or render scale.
+Portable authored truth may include:
 
-Responsive UI/camera behavior may evolve independently from vehicle mechanics.
+- element/role identity;
+- owner-local frames;
+- relation endpoints and semantics;
+- neutral geometry;
+- source/provenance;
+- representation intent when explicitly authored.
 
-## 8. Vehicle/physics boundary
+Runtime owns decisions such as:
 
-The current browser vehicle uses pinned `box3d.js@0.0.2` and the existing M6 Web implementation.
+- Box3D/body/joint identity;
+- mass/inertia/collision policy;
+- contact/tire model;
+- damping/springs/motors/force laws;
+- solver/runtime state;
+- controls and telemetry;
+- browser rendering integration.
 
-The coherent-front driving bridge is a useful product intermediate, not final rig/steering/handling architecture. Historical M5/M6 values, calibration outputs and convenience tests are evidence only for claims they directly prove.
+A one-to-one authored-element -> runtime-body mapping is **not** assumed.
 
-Current procedural hardpoints, source-registration repairs and rack/steering bridges are consumer runtime geometry. Their existence in production source does not make them authored neutral rig truth.
+A coherent mechanical unit must not mix mutually incompatible geometry authorities. Cross-project evidence already falsified the shortcut of replacing one authored hardpoint while retaining incompatible procedural companion geometry.
 
-Physics performance work must not silently reduce fixed-step rate, solver/substeps, collision semantics or vehicle complexity.
+## 7. Mechanical relation boundary
 
-## 9. Owner vehicle visual boundary
+Current high-confidence constraints include:
 
-Owner source meshes/contracts generate the browser visual package deterministically. Visual calibration must not silently retune physics, and physics convenience must not redefine authored asset semantics.
+- real front roles: chassis / upper arm / lower arm / knuckle-upright / wheel plus rack-knuckle steering relation;
+- no additional physical carrier body should be invented merely because an authoring representation uses `carrier` terminology;
+- relation endpoints have independent owner-local frame truth;
+- exact outboard physical mating remains Owner-open until explicitly judged;
+- stale visual parenting or common surrogate ownership is not mechanical authority.
 
-Visual representation and authored mechanical truth are separate. A visual package may render against provisional runtime mechanics until an explicit coherent authored rig replacement is validated.
+`Front Mechanical Unit 01` is a leading future falsifier candidate, **not a selected implementation stage**.
 
-## 10. JURE authoring and consumer boundary
+## 8. JURE / authoring boundary
 
-JURE is the intended Owner-facing authoring system for rig elements, frames, provenance, neutral mechanical relations and representation intent. JV Web is a consumer/falsifier of those authored outputs.
+JURE is the current strongest optional donor/tool for provenance-backed neutral rig authoring, inspection and correction. It has demonstrated useful capabilities: owner-local frames, neutral revolute/spherical relations, deterministic Save/Open/relink, diagnostics, correction and Undo/Redo.
 
-Authority split:
+This evidence does **not** freeze:
+
+- JURE as the permanent/final authoring application;
+- JURE `RigDocument` as a JV-Web runtime/consumer schema;
+- a JURE-specific product dependency;
+- the future lowering/consumer architecture.
+
+Any future authoring source used by JV-Web must preserve the proven authority principles: explicit provenance, deterministic identity, explicit units/basis, owner-local relation truth, no hidden coordinate guessing and separation from runtime dynamics.
+
+`docs/contracts/JURE_CONSUMER_BOUNDARY.md` records these durable constraints while keeping tool/schema choice open.
+
+## 9. Current neutral comparison seam
+
+JV `main` contains a small engine-neutral representation used to project/compare current Web geometry and produce deterministic diagnostic receipts.
+
+It is useful as:
+
+- a comparison seam;
+- an evidence/diagnostic surface;
+- a way to keep Box3D/runtime policy out of neutral geometry checks.
+
+It is **not** authority for the future serialized schema or proof of final lowering architecture.
+
+Do not expand it speculatively. Extend or replace only when a selected real fragment demonstrates missing information.
+
+## 10. Owner vehicle visual boundary
+
+Owner source meshes/contracts generate the current browser visual package deterministically.
+
+`VehicleVisualFrameV1` and current binding primitives provide useful separation between live runtime motion and rendering/binding. R3 proves that many moving real roots can follow current runtime state.
+
+But:
+
+`visual calibration != mechanical authority`.
+
+A future mechanical rewrite may preserve useful binding techniques while replacing current calibration, mappings or runtime source geometry.
+
+## 11. Renderer boundary
+
+The current renderer is a functioning Web product implementation and a useful performance/compatibility baseline. It is not frozen as next-generation renderer architecture.
+
+Renderer changes must be justified by product/evidence needs, not by architectural fashion. Large-world pressure may later challenge current loading/rendering assumptions, but current car work must not build speculative world infrastructure first.
+
+## 12. Camera/UI capability boundary
+
+Manual camera calibration is user-owned presentation state. Automatic camera effects may be additive but must not silently overwrite manual orbit/pan/distance calibration.
+
+Responsive UI/camera presentation may evolve independently from vehicle mechanics. UI polish is not permission to change drivetrain, rig, physics or input semantics.
+
+## 13. Source / Preview / Friends boundary
 
 ```text
-JURE
-  authored neutral elements / frames / relations / representation intent
-  source provenance and deterministic consumer-facing authored data
-
-JV Web
-  strict consumer parsing and placement validation
-  Box3D/runtime identities and topology
-  masses / inertia / damping / motors / force laws / solver/runtime policy
-  controls, rendering integration, telemetry and release behavior
-```
-
-JURE must not absorb Box3D/native consumer dynamics merely to make JV-Web integration convenient. JV-Web must not invent authored hardpoints/frames merely to make current visuals fit.
-
-### 10.1 Coherent replacement rule
-
-Cross-project evidence has falsified a dangerous shortcut: the current procedural M6 wishbone and exact/JURE-authored wishbone are not rigid-congruent. A consumer experiment must not replace one authored hardpoint/relation while silently retaining incompatible procedural shape around it.
-
-A JURE-authored neutral mechanism replaces a coherent mechanical unit. The exact minimum unit is intentionally not frozen while JURE still proves its multi-relation export shape.
-
-### 10.2 Future consumer seam
-
-First real JURE -> JV-Web integration is data-first and isolated:
-
-```text
-frozen/versioned JURE consumer fragment
--> exact fixture/source identity
--> strict independent parse
--> version / units / basis / provenance checks
--> explicit placement/transform validation
--> neutral geometry coherence checks
--> dry mapping into a consumer-neutral intermediate
--> only then isolated Box3D/runtime substitution experiment
-```
-
-Do not assume identity placement or guess unit conversion, handedness, basis or frame meaning. Fail closed when data is ambiguous or incomplete. Use `jure/<specific-purpose>` for the first isolated consumer experiment.
-
-### 10.3 Schema timing
-
-This repository intentionally does not freeze a concrete JURE JSON schema yet. Durable requirements live in `docs/contracts/JURE_CONSUMER_BOUNDARY.md`; an executable schema belongs only after an exact JURE fragment is frozen and independently validated by the consumer.
-
-## 11. Experience, camera and input boundary
-
-Manual camera calibration is user-owned presentation state. Automatic driving assists may derive additive camera response but must not silently rewrite manual orbit, pan, distance or saved calibration.
-
-Camera gesture ownership stays in the renderer/UI path. Terrain/obstacle camera avoidance requires an explicit environment-query/probe boundary; do not infer authoritative collision/ground state from visual data merely to make a camera effect work.
-
-Vehicle controls stay on the timestamped product-input path. Device-specific controls must not call M6 physics directly.
-
-Current steering source foundation exposes two Owner-facing interaction models — `DIRECT_ROTATION` and `RELATIVE_X` — that both emit through the normalized steering `POSITION` path. `X_POSITION` remains internal regression/reference only. Steering and longitudinal source ownership remain independent so simultaneous steering/pedal controls coexist. Final gesture tuning is presentation/input work and must not be conflated with steering physics.
-
-Current analog throttle/brake uses the normalized longitudinal path. Future pedal experiments should extend this boundary rather than bypass it.
-
-Immersive/fullscreen behavior, HUD composition and user settings are presentation/capability layers and do not become vehicle-mechanics authority.
-
-## 12. Source, Owner Preview and Friends artifact boundary
-
-```text
-Jozzpoly/JV-Box3D-Web-experiment
-  public source / development / accepted main
+JV-Web source main
+  accepted source/product authority
 
 preview/owner-control
-  operational exact-executable + approved-static-layer composition pointer
-  Owner Preview Pages workflow
-  R&D/testing surface, not source or release acceptance authority
+  operational exact-executable + approved-static-layer pointer
+  R&D/device evidence surface
 
-Jozzpoly/JV-Box3D-Web-Public
-  accepted Friends artifacts / release main
-  artifact authority, not source authority
+JV-Box3D-Web-Public/main
+  accepted Friends artifact authority
 ```
 
-Product changes originate in normal typed source. Owner Preview deploys one exact committed executable source for rapid device/R&D evidence and may compose explicitly approved immutable static layers whose repository/commit/receipt provenance is pinned separately. A successful Preview does not itself grant product or release acceptance, and preserved static data does not become source authority.
+Preview does not grant source/release acceptance. Preserved static layers keep separate exact provenance. Friends promotion is a separate decision from source acceptance.
 
-Preview V2 currently preserves the approved JSPREV2 scan from exact Friends/Public anchor `a325c279cfe63a0607dba33c3c635a1716e09f8f` while executable identity is independently pinned by `preview/owner.json`. After the 2026-08-22 steering integration close, the executable may point directly at accepted source `main` or a later scoped experiment; it is no longer conceptually tied to a special steering candidate.
+## 14. Next-generation architecture timing
 
-Accepted Friends publication is a separate artifact/release step from accepted source. The current Friends artifact still uses the older `cd7f5f89...` executable basis and has not yet been promoted from the dual-mode steering source foundation.
+Current pre-Codex work is not an architecture freeze.
 
-A code-only Friends release may carry forward the exact already-published scan; a scan-changing release must explicitly pin and validate the new approved scan input.
+Before selecting fundamental implementation:
 
-Historical release/work/checkpoint branch names are archaeology rather than authority. Current rollback/provenance uses exact commits and live authority documented in `docs/PROJECT_STATE.md` / `docs/HANDOFF.md`.
+1. finish JV-Web Technology-Capital / Recipient Map V2;
+2. preserve Owner Truth + Negative Knowledge;
+3. pressure-test inheritance against broader machine/world ambitions;
+4. update the inheritance matrix;
+5. generate competing architecture hypotheses;
+6. select the first falsifier by information gain + product value.
 
-## 13. Architecture principles
+A JURE -> Web lowering/schema choice belongs to that later design challenge. Pre-Codex preparation freezes evidence, constraints, provenance and unknowns, not a premature consumer architecture.
 
-- Owner-visible behavior and exact source/runtime evidence outrank historical naming;
-- source, Owner Preview deployment, accepted Friends artifact, authored data, visual representation and physics are separate layers;
-- Owner Preview preserves accepted capabilities unrelated to the active experiment unless omission is explicit/scoped;
-- preserved Preview static data has separate exact provenance and never becomes executable/source authority;
-- source acceptance does not automatically imply Friends/Public promotion;
-- JURE authors neutral rig truth; JV Web consumes it and owns runtime dynamics;
-- do not create partial hybrids between incompatible authored and procedural mechanism geometry;
-- tests protect real invariants, not provisional equations or incidental counts;
-- simple product bridges may exist but stay labeled temporary;
+## 15. Architecture principles
+
+- live source/evidence/Owner judgement outrank names and historical labels;
+- protected product behavior and permanent implementation architecture are different concepts;
+- source, Preview, Friends artifact, authored truth, visual representation and runtime physics remain separate authority layers;
+- relation-local authored truth must not be replaced by convenience parenting;
+- do not build partial hybrids from incompatible geometry authorities;
+- do not make JURE or another tool mandatory without demonstrated need;
+- do not design a universal vehicle/machine platform before real second cases justify generalization;
+- tests protect real invariants; provisional equations/bridges may be intentionally replaced by stronger evidence;
 - measure before adding scaling architecture;
-- documentation describes current truth; Git preserves expeditions and superseded designs.
+- documentation describes current truth; Git preserves historical expeditions.
