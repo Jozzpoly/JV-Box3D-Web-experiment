@@ -45,7 +45,7 @@ Pedal Contact + Mechanical Feedback V1/V1.1 is **NOT ACCEPTED / DEFERRED**. Do n
 - **JV-Web** — priority heir/product.
 - **JV_CORE / Native** — sealed primary donor/research record; active development stopped. Do not port it 1:1 and do not reopen it without a specific unresolved Web decision.
 - **JURE** — optional authoring/mechanical-truth donor and current useful inspection/correction tool. It is not a mandatory JV-Web dependency and is not frozen as the final authoring application/schema.
-- **Codex** — future repo-native executor after the pre-Codex analysis/handoff is coherent. It may challenge implementation architecture but not silently override live evidence or scoped Owner truth.
+- **Codex** — future repo-native executor after the pre-Codex analysis/handoff is coherent. It may challenge implementation technique and report contradictions, but it may not silently override live evidence, scoped Owner truth, the selected experiment question or its result semantics.
 
 Inheritance order:
 
@@ -55,29 +55,27 @@ Primary donor does not win automatically.
 
 ## 4. Current next-generation routing
 
-The current analysis loop is intentionally ahead of older FMU01-first planning.
+Gate 7 selected the first next-generation falsifier:
 
-`Front Mechanical Unit 01` is currently:
+`FRONT-CORNER-AUTHORITY-ISOLATION-01`
 
-`LEADING FALSIFIER CANDIDATE — NOT SELECTED IMPLEMENTATION STAGE`.
+Classification:
 
-Do not begin its implementation, resolve coordinates by guessing, or freeze a consumer/lowering contract merely because it is a strong candidate.
+`M1 STRUCTURAL FALSIFIER / CONTROL-EQUIVALENCE PROBE / NOT PRODUCT-MECHANICS ACCEPTANCE`
+
+The exact experiment contract is `docs/FIRST_FALSIFIER.md`. It supersedes older FMU01-first routing.
+
+`Front Mechanical Unit 01` is **not** the selected first implementation stage. Do not begin FMU reconstruction, improve the current FL mechanics, resolve coordinates by guessing, or freeze a consumer/lowering contract as part of the selected isolation probe.
 
 Current sequence is owned by `docs/PROJECT_STATE.md`:
 
-- donor deconstruction;
-- full JV-Web Technology-Capital / Recipient Map V2;
-- Owner Truth + Negative Knowledge;
-- future-vision pressure test;
-- Inheritance Matrix V2;
-- competing architecture hypotheses;
-- explicit first-falsifier selection;
-- responsibility boundary;
-- final source/document close;
+- Gates 0-7 evidence reconstruction, architecture comparison and falsifier selection — complete;
+- responsibility boundary — current until closed in routing;
+- final pre-Codex source/document close + canonical validation;
 - read-only Codex cold takeover;
 - implementation only after that reconstruction passes.
 
-A JURE -> Web lowering/space-conversion receipt is **not a pre-Codex freeze requirement**. Pre-Codex work freezes truth, constraints, provenance, negative knowledge and unknowns. The future consumer/lowering architecture remains challengeable.
+A JURE -> Web lowering/space-conversion receipt is **not a pre-Codex freeze requirement**. Pre-Codex work freezes truth, constraints, provenance, negative knowledge, selected experiment semantics and remaining unknowns. The future consumer/lowering architecture remains challengeable.
 
 ## 5. Authored truth / runtime boundary
 
@@ -100,23 +98,97 @@ Do not guess coordinates, units, basis, handedness, transforms, relation semanti
 
 Known recipient challenge surfaces include the `legacy_ts_m6` reference backend, drivetrain semantic mismatch, legacy split-sphere contact, procedural wishbones, provisional FL steering registration, temporary FR symmetric bridge, provisional rack/full-lock mapping, and the separation between R3 visual calibration and physical authority.
 
-These are not an automatic repair queue. Repairing them before Recipient Map V2 + architecture hypotheses would prematurely select architecture.
+These are not an automatic repair queue. The selected first falsifier is structural isolation/equivalence, not permission to repair any of these mechanics.
 
 Tool/helper failure is not product failure. Do not create cleanup/tooling campaigns unless their result can change the decision of the current slice.
 
-## 7. Work style
+## 7. Selected-falsifier responsibility boundary
 
-Jozz defines vision, priorities and Owner-visible acceptance. The engineering executor owns programming, repository work, technical analysis, build/CI mechanics, deployment and engineering troubleshooting.
+This section freezes **responsibility and authority to judge**, not future vehicle architecture or implementation API.
+
+### Orchestrator responsibilities
+
+The orchestrator owns:
+
+- preserving the exact selected question, protected baseline and causal scope;
+- deciding whether evidence answers the selected question rather than a nearby easier question;
+- interpreting the final result as `PASS`, `FAIL` or `INCONCLUSIVE` according to `docs/FIRST_FALSIFIER.md`;
+- rejecting hidden scope expansion, framework tax or semantic reinterpretation;
+- deciding post-result routing and whether a competing hypothesis must be reopened;
+- re-grounding live authority when source/ref/evidence drift invalidates assumptions.
+
+The orchestrator must not prescribe a concrete file layout, API shape or refactor technique merely to retain control. Those are executor decisions unless they change the experiment semantics.
+
+### Codex / repo-native executor responsibilities
+
+The repo-native executor owns normal engineering execution:
+
+- inspect the live source and relevant tests before changing code;
+- choose the smallest coherent implementation/refactor technique that satisfies the experiment contract;
+- write and modify source and focused tests;
+- reproduce baseline evidence, create the smallest useful structural RED, reach causal GREEN, debug failures and run validation proportional to the actual diff;
+- perform Git/source analysis, build/CI/toolchain troubleshooting and exact diff review;
+- report evidence that suggests the selected boundary is intrinsically too small or the assumptions are wrong.
+
+The executor may challenge implementation assumptions. It may **not** unilaterally:
+
+- change the selected question or PASS/FAIL/INCONCLUSIVE semantics;
+- widen the slice from structural control-equivalence into improved vehicle mechanics;
+- select A1 or A2 as permanent authority architecture;
+- hide a boundary failure behind a generic backend/plugin/ontology/adapter framework;
+- guess unresolved mating or authored truth;
+- ask the Owner to accept a behavior delta in order to make a structural-equivalence probe pass.
+
+If a materially wider authority unit appears necessary, record the coupling and stop for orchestration judgement rather than silently widening scope.
+
+### Machine-evidence authority
+
+For `FRONT-CORNER-AUTHORITY-ISOLATION-01`, machine evidence is sufficient to judge the intended no-behavior structural result when it covers the causal question. It may establish:
+
+- owned construction and teardown boundaries;
+- explicit cross-unit references versus leaked/duplicated authority;
+- topology and trace equivalence;
+- deterministic command/trace behavior at existing asserted precision;
+- focused regression controls;
+- typecheck/build status;
+- exact diff scope;
+- faithful clean-source browser startup/control-path smoke.
+
+A passing build alone is not proof of the structural boundary. Conversely, unrelated helper/toolchain failure is not evidence that M1 failed.
+
+### Owner responsibilities
+
+Jozz owns vision, priorities and genuinely Owner-visible qualitative truth.
+
+Owner judgement is required when the work actually introduces or discovers:
+
+- a visible presentation change that must be accepted rather than treated as regression;
+- a driving/handling/interaction feel decision;
+- real-device-only evidence that machine/browser automation cannot resolve;
+- unresolved authored mechanical truth such as a physical mating choice;
+- a strategic scope/priority decision outside the selected falsifier.
+
+Do **not** route ordinary engineering work to the Owner: TypeScript/compiler errors, Git, Box3D API use, tests, CI, build failures, refactor technique, ownership bookkeeping and toolchain troubleshooting remain executor/orchestrator responsibilities.
+
+### Result semantics are not negotiable during execution
+
+- `PASS` means only that front-corner structural isolation is viable enough to continue M1-style evidence gathering at this granularity.
+- `FAIL` means this front-corner granularity is not a trustworthy low-blast migration boundary under the experiment contract; it does not automatically select A2.
+- `INCONCLUSIVE` means an unrelated execution/source/environment blocker prevented the architecture question from being answered; it is not product/mechanical evidence.
+
+The executor reports evidence. The result is classified against the pre-existing contract; criteria must not be weakened after seeing the outcome.
+
+## 8. Work style
 
 Default loop:
 
-`small need -> smallest meaningful source change -> check matching causal blast radius -> Owner Preview -> render/device evidence -> Owner judgement -> next iteration`.
+`small need -> smallest meaningful source change -> check matching causal blast radius -> render/device evidence only when causally relevant -> Owner judgement only when genuinely qualitative -> next iteration`.
 
-Use only checks that cover changed risk. Full canonical validation is for foundation/toolchain/integration boundaries, milestone close and release. A passing build does not replace browser/device evidence for visible work.
+Use only checks that cover changed risk. Full canonical validation is for foundation/toolchain/integration boundaries, milestone close and release. A passing build does not replace browser/device evidence for visible work, and visible/device evidence is not required for a purely structural no-behavior change unless behavior actually changes.
 
 Avoid speculative abstractions. Do not mix product redesign, recovery, delivery-harness invention and cleanup into one slice.
 
-## 8. Git discipline
+## 9. Git discipline
 
 Resolve repo/ref before writes. Use normal fast-forward history; no routine force pushes.
 
@@ -126,7 +198,7 @@ Keep at most one ordinary active product work lane ahead of `main`. Create anoth
 
 Historical `work/*`, checkpoint and accidental/noop refs are not authority. Do not revive or clean them merely because their names are visible.
 
-## 9. Preview and release discipline
+## 10. Preview and release discipline
 
 Owner Preview is an R&D/testing surface produced from one exact committed executable source candidate. It is not accepted source/release authority.
 
@@ -136,37 +208,48 @@ Owner Preview is an R&D/testing surface produced from one exact committed execut
 - do not patch compiled Preview JS/CSS as source integration;
 - Friends/Public promotion is separate from source acceptance.
 
-## 10. Documentation discipline
+Do not promote `FRONT-CORNER-AUTHORITY-ISOLATION-01` to Owner Preview/Public merely to prove structural isolation.
+
+## 11. Documentation discipline
 
 Fresh executor:
 
 1. `AGENTS.md`;
 2. `docs/PROJECT_STATE.md`;
-3. source/tests for the selected task.
+3. `docs/FIRST_FALSIFIER.md` when the selected experiment is relevant;
+4. relevant source/tests.
 
 Explicit takeover additionally reads `docs/HANDOFF.md` immediately after `PROJECT_STATE`.
 
 Supporting evidence:
 
+- `docs/ARCHITECTURE_HYPOTHESES.md` — Gate 6 authority/migration comparison; no architecture winner;
+- `docs/INHERITANCE_MATRIX.md` — Gate 5 decision synthesis; later current-state corrections outrank stale wording;
 - `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` — rationale and staged loop;
 - `docs/RECIPIENT_SURFACE.md` — Recipient V1 evidence map; phase-status is historical;
-- `docs/INHERITANCE_MATRIX.md` — provisional donor matrix V1; older FMU01 roadmap wording is not current routing;
 - `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — canonical Native closure receipt;
 - `docs/OWNER_CHECKPOINTS.md` — scoped Owner acceptance;
 - `docs/ARCHITECTURE.md` — stable current boundaries, not a future architecture freeze.
 
 Update stale current-state text instead of multiplying new current-status documents.
 
-## 11. Stop conditions
+## 12. Stop conditions
 
-Stop and investigate when:
+Stop and re-ground or return to orchestration when:
 
 - a write would target the wrong repo/ref or overwrite rollback history;
-- implementation starts before the first next-generation falsifier is explicitly selected;
-- Owner-visible behavior changes outside declared scope;
+- live source no longer matches the experiment assumptions;
+- runtime implementation begins before current routing authorizes it;
+- the selected falsifier is being broadened into new product mechanics, FMU reconstruction or whole-core rewrite;
+- a materially wider authority unit is required to proceed;
+- PASS would require changing existing behavior or loosening control evidence;
+- PASS is being interpreted as acceptance of current FL geometry/carrier/contact/steering or as selection of A1;
+- FAIL is being interpreted automatically as selection of A2;
 - unresolved mating/coordinates are being guessed;
 - JURE or another tool becomes mandatory without evidence;
 - a donor implementation is promoted because of its label rather than its evidence;
-- documentation/process grows faster than product/evidence value;
+- accepted controls/UI/world capability changes outside declared scope;
+- an unrelated tooling failure is being classified as mechanical evidence;
+- documentation/process/tooling grows faster than product/evidence value;
 - an artifact cannot be tied to exact source and provenance;
 - routine engineering work is being pushed onto Jozz.
