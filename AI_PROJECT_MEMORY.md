@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-26
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ACTIVE RUNTIME LANE / JV_CORE SEALED / GATES 0-6 COMPLETE / GATE 7 CURRENT / FIRST FALSIFIER NOT YET SELECTED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ACTIVE RUNTIME LANE / GATES 0-7 COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / GATE 8 CURRENT / IMPLEMENTATION NOT AUTHORIZED / PRE-CODEX ANALYSIS ACTIVE`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file. `docs/PROJECT_STATE.md` owns current routing.
 
@@ -22,13 +22,19 @@ Inheritance priority:
 
 Accepted source/product authority is live JV-Web `main`; resolve its exact SHA before writes.
 
-Last runtime/product-grounded source before the current documentation/analysis pass:
+Last runtime/product-grounded source before the documentation/analysis pass:
 
 ```text
 4b07b66eb9b8103f74ec426979de12022f9817b9
 ```
 
-Later `main` descendants produced only by this documentation/analysis pass are not runtime evidence.
+The selected Gate 7 falsifier is grounded against unchanged runtime/product bytes represented by:
+
+```text
+2f50c6a994978942b432b45e99d3ce42f49261e9
+```
+
+Later `main` descendants produced only by documentation/analysis are not runtime evidence.
 
 Latest grounded operational anchors:
 
@@ -109,45 +115,67 @@ Source facts important to this comparison:
 - current Box3D binding is already WebAssembly-backed, so A1/A2 is about where **vehicle policy/topology/controller authority** lives;
 - current M6 runtime builder is coupled enough that low-blast subsystem replacement must be proven, not assumed.
 
-Current falsifier candidates, not authorizations:
+## Gate 7 selected falsifier
 
-- A1: `WEB-NATIVE-CAPABILITY-SLICE`;
-- A2: `NATIVE-CORE-BROWSER-VERTICAL-SLICE`;
-- M1: `COHERENT-UNIT-ISOLATION-PROBE`;
-- C0: one local semantic A/B control.
+Gate 7 is complete. See `docs/FIRST_FALSIFIER.md`.
 
-## Critical routing correction
+Selected falsifier:
 
-`Front Mechanical Unit 01 = STRONG BOUNDED FALSIFIER CANDIDATE — NOT RANKED / NOT SELECTED`.
+**`FRONT-CORNER-AUTHORITY-ISOLATION-01`**
 
-Do not freeze JURE -> Web lowering/space-conversion before Codex. Do not freeze JURE as mandatory/final authoring application.
+Classification:
 
-## Next
+`M1 STRUCTURAL FALSIFIER / CONTROL-EQUIVALENCE PROBE / NOT PRODUCT-MECHANICS ACCEPTANCE`
 
-**Gate 7 — First Next-Generation Falsifier Selection**.
+Question:
 
-Select one experiment, not a permanent architecture, by comparing:
+> Can the current front-left M6 corner's physical construction and ownership be isolated behind one explicit owned-unit boundary inside the existing browser Box3D world, while preserving exact current control behavior and without moving unrelated browser/product/world authority into that unit?
 
-- architecture information gain;
-- direct Owner/product value;
-- causal blast radius;
-- reversibility/rollback;
-- dependence on currently open Owner truth such as exact mating;
-- deterministic evidence quality;
-- risk of testing tooling/implementation stamina instead of the hypothesis;
-- premature commitment required just to run the test.
+Why first:
 
-Gate 7 exit must define one exact falsifier with PASS/FAIL/inconclusive semantics, smallest valid scope, protected baseline and validation ladder. Do not implement during selection.
+- high architecture information gain at low-to-medium blast radius;
+- PASS and FAIL both route later architecture work;
+- strong deterministic corner/topology/trace controls already exist;
+- high rollback quality;
+- no final mating judgement is required;
+- avoids choosing new A1 mechanics or building the A2 native ABI/toolchain merely to ask the first question.
 
-Then: Gate 8 responsibility boundary -> Gate 9 final source/document close + canonical validation -> Gate 10 read-only Codex cold takeover -> implementation only after PASS.
+Critical interpretation:
+
+- PASS validates only structural isolation viability at front-corner granularity;
+- PASS does not accept current FL geometry, the extra carrier, split wheel, provisional steering, A1 or any final architecture;
+- FAIL means front-corner granularity is not a trustworthy low-blast migration boundary; it does not automatically select A2;
+- current legacy internals may remain inside the extracted unit only as control-equivalence evidence during this probe.
+
+`Front Mechanical Unit 01` is not the selected stage. The selected falsifier is intentionally narrower and introduces no new mechanical truth.
+
+## Current — Gate 8
+
+**Gate 8 — Responsibility Boundary**.
+
+Freeze execution responsibilities for the selected falsifier, not architecture.
+
+Gate 8 must state:
+
+- what the orchestrator must settle before Codex execution;
+- what repo-native implementation/refactor/test work belongs to Codex;
+- which evidence is machine-resolvable without Owner involvement;
+- exactly when Owner judgement/device evidence is required;
+- when Codex/orchestrator must stop and re-ground instead of widening scope;
+- how PASS/FAIL/INCONCLUSIVE semantics from `docs/FIRST_FALSIFIER.md` remain immutable during execution.
+
+Do not implement during Gate 8.
+
+Then: Gate 9 final source/document close + canonical validation -> Gate 10 read-only Codex cold takeover -> implementation only after the dry run passes.
 
 ## Evidence routing
 
 - `docs/PROJECT_STATE.md` = current routing authority.
-- `docs/ARCHITECTURE_HYPOTHESES.md` = Gate 6 authority/migration comparison and falsifier candidates; no winner.
-- `docs/INHERITANCE_MATRIX.md` = Gate 5 cross-project decision synthesis; Gate 6 carries two binding wording corrections until final consolidation.
+- `docs/FIRST_FALSIFIER.md` = selected Gate 7 experiment contract and validation ladder.
+- `docs/ARCHITECTURE_HYPOTHESES.md` = Gate 6 authority/migration comparison; no architecture winner.
+- `docs/INHERITANCE_MATRIX.md` = Gate 5 cross-project decision synthesis; later hardening/selection supersedes stale wording where needed.
 - `docs/RECIPIENT_SURFACE.md` = Recipient V1 evidence; phase-status is historical.
 - `docs/OWNER_CHECKPOINTS.md` = scoped Owner truth, supersession and negative knowledge.
-- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` = canonical Native closure receipt.
+- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` = canonical Native closure receipt; historical first-stage wording is not current routing.
 
 Do not create a new branch/schema/backend abstraction/runtime slice merely because executor context changes.
