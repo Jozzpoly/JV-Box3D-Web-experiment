@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 Owner: Jozz
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST COMPLETE / INHERITANCE MATRIX V2 COMPLETE / COMPETING ARCHITECTURE HYPOTHESES COMPLETE / FIRST FALSIFIER SELECTION CURRENT / FIRST FALSIFIER NOT YET SELECTED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST COMPLETE / INHERITANCE MATRIX V2 COMPLETE / COMPETING ARCHITECTURE HYPOTHESES COMPLETE / FIRST FALSIFIER SELECTION COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / RESPONSIBILITY BOUNDARY CURRENT / IMPLEMENTATION NOT AUTHORIZED / PRE-CODEX ANALYSIS ACTIVE`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file owns current routing. It is intentionally shorter than the evidence documents it routes to.
 
@@ -16,7 +16,13 @@ Last runtime/product-grounded source before this documentation/authority-hardeni
 4b07b66eb9b8103f74ec426979de12022f9817b9
 ```
 
-That commit is documentation-only above the accepted runtime/UI foundations. Later `main` descendants produced solely by the current analysis/documentation passes do not imply a runtime/product behavior change.
+The selected Gate 7 falsifier is grounded against the unchanged runtime/product bytes represented by:
+
+```text
+2f50c6a994978942b432b45e99d3ce42f49261e9
+```
+
+Later `main` descendants produced solely by the current analysis/documentation passes do not imply a runtime/product behavior change.
 
 Owner Preview is a separate operational control lane, not source authority:
 
@@ -111,8 +117,7 @@ Still deliberately open:
 - final wheel/tire/contact model;
 - final renderer architecture;
 - future world streaming/partitioning architecture;
-- whether advanced authoring remains JURE, becomes another tool, or is split across cooperating applications;
-- the first next-generation runtime falsifier.
+- whether advanced authoring remains JURE, becomes another tool, or is split across cooperating applications.
 
 ## 5. Current JV-Web technical-debt boundary
 
@@ -131,11 +136,11 @@ Known challenge surfaces include:
 - the current neutral mechanism is a comparison/lowering seam, not a frozen future schema;
 - the current backend descriptor vocabulary is not a real interchangeable vehicle-backend implementation.
 
-These items are a **technical-debt inventory, not an automatic repair queue**. Repairing them before explicit falsifier selection would prematurely choose work.
+These items remain a **technical-debt inventory, not an automatic repair queue**. Gate 7 selected a structural authority-isolation falsifier, not permission to repair unrelated mechanics.
 
 `docs/RECIPIENT_SURFACE.md` remains the detailed Recipient V1 evidence map. Its old `DONOR OUTPUTS NOT YET INGESTED` status describes the phase in which it was written; use its source findings as evidence, not as current routing.
 
-`docs/INHERITANCE_MATRIX.md` remains the Gate 5 claim-level decision synthesis. Two wording corrections are binding from the later Gate 6 hardening: do not assume authored-element -> runtime-body/collider 1:1 mapping as an invariant, and treat Front Mechanical Unit 01 as a strong bounded candidate that is **not ranked or selected**. `docs/ARCHITECTURE_HYPOTHESES.md` records these corrections explicitly pending final documentation consolidation.
+`docs/INHERITANCE_MATRIX.md` remains the Gate 5 claim-level decision synthesis. Two wording corrections remain binding from the later hardening: do not assume authored-element -> runtime-body/collider 1:1 mapping as an invariant, and treat the historical Front Mechanical Unit 01 idea as a strong bounded candidate that had **no ranking or selection privilege**. Gate 7 selected a different, narrower structural question before any new mechanics.
 
 ## 6. Current routing — next work
 
@@ -176,7 +181,7 @@ Gate 5 reconciled donor, recipient, Owner and future-pressure evidence. Web prod
 The later adversarial close corrected two phrasings without reopening Gate 5:
 
 - evidence says **do not assume** authored-element -> runtime-body/collider 1:1 as an invariant; it does not prove one specific alternative lowering granularity;
-- `Front Mechanical Unit 01` is **STRONG BOUNDED FALSIFIER CANDIDATE — NOT RANKED / NOT SELECTED**.
+- the historical `Front Mechanical Unit 01` idea was a **STRONG BOUNDED FALSIFIER CANDIDATE — NOT RANKED / NOT SELECTED** before Gate 7.
 
 ### Gate 6 — Competing Architecture Hypotheses
 
@@ -184,82 +189,94 @@ The later adversarial close corrected two phrasings without reopening Gate 5:
 
 Detailed evidence and comparison live in `docs/ARCHITECTURE_HYPOTHESES.md`.
 
-Gate 6 first corrected an important category mistake: the option space is **multi-axis**, not a flat list of three equivalent architectures.
+Gate 6 corrected an important category mistake: the option space is **multi-axis**, not a flat list of three equivalent architectures.
 
-#### Vehicle-authority architecture axis
+Vehicle-authority axis:
 
-- **A1 — Web-native mechanical core:** new repo-native Web vehicle mechanics/topology/controller over the browser Box3D boundary; `legacy_ts_m6` remains control rather than repair target.
-- **A2 — native-derived compiled vehicle core:** Web remains product/input/render host while vehicle mechanical authority moves into a compiled native-derived core behind a narrow command/world/state/trace boundary.
+- **A1 — Web-native mechanical core**;
+- **A2 — native-derived compiled vehicle core**.
 
-A1 vs A2 is the real architecture competition about where vehicle authority lives.
+Migration/necessity axis:
 
-#### Migration / necessity axis
+- **M1 — coherent-subsystem replacement/isolation**;
+- **C0 — conservative local semantic control**.
 
-- **M1 — coherent-subsystem replacement:** replace one complete mechanical unit inside the current solver world while legacy outside the unit remains migration shell/control. This can gather evidence for either A1 or A2; it is not a third final architecture.
-- **C0 — conservative semantic correction:** one local A/B correction/control tests whether a specific Owner pain requires architecture work at all. It must not become legacy-polish strategy by inertia.
-
-Source grounding materially constrains these hypotheses:
-
-- `F4VehicleHost` currently asserts `LEGACY_TS_M6_BACKEND` and directly creates `M6TopologyWorld`; the existing descriptor is not a working backend selector;
-- the current `native_jv_wasm` backend id is vocabulary only; no native-derived JV vehicle WASM implementation/build path exists in the repo;
-- the pinned Box3D package already provides a WebAssembly binding, so A1/A2 is about **vehicle policy/topology/controller authority**, not simply JS vs WASM solver execution;
-- current M6 runtime construction interleaves geometry, FL special carrier/steering treatment, wheel/contact and joint creation enough that low-blast subsystem replacement cannot be assumed.
-
-Each path now has its strongest failure reason and cheapest current falsifier candidate:
-
-- A1 -> `WEB-NATIVE-CAPABILITY-SLICE`;
-- A2 -> `NATIVE-CORE-BROWSER-VERTICAL-SLICE`;
-- M1 -> `COHERENT-UNIT-ISOLATION-PROBE`;
-- C0 -> one local semantic A/B control.
-
-None is authorized yet.
+The current product host is M6-specific, `native_jv_wasm` is vocabulary rather than an implemented vehicle backend, Box3D execution already uses a browser WebAssembly binding, and current M6 construction is coupled enough that subsystem isolation cannot be assumed cheap.
 
 ### Gate 7 — First Next-Generation Falsifier Selection
 
-`CURRENT — NO IMPLEMENTATION`
+`COMPLETE — FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / NO IMPLEMENTATION YET`
 
-Select the first experiment, **not the permanent architecture**, from the Gate 6 uncertainty set.
+The exact selection contract is `docs/FIRST_FALSIFIER.md`.
 
-Selection must compare candidate falsifiers by at least:
+Selected question:
 
-- architecture information gain: what important uncertainty changes if it passes/fails;
-- direct Owner/product value if successful;
-- causal blast radius;
-- reversibility/rollback quality;
-- dependence on currently open Owner truth such as exact mating;
-- ability to produce deterministic machine evidence before subjective judgement;
-- risk that the experiment mainly tests implementation stamina/tooling rather than the hypothesis;
-- amount of premature architecture commitment required merely to run it.
+> Can the current front-left M6 corner's physical construction and ownership be isolated behind one explicit owned-unit boundary inside the existing browser Box3D world, while preserving exact current control behavior and without moving unrelated browser/product/world authority into that unit?
 
-Do not privilege FMU01, A1, A2, M1 or C0 by historical order or naming. A strong bounded candidate must still win this comparison.
+Classification:
 
-Gate 7 exit is one explicitly selected falsifier with:
+`M1 STRUCTURAL FALSIFIER / CONTROL-EQUIVALENCE PROBE / NOT PRODUCT-MECHANICS ACCEPTANCE`
 
-- exact question;
-- PASS / FAIL / inconclusive semantics;
-- smallest valid source/runtime scope;
-- protected baseline;
-- validation ladder;
-- conditions that would reopen a competing hypothesis;
-- no broader architecture claim than the experiment can support.
+Why selected:
 
-### Gates after falsifier selection
+- high architecture information gain for low-to-medium blast radius;
+- PASS and FAIL both change the next decision;
+- high rollback quality;
+- strong existing deterministic corner/topology/trace evidence;
+- does not require unresolved final outboard mating;
+- avoids prematurely selecting A1 mechanics or creating the A2 native-build/ABI stack merely to ask the first question.
 
-8. Freeze Owner / browser-orchestrator / Codex responsibilities, not architecture.
+C0 longitudinal semantics remains a valuable cheap control/later product slice. A1 and A2 remain open architecture hypotheses.
+
+PASS means only that front-corner structural isolation is viable enough to continue M1-style evidence gathering at this granularity. It does not accept current FL mechanics, extra carrier, split wheel, provisional rack mapping, final mating, A1 or any final architecture.
+
+Implementation is still **NOT AUTHORIZED** before the remaining pre-Codex gates.
+
+### Gate 8 — Responsibility Boundary
+
+`CURRENT — NO ARCHITECTURE CHANGE / NO IMPLEMENTATION`
+
+Freeze execution responsibilities for the selected falsifier without freezing architecture.
+
+Gate 8 must make explicit:
+
+- which decisions/evidence belong to the orchestrator before Codex execution;
+- which repo-native implementation/refactor/test responsibilities belong to Codex;
+- which evidence can be machine-validated without Owner involvement;
+- exactly what would require Owner judgement or real-device evidence;
+- which conditions require stopping/re-grounding rather than asking the Owner to debug tooling or code;
+- how the selected falsifier's PASS/FAIL/INCONCLUSIVE semantics are protected from executor reinterpretation.
+
+Gate 8 must not design the future vehicle core, widen the selected falsifier or turn responsibility assignment into another framework.
+
+### Gates after responsibility close
+
 9. Final pre-Codex source/document close + exact canonical validation.
 10. Read-only Codex cold-takeover dry run.
-11. Only after the dry run passes, start fundamental repo-native implementation.
+11. Only after the dry run passes, start fundamental repo-native implementation of the selected falsifier.
 
 ## 7. Explicit supersessions and non-decisions
 
 The following older routing is **superseded**:
 
-- `Front Mechanical Unit 01` is **not** an already-selected or ranked first implementation stage. It is a strong bounded falsifier candidate and must compete in Gate 7.
+- `Front Mechanical Unit 01` is **not** the selected first implementation stage. Gate 7 instead selected the narrower `FRONT-CORNER-AUTHORITY-ISOLATION-01` structural falsifier before any new mechanical truth is introduced.
 - A JURE -> Web lowering/space-conversion receipt is **not** a pre-Codex freeze requirement.
 - JURE is **not** frozen as the final authoring application or mandatory dependency.
 - Current `RigDocument`, current Web neutral schema, current renderer, current M6 topology and current backend structure are **not** frozen future architecture.
 - `native_jv_wasm` appearing in a TypeScript union does **not** prove a compiled backend exists.
 - Expanded ambitions (other machines, possible drone/flight, very fine authoring, large photogrammetry worlds) are strategic pressure, not permission to build a universal platform upfront.
+
+Still deliberately not selected:
+
+- A1 vs A2 final vehicle authority;
+- exact future front-corner mechanics/coordinates;
+- final mating;
+- final tire/contact model;
+- steering-return solution;
+- final drivetrain semantics/tuning;
+- JURE/tool/schema/lowering choice;
+- renderer/world-streaming architecture;
+- universal machine ontology.
 
 ## 8. Validation and write discipline
 
@@ -273,17 +290,20 @@ Vite 8.1.5
 box3d.js 0.0.2
 ```
 
-Use tests proportional to causal blast radius. The Gate 5/6 work and router hardening above are docs/analysis-only and do not justify runtime/device validation. Run full `npm ci` + `npm run build` on the final post-hardening JV-Web source at the pre-Codex source-close boundary or earlier only if a foundation/toolchain/runtime change makes it causal.
+Use tests proportional to causal blast radius. Gate 7 selection/documentation is docs/analysis-only and does not justify runtime/device validation.
+
+The later implementation of `FRONT-CORNER-AUTHORITY-ISOLATION-01` is a production vehicle-runtime structural change even though intended behavior is unchanged. Its contract therefore requires focused deterministic baseline/control evidence, focused causal tests, exact diff audit, normal canonical build at material slice close and a faithful clean-source browser smoke. Owner device/feel judgement is not required unless visible/feel behavior actually changes.
 
 No new branch/checkpoint/schema/backend abstraction/consumer adapter/runtime slice is authorized merely by a new conversation or executor context.
 
 ## 9. Supporting evidence surfaces
 
-- `docs/ARCHITECTURE_HYPOTHESES.md` — current Gate 6 source-grounded authority/migration hypotheses, attacks and falsifier candidates; no winner.
+- `docs/FIRST_FALSIFIER.md` — current Gate 7 selected experiment, PASS/FAIL/INCONCLUSIVE semantics, scope and validation ladder.
+- `docs/ARCHITECTURE_HYPOTHESES.md` — Gate 6 source-grounded authority/migration hypotheses, attacks and falsifier candidates; no architecture winner.
 - `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` — rationale and staged next-generation takeover loop; not a competing source of current live anchors.
 - `docs/RECIPIENT_SURFACE.md` — detailed Recipient V1 source/evidence map.
-- `docs/INHERITANCE_MATRIX.md` — Gate 5 cross-project decision matrix; use Gate 6 hardening corrections where older wording conflicts.
-- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — canonical Web-side Native closure receipt.
+- `docs/INHERITANCE_MATRIX.md` — Gate 5 cross-project decision matrix; use later hardening/selection where older wording conflicts.
+- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — canonical Web-side Native closure receipt; its historical first-stage wording is superseded by current routing.
 - `docs/OWNER_CHECKPOINTS.md` — scoped Owner acceptance, supersession and negative-knowledge evidence.
 - `docs/ARCHITECTURE.md` — stable current system/authority boundaries, not future architecture freeze.
 - `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — durable authored-truth/consumer separation constraints, not a commitment to JURE as permanent tool or to a preselected consumer schema.
@@ -293,10 +313,10 @@ No new branch/checkpoint/schema/backend abstraction/consumer adapter/runtime sli
 Stop and re-ground if:
 
 - live source/ref differs from the assumed write target;
-- implementation begins before Gate 7 explicitly selects one falsifier;
-- Gate 7 quietly selects a permanent architecture rather than an experiment;
-- A1/A2 are compared by fashion or language preference instead of evidence;
-- M1 is scored as though migration strategy were the same decision axis as final vehicle authority;
+- runtime implementation begins before the pre-Codex gates authorize it;
+- the selected falsifier is broadened into new product mechanics, FMU reconstruction or whole-core rewrite;
+- PASS is interpreted as acceptance of current FL geometry/carrier/contact/steering or as selection of A1;
+- FAIL is interpreted automatically as selection of A2;
 - a donor implementation is copied because it is accepted in its own project rather than because its claim survived evidence challenge;
 - JURE or its schema is becoming mandatory without a concrete demonstrated need;
 - unresolved mating/coordinates are being guessed by the agent;
