@@ -1,7 +1,7 @@
 # AI project memory — JV Web
 
 Updated: 2026-08-26
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ACTIVE RUNTIME LANE / GATES 0-7 COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / GATE 8 CURRENT / IMPLEMENTATION NOT AUTHORIZED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ACTIVE RUNTIME LANE / GATES 0-8 COMPLETE / FRONT-CORNER-AUTHORITY-ISOLATION-01 SELECTED / GATE 9 FINAL PRE-CODEX SOURCE+DOCUMENT CLOSE CURRENT / IMPLEMENTATION NOT AUTHORIZED / PRE-CODEX ANALYSIS ACTIVE`
 
 Compact router only. Live Git, executed evidence and direct Owner observation outrank this file. `docs/PROJECT_STATE.md` owns current routing.
 
@@ -12,7 +12,7 @@ JV-Web is the priority product/heir. The target is not parity with Native; curre
 - JV_CORE / Native = **sealed primary donor / research record**, active development stopped.
 - JURE = optional authoring/mechanical-truth donor and useful current inspection/correction tool; not mandatory and not frozen as the final authoring application or schema.
 - JV-Web = accepted browser product/source authority.
-- Codex = future repo-native executor after the analytical/handoff preparation; may reject donor implementations while respecting live evidence and scoped Owner truth.
+- Codex = future repo-native executor after the analytical/handoff preparation; may challenge implementation technique while respecting live evidence, scoped Owner truth, the selected experiment question and fixed result semantics.
 
 Inheritance priority:
 
@@ -28,7 +28,7 @@ Last runtime/product-grounded source before the documentation/analysis pass:
 4b07b66eb9b8103f74ec426979de12022f9817b9
 ```
 
-The selected Gate 7 falsifier is grounded against unchanged runtime/product bytes represented by:
+The selected falsifier is grounded against unchanged runtime/product bytes represented by:
 
 ```text
 2f50c6a994978942b432b45e99d3ce42f49261e9
@@ -48,7 +48,7 @@ Friends/Public:
   279dd4eec8599ad12c95e03b50a52c478e8a50e7
 ```
 
-No ordinary active runtime/product lane was found at the last grounding. Re-resolve live before any write.
+No ordinary active runtime/product lane was found at the latest grounding. Re-resolve live before any write.
 
 ## Protected accepted product capital
 
@@ -73,11 +73,9 @@ These are stability boundaries, not permanent implementation architecture.
 
 Pedal Contact V1/V1.1 = `NOT ACCEPTED / DEFERRED`.
 
-## Gates 0-6
+## Gates 0-6 synthesis
 
-Gates 0-5 evidence reconstruction/synthesis are complete.
-
-Gate 6 Competing Architecture Hypotheses is complete. See `docs/ARCHITECTURE_HYPOTHESES.md`.
+Gates 0-5 evidence reconstruction/synthesis are complete. Gate 6 architecture comparison is complete in `docs/ARCHITECTURE_HYPOTHESES.md`.
 
 High-confidence constraints carried forward include:
 
@@ -91,33 +89,19 @@ High-confidence constraints carried forward include:
 - stale visual-parenting metadata/surrogates are not mechanical authority;
 - physical steering-return intent must not be hidden by silent centering assist;
 - mode5 / analytic real-width wheel is current Owner-selected donor direction, not final tire architecture;
-- mode5 anti-centering remains a known debt/falsifier;
+- mode5 anti-centering remains known debt/falsifier;
 - accepted Web input/mobile/world/publication behavior is first-class stability capital.
 
-## Gate 6 comparison set
+Gate 6 option space is multi-axis:
 
-Gate 6 found a multi-axis option space rather than three flat architecture choices.
+- `A1 WEB-NATIVE MECHANICAL CORE` vs `A2 NATIVE-DERIVED COMPILED VEHICLE CORE` = authority architecture axis;
+- `M1 COHERENT-SUBSYSTEM REPLACEMENT` vs cheap `C0` semantic control = migration/necessity axis.
 
-**Authority architecture axis:**
-
-- `A1 WEB-NATIVE MECHANICAL CORE` — new Web repo-native vehicle mechanics over the browser Box3D boundary; legacy TS M6 remains control.
-- `A2 NATIVE-DERIVED COMPILED VEHICLE CORE` — Web remains product/input/render host; vehicle mechanical authority moves behind a compiled browser ABI.
-
-**Migration / necessity axis:**
-
-- `M1 COHERENT-SUBSYSTEM REPLACEMENT` — one complete unit inside the current solver world; migration/falsification strategy, not a third final authority architecture.
-- `C0 CONSERVATIVE SEMANTIC CONTROL` — one local A/B to test whether a specific Owner pain needs architecture work at all.
-
-Source facts important to this comparison:
-
-- current `F4VehicleHost` directly asserts legacy M6 and creates M6 topology; backend vocabulary is not actual interchangeability;
-- `native_jv_wasm` is currently an id/type possibility, not an implemented JV vehicle backend;
-- current Box3D binding is already WebAssembly-backed, so A1/A2 is about where **vehicle policy/topology/controller authority** lives;
-- current M6 runtime builder is coupled enough that low-blast subsystem replacement must be proven, not assumed.
+No architecture winner was selected.
 
 ## Gate 7 selected falsifier
 
-Gate 7 is complete. See `docs/FIRST_FALSIFIER.md`.
+Gate 7 is complete. Exact contract: `docs/FIRST_FALSIFIER.md`.
 
 Selected falsifier:
 
@@ -131,45 +115,38 @@ Question:
 
 > Can the current front-left M6 corner's physical construction and ownership be isolated behind one explicit owned-unit boundary inside the existing browser Box3D world, while preserving exact current control behavior and without moving unrelated browser/product/world authority into that unit?
 
-Why first:
-
-- high architecture information gain at low-to-medium blast radius;
-- PASS and FAIL both route later architecture work;
-- strong deterministic corner/topology/trace controls already exist;
-- high rollback quality;
-- no final mating judgement is required;
-- avoids choosing new A1 mechanics or building the A2 native ABI/toolchain merely to ask the first question.
-
 Critical interpretation:
 
-- PASS validates only structural isolation viability at front-corner granularity;
-- PASS does not accept current FL geometry, the extra carrier, split wheel, provisional steering, A1 or any final architecture;
+- PASS validates only structural-isolation viability at front-corner granularity;
+- PASS does not accept current FL geometry, extra carrier, split wheel, provisional steering, A1 or any final architecture;
 - FAIL means front-corner granularity is not a trustworthy low-blast migration boundary; it does not automatically select A2;
-- current legacy internals may remain inside the extracted unit only as control-equivalence evidence during this probe.
+- INCONCLUSIVE is reserved for unrelated source/environment/tooling blockers that prevent answering the selected question;
+- `Front Mechanical Unit 01` is not the selected implementation stage.
 
-`Front Mechanical Unit 01` is not the selected stage. The selected falsifier is intentionally narrower and introduces no new mechanical truth.
+## Gate 8 responsibility boundary
 
-## Current — Gate 8
+Gate 8 is complete. `AGENTS.md` owns the durable responsibility contract.
 
-**Gate 8 — Responsibility Boundary**.
+- **Orchestrator** preserves the selected question, baseline, causal scope, PASS/FAIL/INCONCLUSIVE interpretation and post-result routing; it rejects hidden scope expansion or framework tax.
+- **Codex / repo-native executor** owns source inspection, implementation/refactor technique, focused tests, baseline/RED/GREEN evidence, Git/build/CI/toolchain troubleshooting and exact diff review. It reports intrinsic coupling instead of silently widening scope.
+- **Machine evidence** may judge the intended no-behavior structural result when it establishes ownership/teardown, explicit cross-unit authority, topology/trace/determinism equivalence, relevant checks/build and clean-source browser smoke.
+- **Owner** is reserved for genuinely qualitative/unavailable truth: visible or feel decisions, real-device-only evidence, unresolved authored mechanical choices and strategic scope/priority decisions. Routine engineering/debugging is not Owner work.
 
-Freeze execution responsibilities for the selected falsifier, not architecture.
+If a materially wider authority unit is necessary, PASS requires a behavior change, exact mating must be guessed, a generic framework is needed merely to proceed, or live source invalidates the assumptions: stop/re-ground rather than reinterpret the experiment.
 
-Gate 8 must state:
+## Current — Gate 9
 
-- what the orchestrator must settle before Codex execution;
-- what repo-native implementation/refactor/test work belongs to Codex;
-- which evidence is machine-resolvable without Owner involvement;
-- exactly when Owner judgement/device evidence is required;
-- when Codex/orchestrator must stop and re-ground instead of widening scope;
-- how PASS/FAIL/INCONCLUSIVE semantics from `docs/FIRST_FALSIFIER.md` remain immutable during execution.
+**Gate 9 — Final pre-Codex source/document close + canonical validation.**
 
-Do not implement during Gate 8.
+Close only material inconsistencies that could mislead the Codex cold takeover. Known candidate: stale `src/vehicle/neutral-mechanism.ts` wording that overstates JURE authority, plus any remaining current-router contradiction found during consolidation.
 
-Then: Gate 9 final source/document close + canonical validation -> Gate 10 read-only Codex cold takeover -> implementation only after the dry run passes.
+Then validate the exact final pre-Codex source with the repository-declared canonical toolchain. Do not implement the selected falsifier during Gate 9 and do not repoint Preview merely for SHA parity.
+
+After Gate 9: Gate 10 read-only Codex cold takeover -> implementation only after the dry run passes.
 
 ## Evidence routing
 
+- `AGENTS.md` = operating contract + selected-falsifier responsibility boundary.
 - `docs/PROJECT_STATE.md` = current routing authority.
 - `docs/FIRST_FALSIFIER.md` = selected Gate 7 experiment contract and validation ladder.
 - `docs/ARCHITECTURE_HYPOTHESES.md` = Gate 6 authority/migration comparison; no architecture winner.
