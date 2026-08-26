@@ -2,7 +2,7 @@
 
 Updated: 2026-08-26
 Owner: Jozz
-Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST CURRENT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
+Status: `JV-WEB PRIORITY HEIR / ACCEPTED BASELINE PROTECTED / NO ORDINARY ACTIVE RUNTIME LANE / JV_CORE SEALED / DONOR DECONSTRUCTION COMPLETE / RECIPIENT MAP V2 COMPLETE / OWNER TRUTH + NEGATIVE KNOWLEDGE COMPLETE / FUTURE-VISION PRESSURE TEST COMPLETE / INHERITANCE MATRIX V2 CURRENT / FIRST FALSIFIER NOT SELECTED / PRE-CODEX ANALYSIS ACTIVE`
 
 Git/current source, executed evidence and direct Owner observation outrank this document. This file owns current routing. It is intentionally shorter than the evidence documents it routes to.
 
@@ -131,7 +131,7 @@ Known challenge surfaces include:
 - the current neutral mechanism is a comparison/lowering seam, not a frozen future schema;
 - the current backend seam is not proof of a final interchangeable physics-plugin architecture.
 
-These items are a **technical-debt inventory, not an automatic repair queue**. Repairing them before Owner truth, future-vision pressure and competing architecture hypotheses are reconciled would prematurely choose architecture. The safe technical debt closed during the current hardening pass is authority/architecture-contract debt: stale routing and mandatory-tool assumptions.
+These items are a **technical-debt inventory, not an automatic repair queue**. Repairing them before the inheritance matrix and competing architecture hypotheses reconcile donor, recipient, Owner and future-pressure evidence would prematurely choose architecture. The safe technical debt closed during the current hardening pass is authority/architecture-contract debt: stale routing and mandatory-tool assumptions.
 
 `docs/RECIPIENT_SURFACE.md` remains the detailed Recipient V1 evidence map. Its old `DONOR OUTPUTS NOT YET INGESTED` status describes the phase in which it was written; use its source findings as evidence, not as current routing.
 
@@ -170,25 +170,64 @@ The strongest current Owner-visible quality pressure clusters around steering/re
 
 ### Gate 4 — Future-Vision Pressure Test
 
+`COMPLETE — STRATEGIC PRESSURE / NO ARCHITECTURE FREEZE`
+
+The expanded future vision was used as a falsifier of inheritance assumptions, not as an equal-priority requirements list. Current car quality remains the primary evidence anchor; possible drone/flight, other machines, fine authoring, large photogrammetry worlds and desktop/mobile role separation apply pressure only where they can materially change a decision.
+
+**General principles earned now:**
+
+- relation endpoints retain independent owner-local truth;
+- authored truth remains separate from runtime body/joint/collider/contact/solver granularity;
+- coherent mechanical units must not be built from incompatible partial geometry authorities;
+- provenance, deterministic identity/persistence and fail-closed interpretation remain durable requirements;
+- mechanical/runtime truth remains separable from visual representation/binding;
+- world/content authority remains separable from vehicle-specific mechanics;
+- browser simulation/input/presentation timing separation remains valuable technique/capability, without freezing current constants/classes.
+
+**Healthy domain specialization:**
+
+- suspension topology, steering mechanics, drivetrain and tire/contact may remain wheeled-vehicle-specific;
+- flight/thrust/aerodynamics should remain a later domain unless a real second-machine case proves shared abstraction;
+- photogrammetry streaming/LOD/import belongs to the world/content domain rather than current car mechanics;
+- advanced authoring UX may be mechanism-specific even when it preserves shared authority principles.
+
+**Explicitly rejected premature generalization:**
+
+- current M6 topology as universal vehicle/machine ontology;
+- current JURE `RigDocument` or Web neutral seam as universal component schema;
+- one authored element = one runtime body;
+- a generic physics-plugin/backend framework without a real second backend need;
+- a shared tire/rotor or universal machine-dynamics abstraction;
+- renderer/world-streaming redesign driven only by long-term scale ambition;
+- mandatory JURE or a forced one-app/multi-app product split before evidence requires it.
+
+**Keep-open budget:**
+
+Cheap to keep open now: TS vs WASM/native-derived runtime, final renderer, final authoring application, one app vs cooperating tools, world streaming/partitioning, backend/plugin architecture, serialized schema, component ontology/granularity and final tire architecture.
+
+More expensive to keep ambiguous and therefore treated as earned constraints: relation-local ownership, authored/runtime separation, coherent-unit replacement and provenance/deterministic identity.
+
+Exact outboard mating is intermediate: it does not block Gates 4-6, but it may block a selected front-mechanics falsifier. Do not resolve it preemptively.
+
+Anti-platform verdict: if drone and `10 x 10 km` world ambitions disappeared tomorrow, the earned authority/separation principles would still be justified by the current car and current product evidence. The speculative universal abstractions would not. That is the current generalization boundary.
+
+### Gate 5 — Inheritance Matrix V2
+
 `CURRENT`
 
-Challenge the inheritance candidates from Gates 1-3 against the expanded Owner vision **without designing a universal platform**.
+Update the existing matrix rather than replace it. Reconcile Gates 1-4 row by row and add at least:
 
-For each major candidate ask:
+- `Generalization pressure`;
+- `Premature commitment risk`.
 
-- does it solve a real current-car quality problem?
-- is it deliberately car-specific or does it accidentally hard-lock the product to one double-wishbone M6?
-- can fine authored truth remain independent from runtime body/collider granularity?
-- can the decision plausibly survive a real second-machine case such as a drone, or should generalization wait until that case exists?
-- does it preserve a path toward large photogrammetry worlds and richer desktop authoring while keeping mobile a strong runtime/showcase client?
-- is generalization earned by evidence or merely imagined?
-- what is the cost of keeping the decision open versus freezing it now?
+Use dispositions such as:
 
-Gate 4 produces strategic pressure and explicit non-decisions, not architecture hypotheses or runtime work.
+`PRESERVE BEHAVIOR / INHERIT REQUIREMENT / INHERIT SEMANTIC / INHERIT PRODUCT DIRECTION / EXTRACT TECHNIQUE / REIMPLEMENT / RESEARCH / REJECT / CONTROL / IRRELEVANT-HISTORY`.
 
-### Gates after Future-Vision Pressure Test
+Each important row must distinguish product value, evidence strength, domain scope and whether keeping the decision open is cheap or blocking. Do not choose the first falsifier during Gate 5.
 
-5. Inheritance Matrix V2, adding `Generalization pressure` and `Premature commitment risk`.
+### Gates after Inheritance Matrix V2
+
 6. Competing architecture hypotheses, each with strongest failure reason and cheapest falsifier.
 7. Select the first next-generation falsifier.
 8. Freeze Owner / browser-orchestrator / Codex responsibilities, not architecture.
@@ -226,7 +265,7 @@ No new branch/checkpoint/schema/backend abstraction/consumer adapter/runtime sli
 
 - `docs/NEXT_GENERATION_TAKEOVER_LOOP_2026-08-25.md` — rationale and staged next-generation takeover loop; not a competing source of current live anchors.
 - `docs/RECIPIENT_SURFACE.md` — detailed Recipient V1 source/evidence map.
-- `docs/INHERITANCE_MATRIX.md` — provisional per-claim donor synthesis; roadmap commitments are subordinate to this current-state file.
+- `docs/INHERITANCE_MATRIX.md` — provisional per-claim donor synthesis; roadmap commitments are subordinate to this current-state file until Gate 5 updates the matrix.
 - `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — canonical Web-side Native closure receipt.
 - `docs/OWNER_CHECKPOINTS.md` — scoped Owner acceptance, supersession and negative-knowledge evidence.
 - `docs/ARCHITECTURE.md` — stable current system/authority boundaries, not future architecture freeze.
