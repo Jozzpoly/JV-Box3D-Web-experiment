@@ -121,7 +121,7 @@ jobs:
           node --version
           (cd box3djs && pnpm --version)
           emcc --version
-          emcmake --version
+          command -v emcmake
           cmake --version
 
       - name: Build patched box3d.js
