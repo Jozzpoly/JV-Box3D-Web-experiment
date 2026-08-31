@@ -8,6 +8,10 @@ import type {
 import type { SteeringCommand } from "./input/steering-command.js";
 import type { PointerSteeringInteraction } from "./input/pointer-steering-joystick-adapter.js";
 import { MobileDrivingUi } from "./mobile-driving-ui.js";
+import {
+  getJvProductSteeringSettings,
+  subscribeJvProductSteeringSettings,
+} from "./product-steering-settings.js";
 import { M6ProductRenderer } from "./render/m6-product-renderer.js";
 import {
   formatBrowserRuntimeReport,
@@ -264,6 +268,14 @@ const mobileDrivingUi = new MobileDrivingUi(
   mobileDrivingFrames,
 );
 
+const unsubscribeSteeringSettings = subscribeJvProductSteeringSettings(
+  (settings) => {
+    mobileDrivingUi.setSteeringWheelRangeDegrees(
+      settings.wheelRangeDegrees,
+    );
+  },
+);
+
 const analogDriveControls: PointerAnalogDriveControls = {
   throttle: throttlePedal,
   brake: brakePedal,
@@ -284,6 +296,10 @@ function interactiveKeyboardTarget(target: EventTarget | null): boolean {
       target.isContentEditable);
 }
 
+function clampSigned(value: number): number {
+  return Math.max(-1, Math.min(1, value));
+}
+
 const browserRuntimeReport = inspectCurrentBrowserRuntime();
 browserRuntimeElement.textContent = formatBrowserRuntimeReport(
   browserRuntimeReport,
@@ -302,6 +318,9 @@ try {
 
 let host: F4VehicleHost | null = null;
 let startupGeneration = 0;
+let steeringPointerActive = false;
+let activeRackTravel: number | null = null;
+let latestPhysicalSteeringPosition = 0;
 
 export type ProductSteeringInteraction = Extract<
   PointerSteeringInteraction,
@@ -326,6 +345,7 @@ export function setProductSteeringInteraction(
   }
   selectedSteeringInteraction = interaction;
 }
+
 let observationOrigin: Readonly<{
   generation: number;
   x: number;
@@ -398,6 +418,22 @@ function chassisDisplacement(trace: M6TraceFrame): number {
   );
 }
 
+function synchronizePhysicalSteering(trace: M6TraceFrame): void {
+  if (activeRackTravel === null || activeRackTravel <= 0) {
+    return;
+  }
+  latestPhysicalSteeringPosition = clampSigned(
+    trace.rackTranslation / activeRackTravel,
+  );
+  if (!steeringPointerActive) {
+    mobileDrivingUi.setSteering(
+      trace.generation,
+      latestPhysicalSteeringPosition,
+      false,
+    );
+  }
+}
+
 function renderTrace(trace: M6TraceFrame): void {
   if (renderer !== null) {
     try {
@@ -408,6 +444,8 @@ function renderTrace(trace: M6TraceFrame): void {
       console.error(error);
     }
   }
+
+  synchronizePhysicalSteering(trace);
 
   const displacement = chassisDisplacement(trace);
   const drive = trace.drive;
@@ -514,6 +552,9 @@ async function startHost(): Promise<void> {
   restartButton.disabled = true;
   profileSelect.disabled = true;
   resetDisplay();
+  steeringPointerActive = false;
+  activeRackTravel = null;
+  latestPhysicalSteeringPosition = 0;
   statusElement.textContent =
     "Loading scene package and validating runtime boundaries…";
   host?.dispose();
@@ -554,7 +595,13 @@ async function startHost(): Promise<void> {
       },
       steeringJoystick,
       getSteeringInteraction: () => selectedSteeringInteraction,
+      getSteeringWheelLockRadians: () =>
+        getJvProductSteeringSettings().wheelRangeDegrees * Math.PI / 360,
+      getSteeringCenteringAssist: () =>
+        getJvProductSteeringSettings().centeringAssist,
+      getSteeringRestingPosition: () => latestPhysicalSteeringPosition,
       onSteeringJoystickStateChange: (value: number, active: boolean) => {
+        steeringPointerActive = active;
         mobileDrivingUi.setSteering(generation, value, active);
       },
       generation,
@@ -596,6 +643,7 @@ async function startHost(): Promise<void> {
     const version = box3dReceipt.engineVersion;
     const counters = nextHost.counters;
     const profile = nextHost.rateProfile;
+    activeRackTravel = nativeReceipt.derived.rackTravel;
 
     runtimeBackendElement.textContent =
       `${backend.id} · authority ${backend.productPhysicsAuthority ? "YES" : "NO"} · ` +
@@ -676,6 +724,7 @@ window.addEventListener(
     mobileDrivingUi.beginGeneration(generation);
     host?.dispose();
     host = null;
+    unsubscribeSteeringSettings();
     mobileDrivingUi.dispose();
     renderer?.dispose();
     renderer = null;
