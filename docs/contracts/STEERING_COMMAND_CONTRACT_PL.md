@@ -1,7 +1,7 @@
 # JV — kontrakt semantyczny sterowania kierownicą
 
-Updated: 2026-08-14
-Status: `ACTIVE CURRENT SEMANTICS / FINAL FEEL NOT APPROVED`
+Updated: 2026-09-01
+Status: `ACTIVE CURRENT SEMANTICS / FINAL PHYSICAL SELF-RETURN AND FINAL RANGE NOT APPROVED`
 Owner: Jozz
 
 ## 1. Typ komendy
@@ -13,7 +13,7 @@ SteeringCommand =
   RATE(value -1..1)
 ```
 
-Controller nie rozpoznaje urządzenia. Klawiatura, touch i gamepad produkują ten sam semantyczny timeline.
+Controller nie rozpoznaje urządzenia. Klawiatura, touch i przyszły gamepad produkują semantyczny timeline zamiast przekazywać device-specific zachowanie do mechaniki pojazdu.
 
 ## 2. POSITION
 
@@ -24,10 +24,76 @@ value * physical rack travel
 Rola:
 
 - bezpośredni jawny hands-on target pozycji;
+- aktualny mechanizm touch Direct Rotation / Relative-X;
 - użyteczny mechanizm referencyjny;
-- nie rozwiązuje potrzeby bardzo krótkich, precyzyjnych tapów klawiaturą.
+- nie ustanawia finalnego steering ratio ani fizycznego self-return.
 
-## 3. RATE — bieżący mechanizm referencyjny
+Dla Direct Rotation / Relative-X obowiązuje obecnie:
+
+```text
+pointer down -> POSITION ownership
+pointer move -> POSITION update
+pointer release -> RELEASE
+```
+
+Zwykłe puszczenie touch **nie** wysyła `POSITION(0)`.
+
+## 3. Touch steering: physical rack jako truth podczas hands-off
+
+Po `RELEASE` ekranowa kierownica nie może zachować ostatniej pozycji palca jako niezależnej prawdy.
+
+Bieżący kontrakt:
+
+```text
+physicalPosition = clamp(liveRack / physicalRackTravel, -1, 1)
+```
+
+Gdy touch nie posiada kierownicy:
+
+```text
+steering UI position = physicalPosition
+```
+
+Nowy grab Direct Rotation / Relative-X zaczyna od tego samego `physicalPosition`.
+
+Dzięki temu sekwencja:
+
+```text
+skręt ręką
+-> RELEASE
+-> świat / kontakt / mechanika zmienia rack
+-> ponowny grab
+```
+
+nie może tworzyć osobnego offsetu `UI steering != physical steering` ani skoku wynikającego wyłącznie ze starego stanu urządzenia.
+
+Podczas aktywnego grabu live rack może być obserwowany jako najnowszy stan fizyczny, ale nie nadpisuje aktywnego ruchu palca w prezentacji. Po oddaniu ownership physical rack ponownie staje się prawdą prezentacji.
+
+## 4. Touch steering range
+
+Zakres graficznej/manipulacyjnej kierownicy jest jawnym parametrem input/presentation, nie siłą fizycznego centrowania.
+
+Bieżące presety:
+
+```text
+360 / 540 / 720 / 900 / 1080 degrees total wheel travel
+```
+
+Bieżący default/current-best:
+
+```text
+900 degrees total
+```
+
+To oznacza ±450° od środka.
+
+Wartość 900° jest obecnie Owner-used i wyraźnie poprawiła feel, ale **nie jest finalnym permanentnie zatwierdzonym ratio**. Pozostałe presety są kandydatami do późniejszego porównania.
+
+Wybrany zakres jest przechowywany w `sessionStorage`. Persistence jest QoL; odmowa storage przez przeglądarkę nie może zablokować sterowania.
+
+Zakres dla aktywnego gestu jest zamrażany na początku grabu. Dynamiczna zmiana ustawienia podczas już trwającego gestu nie jest obecnie zaakceptowanym kontraktem interakcji i nie należy jej traktować jako zwalidowanego use-case'u.
+
+## 5. RATE — bieżący mechanizm referencyjny
 
 RATE działa w fizycznym rack-space:
 
@@ -58,7 +124,9 @@ liveRack ± maxTargetLeadMeters
 
 Przy zmianie znaku RATE commanded target jest ponownie bazowany na live racku. Stary target nie może zostać odzyskany ani przeskoczyć przez środek.
 
-## 4. RELEASE
+RATE pozostaje osobnym referencyjnym kontraktem i nie definiuje feelu Direct Rotation.
+
+## 6. RELEASE
 
 W pierwszym fixed stepie po końcu aktywnego interval:
 
@@ -76,18 +144,21 @@ Pozostają wyłącznie fizyczne mechanizmy:
 - caster/contact;
 - linkage forces;
 - inertia;
-- ewentualne jawne assisty, jeżeli są osobno włączone.
+- ewentualne **jawne** eksperymentalne assisty używane jako control specimen.
 
-W defaultzie:
+W product defaultzie:
 
 ```text
 rackCenteringHertz = 0
 uprightAssist = false
+artificial touch centering = OFF / not Owner-facing
 ```
 
 Koła mogą pozostać skręcone na postoju.
 
-## 5. Odrzucone zachowania
+Brak użytecznego naturalnego self-return w obecnym rigu jest otwartym problemem mechanicznym. Nie zmienia semantyki `RELEASE`.
+
+## 7. Odrzucone zachowania jako ukryty product default
 
 ```text
 automatic return-to-zero
@@ -95,10 +166,13 @@ centre hold timer
 standstill centre-capture gate
 ukryta speed sensitivity
 yaw/slip feedback w mapperze
-persistent target po zwykłym key-up
+persistent target po zwykłym key-up / pointer-up
+oddzielny zamrożony UI steering state po RELEASE
 ```
 
-## 6. Timeline urządzenia
+Jawny sztuczny centering może istnieć w testach jako control specimen. Nie jest akceptowanym substytutem fizycznego self-return i nie jest Owner-facing ustawieniem bieżącego produktu.
+
+## 8. Timeline urządzenia
 
 Wybrana polityka:
 
@@ -132,7 +206,7 @@ Wymagania:
 - timestamp eventu jest ograniczony co najmniej do już skonsumowanego kursora timeline;
 - identyczny timestamped event log daje identyczny command trace przy 15/30/60/120 FPS i nieregularnym render cadence.
 
-## 7. Pointer ownership
+## 9. Pointer ownership
 
 Dla sterowania dotykowego:
 
@@ -142,11 +216,11 @@ one pointerId -> one semantic control owner
 
 Różne pointery mogą równolegle posiadać skręt oraz gaz/hamulec. Jeden pointer nie może przejąć dwóch kontrolek.
 
-Control target przejmuje pointer capture przed wysłaniem pierwszego `pressed=true`. Jeżeli capture się nie powiedzie, adapter nie emituje komendy. Dzięki temu failure nie może pozostawić zaciętego gazu lub skrętu.
+Control target przejmuje pointer capture przed wysłaniem pierwszej komendy ownership. Jeżeli capture się nie powiedzie, adapter nie emituje komendy. Dzięki temu failure nie może pozostawić zaciętego gazu lub skrętu.
 
 `pointerup`, `pointercancel` i `lostpointercapture` zwalniają tylko źródło danego pointera. Kontrolki są oddzielnymi elementami ponad canvasem, więc kamera nie przejmuje pointera należącego do sterowania pojazdem.
 
-## 8. Granica wiedzy adaptera
+## 10. Granica wiedzy adaptera
 
 Device adapter może znać:
 
@@ -155,9 +229,11 @@ Device adapter może znać:
 - timestamp;
 - `sourceId`;
 - pointer/key ownership;
-- focus/visibility lifecycle.
+- focus/visibility lifecycle;
+- jawny zakres manipulacji kierownicy;
+- jawny physical resting position przekazany przez product/runtime boundary dla bezskokowego re-grab.
 
-Nie może znać:
+Nie może samodzielnie wyprowadzać ukrytej korekty z:
 
 - yaw/yaw rate;
 - slip/slip angle;
@@ -168,7 +244,9 @@ Nie może znać:
 
 Lokalny actuator może znać rack translation/speed, travel i własny target error. Każde użycie jest widoczne w trace.
 
-## 9. Bieżące profile referencyjne
+Physical rack może być przekazany do warstwy presentation/input jako **jawny resting-state source**, nie jako ukryta stabilizacja handlingu.
+
+## 11. Bieżące profile RATE referencyjne
 
 ```text
 0.06 m/s -> 1.0 mm na idealny krok 1/60 s
@@ -183,7 +261,7 @@ Każdy profil:
 productDefaultApproved = false
 ```
 
-`0.21 m/s` jest bieżącym punktem referencyjnym, nie zatwierdzonym finalnym feelingiem.
+`0.21 m/s` jest punktem referencyjnym RATE, nie zatwierdzonym finalnym feelingiem Direct Rotation.
 
 Bieżący limit lead:
 
@@ -191,8 +269,20 @@ Bieżący limit lead:
 maxTargetLeadMeters = 0.008
 ```
 
-## 10. Granica akceptacji
+## 12. Granica akceptacji
 
-Automatyzacja może walidować semantykę komend, timeline, lifecycle i deterministyczność, ale nie wybiera finalnego feelingu kierownicy.
+Automatyzacja może walidować:
 
-Obecny browserowy mechanizm jest użytecznym referencyjnym zachowaniem JV Web. Nie ustanawia finalnej geometrii rigu, steering back-drive/self-align ani finalnego handlingu. Te elementy pozostają poza tym kontraktem i powinny być rozstrzygane dopiero na lepszych danych geometrycznych/autorskich.
+- semantykę komend;
+- timeline/lifecycle;
+- ownership;
+- deterministyczność;
+- zakres/persistence;
+- re-anchor do live rack;
+- brak starego UI/physics offsetu na poziomie kontraktu.
+
+Automatyzacja nie wybiera finalnego feelingu kierownicy ani nie dowodzi fizycznego self-return.
+
+Scoped Owner evidence z 2026-08-31 potwierdza, że aktualny 900° Direct feel jest znacznie lepszy, hands-off UI/rack sync działa, a re-grab po fizycznej zmianie racka nie tworzy poprzedniego offsetu. Nie zatwierdza to wszystkich zakresów ani finalnej mechaniki.
+
+Bieżący browserowy mechanizm jest current-best JV-Web input/presentation. Nie ustanawia finalnej geometrii rigu, steering back-drive/self-align, tire/contact modelu ani finalnego handlingu.
