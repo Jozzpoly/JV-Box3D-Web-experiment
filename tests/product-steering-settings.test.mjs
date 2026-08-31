@@ -4,7 +4,6 @@ import {
   DEFAULT_JV_PRODUCT_STEERING_SETTINGS,
   getJvProductSteeringSettings,
   initializeJvProductSteeringSettings,
-  setJvSteeringCenteringAssist,
   setJvSteeringWheelRangeDegrees,
 } from "../.test-dist/product-steering-settings.js";
 
@@ -26,19 +25,33 @@ test("steering settings default to 900 degrees with artificial centering disable
   );
 });
 
-test("steering settings persist range and assist in session storage", () => {
+test("steering settings persist range in session storage", () => {
   const storage = new FakeStorage();
   initializeJvProductSteeringSettings(storage);
   setJvSteeringWheelRangeDegrees(720);
-  setJvSteeringCenteringAssist(true);
 
   initializeJvProductSteeringSettings(null);
   assert.equal(getJvProductSteeringSettings().wheelRangeDegrees, 900);
-  assert.equal(getJvProductSteeringSettings().centeringAssist, false);
 
   initializeJvProductSteeringSettings(storage);
   assert.equal(getJvProductSteeringSettings().wheelRangeDegrees, 720);
-  assert.equal(getJvProductSteeringSettings().centeringAssist, true);
+  assert.equal(getJvProductSteeringSettings().centeringAssist, false);
+});
+
+test("preview-era artificial centering state is never restored into the product", () => {
+  const storage = new FakeStorage();
+  storage.setItem(
+    "jv.product.steering.v1",
+    JSON.stringify({
+      schema: "JV_PRODUCT_STEERING_SETTINGS_V1",
+      wheelRangeDegrees: 720,
+      centeringAssist: true,
+    }),
+  );
+
+  initializeJvProductSteeringSettings(storage);
+  assert.equal(getJvProductSteeringSettings().wheelRangeDegrees, 720);
+  assert.equal(getJvProductSteeringSettings().centeringAssist, false);
 });
 
 test("invalid or stale session payload falls back to product defaults", () => {
@@ -48,7 +61,6 @@ test("invalid or stale session payload falls back to product defaults", () => {
     JSON.stringify({
       schema: "JV_PRODUCT_STEERING_SETTINGS_V1",
       wheelRangeDegrees: 123,
-      centeringAssist: true,
     }),
   );
   initializeJvProductSteeringSettings(storage);
