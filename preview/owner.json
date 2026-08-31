@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "6e5330d1d2ecf6d1243db2e4708f3dd01689cb8b",
+  "sourceCommit": "7cf15bf64ca03c01bec655ebd5f04b1d84efadf7",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Owner-only I1B steering candidate: configurable session range/assist plus live-rack hands-off presentation and physical re-grab; accepted JSPREV2 preserved"
+  "purpose": "Steering consolidation candidate: Owner-validated natural RELEASE, 900-degree current-best feel, live-rack hands-off sync/re-grab, range-only session configuration; accepted JSPREV2 preserved"
 }
