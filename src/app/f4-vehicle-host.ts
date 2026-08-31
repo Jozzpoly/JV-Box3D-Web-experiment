@@ -440,6 +440,10 @@ export class F4VehicleHost {
       (this.#worldData.scan === null ? 0 : 1);
     const staticShapes = staticBodies;
 
+    // The unchanged UI subtracts one historical ground body/shape. Present
+    // product-scene counts in that legacy convention only when raw Box3D
+    // counters prove that the complete static scene was actually installed.
+    // Lightweight test doubles and the frozen baseline retain raw values.
     if (
       raw.bodyCount >= staticBodies + 1 &&
       raw.shapeCount >= staticShapes + 1
