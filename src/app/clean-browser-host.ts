@@ -62,6 +62,9 @@ export interface CleanBrowserHostOptions {
   ) => void;
   readonly steeringJoystick?: PointerSteeringJoystickTarget;
   readonly getSteeringInteraction?: () => PointerSteeringInteraction;
+  readonly getSteeringWheelLockRadians?: () => number;
+  readonly getSteeringCenteringAssist?: () => boolean;
+  readonly getSteeringRestingPosition?: () => number;
   readonly onSteeringJoystickStateChange?: (
     value: number,
     active: boolean,
@@ -188,6 +191,15 @@ export class CleanBrowserHost {
           ...(options.getSteeringInteraction === undefined
             ? {}
             : { getInteraction: options.getSteeringInteraction }),
+          ...(options.getSteeringWheelLockRadians === undefined
+            ? {}
+            : { getWheelLockRadians: options.getSteeringWheelLockRadians }),
+          ...(options.getSteeringCenteringAssist === undefined
+            ? {}
+            : { getCenteringAssist: options.getSteeringCenteringAssist }),
+          ...(options.getSteeringRestingPosition === undefined
+            ? {}
+            : { getRestingPosition: options.getSteeringRestingPosition }),
           now: options.now,
           isDocumentHidden: options.isDocumentHidden,
           ...(options.onSteeringJoystickStateChange === undefined
