@@ -191,7 +191,7 @@ test("hands-off steering presentation and re-grab use the physical rack as truth
   );
 });
 
-test("range and artificial centering settings restore before runtime startup and stay out of URL state", async () => {
+test("range restores before runtime startup while artificial centering stays out of owner controls", async () => {
   const productMain = await source("src/product-main.ts");
   const controls = await source("src/product-controls.ts");
   const settings = await source("src/product-steering-settings.ts");
@@ -204,6 +204,7 @@ test("range and artificial centering settings restore before runtime startup and
   assert.doesNotMatch(productMain, /jvSteeringRange|jvSteeringAssist/);
   assert.match(settings, /wheelRangeDegrees:\s*900/);
   assert.match(settings, /centeringAssist:\s*false/);
+  assert.doesNotMatch(productMain, /setJvSteeringCenteringAssist/);
+  assert.doesNotMatch(controls, /getCenteringAssist|setCenteringAssist|Asysta/);
   assert.match(controls, /360°[\s\S]*540°[\s\S]*720°[\s\S]*900°[\s\S]*1080°/);
-  assert.match(controls, /Asysta ON[\s\S]*Asysta OFF|Asysta OFF[\s\S]*Asysta ON/);
 });
