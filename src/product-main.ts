@@ -33,7 +33,6 @@ import {
 import {
   getJvProductSteeringSettings,
   initializeJvProductSteeringSettings,
-  setJvSteeringCenteringAssist,
   setJvSteeringWheelRangeDegrees,
 } from "./product-steering-settings.js";
 import { installJvBuildIdentity } from "./runtime/build-identity.js";
@@ -200,9 +199,6 @@ installProductControls({
     getRangeDegrees: () =>
       getJvProductSteeringSettings().wheelRangeDegrees,
     setRangeDegrees: setJvSteeringWheelRangeDegrees,
-    getCenteringAssist: () =>
-      getJvProductSteeringSettings().centeringAssist,
-    setCenteringAssist: setJvSteeringCenteringAssist,
   },
 });
 installUtilityDrawer();
