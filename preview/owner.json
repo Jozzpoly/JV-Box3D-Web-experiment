@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "36e9bfea7d45b7b5534b7202d98c8700a667c325",
+  "sourceCommit": "529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Final Steering I1 consolidation candidate with current routing/docs: natural RELEASE, 900-degree current-best, live-rack hands-off sync/re-grab, range-only session configuration; accepted JSPREV2 preserved"
+  "purpose": "Final Steering I1 consolidation validation: natural RELEASE, 900-degree current-best, live-rack hands-off sync/re-grab, range-only session configuration, corrected collateral comments and current routing/docs; accepted JSPREV2 preserved"
 }
