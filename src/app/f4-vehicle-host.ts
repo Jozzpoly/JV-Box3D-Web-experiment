@@ -77,6 +77,9 @@ export interface F4VehicleHostOptions {
   ) => void;
   readonly steeringJoystick?: PointerSteeringJoystickTarget;
   readonly getSteeringInteraction?: () => PointerSteeringInteraction;
+  readonly getSteeringWheelLockRadians?: () => number;
+  readonly getSteeringCenteringAssist?: () => boolean;
+  readonly getSteeringRestingPosition?: () => number;
   readonly onSteeringJoystickStateChange?: (
     value: number,
     active: boolean,
@@ -268,6 +271,24 @@ export class F4VehicleHost {
         ...(options.getSteeringInteraction === undefined
           ? {}
           : { getSteeringInteraction: options.getSteeringInteraction }),
+        ...(options.getSteeringWheelLockRadians === undefined
+          ? {}
+          : {
+              getSteeringWheelLockRadians:
+                options.getSteeringWheelLockRadians,
+            }),
+        ...(options.getSteeringCenteringAssist === undefined
+          ? {}
+          : {
+              getSteeringCenteringAssist:
+                options.getSteeringCenteringAssist,
+            }),
+        ...(options.getSteeringRestingPosition === undefined
+          ? {}
+          : {
+              getSteeringRestingPosition:
+                options.getSteeringRestingPosition,
+            }),
         ...(options.onSteeringJoystickStateChange === undefined
           ? {}
           : {
@@ -297,9 +318,6 @@ export class F4VehicleHost {
                 ? report.frameTimeMs - previousPresentationFrameTimeMs
                 : null;
             previousPresentationFrameTimeMs = report.frameTimeMs;
-            // Three timestamps split the final presented frame into trace
-            // materialization and actual render/UI work without double-counting
-            // either phase. Intermediate catch-up states still do no trace work.
             const traceStartedAt = options.now();
             const trace = world.captureLatestTrace()[0];
             const traceCapturedAt = options.now();
@@ -422,10 +440,6 @@ export class F4VehicleHost {
       (this.#worldData.scan === null ? 0 : 1);
     const staticShapes = staticBodies;
 
-    // The unchanged UI subtracts one historical ground body/shape. Present
-    // product-scene counts in that legacy convention only when raw Box3D
-    // counters prove that the complete static scene was actually installed.
-    // Lightweight test doubles and the frozen baseline retain raw values.
     if (
       raw.bodyCount >= staticBodies + 1 &&
       raw.shapeCount >= staticShapes + 1
