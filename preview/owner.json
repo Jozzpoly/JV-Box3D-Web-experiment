@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_PREVIEW_POINTER_V2",
-  "sourceCommit": "3ef7e98ca78475c9a75a7d32030bcc6c5386031d",
+  "sourceCommit": "cf703b8d57786b29925dd6f2dd37b77bd28dee11",
   "staticLayers": [
     {
       "role": "accepted-jsprev2",
@@ -9,5 +9,5 @@
       "receipt": "receipts/jv_friends_scan_receipt.json"
     }
   ],
-  "purpose": "Accepted JV-Web heir baseline during donor closure and pre-Codex synthesis; final canonical close and handoff still pending"
+  "purpose": "Owner-only I1A steering candidate: default natural RELEASE semantics plus 900-degree touch steering range; accepted JSPREV2 preserved"
 }
