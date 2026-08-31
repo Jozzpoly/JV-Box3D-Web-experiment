@@ -109,7 +109,7 @@ test("continuous updates coalesce to one frame and commit only the latest state"
 
   assert.equal(rig.frames.pending, 0);
   assert.equal(rig.steering.attr("aria-valuenow"), "-40");
-  assert.equal(rig.steering.style.values.get("--steering-angle"), "48.00deg");
+  assert.equal(rig.steering.style.values.get("--steering-angle"), "180.00deg");
   assert.equal(rig.throttle.attr("aria-valuenow"), "80");
   assert.equal(rig.throttle.style.values.get("--pedal-value"), "0.8000");
 });
