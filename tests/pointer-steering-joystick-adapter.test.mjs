@@ -375,7 +375,6 @@ test("blur releases active direct rotation and dispose keeps ownership released"
   assert.equal(fixture.target.listenerCount(), 0);
 });
 
-
 test("relative-X pointer-down does not jump and horizontal movement is independent of grab height", () => {
   const wheelGeometry = new FakeWheelGeometry();
   const top = createFixture({
@@ -401,6 +400,77 @@ test("relative-X pointer-down does not jump and horizontal movement is independe
   assert.ok(top.stateChanges.at(-1).value < 0);
   top.adapter.dispose();
   bottom.adapter.dispose();
+});
+
+test("new grabs re-anchor to the latest physical resting position", () => {
+  let restingPosition = 0.35;
+  const wheelGeometry = new FakeWheelGeometry();
+  const fixture = createFixture({
+    wheelGeometrySource: wheelGeometry,
+    getRestingPosition: () => restingPosition,
+  });
+
+  fixture.target.dispatch("pointerdown", {
+    pointerId: 31,
+    clientX: 200,
+    clientY: 40,
+  });
+  near(fixture.stateChanges.at(-1).value, 0.35);
+  fixture.setNow(1);
+  fixture.target.dispatch("pointerup", { pointerId: 31 });
+
+  restingPosition = -0.25;
+  fixture.setNow(2);
+  fixture.target.dispatch("pointerdown", {
+    pointerId: 32,
+    clientX: 200,
+    clientY: 40,
+  });
+  near(fixture.stateChanges.at(-1).value, -0.25);
+  fixture.adapter.dispose();
+});
+
+test("wheel range provider is frozen per gesture and re-read on the next grab", () => {
+  let wheelLockRadians = 450 * Math.PI / 180;
+  let restingPosition = 0;
+  const wheelGeometry = new FakeWheelGeometry();
+  const fixture = createFixture({
+    wheelGeometrySource: wheelGeometry,
+    getWheelLockRadians: () => wheelLockRadians,
+    getRestingPosition: () => restingPosition,
+  });
+
+  fixture.target.dispatch("pointerdown", {
+    pointerId: 33,
+    clientX: 200,
+    clientY: 40,
+  });
+  wheelLockRadians = 270 * Math.PI / 180;
+  fixture.setNow(1);
+  fixture.target.dispatch("pointermove", {
+    pointerId: 33,
+    clientX: 100,
+    clientY: 80,
+  });
+  near(fixture.stateChanges.at(-1).value, -0.2);
+  fixture.setNow(2);
+  fixture.target.dispatch("pointerup", { pointerId: 33 });
+
+  restingPosition = 0;
+  fixture.setNow(3);
+  fixture.target.dispatch("pointerdown", {
+    pointerId: 34,
+    clientX: 200,
+    clientY: 40,
+  });
+  fixture.setNow(4);
+  fixture.target.dispatch("pointermove", {
+    pointerId: 34,
+    clientX: 100,
+    clientY: 80,
+  });
+  near(fixture.stateChanges.at(-1).value, -1 / 3);
+  fixture.adapter.dispose();
 });
 
 test("interaction provider is frozen for one gesture and re-read on the next grab", () => {
