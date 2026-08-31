@@ -32,7 +32,7 @@ The exact Owner Preview candidate used for acceptance passed the canonical Owner
 - executable-layer unchanged check;
 - GitHub Pages deployment.
 
-The post-audit consolidation correction (removing Owner-facing artificial assist while preserving default natural `RELEASE`, plus restoring an accidentally removed explanatory comment) passed the same source/build validation before this baseline was written.
+The post-feedback consolidation audit removed the unneeded Owner-facing artificial assist while preserving default natural `RELEASE`. It also found and restored two explanatory F4 comment blocks that had been accidentally dropped by full-file replacements; runtime behavior in those locations had not changed. The corrected source passed canonical source/build validation before documentation consolidation.
 
 ## OWNER-OBSERVED
 
