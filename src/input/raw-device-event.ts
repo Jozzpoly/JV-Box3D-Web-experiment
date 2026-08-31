@@ -1,5 +1,6 @@
 export type SteeringSide = "LEFT" | "RIGHT";
 export type InputReleaseReason =
+  | "POINTER_RELEASE"
   | "BLUR"
   | "VISIBILITY_HIDDEN"
   | "PAGE_HIDE"
