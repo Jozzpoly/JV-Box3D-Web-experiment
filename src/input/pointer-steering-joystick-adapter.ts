@@ -53,7 +53,10 @@ export interface PointerSteeringJoystickAdapterOptions {
   readonly wheelGeometrySource?: PointerSteeringWheelGeometrySource;
   readonly wheelCenterGuardRatio?: number;
   readonly wheelLockRadians?: number;
+  readonly getWheelLockRadians?: () => number;
   readonly centeringAssist?: boolean;
+  readonly getCenteringAssist?: () => boolean;
+  readonly getRestingPosition?: () => number;
   readonly onStateChange?: (value: number, active: boolean) => void;
 }
 
@@ -84,6 +87,10 @@ function hasGeometrySource(
     "getBoundingClientRect" in value &&
     typeof (value as { getBoundingClientRect?: unknown }).getBoundingClientRect ===
       "function";
+}
+
+function clampSigned(value: number): number {
+  return Math.max(-1, Math.min(1, value));
 }
 
 export function resolvePointerSteeringPosition(
@@ -133,8 +140,9 @@ export class PointerSteeringJoystickAdapter {
     | PointerSteeringWheelGeometrySource
     | undefined;
   readonly #wheelCenterGuardRatio: number;
-  readonly #wheelLockRadians: number;
-  readonly #centeringAssist: boolean;
+  readonly #getWheelLockRadians: () => number;
+  readonly #getCenteringAssist: () => boolean;
+  readonly #getRestingPosition: (() => number) | undefined;
   readonly #onStateChange:
     | ((value: number, active: boolean) => void)
     | undefined;
@@ -143,6 +151,7 @@ export class PointerSteeringJoystickAdapter {
   #activeInteraction: PointerSteeringInteraction | null = null;
   #activeXGeometry: ActiveXSteeringGeometry | null = null;
   #activeWheelGeometry: FrozenSteeringWheelGeometry | null = null;
+  #activeWheelLockRadians: number | null = null;
   #rotationState: SteeringWheelRotationState | null = null;
   #horizontalState: SteeringWheelHorizontalState | null = null;
   #currentPosition = 0;
@@ -210,13 +219,34 @@ export class PointerSteeringJoystickAdapter {
       this.#assertInteraction(interaction);
       this.#getInteraction = () => interaction;
     }
+    if (
+      options.wheelLockRadians !== undefined &&
+      options.getWheelLockRadians !== undefined
+    ) {
+      throw new Error(
+        "Steering wheel lock must use either a fixed value or a provider, not both.",
+      );
+    }
+    const fixedWheelLockRadians =
+      options.wheelLockRadians ?? DEFAULT_DIRECT_WHEEL_LOCK_RADIANS;
+    this.#getWheelLockRadians =
+      options.getWheelLockRadians ?? (() => fixedWheelLockRadians);
+    if (
+      options.centeringAssist !== undefined &&
+      options.getCenteringAssist !== undefined
+    ) {
+      throw new Error(
+        "Steering centering assist must use either a fixed value or a provider, not both.",
+      );
+    }
+    const fixedCenteringAssist = options.centeringAssist ?? false;
+    this.#getCenteringAssist =
+      options.getCenteringAssist ?? (() => fixedCenteringAssist);
+    this.#getRestingPosition = options.getRestingPosition;
     this.#deadZone = options.deadZone ?? DEFAULT_DEAD_ZONE;
     this.#wheelGeometrySource = options.wheelGeometrySource;
     this.#wheelCenterGuardRatio =
       options.wheelCenterGuardRatio ?? DEFAULT_DIRECT_CENTER_GUARD_RATIO;
-    this.#wheelLockRadians =
-      options.wheelLockRadians ?? DEFAULT_DIRECT_WHEEL_LOCK_RADIANS;
-    this.#centeringAssist = options.centeringAssist ?? false;
     this.#onStateChange = options.onStateChange;
 
     resolvePointerSteeringPosition(0, -1, 2, this.#deadZone);
@@ -224,11 +254,15 @@ export class PointerSteeringJoystickAdapter {
       { left: 0, top: 0, width: 2, height: 2 },
       this.#wheelCenterGuardRatio,
     );
-    beginSteeringWheelRotation(0, 0, this.#wheelLockRadians);
+    const validationLock = this.#wheelLockRadiansForNewGesture();
+    if (validationLock === null) {
+      throw new RangeError("Steering wheel lock provider returned an invalid value.");
+    }
+    beginSteeringWheelRotation(0, 0, validationLock);
     beginSteeringWheelHorizontalManipulation(
       0,
       validationGeometry.centerX,
-      this.#wheelLockRadians,
+      validationLock,
     );
 
     this.#listen(this.#target, "pointerdown", this.#onPointerDown);
@@ -312,6 +346,7 @@ export class PointerSteeringJoystickAdapter {
     this.#activeInteraction = prepared.interaction;
     this.#activeXGeometry = prepared.xGeometry;
     this.#activeWheelGeometry = prepared.wheelGeometry;
+    this.#activeWheelLockRadians = prepared.wheelLockRadians;
     this.#rotationState = prepared.rotationState;
     this.#horizontalState = prepared.horizontalState;
     this.#currentPosition = prepared.value;
@@ -352,6 +387,7 @@ export class PointerSteeringJoystickAdapter {
     value: number;
     xGeometry: ActiveXSteeringGeometry | null;
     wheelGeometry: FrozenSteeringWheelGeometry | null;
+    wheelLockRadians: number | null;
     rotationState: SteeringWheelRotationState | null;
     horizontalState: SteeringWheelHorizontalState | null;
   }> | null {
@@ -374,47 +410,50 @@ export class PointerSteeringJoystickAdapter {
         value,
         xGeometry: geometry,
         wheelGeometry: null,
+        wheelLockRadians: null,
         rotationState: null,
         horizontalState: null,
       };
     }
 
     const geometry = this.#captureWheelGeometry();
-    if (geometry === null) {
+    const wheelLockRadians = this.#wheelLockRadiansForNewGesture();
+    const restingPosition = this.#restingPositionForNewGesture();
+    if (
+      geometry === null ||
+      wheelLockRadians === null ||
+      restingPosition === null
+    ) {
       return null;
     }
     if (interaction === "RELATIVE_X") {
       return {
         interaction,
-        // Relative horizontal manipulation is also anchored to the held wheel
-        // position. Pointer-down therefore owns the gesture without changing
-        // steering, regardless of where the visible wheel was grabbed.
-        value: this.#currentPosition,
+        value: restingPosition,
         xGeometry: null,
         wheelGeometry: geometry,
+        wheelLockRadians,
         rotationState: null,
         horizontalState: beginSteeringWheelHorizontalManipulation(
-          this.#currentPosition,
+          restingPosition,
           event.clientX,
-          this.#wheelLockRadians,
+          wheelLockRadians,
         ),
       };
     }
 
     const pointerAngle = this.#wheelPointerAngleFor(event, geometry);
     const rotationState = beginSteeringWheelRotation(
-      this.#currentPosition,
+      restingPosition,
       pointerAngle,
-      this.#wheelLockRadians,
+      wheelLockRadians,
     );
     return {
       interaction,
-      // Direct manipulation is relative to the wheel position at grab. Pointer
-      // down therefore re-enqueues the existing position instead of snapping to
-      // the absolute touch angle.
-      value: this.#currentPosition,
+      value: restingPosition,
       xGeometry: null,
       wheelGeometry: geometry,
+      wheelLockRadians,
       rotationState,
       horizontalState: null,
     };
@@ -428,6 +467,11 @@ export class PointerSteeringJoystickAdapter {
       return this.#xPositionFor(event.clientX, this.#activeXGeometry);
     }
 
+    const wheelLockRadians = this.#activeWheelLockRadians;
+    if (wheelLockRadians === null) {
+      return null;
+    }
+
     if (this.#activeInteraction === "RELATIVE_X") {
       if (
         this.#activeWheelGeometry === null ||
@@ -439,11 +483,11 @@ export class PointerSteeringJoystickAdapter {
         this.#horizontalState,
         event.clientX,
         this.#activeWheelGeometry.radiusX,
-        this.#wheelLockRadians,
+        wheelLockRadians,
       );
       return steeringPositionForWheelRotation(
         this.#horizontalState,
-        this.#wheelLockRadians,
+        wheelLockRadians,
       );
     }
 
@@ -461,11 +505,11 @@ export class PointerSteeringJoystickAdapter {
     this.#rotationState = advanceSteeringWheelRotation(
       this.#rotationState,
       pointerAngle,
-      this.#wheelLockRadians,
+      wheelLockRadians,
     );
     return steeringPositionForWheelRotation(
       this.#rotationState,
-      this.#wheelLockRadians,
+      wheelLockRadians,
     );
   }
 
@@ -492,7 +536,7 @@ export class PointerSteeringJoystickAdapter {
   }
 
   #finishOwnership(reason: InputReleaseReason): void {
-    if (this.#centeringAssist) {
+    if (this.#centeringAssistEnabled()) {
       this.#currentPosition = 0;
       this.#timeline.enqueuePosition(
         0,
@@ -515,6 +559,7 @@ export class PointerSteeringJoystickAdapter {
     this.#activeInteraction = null;
     this.#activeXGeometry = null;
     this.#activeWheelGeometry = null;
+    this.#activeWheelLockRadians = null;
     this.#rotationState = null;
     this.#horizontalState = null;
   }
@@ -526,6 +571,35 @@ export class PointerSteeringJoystickAdapter {
       return interaction;
     } catch {
       return null;
+    }
+  }
+
+  #wheelLockRadiansForNewGesture(): number | null {
+    try {
+      const value = this.#getWheelLockRadians();
+      return Number.isFinite(value) && value > 0 ? value : null;
+    } catch {
+      return null;
+    }
+  }
+
+  #restingPositionForNewGesture(): number | null {
+    if (this.#getRestingPosition === undefined) {
+      return this.#currentPosition;
+    }
+    try {
+      const value = this.#getRestingPosition();
+      return Number.isFinite(value) ? clampSigned(value) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  #centeringAssistEnabled(): boolean {
+    try {
+      return this.#getCenteringAssist() === true;
+    } catch {
+      return false;
     }
   }
 
