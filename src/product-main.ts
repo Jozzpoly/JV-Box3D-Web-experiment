@@ -30,6 +30,12 @@ import {
   subscribeJvProductViewSettings,
   type JvTextureFilterMode,
 } from "./render/jv-product-view-settings.js";
+import {
+  getJvProductSteeringSettings,
+  initializeJvProductSteeringSettings,
+  setJvSteeringCenteringAssist,
+  setJvSteeringWheelRangeDegrees,
+} from "./product-steering-settings.js";
 import { installJvBuildIdentity } from "./runtime/build-identity.js";
 import { installJvPerformanceObserver } from "./runtime/performance-observer.js";
 import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
@@ -107,6 +113,12 @@ const initialSettings = {
 } as const;
 replaceJvProductViewSettings(initialSettings);
 
+try {
+  initializeJvProductSteeringSettings(window.sessionStorage);
+} catch {
+  initializeJvProductSteeringSettings(null);
+}
+
 if (spawnTarget !== "map") {
   const nativeFetch = globalThis.fetch.bind(globalThis);
   const productFetch: typeof fetch = async (input, init) => {
@@ -183,6 +195,14 @@ installProductControls({
   steeringInteraction: {
     get: productRuntime.getProductSteeringInteraction,
     set: productRuntime.setProductSteeringInteraction,
+  },
+  steeringSettings: {
+    getRangeDegrees: () =>
+      getJvProductSteeringSettings().wheelRangeDegrees,
+    setRangeDegrees: setJvSteeringWheelRangeDegrees,
+    getCenteringAssist: () =>
+      getJvProductSteeringSettings().centeringAssist,
+    setCenteringAssist: setJvSteeringCenteringAssist,
   },
 });
 installUtilityDrawer();
