@@ -110,7 +110,6 @@ test("restart invalidates old presentation before disposing the old host", async
   assert.ok(dispose > begin, "old host must be disposed only after presentation invalidation");
 });
 
-
 test("selectable steering keeps Direct and Relative-X as explicit product alternatives", async () => {
   const adapter = await source("src/input/pointer-steering-joystick-adapter.ts");
   const main = await source("src/main.ts");
@@ -128,7 +127,7 @@ test("selectable steering keeps Direct and Relative-X as explicit product altern
   assert.match(controls, /RELATIVE_X[\s\S]*Przeciąganie/);
 });
 
-test("steering interaction selection stays session-scoped instead of polluting view settings or URL state", async () => {
+test("steering interaction selection stays runtime-session scoped instead of polluting URL state", async () => {
   const controls = await source("src/product-controls.ts");
   const viewSettings = await source("src/render/jv-product-view-settings.ts");
   const productMain = await source("src/product-main.ts");
@@ -138,20 +137,22 @@ test("steering interaction selection stays session-scoped instead of polluting v
   assert.doesNotMatch(productMain, /jvSteeringInteraction/);
 });
 
-test("F4 and clean browser host only forward the steering interaction provider", async () => {
+test("F4 and clean browser host forward steering providers without owning product settings", async () => {
   const f4 = await source("src/app/f4-vehicle-host.ts");
   const clean = await source("src/app/clean-browser-host.ts");
 
-  assert.match(f4, /getSteeringInteraction\?:\s*\(\)\s*=>\s*PointerSteeringInteraction/);
-  assert.match(f4, /\{ getSteeringInteraction: options\.getSteeringInteraction \}/);
-  assert.match(clean, /getSteeringInteraction\?:\s*\(\)\s*=>\s*PointerSteeringInteraction/);
-  assert.match(clean, /\{ getInteraction: options\.getSteeringInteraction \}/);
-  assert.doesNotMatch(f4, /setSteeringInteraction\(/);
-  assert.doesNotMatch(clean, /setSteeringInteraction\(/);
+  for (const sourceText of [f4, clean]) {
+    assert.match(sourceText, /getSteeringInteraction\?:\s*\(\)\s*=>\s*PointerSteeringInteraction/);
+    assert.match(sourceText, /getSteeringWheelLockRadians\?:\s*\(\)\s*=>\s*number/);
+    assert.match(sourceText, /getSteeringCenteringAssist\?:\s*\(\)\s*=>\s*boolean/);
+    assert.match(sourceText, /getSteeringRestingPosition\?:\s*\(\)\s*=>\s*number/);
+    assert.doesNotMatch(sourceText, /sessionStorage/);
+  }
+  assert.match(f4, /getSteeringRestingPosition:\s*options\.getSteeringRestingPosition/);
+  assert.match(clean, /getRestingPosition:\s*options\.getSteeringRestingPosition/);
 });
 
-
-test("steering interaction selection survives host restart within the same product session", async () => {
+test("steering interaction selection survives host restart within the same product runtime", async () => {
   const main = await source("src/main.ts");
   const selection = main.indexOf("let selectedSteeringInteraction");
   const startHost = main.indexOf("async function startHost(): Promise<void>");
@@ -160,7 +161,49 @@ test("steering interaction selection survives host restart within the same produ
     startHost,
   );
 
-  assert.ok(selection >= 0, "session steering selection is missing");
+  assert.ok(selection >= 0, "runtime steering selection is missing");
   assert.ok(selection < startHost, "steering selection must outlive individual host starts");
   assert.ok(provider > startHost, "every host start must receive the live selection provider");
+});
+
+test("hands-off steering presentation and re-grab use the physical rack as truth", async () => {
+  const main = await source("src/main.ts");
+
+  assert.match(
+    main,
+    /trace\.rackTranslation\s*\/\s*activeRackTravel/,
+    "hands-off presentation must normalize the live physical rack",
+  );
+  assert.match(
+    main,
+    /if \(!steeringPointerActive\)[\s\S]*mobileDrivingUi\.setSteering\([\s\S]*latestPhysicalSteeringPosition,[\s\S]*false/,
+    "hands-off UI must follow physical rack without pretending the pointer is active",
+  );
+  assert.match(
+    main,
+    /getSteeringRestingPosition:\s*\(\)\s*=>\s*latestPhysicalSteeringPosition/,
+    "new grabs must re-anchor to physical steering state",
+  );
+  assert.match(
+    main,
+    /activeRackTravel\s*=\s*nativeReceipt\.derived\.rackTravel/,
+    "rack normalization must use the validated receipt-derived rack travel",
+  );
+});
+
+test("range and artificial centering settings restore before runtime startup and stay out of URL state", async () => {
+  const productMain = await source("src/product-main.ts");
+  const controls = await source("src/product-controls.ts");
+  const settings = await source("src/product-steering-settings.ts");
+
+  const restore = productMain.indexOf("initializeJvProductSteeringSettings");
+  const runtimeImport = productMain.indexOf('await import("./main.js")');
+  assert.ok(restore >= 0, "steering session restoration is missing");
+  assert.ok(runtimeImport > restore, "steering settings must restore before runtime startup");
+  assert.match(productMain, /window\.sessionStorage/);
+  assert.doesNotMatch(productMain, /jvSteeringRange|jvSteeringAssist/);
+  assert.match(settings, /wheelRangeDegrees:\s*900/);
+  assert.match(settings, /centeringAssist:\s*false/);
+  assert.match(controls, /360°[\s\S]*540°[\s\S]*720°[\s\S]*900°[\s\S]*1080°/);
+  assert.match(controls, /Asysta ON[\s\S]*Asysta OFF|Asysta OFF[\s\S]*Asysta ON/);
 });
