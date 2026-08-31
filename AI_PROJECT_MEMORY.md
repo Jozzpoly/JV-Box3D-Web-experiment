@@ -1,99 +1,90 @@
-# AI project memory — JV Web
+# AI Project Memory — JV Web
 
-Updated: 2026-08-26
-Status: `JV-WEB CURRENT PRODUCT + EVIDENCE CORPUS / NO ACTIVE RUNTIME LANE / PRIOR GATES 0-8 PRESERVED / PRIOR FRONT-CORNER FALSIFIER NON-BINDING / REPO CONTINUITY OPEN / STRATEGIC CODEX COLD TAKEOVER NEXT / IMPLEMENTATION NOT AUTHORIZED`
+Updated: 2026-09-01
+Owner: Jozz
 
-Compact router only. Live Git, executed evidence and direct scoped Owner observation outrank this file. `docs/PROJECT_STATE.md` owns current routing.
+## CURRENT MODE
 
-## Current directive
+**ACTIVE BOUNDED JV-WEB PRODUCT ITERATION**
 
-The next Codex session is a **read-only strategic reconstruction**, not an implementation handoff.
+The 2026-08-26 strategic cold-takeover/read-only campaign is historical and closed. Do not restart it automatically.
 
-Do not assume that the current repo should be polished, incrementally migrated, radically rebuilt or retained as the future implementation home. Do not assume a new repo is better either.
+JV-Web is a standalone browser Jozz Vehicle product/R&D surface, not NextGen JV Lite. NextGen JV is a separate deeper construction/platform direction. Transfer discoveries deliberately; do not synchronize architectures by default.
 
-Repo continuity, first experiment, runtime/mechanical boundary, technology stack and future authoring/render/world architecture are open strategic decisions.
+## AUTHORITY
 
-## Program evidence roles
+`live Git/current files -> executed evidence -> direct scoped Owner/device evidence -> current docs -> history/cross-project memory`
 
-- JV-Web current repo = current browser product/source and recipient evidence corpus.
-- JV_CORE / Native = sealed primary donor/research record; not mandatory architecture or quality ceiling.
-- JURE = optional authoring/mechanical-truth donor/tool; not mandatory and not frozen as final app/schema.
-- Codex = repo-native strategic reviewer first, executor only after strategy is accepted.
+After milestone consolidation, `Jozzpoly/JV-Box3D-Web-experiment/main` is current source/product authority.
 
-## Proven/reference capital
+`preview/owner-control` is exact-source Owner Preview infrastructure, not source authority.
 
-Current evidence includes working and/or Owner-accepted value in:
+`Jozzpoly/JV-Box3D-Web-Public/main` owns Friends/public artifacts, not current private source truth.
 
-- browser/Pages product shell;
-- Plac E2R, Offroad and approved JSPREV2;
-- Camera Manual Rig V1 + Fullscreen V1;
-- Direct Rotation + Relative-X steering interaction foundations;
-- absolute-position pedals;
-- independent pointer ownership, multitouch and D/R lifecycle;
-- fail-closed input/lifecycle behavior;
-- accepted mobile composition and desktop capability/HUD work;
-- accepted A53/Chrome render-1x scan boundary;
-- exact-source Preview/static-layer provenance discipline.
+Historical work/checkpoint/noop branches are not authority and are not an automatic cleanup task.
 
-These are proven/reference capabilities, not permanent architecture. A future strategy may preserve, reimplement or consciously supersede them.
+## CURRENT-BEST STEERING — 2026-09-01
 
-Pedal Contact V1/V1.1 remains `NOT ACCEPTED / DEFERRED`.
+See `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`.
 
-## Strong evidence constraints
+Current product truth:
 
-Prior work supports, unless stronger contradictory evidence appears:
+- Direct Rotation + Relative-X remain available;
+- pointer release defaults to semantic `RELEASE`, not hidden center command;
+- hands-off graphical steering follows the live physical rack;
+- a new grab re-anchors to the live rack, preventing steering UI/physics offset;
+- 900 degrees total wheel range is the default and current Owner-used tuning;
+- 360/540/720/1080 are configurable candidates, not final Owner-approved ratios;
+- range is stored in session storage;
+- artificial centering is not an Owner-facing product option; retained adapter support is control/test evidence only;
+- natural physical self-return remains unresolved.
 
-- independent relation-local endpoint truth where mechanically relevant;
-- authored/neutral truth separated from runtime dynamics/contact/solver representation;
-- no assumed authored-element -> runtime-body/collider 1:1 invariant;
-- coherent mechanism ownership rather than incompatible mixed geometry authorities;
-- provenance and deterministic identity/persistence;
-- visual convenience ownership is not mechanical authority;
-- authoring terminology does not justify an invented extra physical M6 carrier body;
-- natural steering return should not be hidden by silent artificial centering.
+## OWNER EVIDENCE FROM THE CURRENT STEERING SLICE
 
-These do not select the current repo, TypeScript, current Box3D binding, A1/A2/M1, JURE, final tire/contact, rig, renderer or world architecture.
+Scoped Owner observation on the 900-degree Owner Preview:
 
-## Prior analysis — non-binding
+- hands-off wheel/rack sync: good;
+- physics movement followed by re-grab: no prior offset/jump;
+- feel: substantially better than before and better than expected;
+- Owner is currently learning/adapting to 900 degrees rather than comparing ranges;
+- artificial assist was not used and is not desired as a dependency.
 
-`docs/ARCHITECTURE_HYPOTHESES.md` records prior A1/A2/M1/C0 analysis.
+Do not generalize this into a claim that every steering range, every device or the entire product received a deep regression pass.
 
-`docs/FIRST_FALSIFIER.md` records the prior Gate 7 selection of `FRONT-CORNER-AUTHORITY-ISOLATION-01`.
+## NOT VALIDATED / OPEN
 
-Under the current Owner directive both are **prior analysis for comparison, not current implementation commands**. Codex may independently confirm, downgrade or reject them.
+- final steering ratio/range;
+- Owner feel for 360/540/720/1080;
+- changing range during an already-active steering gesture;
+- dedicated mobile persistence check for the range setting;
+- complete whole-product regression during the 2026-08-31 checkpoint;
+- physically useful self-return/self-alignment.
 
-## Current Codex takeover task
+A future steering-mechanics R2 may investigate natural self-return. It is not automatically the next task and it must not solve missing physics with fake automatic centering.
 
-Without source writes, Codex should:
+## DEFAULT WORKFLOW
 
-1. resolve exact live Git, active lanes and source identity;
-2. establish canonical install/check/build health of the current repo;
-3. inspect current source/tests directly;
-4. reconstruct product value, debt, evidence quality and unknowns;
-5. separate FACT / EXECUTED EVIDENCE / OWNER-OBSERVED / PRIOR ANALYSIS / HYPOTHESIS / UNKNOWN;
-6. identify what deserves inheritance versus what is accidental/sunk-cost architecture;
-7. compare continuation/polish, radical rebuild and clean-start/new-repo strategies;
-8. reconstruct its own option space rather than merely paraphrasing A1/A2/M1;
-9. recommend the highest-information next decision or experiment and its strongest falsifier;
-10. stop before creating a branch, new repo or implementation.
+For a small product need:
 
-## Reading order
+`small need -> smallest sensible change -> risk-matched test -> faithful render/device evidence -> Owner judgement -> next iteration`
 
-1. `AGENTS.md`
-2. `docs/PROJECT_STATE.md`
-3. `docs/HANDOFF.md`
-4. package/toolchain/source/tests
-5. prior-analysis/evidence docs only as needed
+Use full canonical build/check/documentation when closing a meaningful accepted stage or touching foundations, not as automatic ceremony after every polish change.
 
-Delay `docs/FIRST_FALSIFIER.md` and `docs/ARCHITECTURE_HYPOTHESES.md` until after an initial independent reconstruction when practical.
+Before writes verify repo/ref/current source. Protect the accepted baseline. Do not broaden UI/input work into physics, drivetrain, rig or world changes without a causal reason.
 
-## Do not
+## RESPONSIBILITY
 
-- automatically execute M1/front-corner isolation;
-- start FMU reconstruction;
-- port Native 1:1;
-- freeze JURE/schema/lowering;
-- create a new repo merely because clean start is allowed;
-- create a generic backend/framework before evidence selects that need;
-- treat canonical build success as proof that the current repo must remain the future foundation;
-- treat environment/tooling failure as product/architecture evidence.
+Agent owns repo/code/technical diagnosis/tests/builds/documentation available to the environment.
+
+Owner primarily supplies product priority, look/feel judgement and real-device evidence that cannot be reproduced by the agent.
+
+## FRESH CONTINUATION
+
+Read:
+
+1. `AGENTS.md`;
+2. `docs/PROJECT_STATE.md`;
+3. live `main` source relevant to the requested slice;
+4. the steering baseline when steering is relevant.
+
+Read `docs/HANDOFF.md` for an actual handoff, not as a reason to restart a takeover campaign.
