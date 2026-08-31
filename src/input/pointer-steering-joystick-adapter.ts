@@ -53,6 +53,7 @@ export interface PointerSteeringJoystickAdapterOptions {
   readonly wheelGeometrySource?: PointerSteeringWheelGeometrySource;
   readonly wheelCenterGuardRatio?: number;
   readonly wheelLockRadians?: number;
+  readonly centeringAssist?: boolean;
   readonly onStateChange?: (value: number, active: boolean) => void;
 }
 
@@ -69,7 +70,7 @@ interface ActiveXSteeringGeometry {
 
 const DEFAULT_DEAD_ZONE = 0.08;
 const DEFAULT_DIRECT_CENTER_GUARD_RATIO = 0.18;
-const DEFAULT_DIRECT_WHEEL_LOCK_RADIANS = 120 * Math.PI / 180;
+const DEFAULT_DIRECT_WHEEL_LOCK_RADIANS = 450 * Math.PI / 180;
 
 function pointerButtonIsSupported(event: PointerEvent): boolean {
   return event.button === 0 || event.button === -1;
@@ -133,6 +134,7 @@ export class PointerSteeringJoystickAdapter {
     | undefined;
   readonly #wheelCenterGuardRatio: number;
   readonly #wheelLockRadians: number;
+  readonly #centeringAssist: boolean;
   readonly #onStateChange:
     | ((value: number, active: boolean) => void)
     | undefined;
@@ -214,6 +216,7 @@ export class PointerSteeringJoystickAdapter {
       options.wheelCenterGuardRatio ?? DEFAULT_DIRECT_CENTER_GUARD_RATIO;
     this.#wheelLockRadians =
       options.wheelLockRadians ?? DEFAULT_DIRECT_WHEEL_LOCK_RADIANS;
+    this.#centeringAssist = options.centeringAssist ?? false;
     this.#onStateChange = options.onStateChange;
 
     resolvePointerSteeringPosition(0, -1, 2, this.#deadZone);
@@ -473,23 +476,38 @@ export class PointerSteeringJoystickAdapter {
     event.preventDefault();
     event.stopPropagation();
     this.#clearActiveGesture();
-    this.#currentPosition = 0;
-    this.#timeline.enqueuePosition(0, this.#safeTimestamp(), this.#sourceId);
+    this.#finishOwnership("POINTER_RELEASE");
     if (releaseCapture) {
       this.#releaseCapture(event.pointerId);
     }
-    this.#onStateChange?.(0, false);
   }
 
-  #neutralize(_reason: InputReleaseReason): void {
+  #neutralize(reason: InputReleaseReason): void {
     if (this.#disposed || !this.#hasActivated) {
       return;
     }
     this.#releaseCapture();
     this.#clearActiveGesture();
-    this.#currentPosition = 0;
-    this.#timeline.enqueuePosition(0, this.#safeTimestamp(), this.#sourceId);
-    this.#onStateChange?.(0, false);
+    this.#finishOwnership(reason);
+  }
+
+  #finishOwnership(reason: InputReleaseReason): void {
+    if (this.#centeringAssist) {
+      this.#currentPosition = 0;
+      this.#timeline.enqueuePosition(
+        0,
+        this.#safeTimestamp(),
+        this.#sourceId,
+      );
+      this.#onStateChange?.(0, false);
+      return;
+    }
+    this.#timeline.enqueueRelease(
+      this.#safeTimestamp(),
+      reason,
+      this.#sourceId,
+    );
+    this.#onStateChange?.(this.#currentPosition, false);
   }
 
   #clearActiveGesture(): void {
