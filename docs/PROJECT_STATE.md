@@ -143,13 +143,10 @@ Camera, UI, controls, world/scan experience, performance and other product surfa
 - Do not treat 900 degrees as permanently frozen without comparative Owner evidence.
 - Do not claim broad device/product acceptance from this scoped steering checkpoint.
 
-## 8. Natural next decision boundary
+## 8. Milestone boundary
 
-The Steering I1 stage is ready for consolidation when:
+**Steering I1 consolidation is complete.**
 
-1. the corrected exact source passes canonical validation;
-2. this documentation matches live source and Owner evidence;
-3. `main` is re-verified as the candidate's ancestor;
-4. the validated candidate is promoted to `main` without force.
+The corrected exact source passed canonical validation, documentation was aligned with live source and scoped Owner evidence, ancestry was re-verified, and the validated candidate was promoted to `main` by non-force fast-forward.
 
-After that, stop at the milestone boundary. Re-ground before selecting the next product/research slice.
+No next implementation is selected by this closure. Stop at this milestone boundary and re-ground current product priorities before choosing the next product/research slice.
