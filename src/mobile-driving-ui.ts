@@ -31,6 +31,8 @@ interface MobileDrivingPresentationState {
   direction: MobileDrivingDirection;
 }
 
+const DEFAULT_STEERING_WHEEL_LOCK_DEGREES = 450;
+
 const NEUTRAL_STATE: Readonly<MobileDrivingPresentationState> = Object.freeze({
   steering: 0,
   steeringActive: false,
@@ -180,7 +182,7 @@ export class MobileDrivingUi {
     const steeringMagnitude = Math.round(Math.abs(steering) * 100);
     this.#targets.steering.style.setProperty(
       "--steering-angle",
-      `${(-steering * 120).toFixed(2)}deg`,
+      `${(-steering * DEFAULT_STEERING_WHEEL_LOCK_DEGREES).toFixed(2)}deg`,
     );
     this.#targets.steering.style.setProperty(
       "--steering-strength",
