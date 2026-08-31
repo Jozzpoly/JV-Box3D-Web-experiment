@@ -41,8 +41,6 @@ export interface ProductSteeringInteractionControls {
 export interface ProductSteeringSettingsControls {
   readonly getRangeDegrees: () => JvSteeringWheelRangeDegrees;
   readonly setRangeDegrees: (range: JvSteeringWheelRangeDegrees) => void;
-  readonly getCenteringAssist: () => boolean;
-  readonly setCenteringAssist: (enabled: boolean) => void;
 }
 
 export interface InstallProductControlsOptions {
@@ -269,7 +267,6 @@ export function installProductControls(
   >();
   const steeringInteraction = options.steeringInteraction;
   const steeringSettings = options.steeringSettings;
-  let centeringAssistButton: HTMLButtonElement | null = null;
   const syncSteeringButtons = (): void => {
     if (steeringInteraction !== undefined) {
       const active = steeringInteraction.get();
@@ -281,13 +278,6 @@ export function installProductControls(
       const range = steeringSettings.getRangeDegrees();
       for (const [candidate, button] of rangeButtons) {
         setChoiceActive(button, candidate === range);
-      }
-      if (centeringAssistButton !== null) {
-        const enabled = steeringSettings.getCenteringAssist();
-        centeringAssistButton.textContent = enabled
-          ? "Asysta ON"
-          : "Asysta OFF";
-        setChoiceActive(centeringAssistButton, enabled);
       }
     }
   };
@@ -336,16 +326,6 @@ export function installProductControls(
         rangeButtons.set(range, button);
         rangeChoices.append(button);
       }
-      centeringAssistButton = document.createElement("button");
-      centeringAssistButton.type = "button";
-      centeringAssistButton.className = "product-choice";
-      centeringAssistButton.addEventListener("click", () => {
-        steeringSettings.setCenteringAssist(
-          !steeringSettings.getCenteringAssist(),
-        );
-        syncSteeringButtons();
-      });
-      rangeChoices.append(centeringAssistButton);
       steeringGroup.append(rangeChoices);
     }
 
