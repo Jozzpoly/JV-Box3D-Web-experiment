@@ -152,9 +152,14 @@ jobs:
           const ground = b3.b3CreateBody(world, groundDef);
           b3.b3CreateBoxShape(ground, b3.b3DefaultShapeDef(), 8, 0.5, 8);
 
+          const wheelRadius = 0.514062464;
+          const wheelHalfWidth = 0.21875;
+          const wheelCornerRadius = 0.2;
+          const initialWheelPosition = { x: 0, y: 2.0, z: 0 };
+
           const wheelBodyDef = b3.b3DefaultBodyDef();
           wheelBodyDef.type = b3.b3BodyType.b3_dynamicBody;
-          wheelBodyDef.position = { x: 0, y: 2.0, z: 0 };
+          wheelBodyDef.position = initialWheelPosition;
           wheelBodyDef.allowFastRotation = true;
           const wheelBody = b3.b3CreateBody(world, wheelBodyDef);
           const wheelShape = b3.b3CreateWheelShapeFlat(
@@ -162,26 +167,81 @@ jobs:
             b3.b3DefaultShapeDef(),
             { x: 0, y: 0, z: 0 },
             { x: 1, y: 0, z: 0 },
-            0.514062464,
-            0.21875,
-            0.2,
+            wheelRadius,
+            wheelHalfWidth,
+            wheelCornerRadius,
           );
           assert.ok(b3.b3Shape_IsValid(wheelShape));
 
-          for (let i = 0; i < 240; i++) {
+          // A free finite-width wheel naturally tips onto its side. The vehicle rig
+          // constrains wheel attitude, so this smoke gives the wheel the minimum
+          // equivalent constraint: vertical translation only, no body rotation.
+          const guideDef = b3.b3DefaultBodyDef();
+          guideDef.type = b3.b3BodyType.b3_staticBody;
+          guideDef.position = initialWheelPosition;
+          const guideBody = b3.b3CreateBody(world, guideDef);
+          const verticalFrame = b3.b3ComputeQuatBetweenUnitVectors(
+            { x: 0, y: 0, z: 1 },
+            { x: 0, y: 1, z: 0 },
+          );
+          const guideJointDef = b3.b3DefaultPrismaticJointDef();
+          guideJointDef.base.bodyIdA = guideBody;
+          guideJointDef.base.bodyIdB = wheelBody;
+          guideJointDef.base.localFrameA = {
+            p: { x: 0, y: 0, z: 0 },
+            q: verticalFrame,
+          };
+          guideJointDef.base.localFrameB = {
+            p: { x: 0, y: 0, z: 0 },
+            q: verticalFrame,
+          };
+          guideJointDef.base.collideConnected = false;
+          guideJointDef.enableSpring = false;
+          guideJointDef.enableLimit = false;
+          b3.b3CreatePrismaticJoint(world, guideJointDef);
+
+          for (let i = 0; i < 360; i++) {
             b3.b3World_Step(world, 1 / 60, 4);
           }
 
           const p = b3.b3Body_GetPosition(wheelBody);
           assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z));
-          assert.ok(p.y > 0.85 && p.y < 1.2, `wheel settled at unexpected y=${p.y}`);
+          const expectedCenterY = 0.5 + wheelRadius;
+          assert.ok(
+            Math.abs(p.y - expectedCenterY) < 0.03,
+            `upright wheel settled at y=${p.y}; expected about ${expectedCenterY}`,
+          );
+          assert.ok(Math.abs(p.x) < 0.01 && Math.abs(p.z) < 0.01, 'guide leaked lateral motion');
 
           const contacts = b3.createContactsBuffer();
           b3.getShapeContactData(contacts, wheelShape);
-          assert.ok(b3.getNumContacts(contacts) >= 1, 'wheel has a resting ground contact');
+          assert.ok(b3.getNumContacts(contacts) >= 1, 'wheel has no resting ground contact');
+
+          const contact = b3.createContact();
+          const manifold = b3.createManifold();
+          let maxPointCount = 0;
+          let hasVerticalManifold = false;
+          for (let i = 0; i < b3.getNumContacts(contacts); i++) {
+            b3.getContactAt(contact, contacts, i);
+            for (let m = 0; m < contact.manifoldCount; m++) {
+              b3.getManifoldAt(manifold, contact, m);
+              maxPointCount = Math.max(maxPointCount, manifold.pointCount);
+              if (Math.abs(manifold.normal.y) > 0.9) {
+                hasVerticalManifold = true;
+              }
+            }
+          }
+          assert.ok(hasVerticalManifold, 'wheel contact manifold normal is not ground-like');
+          assert.ok(maxPointCount >= 2, `flat mode5 manifold exposed only ${maxPointCount} point(s)`);
+
           b3.destroyContactsBuffer(contacts);
           b3.b3DestroyWorld(world);
-          console.log('MODE5_WASM_SMOKE_OK', p);
+          console.log('MODE5_WASM_SMOKE_OK', {
+            position: p,
+            expectedCenterY,
+            contacts: b3.getNumContacts ? 'verified' : 'unavailable',
+            maxPointCount,
+          });
           JS
           node wheel-smoke.mjs
 
