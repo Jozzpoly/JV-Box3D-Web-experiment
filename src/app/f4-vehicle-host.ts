@@ -318,6 +318,9 @@ export class F4VehicleHost {
                 ? report.frameTimeMs - previousPresentationFrameTimeMs
                 : null;
             previousPresentationFrameTimeMs = report.frameTimeMs;
+            // Three timestamps split the final presented frame into trace
+            // materialization and actual render/UI work without double-counting
+            // either phase. Intermediate catch-up states still do no trace work.
             const traceStartedAt = options.now();
             const trace = world.captureLatestTrace()[0];
             const traceCapturedAt = options.now();
