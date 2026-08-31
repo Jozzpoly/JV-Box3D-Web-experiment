@@ -31,7 +31,7 @@ interface MobileDrivingPresentationState {
   direction: MobileDrivingDirection;
 }
 
-const DEFAULT_STEERING_WHEEL_LOCK_DEGREES = 450;
+const DEFAULT_STEERING_WHEEL_RANGE_DEGREES = 900;
 
 const NEUTRAL_STATE: Readonly<MobileDrivingPresentationState> = Object.freeze({
   steering: 0,
@@ -66,6 +66,7 @@ export class MobileDrivingUi {
   readonly #frames: MobileDrivingFrameScheduler;
   #generation = 0;
   #state = cloneNeutralState();
+  #steeringWheelRangeDegrees = DEFAULT_STEERING_WHEEL_RANGE_DEGREES;
   #frameHandle = 0;
   #dirty = false;
   #disposed = false;
@@ -100,6 +101,19 @@ export class MobileDrivingUi {
       this.#frameHandle = 0;
     }
     this.#commit();
+  }
+
+  setSteeringWheelRangeDegrees(rangeDegrees: number): void {
+    if (!Number.isFinite(rangeDegrees) || rangeDegrees <= 0) {
+      throw new RangeError(
+        "Mobile steering wheel range must be positive and finite.",
+      );
+    }
+    if (this.#disposed || rangeDegrees === this.#steeringWheelRangeDegrees) {
+      return;
+    }
+    this.#steeringWheelRangeDegrees = rangeDegrees;
+    this.#schedule();
   }
 
   setSteering(
@@ -180,9 +194,10 @@ export class MobileDrivingUi {
   #commit(): void {
     const steering = this.#state.steering;
     const steeringMagnitude = Math.round(Math.abs(steering) * 100);
+    const steeringWheelLockDegrees = this.#steeringWheelRangeDegrees / 2;
     this.#targets.steering.style.setProperty(
       "--steering-angle",
-      `${(-steering * DEFAULT_STEERING_WHEEL_LOCK_DEGREES).toFixed(2)}deg`,
+      `${(-steering * steeringWheelLockDegrees).toFixed(2)}deg`,
     );
     this.#targets.steering.style.setProperty(
       "--steering-strength",
