@@ -114,6 +114,20 @@ test("continuous updates coalesce to one frame and commit only the latest state"
   assert.equal(rig.throttle.style.values.get("--pedal-value"), "0.8000");
 });
 
+test("steering range can change presentation without resetting driving state", () => {
+  const rig = createUi();
+  rig.ui.beginGeneration(1);
+  rig.ui.setSteering(1, -0.5, false);
+  rig.frames.flush();
+  assert.equal(rig.steering.style.values.get("--steering-angle"), "225.00deg");
+
+  rig.ui.setSteeringWheelRangeDegrees(540);
+  assert.equal(rig.frames.pending, 1);
+  rig.frames.flush();
+  assert.equal(rig.steering.style.values.get("--steering-angle"), "135.00deg");
+  assert.equal(rig.steering.attr("aria-valuenow"), "-50");
+});
+
 test("new generation synchronously neutralizes HUD and rejects stale callbacks", () => {
   const rig = createUi();
   rig.ui.beginGeneration(1);
