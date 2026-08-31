@@ -11,7 +11,8 @@ export type JvSteeringWheelRangeDegrees =
 
 export interface JvProductSteeringSettings {
   readonly wheelRangeDegrees: JvSteeringWheelRangeDegrees;
-  readonly centeringAssist: boolean;
+  /** Internal compatibility value. Product UI cannot enable artificial centering. */
+  readonly centeringAssist: false;
 }
 
 export interface JvSteeringSessionStorage {
@@ -54,14 +55,15 @@ function normalizeSettings(value: unknown): JvProductSteeringSettings {
   const record = value as Record<string, unknown>;
   if (
     record["schema"] !== "JV_PRODUCT_STEERING_SETTINGS_V1" ||
-    !isWheelRangeDegrees(record["wheelRangeDegrees"]) ||
-    typeof record["centeringAssist"] !== "boolean"
+    !isWheelRangeDegrees(record["wheelRangeDegrees"])
   ) {
     return DEFAULT_JV_PRODUCT_STEERING_SETTINGS;
   }
   return Object.freeze({
     wheelRangeDegrees: record["wheelRangeDegrees"],
-    centeringAssist: record["centeringAssist"],
+    // Preview-era payloads may contain centeringAssist=true. Never restore it
+    // into the product: ordinary hands-off steering belongs to the physics.
+    centeringAssist: false,
   });
 }
 
@@ -75,7 +77,6 @@ function persist(): void {
       JSON.stringify({
         schema: "JV_PRODUCT_STEERING_SETTINGS_V1",
         wheelRangeDegrees: currentSettings.wheelRangeDegrees,
-        centeringAssist: currentSettings.centeringAssist,
       }),
     );
   } catch {
@@ -85,13 +86,10 @@ function persist(): void {
 }
 
 function publish(next: JvProductSteeringSettings): void {
-  if (
-    next.wheelRangeDegrees === currentSettings.wheelRangeDegrees &&
-    next.centeringAssist === currentSettings.centeringAssist
-  ) {
+  if (next.wheelRangeDegrees === currentSettings.wheelRangeDegrees) {
     return;
   }
-  currentSettings = Object.freeze({ ...next });
+  currentSettings = Object.freeze({ ...next, centeringAssist: false });
   persist();
   for (const listener of [...listeners]) {
     listener(currentSettings);
@@ -115,7 +113,7 @@ export function initializeJvProductSteeringSettings(
   }
   const changed =
     restored.wheelRangeDegrees !== currentSettings.wheelRangeDegrees ||
-    restored.centeringAssist !== currentSettings.centeringAssist;
+    currentSettings.centeringAssist !== false;
   currentSettings = restored;
   if (changed) {
     for (const listener of [...listeners]) {
@@ -138,20 +136,8 @@ export function setJvSteeringWheelRangeDegrees(
     );
   }
   publish({
-    ...currentSettings,
     wheelRangeDegrees,
-  });
-}
-
-export function setJvSteeringCenteringAssist(
-  centeringAssist: boolean,
-): void {
-  if (typeof centeringAssist !== "boolean") {
-    throw new Error("JV steering centering assist must be boolean.");
-  }
-  publish({
-    ...currentSettings,
-    centeringAssist,
+    centeringAssist: false,
   });
 }
 
