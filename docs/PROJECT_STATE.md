@@ -67,7 +67,7 @@ The exact steering candidate was validated through the canonical Owner Preview w
 - executable-layer unchanged verification;
 - Pages deployment.
 
-A post-feedback audit removed the unneeded Owner-facing artificial assist and restored one accidentally deleted explanatory comment. The corrected source passed canonical source/build validation again before documentation consolidation.
+A post-feedback audit removed the unneeded Owner-facing artificial assist and restored two accidentally dropped explanatory F4 comment blocks; runtime behavior in those locations had not changed. The corrected source passed canonical source/build validation again before documentation consolidation.
 
 ### OWNER-OBSERVED
 
