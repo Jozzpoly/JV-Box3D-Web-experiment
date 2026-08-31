@@ -179,7 +179,7 @@ test("direct rotation is the branch default and pointer-down does not jump", () 
   fixture.adapter.dispose();
 });
 
-test("direct rotation follows the ellipse-normalized wheel arc one-to-one", () => {
+test("direct rotation maps a quarter turn into one fifth of the 900 degree range", () => {
   const wheelGeometry = new FakeWheelGeometry();
   const fixture = createFixture({ wheelGeometrySource: wheelGeometry });
 
@@ -195,7 +195,7 @@ test("direct rotation follows the ellipse-normalized wheel arc one-to-one", () =
     clientY: 80,
   });
 
-  near(fixture.stateChanges.at(-1).value, -0.75);
+  near(fixture.stateChanges.at(-1).value, -0.2);
   assert.equal(fixture.stateChanges.at(-1).active, true);
   fixture.adapter.dispose();
 });
@@ -223,7 +223,7 @@ test("direct rotation freezes projected wheel geometry at pointer-down", () => {
   });
 
   assert.equal(wheelGeometry.geometryReads, 1);
-  near(fixture.stateChanges.at(-1).value, -0.75);
+  near(fixture.stateChanges.at(-1).value, -0.2);
   fixture.adapter.dispose();
 });
 
@@ -253,11 +253,11 @@ test("direct rotation center guard re-anchors without a steering jump", () => {
     clientX: 100,
     clientY: 80,
   });
-  near(fixture.stateChanges.at(-1).value, -0.75);
+  near(fixture.stateChanges.at(-1).value, -0.2);
   fixture.adapter.dispose();
 });
 
-test("direct rotation pointer release self-centers", () => {
+test("direct rotation pointer release relinquishes steering ownership by default", () => {
   const wheelGeometry = new FakeWheelGeometry();
   const fixture = createFixture({ wheelGeometrySource: wheelGeometry });
   fixture.target.dispatch("pointerdown", {
@@ -279,10 +279,46 @@ test("direct rotation pointer release self-centers", () => {
   });
 
   assert.deepEqual(fixture.stateChanges.at(-1), {
-    value: 0,
+    value: -0.2,
     active: false,
   });
   assert.equal(fixture.target.captured.size, 0);
+  const sample = fixture.timeline.consumeInterval(0, 10);
+  assert.deepEqual(sample.command, { mode: "RELEASE" });
+  assert.equal(sample.activeSourceIdAtEnd, null);
+  assert.equal(sample.consumedEvents.at(-1).kind, "STEERING_POSITION_RELEASE");
+  assert.equal(sample.consumedEvents.at(-1).reason, "POINTER_RELEASE");
+  fixture.adapter.dispose();
+});
+
+test("explicit centering assist preserves the legacy return-to-center behavior", () => {
+  const wheelGeometry = new FakeWheelGeometry();
+  const fixture = createFixture({
+    wheelGeometrySource: wheelGeometry,
+    centeringAssist: true,
+  });
+  fixture.target.dispatch("pointerdown", {
+    pointerId: 18,
+    clientX: 200,
+    clientY: 40,
+  });
+  fixture.setNow(2);
+  fixture.target.dispatch("pointermove", {
+    pointerId: 18,
+    clientX: 100,
+    clientY: 80,
+  });
+  fixture.setNow(4);
+  fixture.target.dispatch("pointerup", {
+    pointerId: 18,
+    clientX: 100,
+    clientY: 80,
+  });
+
+  assert.deepEqual(fixture.stateChanges.at(-1), {
+    value: 0,
+    active: false,
+  });
   assert.deepEqual(fixture.timeline.consumeInterval(0, 10).command, {
     mode: "POSITION",
     value: 0,
@@ -307,7 +343,7 @@ test("pointer capture failure is fail-closed in direct rotation", () => {
   fixture.adapter.dispose();
 });
 
-test("blur neutralizes active direct rotation and dispose releases ownership", () => {
+test("blur releases active direct rotation and dispose keeps ownership released", () => {
   const wheelGeometry = new FakeWheelGeometry();
   const fixture = createFixture({ wheelGeometrySource: wheelGeometry });
   fixture.target.dispatch("pointerdown", {
@@ -325,10 +361,10 @@ test("blur neutralizes active direct rotation and dispose releases ownership", (
   fixture.windowTarget.dispatch("blur");
 
   let sample = fixture.timeline.consumeInterval(0, 5);
-  assert.deepEqual(sample.command, { mode: "POSITION", value: 0 });
+  assert.deepEqual(sample.command, { mode: "RELEASE" });
   assert.equal(fixture.target.captured.size, 0);
   assert.deepEqual(fixture.stateChanges.at(-1), {
-    value: 0,
+    value: -0.2,
     active: false,
   });
 
@@ -387,7 +423,7 @@ test("interaction provider is frozen for one gesture and re-read on the next gra
     clientX: 100,
     clientY: 80,
   });
-  near(fixture.stateChanges.at(-1).value, -0.75);
+  near(fixture.stateChanges.at(-1).value, -0.2);
 
   fixture.setNow(2);
   fixture.target.dispatch("pointerup", { pointerId: 23, clientX: 100, clientY: 80 });
@@ -396,7 +432,7 @@ test("interaction provider is frozen for one gesture and re-read on the next gra
   fixture.setNow(4);
   fixture.target.dispatch("pointermove", { pointerId: 24, clientX: 110, clientY: 5 });
   assert.ok(fixture.stateChanges.at(-1).value < 0);
-  assert.ok(Math.abs(fixture.stateChanges.at(-1).value) < 0.1);
+  assert.ok(Math.abs(fixture.stateChanges.at(-1).value) < 0.3);
   fixture.adapter.dispose();
 });
 
