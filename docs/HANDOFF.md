@@ -1,156 +1,113 @@
-# JV Web — strategic Codex takeover handoff
+# JV-Web — handoff
 
-Updated: 2026-08-26
-Status: `CURRENT / READ-ONLY STRATEGIC CODEX TAKEOVER NEXT / PRIOR FALSIFIER NON-BINDING / REPO CONTINUITY OPEN / IMPLEMENTATION NOT AUTHORIZED`
+Updated: 2026-09-01
+Owner: Jozz
 
-Snapshot only. Live Git and `docs/PROJECT_STATE.md` outrank this file.
+Use this file for an actual handoff/continuation. A new chat is **not** by itself a new takeover campaign.
 
-## 1. Mandate
+## 1. Current mode
 
-The first Codex session is a **cold strategic reconstruction**, not an implementation handoff.
+JV-Web is in bounded product iteration after a completed Steering I1 milestone consolidation.
 
-Do not assume that the current repository should be polished, incrementally migrated, radically refactored or retained as the future implementation home. Do not assume that a new repository is better either.
+The 2026-08-26 read-only strategic cold-takeover campaign is historical. Do not restart it unless new evidence creates a real strategic reason.
 
-The job is to reconstruct the evidence and then recommend what should happen next.
+JV-Web is a standalone browser Jozz Vehicle product/R&D surface, separate from NextGen JV. It may learn from NextGen/JURE/JV_CORE/JES, but those projects do not own JV-Web live truth.
 
-Historical plans and architecture documents are prior analysis. They may be confirmed or rejected after independent source grounding.
+## 2. Start here
 
-## 2. Entry protocol
+For a fresh continuation:
 
-Before any write — and the first takeover should make no writes:
+1. verify live `Jozzpoly/JV-Box3D-Web-experiment/main`;
+2. read `AGENTS.md`;
+3. read `docs/PROJECT_STATE.md`;
+4. inspect only the source/tests relevant to the requested slice;
+5. if steering is involved, read `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md` and `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`.
 
-1. resolve live `Jozzpoly/JV-Box3D-Web-experiment/main` and exact SHA;
-2. inspect branch/PR/issue state and identify any genuinely active lane;
-3. read `AGENTS.md -> docs/PROJECT_STATE.md -> docs/HANDOFF.md`;
-4. inspect package/toolchain files and current source/tests directly;
-5. establish canonical install/check/build health in the repo-native environment;
-6. reconstruct the product and evidence before reading the old architecture/falsifier recommendations as guidance.
+Do not reconstruct the entire project history unless current evidence actually conflicts.
 
-When useful, inspect Preview/Public identity separately. They are operational/artifact authorities, not source authority.
+## 3. Current steering truth
 
-## 3. Current product/source facts
+The Steering I1 baseline established:
 
-JV-Web is a working browser product and R&D/evidence corpus with demonstrated desktop/mobile behavior, world/scan capability, current vehicle runtime, visual binding, provenance/publication infrastructure and substantial tests/telemetry.
+- touch steering pointer release defaults to semantic `RELEASE`;
+- no hidden Owner-facing automatic return-to-zero is part of the current product behavior;
+- the graphical steering wheel follows physical rack state while hands-off;
+- re-grab begins from physical rack state, preventing UI/physics offset;
+- 900 degrees total wheel range is the current default and Owner-used current-best;
+- 360/540/720/1080 are available for later comparison, not final approved ratios;
+- range preference persists in the browser session;
+- artificial centering is retained only as an internal/test control path, not product configuration;
+- natural physical self-return remains unresolved.
 
-The current repo also contains explicitly provisional/reference-only vehicle mechanics and integration choices. Do not confuse “working current product” with “future architecture”.
+Owner feedback on the current 900-degree behavior was strongly positive, but scoped. Do not convert it into a claim that all ranges/devices or all steering physics are finalized.
 
-Latest pre-strategic-reset main before the router changes was:
+## 4. Evidence boundary
 
-```text
-18fd523d7ab8792d8f83e8885deb2e122f8cc002
-```
+### OWNER-OBSERVED
 
-Resolve live again; later documentation-only descendants do not imply runtime behavior change.
+Owner directly confirmed on the current steering Preview that:
 
-Latest grounding before this handoff found:
+- hands-off UI/rack synchronization works;
+- physics movement followed by re-grab no longer creates the previous offset/jump;
+- current 900-degree driving feel is substantially better than before and better than expected.
 
-- open PRs: `0`;
-- open issues: `0`;
-- ordinary active runtime/product lane: `NONE`.
+Owner is currently learning 900 degrees rather than comparing range presets.
 
-Historical `work/*`, checkpoint and accidental/noop refs are evidence/history, not authority.
+### EXECUTED EVIDENCE
 
-## 4. Program evidence sources
+The source candidate passed the canonical Owner Preview build/validation/composition path with unchanged accepted JSPREV2.
 
-- **current JV-Web repo** — current browser product/source and recipient evidence;
-- **JV_CORE / Native** — sealed primary donor/research record, not mandatory architecture or quality ceiling;
-- **JURE** — optional authoring/mechanical-truth donor/tool, not mandatory final app/schema;
-- **Owner evidence** — scoped product/feel/device truth recorded in current evidence docs;
-- **prior ChatGPT/orchestrator analyses** — useful hypotheses and decision records, not commands to Codex.
+### NOT VALIDATED
 
-## 5. Prior selected falsifier — historical status only
+- final steering range;
+- Owner feel for non-900 presets;
+- changing range during an already-active gesture;
+- dedicated mobile session-persistence check;
+- comprehensive whole-product regression during the final steering feedback checkpoint;
+- useful natural physical self-return.
 
-Gate 7 previously selected:
+## 5. If steering work resumes
 
-`FRONT-CORNER-AUTHORITY-ISOLATION-01`
+The strongest unresolved mechanical question is why the current physical system provides essentially no useful self-return/self-alignment.
 
-The complete reasoning and PASS/FAIL contract remain in `docs/FIRST_FALSIFIER.md`.
+A sensible future R2 would be bounded research, not an immediate physics rewrite:
 
-Under the current Owner directive this selection is now:
+- identify current geometry/contact/constraint/damping contributors;
+- distinguish expected caster/trail/tire/contact effects from solver or representation limitations;
+- design the smallest falsifier that can separate likely causes;
+- preserve the accepted touch RELEASE/rack-sync baseline while testing physics.
 
-**`PRIOR ORCHESTRATOR RECOMMENDATION / NON-BINDING FOR STRATEGIC CODEX REVIEW`**.
+Do **not** solve this by silently reintroducing automatic centering or a fake spring merely to produce visual return.
 
-Do not execute it merely because it is documented. First determine independently whether bounded migration in the current repo is even the right class of next move.
+R2 is a candidate next slice, not an obligation. Re-ground current product priorities first.
 
-The same applies to A1/A2/M1/C0 in `docs/ARCHITECTURE_HYPOTHESES.md`: useful prior decomposition, not an exhaustive architecture space.
+## 6. If another product slice is chosen
 
-## 6. Proven/reference capital
+Use the default workflow:
 
-Current evidence supports real value in several product surfaces, including:
+`small need -> smallest sensible change -> risk-matched test -> faithful render/device evidence -> Owner judgement`
 
-- browser/Pages product shell;
-- Plac E2R, Offroad and approved JSPREV2;
-- Camera Manual Rig V1 + Fullscreen V1;
-- Direct Rotation + Relative-X steering interaction foundations;
-- absolute-position pedals and multitouch ownership/lifecycle;
-- accepted mobile composition and desktop capability/HUD work;
-- accepted A53/Chrome render-1x scan boundary;
-- exact-source Preview/static-layer provenance discipline.
+Do not expand camera/UI/input work into drivetrain/rig/physics changes without causal need. Do not expand a mechanics experiment into a UI redesign.
 
-Treat these as **proven/reference capital**. A future strategy may preserve them, reimplement them or deliberately replace them. Do not mistake historical acceptance for an architecture freeze.
+## 7. Git / Preview discipline
 
-Pedal Contact V1/V1.1 remains rejected/deferred evidence.
+- `main` is source authority after accepted consolidation.
+- `preview/owner-control` is exact-source composition infrastructure only.
+- Public/Friends artifacts remain separate authority.
+- Historical `work/*`, checkpoint and accidental/noop branches are not current authority and do not require cleanup merely because they exist.
+- Before writes, resolve repo/ref/current source again.
+- Before promotion, re-check ancestry and use non-force fast-forward when available.
 
-## 7. Strong evidence constraints
+## 8. Things a new agent must not infer
 
-Prior work produced several constraints with materially stronger support than the architecture proposals built on top of them:
+Do not infer that:
 
-- relation-local endpoint ownership can be mechanically significant;
-- authored/neutral truth and runtime representation/dynamics are separate concerns;
-- authored-element -> runtime-body/collider 1:1 mapping must not be assumed as an invariant;
-- coherent mechanisms should not combine incompatible partial geometry authorities;
-- provenance/deterministic identity matter for authored truth;
-- visual convenience ownership is not mechanical authority;
-- authoring terminology does not justify an invented extra physical M6 carrier body;
-- natural steering return should not be faked by silent artificial centering.
+- current M6/Box3D architecture is the future NextGen architecture;
+- 900 degrees is permanently frozen;
+- lack of natural self-return is accepted product behavior;
+- artificial centering is an accepted substitute;
+- old roadmap/falsifier documents are current tasks;
+- a new chat means another cold takeover;
+- historical branches should be consolidated or deleted automatically.
 
-Challenge these if stronger source/evidence contradicts them, but do not discard them merely to achieve a clean-sheet feeling.
-
-## 8. Strategic questions Codex should answer
-
-After independent reconstruction, compare at least the real strategic alternatives exposed by the evidence. The categories themselves are not mandatory, but the decision should address:
-
-- What is the strongest case for continuing/polishing this repo?
-- What is the strongest case for a radical rebuild while retaining this repo?
-- What is the strongest case for treating this repo mainly as donor/control/reference and starting clean elsewhere?
-- Which current capabilities are valuable product semantics versus accidental implementation?
-- Which current constraints are genuinely durable and which are artifacts of our prior framing?
-- Which prior analyses does Codex independently reproduce, and which does it reject?
-- What smallest next experiment would most reduce the strategic uncertainty?
-
-Repo continuity, new repo, language/runtime stack, mechanical boundary, renderer, authoring system and first falsifier all remain open until this review is accepted.
-
-## 9. Output discipline
-
-The takeover result should clearly separate:
-
-`FACT / EXECUTED EVIDENCE / OWNER-OBSERVED / PRIOR ANALYSIS / HYPOTHESIS / UNKNOWN`.
-
-It should finish with a recommendation and the strongest falsifier of that recommendation, but **no source write, branch, new repo or implementation**.
-
-A takeover that merely paraphrases `FIRST_FALSIFIER.md` or `ARCHITECTURE_HYPOTHESES.md` does not demonstrate independence.
-
-## 10. Evidence map
-
-Use only as needed after source grounding:
-
-- `docs/OWNER_CHECKPOINTS.md` — scoped Owner truth and negative knowledge;
-- `docs/RECIPIENT_SURFACE.md` — detailed current-repo evidence map;
-- `docs/INHERITANCE_MATRIX.md` — prior claim-level synthesis;
-- `docs/ARCHITECTURE_HYPOTHESES.md` — prior architecture comparison;
-- `docs/FIRST_FALSIFIER.md` — prior first-falsifier recommendation;
-- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — Native donor seal;
-- `docs/ARCHITECTURE.md` — current boundaries, not future architecture freeze;
-- `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — prior authored-truth/consumer constraints without mandatory JURE commitment.
-
-## 11. Stop conditions
-
-Stop rather than implement if:
-
-- live Git differs materially from the assumed state;
-- canonical environment/source access prevents reliable reconstruction;
-- evidence contradicts the current docs;
-- the review starts creating branches/repos/frameworks before strategy selection;
-- prior plans are being treated as commands rather than hypotheses;
-- Owner evidence is being erased instead of consciously superseded;
-- tooling failure is being interpreted as product/architecture evidence.
+Current evidence should decide the next slice.
