@@ -119,7 +119,7 @@ jobs:
         run: |
           set -euxo pipefail
           node --version
-          pnpm --version
+          (cd box3djs && pnpm --version)
           emcc --version
           emcmake --version
           cmake --version
