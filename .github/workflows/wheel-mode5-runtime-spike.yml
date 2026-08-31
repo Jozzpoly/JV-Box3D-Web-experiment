@@ -1,0 +1,213 @@
+name: Wheel mode5 runtime feasibility spike
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-runtime-spike-2026-09-01
+
+permissions:
+  contents: read
+
+jobs:
+  build-mode5-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout spike branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 6.0.2
+          actions-cache-folder: emsdk-cache
+
+      - name: Recover exact wheel patch and binding source
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git clone https://github.com/isaac-mason/box3d.js.git box3djs
+          git -C box3djs checkout 2617a0ff763a60c9f17cee57c6ea72aab75a5077
+          git -C box3djs submodule update --init --recursive
+          test "$(git -C box3djs/vendor/box3d rev-parse HEAD)" = "8441b4a06d6d09dcfb0b0f704df4d847d1437b92"
+
+          git clone https://github.com/Jozzpoly/Box3d_FunProject.git native
+          git -C native fetch origin recovery/jv-reconstruction
+          git -C native cat-file -e 77a67132ffc4f003e84c6ffe4e72abfbcded4d33^{commit}
+          git -C native cat-file -e 241fe10a9056836332c21d9614471d32d749ce3d^{commit}
+
+          git -C native diff --binary \
+            77a67132ffc4f003e84c6ffe4e72abfbcded4d33 \
+            241fe10a9056836332c21d9614471d32d749ce3d \
+            -- \
+            include/box3d/box3d.h \
+            include/box3d/collision.h \
+            include/box3d/types.h \
+            src/CMakeLists.txt \
+            src/contact.c \
+            src/mesh_contact.c \
+            src/physics_world.c \
+            src/shape.c \
+            src/shape.h \
+            src/wheel_shape.c \
+            > B3X-WHEEL-001.patch
+
+          test -s B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d apply --check ../../../B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d apply ../../../B3X-WHEEL-001.patch
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          expected = {
+              "include/box3d/box3d.h",
+              "include/box3d/collision.h",
+              "include/box3d/types.h",
+              "src/CMakeLists.txt",
+              "src/contact.c",
+              "src/mesh_contact.c",
+              "src/physics_world.c",
+              "src/shape.c",
+              "src/shape.h",
+              "src/wheel_shape.c",
+          }
+          import subprocess
+          changed = set(subprocess.check_output(
+              ["git", "-C", "box3djs/vendor/box3d", "diff", "--name-only"],
+              text=True,
+          ).splitlines())
+          if changed != expected:
+              raise SystemExit(f"unexpected wheel patch surface: {sorted(changed)}")
+
+          path = Path("box3djs/src/bindings.cpp")
+          text = path.read_text()
+          needle = '''\tfunction( "b3CreateSphereShape(bodyId, shapeDef, sphere)",
+          \t\t+[]( b3BodyId bodyId, b3ShapeDef def, b3Sphere sphere ) { return b3CreateSphereShape( bodyId, &def, &sphere ); } );
+          '''
+          helper = needle + '''\t// JV-Web feasibility seam: expose only the Owner-selected flat mode5 constructor.
+          \tfunction( "b3CreateWheelShapeFlat(bodyId, shapeDef, center, axis, radius, halfWidth, cornerRadius)",
+          \t\t+[]( b3BodyId bodyId, b3ShapeDef def, b3Vec3 center, b3Vec3 axis, float radius, float halfWidth, float cornerRadius ) {
+          \t\t\tb3Wheel wheel = b3MakeWheel( center, axis, radius, halfWidth, cornerRadius );
+          \t\t\treturn b3CreateWheelShape( bodyId, &def, &wheel );
+          \t\t} );
+          '''
+          if text.count(needle) != 1:
+              raise SystemExit("binding insertion anchor did not match exactly once")
+          path.write_text(text.replace(needle, helper))
+          PY
+
+          git -C box3djs/vendor/box3d diff --check
+          git -C box3djs diff --check -- src/bindings.cpp
+
+      - name: Verify toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          node --version
+          pnpm --version
+          emcc --version
+          emcmake --version
+          cmake --version
+
+      - name: Build patched box3d.js
+        working-directory: box3djs
+        shell: bash
+        run: |
+          set -euxo pipefail
+          pnpm install --frozen-lockfile
+          pnpm build
+          pnpm test
+
+      - name: Smoke flat mode5 wheel in inline WASM
+        shell: bash
+        run: |
+          cat > wheel-smoke.mjs <<'JS'
+          import assert from 'node:assert/strict';
+          import Box3D from './box3djs/dist/box3d.inline.mjs';
+
+          const b3 = await Box3D();
+          assert.equal(typeof b3.b3CreateWheelShapeFlat, 'function');
+
+          const worldDef = b3.b3DefaultWorldDef();
+          worldDef.gravity = { x: 0, y: -10, z: 0 };
+          const world = b3.b3CreateWorld(worldDef);
+
+          const groundDef = b3.b3DefaultBodyDef();
+          groundDef.type = b3.b3BodyType.b3_staticBody;
+          const ground = b3.b3CreateBody(world, groundDef);
+          b3.b3CreateBoxShape(ground, b3.b3DefaultShapeDef(), 8, 0.5, 8);
+
+          const wheelBodyDef = b3.b3DefaultBodyDef();
+          wheelBodyDef.type = b3.b3BodyType.b3_dynamicBody;
+          wheelBodyDef.position = { x: 0, y: 2.0, z: 0 };
+          wheelBodyDef.allowFastRotation = true;
+          const wheelBody = b3.b3CreateBody(world, wheelBodyDef);
+          const wheelShape = b3.b3CreateWheelShapeFlat(
+            wheelBody,
+            b3.b3DefaultShapeDef(),
+            { x: 0, y: 0, z: 0 },
+            { x: 1, y: 0, z: 0 },
+            0.514062464,
+            0.21875,
+            0.2,
+          );
+          assert.ok(b3.b3Shape_IsValid(wheelShape));
+
+          for (let i = 0; i < 240; i++) {
+            b3.b3World_Step(world, 1 / 60, 4);
+          }
+
+          const p = b3.b3Body_GetPosition(wheelBody);
+          assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z));
+          assert.ok(p.y > 0.85 && p.y < 1.2, `wheel settled at unexpected y=${p.y}`);
+
+          const contacts = b3.createContactsBuffer();
+          b3.getShapeContactData(contacts, wheelShape);
+          assert.ok(b3.getNumContacts(contacts) >= 1, 'wheel has a resting ground contact');
+          b3.destroyContactsBuffer(contacts);
+          b3.b3DestroyWorld(world);
+          console.log('MODE5_WASM_SMOKE_OK', p);
+          JS
+          node wheel-smoke.mjs
+
+      - name: Record provenance
+        shell: bash
+        run: |
+          set -euxo pipefail
+          {
+            echo 'JV-WEB MODE5 RUNTIME FEASIBILITY SPIKE'
+            echo 'box3d.js binding commit: 2617a0ff763a60c9f17cee57c6ea72aab75a5077'
+            echo 'stock engine base: 8441b4a06d6d09dcfb0b0f704df4d847d1437b92'
+            echo 'wheel patch base: 77a67132ffc4f003e84c6ffe4e72abfbcded4d33'
+            echo 'wheel patch head: 241fe10a9056836332c21d9614471d32d749ce3d'
+            echo 'donor seal head: b0a0082252cb1f3c964f804162233bc82254bc4b'
+            echo 'Emscripten: 6.0.2'
+            echo 'Node: 24.16.0'
+            echo 'pnpm: 10.32.1'
+            sha256sum B3X-WHEEL-001.patch
+            sha256sum box3djs/dist/box3d.inline.mjs
+            sha256sum box3djs/dist/box3d.d.ts
+          } > wheel-mode5-provenance.txt
+          cat wheel-mode5-provenance.txt
+
+      - name: Upload spike artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-mode5-runtime-spike
+          if-no-files-found: error
+          path: |
+            B3X-WHEEL-001.patch
+            wheel-mode5-provenance.txt
+            box3djs/dist/box3d.inline.mjs
+            box3djs/dist/box3d.d.ts
