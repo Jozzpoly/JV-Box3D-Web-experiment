@@ -1,5 +1,9 @@
 import type { PointerSteeringInteraction } from "./input/pointer-steering-joystick-adapter.js";
 import {
+  JV_STEERING_WHEEL_RANGE_DEGREES,
+  type JvSteeringWheelRangeDegrees,
+} from "./product-steering-settings.js";
+import {
   getJvProductViewSettings,
   setJvGridVisible,
   setJvSteeringPlateVisible,
@@ -34,9 +38,17 @@ export interface ProductSteeringInteractionControls {
   readonly set: (interaction: ProductSteeringInteraction) => void;
 }
 
+export interface ProductSteeringSettingsControls {
+  readonly getRangeDegrees: () => JvSteeringWheelRangeDegrees;
+  readonly setRangeDegrees: (range: JvSteeringWheelRangeDegrees) => void;
+  readonly getCenteringAssist: () => boolean;
+  readonly setCenteringAssist: (enabled: boolean) => void;
+}
+
 export interface InstallProductControlsOptions {
   readonly capabilities: ProductControlCapabilities;
   readonly steeringInteraction?: ProductSteeringInteractionControls;
+  readonly steeringSettings?: ProductSteeringSettingsControls;
 }
 
 function rememberTextureFilter(mode: JvTextureFilterMode): void {
@@ -251,42 +263,92 @@ export function installProductControls(
     ProductSteeringInteraction,
     HTMLButtonElement
   >();
+  const rangeButtons = new Map<
+    JvSteeringWheelRangeDegrees,
+    HTMLButtonElement
+  >();
   const steeringInteraction = options.steeringInteraction;
+  const steeringSettings = options.steeringSettings;
+  let centeringAssistButton: HTMLButtonElement | null = null;
   const syncSteeringButtons = (): void => {
-    if (steeringInteraction === undefined) {
-      return;
+    if (steeringInteraction !== undefined) {
+      const active = steeringInteraction.get();
+      for (const [mode, button] of steeringButtons) {
+        setChoiceActive(button, mode === active);
+      }
     }
-    const active = steeringInteraction.get();
-    for (const [mode, button] of steeringButtons) {
-      setChoiceActive(button, mode === active);
+    if (steeringSettings !== undefined) {
+      const range = steeringSettings.getRangeDegrees();
+      for (const [candidate, button] of rangeButtons) {
+        setChoiceActive(button, candidate === range);
+      }
+      if (centeringAssistButton !== null) {
+        const enabled = steeringSettings.getCenteringAssist();
+        centeringAssistButton.textContent = enabled
+          ? "Asysta ON"
+          : "Asysta OFF";
+        setChoiceActive(centeringAssistButton, enabled);
+      }
     }
   };
-  if (steeringInteraction !== undefined) {
+  if (steeringInteraction !== undefined || steeringSettings !== undefined) {
     const steeringGroup = controlGroup("Kierownica");
     steeringGroup.setAttribute("data-mobile-driving-only", "");
     mobileDrivingOnlyControls.push(steeringGroup);
-    const steeringChoices = document.createElement("div");
-    steeringChoices.className = "product-choice-row";
-    const interactions: readonly Readonly<{
-      id: ProductSteeringInteraction;
-      label: string;
-    }>[] = [
-      { id: "DIRECT_ROTATION", label: "Obrót" },
-      { id: "RELATIVE_X", label: "Przeciąganie" },
-    ];
-    for (const interaction of interactions) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "product-choice";
-      button.textContent = interaction.label;
-      button.addEventListener("click", () => {
-        steeringInteraction.set(interaction.id);
+
+    if (steeringInteraction !== undefined) {
+      const steeringChoices = document.createElement("div");
+      steeringChoices.className = "product-choice-row";
+      const interactions: readonly Readonly<{
+        id: ProductSteeringInteraction;
+        label: string;
+      }>[] = [
+        { id: "DIRECT_ROTATION", label: "Obrót" },
+        { id: "RELATIVE_X", label: "Przeciąganie" },
+      ];
+      for (const interaction of interactions) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "product-choice";
+        button.textContent = interaction.label;
+        button.addEventListener("click", () => {
+          steeringInteraction.set(interaction.id);
+          syncSteeringButtons();
+        });
+        steeringButtons.set(interaction.id, button);
+        steeringChoices.append(button);
+      }
+      steeringGroup.append(steeringChoices);
+    }
+
+    if (steeringSettings !== undefined) {
+      const rangeChoices = document.createElement("div");
+      rangeChoices.className = "product-choice-row";
+      for (const range of JV_STEERING_WHEEL_RANGE_DEGREES) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "product-choice";
+        button.textContent = `${range}°`;
+        button.addEventListener("click", () => {
+          steeringSettings.setRangeDegrees(range);
+          syncSteeringButtons();
+        });
+        rangeButtons.set(range, button);
+        rangeChoices.append(button);
+      }
+      centeringAssistButton = document.createElement("button");
+      centeringAssistButton.type = "button";
+      centeringAssistButton.className = "product-choice";
+      centeringAssistButton.addEventListener("click", () => {
+        steeringSettings.setCenteringAssist(
+          !steeringSettings.getCenteringAssist(),
+        );
         syncSteeringButtons();
       });
-      steeringButtons.set(interaction.id, button);
-      steeringChoices.append(button);
+      rangeChoices.append(centeringAssistButton);
+      steeringGroup.append(rangeChoices);
     }
-    steeringGroup.append(steeringChoices);
+
     controls.append(steeringGroup);
     syncSteeringButtons();
   }
