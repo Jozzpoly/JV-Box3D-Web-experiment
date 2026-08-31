@@ -1,165 +1,153 @@
 # JV Web — operating contract
 
-Updated: 2026-08-26
+Updated: 2026-09-01
 Owner: Jozz
 
-JV Web is the browser product line for Jozz Vehicle. The current repository is a working product, R&D surface and evidence corpus. It is **not automatically the implementation home of the next JV generation**.
+JV Web is the browser product line for Jozz Vehicle: a real desktop/mobile driving product and a practical R&D surface. It is **not NextGen JV Lite** and it is not automatically the implementation home of the next JV generation.
 
 ## 1. Authority
 
-- Live `main` of `Jozzpoly/JV-Box3D-Web-experiment` is authority for the current JV-Web source/product state.
-- `Jozzpoly/JV-Box3D-Web-Public/main` is Friends/public artifact authority, not source authority.
-- `preview/owner-control` is operational Owner Preview infrastructure, not product source authority.
-- Live Git/current files, executed evidence and direct scoped Owner observation outrank documentation, branch names and conversation history.
-- `docs/PROJECT_STATE.md` owns current routing. During explicit takeover, read `docs/HANDOFF.md` immediately after it.
+Use this order when claims conflict:
 
-Historical plans, prior architecture hypotheses and previous task selections are evidence of prior reasoning. They do not outrank current routing.
+1. live Git and current files;
+2. executed evidence from the exact source under discussion;
+3. direct scoped Owner/device evidence;
+4. current documentation;
+5. conversation history, donor history and cross-project memory.
 
-## 2. Strategic Codex takeover — current mode
+`Jozzpoly/JV-Box3D-Web-experiment/main` is source/product authority after an accepted slice is consolidated there.
 
-The next repo-native Codex session is a **read-only strategic cold takeover** before any implementation decision.
+`Jozzpoly/JV-Box3D-Web-Public/main` is Friends/public artifact authority, not source authority.
 
-Codex must independently reconstruct the current product, source, tests, build health, accepted evidence, technical debt and open questions before recommending what happens next.
+`preview/owner-control` is operational Owner Preview infrastructure. It composes an exact source commit with explicitly pinned static layers; it is not source authority.
 
-The following are explicitly **open strategic decisions**:
+Historical `work/*`, checkpoints, donor branches and accidental/noop refs are evidence/history, not authority and not a cleanup campaign.
 
-- continue/polish the current repository;
-- radically refactor/rebuild inside the current repository;
-- use the current repository mainly as donor/control/reference;
-- start a clean implementation, including a new repository if justified;
-- choose a different runtime/mechanical boundary or technology stack;
-- choose a different first experiment from any prior recommendation.
+## 2. Current working mode
 
-No option receives priority merely because work has already been invested in it.
+The strategic cold-takeover campaign from 2026-08-26 is closed. Do **not** restart it merely because a new chat or executor exists.
 
-`docs/FIRST_FALSIFIER.md` records the Gate 7 orchestrator selection of `FRONT-CORNER-AUTHORITY-ISOLATION-01`. It is now **PRIOR ANALYSIS / NON-BINDING FOR THE STRATEGIC CODEX REVIEW**. Codex may independently confirm, downgrade or reject it.
+JV-Web is now in bounded product iteration:
 
-Likewise `docs/ARCHITECTURE_HYPOTHESES.md` and `docs/INHERITANCE_MATRIX.md` are challengeable prior analysis, not an exhaustive architecture menu.
+**small need -> smallest sensible change -> test matching causal blast radius -> render/device evidence when relevant -> Owner judgement -> next iteration**
 
-## 3. Facts and evidence are not optional
+Full canonical validation, documentation consolidation and promotion to `main` are expected when closing an accepted stage or changing foundations. They are not mandatory ceremony for every tiny polish edit.
 
-Strategic freedom does not mean amnesia.
+Before any write, verify repo, ref/branch and current source. Protect the accepted baseline and do not expand scope without evidence that the larger change is needed.
 
-Codex may recommend replacing any current implementation or product behavior, but it must distinguish that recommendation from the historical fact that something was previously demonstrated or Owner-accepted in a scoped context.
+## 3. Product identity and relation to NextGen JV
 
-Current proven/reference capital includes, among other evidence:
+JV-Web and NextGen JV answer different questions.
 
-- working desktop/mobile browser product surfaces;
-- Plac E2R, Offroad and approved JSPREV2;
-- Camera Manual Rig V1 and Fullscreen V1;
-- Direct Rotation + Relative-X steering interaction foundations;
-- absolute-position pedals, independent pointer ownership, multitouch and D/R lifecycle;
-- fail-closed input/lifecycle behavior;
-- accepted mobile composition and desktop capability/HUD work;
-- accepted A53/Chrome render-1x scan boundary;
-- exact-source Preview/static-layer provenance discipline.
+JV-Web optimizes for a practical browser experience: link -> load -> drive, on desktop and phone, with good controls, camera, presentation, performance and useful worlds/scans. It can also serve as a reality-check surface for browser/mobile constraints and small R&D experiments.
 
-These are **proven product/reference capital**, not mandatory implementation inheritance. A clean replacement may supersede them deliberately, but current `main` must not be damaged merely to explore that possibility.
+NextGen JV is a separate, deeper 3D-first construction/platform research direction. Discoveries can transfer between projects when useful, but architecture does not synchronize automatically.
 
-Pedal Contact + Mechanical Feedback V1/V1.1 remains rejected/deferred evidence.
+Do not turn JV-Web into a poorer copy of NextGen JV, and do not preserve JV-Web architecture merely from sunk cost.
 
-## 4. Program evidence sources
+## 4. Current steering baseline
 
-- **JV-Web current repo** — current browser product/source authority and primary recipient evidence corpus.
-- **JV_CORE / Native** — sealed primary donor/research record; not a mandatory architecture or quality ceiling.
-- **JURE** — optional authoring/mechanical-truth donor/tool; not mandatory and not frozen as final authoring app/schema.
-- **Codex** — repo-native strategic reviewer/executor. During the first strategic takeover it has authority to challenge prior plans, but not to rewrite historical evidence as though it never existed.
+The scoped current-best is recorded in:
 
-Useful inheritance order when evidence conflicts:
+`docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`
 
-`direct product/Owner evidence -> portable semantic/mechanical truth -> proven technique -> candidate implementation -> legacy defaults/docs`.
+Key current truth:
 
-## 5. High-confidence constraints vs challengeable conclusions
+- Direct Rotation and Relative-X remain explicit alternatives;
+- ordinary pointer release relinquishes touch ownership with semantic `RELEASE`;
+- hidden artificial return-to-zero is not the product default;
+- while hands-off, the graphical wheel follows the live physical rack;
+- a new grab starts from the live physical rack position, avoiding UI/physics offset;
+- 900 degrees total wheel travel is the current default and Owner-used current-best tuning;
+- 360/540/720/1080 remain configurable candidates, not Owner-approved final ratios;
+- wheel-range choice is session-scoped;
+- artificial centering is not exposed as an Owner product setting; any retained artificial-centering adapter path is a control specimen only;
+- useful natural physical self-return is still unresolved and must not be faked by silently reintroducing automatic centering.
 
-Strong evidence currently supports treating these as durable constraints until contradicted by stronger evidence:
+Do not claim the steering system is mechanically finished.
 
-- relation endpoints may own independent local-frame truth;
-- authored/neutral truth and runtime dynamics/contact/solver representation are separate concerns;
-- do not assume authored-element -> runtime-body/collider 1:1 mapping as an invariant;
-- do not mix incompatible partial geometry authorities inside one claimed coherent mechanism;
-- provenance and deterministic identity matter for authored truth;
-- visual convenience parenting/calibration is not mechanical authority;
-- current M6 does not gain an extra physical carrier body merely from authoring terminology;
-- hidden artificial steering centering is not an acceptable substitute for solving mechanics/contact when natural return is the requirement.
+## 5. Evidence discipline
 
-These constraints do **not** select current repo continuity, TypeScript, current Box3D binding, A1/A2, M1, JURE, renderer, final tire/contact, final drivetrain, final rig or final world architecture.
+Always distinguish:
 
-## 6. Responsibility during strategic takeover
+- **FACT** — directly true in current source/configuration;
+- **EXECUTED EVIDENCE** — actually built/tested/measured on identified source;
+- **OWNER-OBSERVED** — direct qualitative or device evidence from the Owner;
+- **HYPOTHESIS** — plausible explanation or proposed direction;
+- **NOT VALIDATED / UNKNOWN** — not yet demonstrated.
 
-### Codex
+A helper failure is not automatically a product failure. Repair tooling only if doing so can change the current slice decision.
 
-Owns repo-native fact finding:
+Quick previews are acceptable only when they faithfully represent the changed DOM/CSS/interaction semantics. Otherwise use clean source render or the normal canonical build/Preview path.
 
-- verify exact live Git/ref and branch/PR state;
-- establish canonical toolchain/build status;
-- inspect source/tests and current architecture directly;
-- identify real product capital, accidental architecture, debt and unknowns;
-- challenge prior hypotheses and the previous first-falsifier recommendation;
-- compare continuation, radical rebuild and clean-start/new-repo strategies;
-- propose the smallest high-information next experiment only after reconstruction.
+## 6. Scope protection
 
-During the first takeover Codex must **not** create a branch, new repository, implementation, migration framework or architecture commitment.
+UI/input polish is not authorization to change vehicle physics, drivetrain, rig topology, wheel/contact representation or world semantics.
 
-### Orchestrator / ChatGPT
+Likewise, a steering-mechanics research slice must not opportunistically redesign UI or product architecture.
 
-Preserves evidence discipline, compares Codex reconstruction with live facts/Owner intent, catches unsupported claims and helps the Owner decide what to authorize after the strategic review.
+When a problem can be answered by a smaller causal experiment, prefer that experiment over a broad refactor or archaeology campaign.
+
+Native/JV_CORE, JURE, JES, NextGen JV and other projects may supply hypotheses, techniques or donor evidence. They do not prove current JV-Web state.
+
+## 7. Responsibility
+
+### Agent / repo-native executor
+
+Owns:
+
+- repo/ref/source verification;
+- implementation and technical diagnosis;
+- tests/builds and evidence collection available to the environment;
+- bounded comparisons and falsification;
+- documentation updates when an accepted stage is consolidated;
+- catching collateral changes before promotion.
 
 ### Owner
 
-Owns product vision, priorities, qualitative feel/look judgement, genuinely unavailable real-device truth and the eventual strategic choice after evidence is presented. Routine Git/build/debugging is not Owner work.
+Primarily owns:
 
-## 7. First Codex takeover success criteria
+- look/feel judgement;
+- real-device evidence unavailable to the agent;
+- product priorities and acceptance;
+- decisions where multiple valid experiential directions remain.
 
-The strategic cold takeover succeeds only if Codex can, without relying on the old roadmap as truth:
+Routine Git/build/debugging should not be pushed onto the Owner.
 
-1. resolve current source and canonical build health;
-2. separate FACT / EXECUTED EVIDENCE / OWNER-OBSERVED / PRIOR ANALYSIS / HYPOTHESIS / UNKNOWN;
-3. identify which current capabilities are worth preserving as product value versus merely historical implementation;
-4. identify the strongest reasons to continue the current repo and the strongest reasons not to;
-5. reconstruct its own architecture/strategy option space rather than merely paraphrasing A1/A2/M1;
-6. recommend a next decision or falsifier with clear reasons, blast radius and reversibility;
-7. stop before implementation.
+## 8. Publication and Git discipline
 
-## 8. Git and execution discipline
+Owner Preview should point to an exact source commit and explicit static-layer provenance. Do not mutate accepted static layers to make an unrelated source experiment work.
 
-Resolve repo/ref before writes. Historical `work/*`, checkpoint and accidental/noop refs are not authority and are not a cleanup campaign.
+Before promoting an accepted work branch to `main`:
 
-Do not create process machinery, branches, schemas, adapters or new repositories merely because a new executor exists. A new repository is a legitimate strategic option **only after** the read-only review justifies it.
+1. re-fetch current `main` and candidate heads;
+2. verify the candidate is still the intended descendant/fast-forward unless a different merge is explicitly justified;
+3. run validation appropriate to milestone closure;
+4. ensure docs describe what is accepted and what remains open;
+5. move `main` without force when a clean fast-forward exists.
 
-Canonical validation of the current repo is a fact-finding task for the repo-native preflight, not proof that the current repo must remain the future foundation.
+Do not create new branches, wrappers, gates, schemas or checkpoints merely for process aesthetics.
 
 ## 9. Reading order
 
-Fresh strategic Codex takeover:
+For a fresh continuation of normal JV-Web work:
 
 1. `AGENTS.md`;
 2. `docs/PROJECT_STATE.md`;
-3. `docs/HANDOFF.md`;
-4. current source/tests/build configuration;
-5. evidence documents only as needed.
+3. current live `main` source/tests/build config relevant to the requested slice;
+4. `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md` when steering is relevant;
+5. `docs/HANDOFF.md` only when a handoff/takeover is actually needed;
+6. older evidence/prior-analysis documents only as required.
 
-Do **not** read `docs/FIRST_FALSIFIER.md` as a task specification before independently reconstructing the project. Read it later as prior analysis to compare against your own result.
+`docs/FIRST_FALSIFIER.md`, architecture hypotheses and old takeover material remain historical/prior analysis unless current routing explicitly reactivates them.
 
-Key evidence/prior-analysis surfaces include:
+## 10. Stop and re-ground when
 
-- `docs/OWNER_CHECKPOINTS.md` — scoped Owner evidence and negative knowledge;
-- `docs/RECIPIENT_SURFACE.md` — current-repo evidence map;
-- `docs/INHERITANCE_MATRIX.md` — prior claim-level synthesis;
-- `docs/ARCHITECTURE_HYPOTHESES.md` — prior architecture comparison;
-- `docs/FIRST_FALSIFIER.md` — prior Gate 7 recommendation, now non-binding;
-- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — Native donor seal;
-- `docs/ARCHITECTURE.md` — current system boundaries, not future architecture freeze.
-
-## 10. Stop conditions
-
-Stop and re-ground rather than improvise when:
-
-- live source/ref differs from assumed authority;
-- a historical plan is being treated as current command without independent evidence;
-- implementation begins before the strategic review is accepted;
-- a new repository/branch/framework is being created before strategy selection;
-- Owner evidence is being rewritten as if it never happened;
-- donor labels are being promoted above current evidence;
+- live repo/ref differs from the assumed source;
+- documentation/history is being promoted above newer Git/evidence;
+- an accepted behavior is about to be changed outside the current scope;
 - unresolved mechanical truth is being guessed;
-- tooling/environment failure is being mislabeled as product/mechanical failure;
-- analysis grows without improving the strategic decision.
+- an experimental/control behavior is being silently promoted to product truth;
+- a broad recovery/refactor would add more work than information;
+- Owner evidence is being generalized beyond what was actually tested;
+- a new chat is causing a closed campaign to restart without a product reason.
