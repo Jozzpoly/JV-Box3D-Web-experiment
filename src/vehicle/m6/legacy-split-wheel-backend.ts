@@ -19,6 +19,7 @@ export interface LegacySplitWheelReceipt {
   readonly bodyId: b3BodyId;
   readonly rollingShapeId: b3ShapeId;
   readonly sidewallShapeId: b3ShapeId;
+  readonly shapeIds: readonly [b3ShapeId, b3ShapeId];
   readonly shapeCount: 2;
   readonly radius: number;
   readonly width: number;
@@ -114,6 +115,7 @@ export function createLegacySplitWheel(
       bodyId,
       rollingShapeId,
       sidewallShapeId,
+      shapeIds: [rollingShapeId, sidewallShapeId],
       shapeCount: 2,
       radius: config.wheelRadius,
       width: config.wheelWidth,
