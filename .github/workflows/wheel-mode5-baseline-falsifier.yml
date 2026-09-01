@@ -1,0 +1,38 @@
+name: Wheel mode5 accepted-baseline falsifier
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-runtime-spike-2026-09-01
+    paths:
+      - .github/workflows/wheel-mode5-baseline-falsifier.yml
+
+permissions:
+  contents: read
+
+jobs:
+  accepted-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact accepted main
+        uses: actions/checkout@v4
+        with:
+          ref: 5b28cc03d22264010680deb95a04abd04661bc22
+          fetch-depth: 1
+
+      - name: Prove accepted source identity
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "5b28cc03d22264010680deb95a04abd04661bc22"
+
+      - name: Setup canonical Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Run accepted canonical tests
+        run: npm test
