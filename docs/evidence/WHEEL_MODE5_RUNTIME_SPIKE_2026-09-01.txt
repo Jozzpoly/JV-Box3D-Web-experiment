@@ -1,0 +1,16 @@
+JV-WEB MODE5 RUNTIME FEASIBILITY SPIKE
+validated run: 33526390618
+box3d.js binding commit: 2617a0ff763a60c9f17cee57c6ea72aab75a5077
+stock engine base: 8441b4a06d6d09dcfb0b0f704df4d847d1437b92
+wheel patch base: 77a67132ffc4f003e84c6ffe4e72abfbcded4d33
+wheel patch head: 241fe10a9056836332c21d9614471d32d749ce3d
+donor seal head: b0a0082252cb1f3c964f804162233bc82254bc4b
+Emscripten: 6.0.2
+Node: 24.16.0
+pnpm: 10.32.1
+B3X-WHEEL-001.patch sha256: 83ee212f062e7a81578993fc4bba93f8a6b3a8f1c786eef9769007bffe77f4d5
+box3d-mode5.inline.mjs sha256: c143b37b8c7a54345cc477df3c14767a2fc321c346d6d2a9fe728906d4a9b5fd
+box3d-mode5.inline.d.ts sha256: e05b6adeeaf3cf4fcce4e9f41784914d48246a8d7d118f1ab94ec3179b32057c
+smoke expectedCenterY: 1.014062464
+smoke observedCenterY: 1.0140269994735718
+smoke flat-manifold maxPointCount: 2
