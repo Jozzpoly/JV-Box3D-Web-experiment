@@ -1,0 +1,401 @@
+name: Wheel mode5 A-B integration
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-runtime-spike-2026-09-01
+    paths:
+      - .github/workflows/wheel-mode5-integrate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Apply bounded recipient integration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one replacement anchor, got {count}\nANCHOR:\n{old}")
+              p.write_text(text.replace(old, new))
+
+          # Runtime receipt: keep the pinned package/engine identity as the base,
+          # but never hide that mode5 uses a validated engine/binding patch.
+          replace_once(
+              "src/physics/box3d-runtime-contract.ts",
+              'export type F2ValidationId = "B0" | "B1" | "B2" | "B3" | "B4" | "B5";\n',
+              '''export interface Box3DRuntimePatchReceipt {\n  readonly id: string;\n  readonly donorRepository: string;\n  readonly donorSealCommit: string;\n  readonly patchBaseCommit: string;\n  readonly patchHeadCommit: string;\n  readonly patchSha256: string;\n  readonly inlineArtifactSha256: string;\n  readonly validatedRunId: number;\n}\n\nexport type F2ValidationId = "B0" | "B1" | "B2" | "B3" | "B4" | "B5";\n''',
+          )
+          replace_once(
+              "src/physics/box3d-runtime-contract.ts",
+              'export interface Box3DRuntimeReceipt {\n  readonly identity: typeof BOX3D_RUNTIME_IDENTITY;\n',
+              'export interface Box3DRuntimeReceipt {\n  readonly identity: typeof BOX3D_RUNTIME_IDENTITY;\n  readonly runtimePatch?: Box3DRuntimePatchReceipt;\n',
+          )
+
+          # Boundary boot choice. Stock remains the default; mode5 is a separate
+          # dynamically loaded chunk selected before the first boundary load.
+          replace_once(
+              "src/physics/box3d-boundary.ts",
+              'import { NATIVE_INLINE_SHIMS, multiplyQuat } from "./native-inline-compat.js";\n',
+              'import { NATIVE_INLINE_SHIMS, multiplyQuat } from "./native-inline-compat.js";\nimport {\n  BOX3D_MODE5_RUNTIME_PATCH,\n  loadMode5Box3DModule,\n} from "./mode5-box3d-runtime.js";\n',
+          )
+          replace_once(
+              "src/physics/box3d-boundary.ts",
+              '] as const satisfies readonly (keyof Box3DModule)[];\n\nlet sharedBoundaryPromise: Promise<Box3DBoundary> | null = null;\n',
+              '''] as const satisfies readonly (keyof Box3DModule)[];\n\nconst MODE5_REQUIRED_EXPORTS = [\n  "b3CreateWheelShapeFlat",\n  "b3DestroyShape",\n] as const;\n\nexport type Box3DRuntimeVariant = "stock" | "mode5-experiment";\n\nlet configuredRuntimeVariant: Box3DRuntimeVariant = "stock";\nlet sharedBoundaryPromise: Promise<Box3DBoundary> | null = null;\n\nexport function configureBox3DRuntimeVariant(\n  variant: Box3DRuntimeVariant,\n): void {\n  if (sharedBoundaryPromise !== null && variant !== configuredRuntimeVariant) {\n    throw new Error(\n      "Box3D runtime variant cannot change after boundary loading has started.",\n    );\n  }\n  configuredRuntimeVariant = variant;\n}\n''',
+          )
+          replace_once(
+              "src/physics/box3d-boundary.ts",
+              '''  static async #loadFresh(): Promise<Box3DBoundary> {\n    const b3 = await Box3DFactory();\n    const missing = REQUIRED_EXPORTS.filter(\n      (name) => typeof b3[name] !== "function",\n    );\n''',
+              '''  static async #loadFresh(): Promise<Box3DBoundary> {\n    const runtimeVariant = configuredRuntimeVariant;\n    const b3: Box3DModule = runtimeVariant === "mode5-experiment"\n      ? await loadMode5Box3DModule()\n      : await Box3DFactory();\n    const requiredExports: readonly string[] = runtimeVariant === "mode5-experiment"\n      ? [...REQUIRED_EXPORTS, ...MODE5_REQUIRED_EXPORTS]\n      : REQUIRED_EXPORTS;\n    const moduleRecord = b3 as unknown as Record<string, unknown>;\n    const missing = requiredExports.filter(\n      (name) => typeof moduleRecord[name] !== "function",\n    );\n''',
+          )
+          replace_once(
+              "src/physics/box3d-boundary.ts",
+              '      requiredExports: [...REQUIRED_EXPORTS],\n      nativeInlineShims: NATIVE_INLINE_SHIMS,\n',
+              '''      requiredExports: [...requiredExports],\n      nativeInlineShims: NATIVE_INLINE_SHIMS,\n      ...(runtimeVariant === "mode5-experiment"\n        ? { runtimePatch: BOX3D_MODE5_RUNTIME_PATCH }\n        : {}),\n''',
+          )
+          replace_once(
+              "src/physics/box3d-boundary.ts",
+              '          `exports=${REQUIRED_EXPORTS.length}`,\n',
+              '          `exports=${requiredExports.length}`,\n',
+          )
+
+          # Product opt-in. The parameter persists automatically when location
+          # controls rewrite only jvSpawn.
+          replace_once(
+              "src/product-main.ts",
+              'import { installJvPerformanceObserver } from "./runtime/performance-observer.js";\n',
+              'import { installJvPerformanceObserver } from "./runtime/performance-observer.js";\nimport { configureBox3DRuntimeVariant } from "./physics/box3d-boundary.js";\n',
+          )
+          replace_once(
+              "src/product-main.ts",
+              '''function selectedSteeringPlateVisible(): boolean {\n  return new URL(window.location.href).searchParams.get("jvSteeringPlate") === "1";\n}\n\nconst spawnTarget = parseProductSpawnTarget(window.location.search);\n''',
+              '''function selectedSteeringPlateVisible(): boolean {\n  return new URL(window.location.href).searchParams.get("jvSteeringPlate") === "1";\n}\n\nfunction selectedBox3DRuntimeVariant(): "stock" | "mode5-experiment" {\n  return new URL(window.location.href).searchParams.get("jvWheel") === "mode5"\n    ? "mode5-experiment"\n    : "stock";\n}\n\nconst spawnTarget = parseProductSpawnTarget(window.location.search);\n''',
+          )
+          replace_once(
+              "src/product-main.ts",
+              'const productRuntime = await import("./main.js");\n',
+              'configureBox3DRuntimeVariant(selectedBox3DRuntimeVariant());\nconst productRuntime = await import("./main.js");\n',
+          )
+
+          # Builder chooses the backend once per runtime, records exact topology,
+          # and never fabricates a second shape for mode5.
+          replace_once(
+              "src/vehicle/m6/m6-runtime-builder.ts",
+              'import { createLegacySplitWheel } from "./legacy-split-wheel-backend.js";\n',
+              '''import {\n  createM6Wheel,\n  m6WheelBackendId,\n  m6WheelSelectionForRuntime,\n} from "./m6-wheel-backend.js";\n''',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-runtime-builder.ts",
+              '''import {\n  M6_TOPOLOGY_COUNTS,\n  type M6CornerRuntime,\n  type M6VehicleRuntime,\n} from "./m6-topology-contract.js";\n''',
+              '''import {\n  m6TopologyCountsForWheelBackend,\n  type M6CornerRuntime,\n  type M6VehicleRuntime,\n} from "./m6-topology-contract.js";\n''',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-runtime-builder.ts",
+              '''  const shapeIds: b3ShapeId[] = [];\n\n  try {\n''',
+              '''  const shapeIds: b3ShapeId[] = [];\n  const wheelSelection = m6WheelSelectionForRuntime(b3);\n  const wheelBackendId = m6WheelBackendId(wheelSelection);\n  const topologyCounts = m6TopologyCountsForWheelBackend(wheelBackendId);\n\n  try {\n''',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-runtime-builder.ts",
+              '      corner < M6_TOPOLOGY_COUNTS.corners;\n',
+              '      corner < topologyCounts.corners;\n',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-runtime-builder.ts",
+              '''      const wheel = createLegacySplitWheel(\n        b3,\n        worldId,\n        config,\n        restWorld,\n        collisionGroupIndex,\n      );\n      bodyIds.push(wheel.bodyId);\n      shapeIds.push(\n        wheel.rollingShapeId,\n        wheel.sidewallShapeId,\n      );\n''',
+              '''      const wheel = createM6Wheel(\n        wheelSelection,\n        b3,\n        worldId,\n        config,\n        restWorld,\n        collisionGroupIndex,\n      );\n      bodyIds.push(wheel.bodyId);\n      shapeIds.push(...wheel.shapeIds);\n''',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-runtime-builder.ts",
+              '''    if (\n      bodyIds.length !== M6_TOPOLOGY_COUNTS.bodies ||\n      jointIds.length !== M6_TOPOLOGY_COUNTS.joints ||\n      shapeIds.length !== M6_TOPOLOGY_COUNTS.shapes\n    ) {\n''',
+              '''    if (\n      bodyIds.length !== topologyCounts.bodies ||\n      jointIds.length !== topologyCounts.joints ||\n      shapeIds.length !== topologyCounts.shapes\n    ) {\n''',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-runtime-builder.ts",
+              '''    return {\n      chassisId,\n''',
+              '''    return {\n      wheelBackendId,\n      topologyCounts,\n      chassisId,\n''',
+          )
+
+          # Controller reports what the runtime actually owns rather than a
+          # historical hardcoded backend string/count.
+          replace_once(
+              "src/vehicle/m6/m6-vehicle-controller.ts",
+              'import { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";\n',
+              '',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-vehicle-controller.ts",
+              '''import {\n  M6_TOPOLOGY_COUNTS,\n  type M6CornerTrace,\n''',
+              '''import {\n  type M6TopologyCounts,\n  type M6CornerTrace,\n''',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-vehicle-controller.ts",
+              '''  get topologyCounts(): typeof M6_TOPOLOGY_COUNTS {\n    return M6_TOPOLOGY_COUNTS;\n  }\n''',
+              '''  get topologyCounts(): M6TopologyCounts {\n    return this.#runtime.topologyCounts;\n  }\n''',
+          )
+          replace_once(
+              "src/vehicle/m6/m6-vehicle-controller.ts",
+              '      wheelBackendId: LEGACY_SPLIT_WHEEL_BACKEND_ID,\n',
+              '      wheelBackendId: this.#runtime.wheelBackendId,\n',
+          )
+
+          # Tests execute compiled TS from .test-dist, so copy the one vendored
+          # non-TS runtime artifact next to the emitted dynamic import.
+          replace_once(
+              "tools/run-tests.mjs",
+              'import { readdir, rm } from "node:fs/promises";\n',
+              'import { copyFile, mkdir, readdir, rm } from "node:fs/promises";\n',
+          )
+          replace_once(
+              "tools/run-tests.mjs",
+              '''if (compile.status !== 0) {\n  process.exit(compile.status ?? 1);\n}\n\nconst requestedTestFiles = process.argv.slice(2);\n''',
+              '''if (compile.status !== 0) {\n  process.exit(compile.status ?? 1);\n}\n\nconst testVendorDirectory = fileURLToPath(\n  new URL("../.test-dist/physics/vendor/", import.meta.url),\n);\nawait mkdir(testVendorDirectory, { recursive: true });\nawait copyFile(\n  fileURLToPath(\n    new URL("../src/physics/vendor/box3d-mode5.inline.mjs", import.meta.url),\n  ),\n  fileURLToPath(\n    new URL("../.test-dist/physics/vendor/box3d-mode5.inline.mjs", import.meta.url),\n  ),\n);\n\nconst requestedTestFiles = process.argv.slice(2);\n''',
+          )
+          PY
+
+          cat > tests/m6-mode5-wheel-backend.test.mjs <<'JS'
+          import test from "node:test";
+          import assert from "node:assert/strict";
+          import { readFile } from "node:fs/promises";
+          import {
+            validatePinnedNativeFactoryReceiptText,
+          } from "../.test-dist/config/native-factory-receipt.js";
+          import {
+            Box3DBoundary,
+            configureBox3DRuntimeVariant,
+          } from "../.test-dist/physics/box3d-boundary.js";
+          import {
+            BOX3D_MODE5_RUNTIME_PATCH,
+            loadMode5Box3DModule,
+          } from "../.test-dist/physics/mode5-box3d-runtime.js";
+          import {
+            createLegacySplitWheel,
+          } from "../.test-dist/vehicle/m6/legacy-split-wheel-backend.js";
+          import {
+            createMode5Wheel,
+            MODE5_WHEEL_BACKEND_ID,
+          } from "../.test-dist/vehicle/m6/mode5-wheel-backend.js";
+          import {
+            m6TopologyConfigFromReceipt,
+          } from "../.test-dist/vehicle/m6/m6-topology-config.js";
+          import {
+            M6_MODE5_TOPOLOGY_COUNTS,
+          } from "../.test-dist/vehicle/m6/m6-topology-contract.js";
+
+          const receipt = await validatePinnedNativeFactoryReceiptText(
+            await readFile(
+              new URL("../public/receipts/jv_m6_factory_receipt.json", import.meta.url),
+              "utf8",
+            ),
+          );
+
+          function close(actual, expected, tolerance, label) {
+            assert.ok(
+              Math.abs(actual - expected) <= tolerance,
+              `${label}: ${actual} vs ${expected}`,
+            );
+          }
+
+          function closeMassData(actual, expected, label) {
+            close(actual.mass, expected.mass, 1e-6, `${label} mass`);
+            for (const axis of ["x", "y", "z"]) {
+              close(actual.center[axis], expected.center[axis], 1e-7, `${label} center.${axis}`);
+            }
+            for (const column of ["cx", "cy", "cz"]) {
+              for (const axis of ["x", "y", "z"]) {
+                close(
+                  actual.inertia[column][axis],
+                  expected.inertia[column][axis],
+                  1e-5,
+                  `${label} inertia.${column}.${axis}`,
+                );
+              }
+            }
+          }
+
+          test("mode5 preserves reference-sphere mass while replacing split contact geometry", async () => {
+            const b3 = await loadMode5Box3DModule();
+            const worldDef = b3.b3DefaultWorldDef();
+            worldDef.gravity = { x: 0, y: 0, z: 0 };
+            const worldId = b3.b3CreateWorld(worldDef);
+            const config = m6TopologyConfigFromReceipt(receipt);
+            try {
+              const legacy = createLegacySplitWheel(
+                b3,
+                worldId,
+                config,
+                { x: -2, y: 2, z: 0 },
+                -4001,
+              );
+              const mode5 = createMode5Wheel(
+                b3,
+                worldId,
+                config,
+                { x: 2, y: 2, z: 0 },
+                -4002,
+              );
+
+              assert.equal(legacy.shapeCount, 2);
+              assert.equal(mode5.shapeCount, 1);
+              assert.equal(mode5.backendId, MODE5_WHEEL_BACKEND_ID);
+              assert.equal(mode5.cornerRadius, 0.2);
+              closeMassData(
+                b3.b3Body_GetMassData(mode5.bodyId),
+                b3.b3Body_GetMassData(legacy.bodyId),
+                "mode5 vs mode3 reference sphere",
+              );
+
+              const fullMask = 0xffff_ffff_ffff_ffffn;
+              assert.equal(
+                b3.b3Shape_GetFilter(legacy.rollingShapeId).maskBits,
+                config.terrainCategoryBits,
+              );
+              assert.equal(
+                b3.b3Shape_GetFilter(mode5.rollingShapeId).maskBits,
+                fullMask,
+              );
+            } finally {
+              b3.b3DestroyWorld(worldId);
+            }
+          });
+
+          test("patched boundary builds and drives a full M6 on the mode5 backend", async () => {
+            configureBox3DRuntimeVariant("mode5-experiment");
+            const boundary = await Box3DBoundary.load();
+            assert.equal(
+              boundary.receipt.runtimePatch?.id,
+              BOX3D_MODE5_RUNTIME_PATCH.id,
+            );
+            assert.equal(
+              boundary.receipt.runtimePatch?.inlineArtifactSha256,
+              BOX3D_MODE5_RUNTIME_PATCH.inlineArtifactSha256,
+            );
+
+            const world = boundary.createM6TopologyWorld(receipt);
+            try {
+              const before = { ...world.counters };
+              const vehicle = world.createVehicle(
+                { x: 0, y: 1.2, z: 0 },
+                5,
+              );
+              assert.deepEqual(
+                vehicle.topologyCounts,
+                M6_MODE5_TOPOLOGY_COUNTS,
+              );
+              assert.equal(
+                world.counters.bodyCount - before.bodyCount,
+                M6_MODE5_TOPOLOGY_COUNTS.bodies,
+              );
+              assert.equal(
+                world.counters.shapeCount - before.shapeCount,
+                M6_MODE5_TOPOLOGY_COUNTS.shapes,
+              );
+              assert.equal(
+                world.counters.jointCount - before.jointCount,
+                M6_MODE5_TOPOLOGY_COUNTS.joints,
+              );
+
+              const settled = world.step(240)[0];
+              assert.ok(settled);
+              assert.equal(settled.wheelBackendId, MODE5_WHEEL_BACKEND_ID);
+              assert.ok(settled.worldContacts >= 1);
+              for (const [index, corner] of settled.corners.entries()) {
+                assert.ok(
+                  Number.isFinite(corner.wheelPosition.x) &&
+                    Number.isFinite(corner.wheelPosition.y) &&
+                    Number.isFinite(corner.wheelPosition.z),
+                  `corner ${index} wheel position is finite`,
+                );
+              }
+
+              const start = settled.chassisPosition;
+              vehicle.setDrive({ throttle: 0.35, brake: 0 });
+              const driven = world.step(180)[0];
+              assert.ok(driven);
+              assert.equal(driven.drive.mode, "THROTTLE");
+              assert.ok(Number.isFinite(driven.drive.forwardSpeedMetersPerSecond));
+              assert.ok(Number.isFinite(driven.drive.currentMotorTorqueTotal));
+              const travel = Math.hypot(
+                driven.chassisPosition.x - start.x,
+                driven.chassisPosition.z - start.z,
+              );
+              assert.ok(travel > 0.05, `mode5 M6 did not translate under drive: ${travel}`);
+            } finally {
+              world.dispose();
+            }
+          });
+          JS
+
+      - name: Install canonical dependencies
+        run: npm ci
+
+      - name: Focused mode5 validation
+        run: node tools/run-tests.mjs tests/m6-mode5-wheel-backend.test.mjs
+
+      - name: Canonical project validation
+        run: npm run build
+
+      - name: Collateral guard and commit
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git diff --check
+          python3 - <<'PY'
+          import subprocess
+
+          allowed = {
+              "src/physics/box3d-boundary.ts",
+              "src/physics/box3d-runtime-contract.ts",
+              "src/product-main.ts",
+              "src/vehicle/m6/m6-runtime-builder.ts",
+              "src/vehicle/m6/m6-vehicle-controller.ts",
+              "tools/run-tests.mjs",
+              "tests/m6-mode5-wheel-backend.test.mjs",
+          }
+          changed = {
+              line[3:]
+              for line in subprocess.check_output(
+                  ["git", "status", "--porcelain"], text=True
+              ).splitlines()
+              if line.strip()
+          }
+          unexpected = changed - allowed
+          if unexpected:
+              raise SystemExit(f"unexpected collateral after validation: {sorted(unexpected)}")
+          missing = allowed - changed
+          if missing:
+              raise SystemExit(f"expected integration files did not change: {sorted(missing)}")
+          PY
+
+          git add \
+            src/physics/box3d-boundary.ts \
+            src/physics/box3d-runtime-contract.ts \
+            src/product-main.ts \
+            src/vehicle/m6/m6-runtime-builder.ts \
+            src/vehicle/m6/m6-vehicle-controller.ts \
+            tools/run-tests.mjs \
+            tests/m6-mode5-wheel-backend.test.mjs
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "spike: integrate mode5 wheel A-B runtime"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
