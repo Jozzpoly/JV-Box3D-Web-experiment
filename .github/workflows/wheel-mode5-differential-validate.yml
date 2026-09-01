@@ -127,30 +127,7 @@ jobs:
           npm run check:docs
           npm run check:third-party
 
-      - name: Build and validate portable candidate
-        run: npm run build:portable
-
-      - name: Prove mode5 payload stays lazy
-        shell: bash
-        run: |
-          set -euxo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          assets = Path('dist/assets')
-          mode5 = [p for p in assets.glob('*') if 'mode5' in p.name.lower() and p.suffix == '.js']
-          if len(mode5) != 1:
-              raise SystemExit(f'expected one lazy mode5 JS chunk, found {[p.name for p in mode5]}')
-          index = Path('dist/index.html').read_text()
-          if mode5[0].name in index or 'mode5' in index.lower():
-              raise SystemExit('mode5 runtime is eagerly referenced by dist/index.html')
-          size = mode5[0].stat().st_size
-          if size < 500_000:
-              raise SystemExit(f'mode5 chunk unexpectedly small to contain inline WASM: {size} bytes')
-          print(f'MODE5_LAZY_CHUNK_OK name={mode5[0].name} bytes={size}')
-          PY
-
-      - name: Collateral audit and persist candidate integration
+      - name: Commit candidate locally for clean packaging
         shell: bash
         run: |
           set -euxo pipefail
@@ -177,7 +154,7 @@ jobs:
           unexpected = changed - allowed
           missing = allowed - changed
           if unexpected:
-              raise SystemExit(f'unexpected collateral after candidate build: {sorted(unexpected)}')
+              raise SystemExit(f'unexpected collateral before candidate commit: {sorted(unexpected)}')
           if missing:
               raise SystemExit(f'expected integration files did not change: {sorted(missing)}')
           PY
@@ -194,4 +171,58 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "spike: integrate mode5 wheel A-B runtime"
+          test -z "$(git status --porcelain)"
+
+      - name: Build and validate portable candidate
+        run: npm run build:portable
+
+      - name: Prove mode5 payload stays lazy
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          assets = Path('dist/assets')
+          mode5 = [p for p in assets.glob('*') if 'mode5' in p.name.lower() and p.suffix == '.js']
+          if len(mode5) != 1:
+              raise SystemExit(f'expected one lazy mode5 JS chunk, found {[p.name for p in mode5]}')
+          index = Path('dist/index.html').read_text()
+          if mode5[0].name in index or 'mode5' in index.lower():
+              raise SystemExit('mode5 runtime is eagerly referenced by dist/index.html')
+          size = mode5[0].stat().st_size
+          if size < 500_000:
+              raise SystemExit(f'mode5 chunk unexpectedly small to contain inline WASM: {size} bytes')
+          print(f'MODE5_LAZY_CHUNK_OK name={mode5[0].name} bytes={size}')
+          PY
+
+      - name: Final collateral audit and publish candidate integration
+        shell: bash
+        run: |
+          set -euxo pipefail
+          test -z "$(git status --porcelain)"
+          python3 - <<'PY'
+          import subprocess
+
+          expected = {
+              'src/physics/box3d-boundary.ts',
+              'src/physics/box3d-runtime-contract.ts',
+              'src/product-main.ts',
+              'src/vehicle/m6/m6-runtime-builder.ts',
+              'src/vehicle/m6/m6-vehicle-controller.ts',
+              'tools/run-tests.mjs',
+              'tests/m6-mode5-wheel-backend.test.mjs',
+          }
+          committed = set(
+              subprocess.check_output(
+                  ['git', 'diff', '--name-only', 'HEAD^', 'HEAD'], text=True
+              ).splitlines()
+          )
+          unexpected = committed - expected
+          missing = expected - committed
+          if unexpected:
+              raise SystemExit(f'unexpected committed collateral: {sorted(unexpected)}')
+          if missing:
+              raise SystemExit(f'candidate commit missing expected files: {sorted(missing)}')
+          PY
           git push origin "HEAD:${GITHUB_REF_NAME}"
