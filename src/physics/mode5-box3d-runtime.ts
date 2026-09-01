@@ -35,6 +35,15 @@ const MODE5_REQUIRED_EXPORTS = [
   "b3DestroyShape",
 ] as const;
 
+export function isMode5Box3DModule(
+  b3: Box3DModule,
+): b3 is Mode5Box3DModule {
+  const candidate = b3 as Box3DModule & Partial<Mode5Box3DModule>;
+  return MODE5_REQUIRED_EXPORTS.every(
+    (name) => typeof candidate[name] === "function",
+  );
+}
+
 export function assertMode5Box3DModule(
   b3: Box3DModule,
 ): asserts b3 is Mode5Box3DModule {
