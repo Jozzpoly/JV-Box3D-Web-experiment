@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - work/wheel-mode5-runtime-spike-2026-09-01
+    paths-ignore:
+      - src/physics/vendor/box3d-mode5.inline.mjs
+      - src/physics/vendor/box3d-mode5.inline.d.ts
+      - docs/evidence/WHEEL_MODE5_RUNTIME_SPIKE_2026-09-01.txt
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-mode5-runtime:
@@ -245,12 +249,19 @@ jobs:
           JS
           node wheel-smoke.mjs
 
-      - name: Record provenance
+      - name: Record and lock provenance
         shell: bash
         run: |
           set -euxo pipefail
+          patch_sha="$(sha256sum B3X-WHEEL-001.patch | cut -d' ' -f1)"
+          runtime_sha="$(sha256sum box3djs/dist/box3d.inline.mjs | cut -d' ' -f1)"
+          types_sha="$(sha256sum box3djs/dist/box3d.d.ts | cut -d' ' -f1)"
+          test "$patch_sha" = "83ee212f062e7a81578993fc4bba93f8a6b3a8f1c786eef9769007bffe77f4d5"
+          test "$runtime_sha" = "c143b37b8c7a54345cc477df3c14767a2fc321c346d6d2a9fe728906d4a9b5fd"
+          test "$types_sha" = "e05b6adeeaf3cf4fcce4e9f41784914d48246a8d7d118f1ab94ec3179b32057c"
           {
             echo 'JV-WEB MODE5 RUNTIME FEASIBILITY SPIKE'
+            echo 'validated run: 33526390618'
             echo 'box3d.js binding commit: 2617a0ff763a60c9f17cee57c6ea72aab75a5077'
             echo 'stock engine base: 8441b4a06d6d09dcfb0b0f704df4d847d1437b92'
             echo 'wheel patch base: 77a67132ffc4f003e84c6ffe4e72abfbcded4d33'
@@ -259,9 +270,12 @@ jobs:
             echo 'Emscripten: 6.0.2'
             echo 'Node: 24.16.0'
             echo 'pnpm: 10.32.1'
-            sha256sum B3X-WHEEL-001.patch
-            sha256sum box3djs/dist/box3d.inline.mjs
-            sha256sum box3djs/dist/box3d.d.ts
+            echo "B3X-WHEEL-001.patch sha256: $patch_sha"
+            echo "box3d-mode5.inline.mjs sha256: $runtime_sha"
+            echo "box3d-mode5.inline.d.ts sha256: $types_sha"
+            echo 'smoke expectedCenterY: 1.014062464'
+            echo 'smoke observedCenterY: 1.0140269994735718'
+            echo 'smoke flat-manifold maxPointCount: 2'
           } > wheel-mode5-provenance.txt
           cat wheel-mode5-provenance.txt
 
@@ -275,3 +289,25 @@ jobs:
             wheel-mode5-provenance.txt
             box3djs/dist/box3d.inline.mjs
             box3djs/dist/box3d.d.ts
+
+      - name: Persist validated runtime on spike branch
+        if: github.actor != 'github-actions[bot]'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p src/physics/vendor docs/evidence
+          cp box3djs/dist/box3d.inline.mjs src/physics/vendor/box3d-mode5.inline.mjs
+          cp box3djs/dist/box3d.d.ts src/physics/vendor/box3d-mode5.inline.d.ts
+          cp wheel-mode5-provenance.txt docs/evidence/WHEEL_MODE5_RUNTIME_SPIKE_2026-09-01.txt
+
+          git add \
+            src/physics/vendor/box3d-mode5.inline.mjs \
+            src/physics/vendor/box3d-mode5.inline.d.ts \
+            docs/evidence/WHEEL_MODE5_RUNTIME_SPIKE_2026-09-01.txt
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "spike: persist validated mode5 runtime artifact"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
