@@ -1,3 +1,4 @@
+import { isMode5Box3DModule } from "../../physics/mode5-box3d-runtime.js";
 import type {
   Box3DModule,
   b3Vec3,
@@ -36,6 +37,14 @@ export function m6WheelBackendId(
   return selection === MODE5_M6_WHEEL_SELECTION
     ? MODE5_WHEEL_BACKEND_ID
     : LEGACY_SPLIT_WHEEL_BACKEND_ID;
+}
+
+export function m6WheelSelectionForRuntime(
+  b3: Box3DModule,
+): M6WheelBackendSelection {
+  return isMode5Box3DModule(b3)
+    ? MODE5_M6_WHEEL_SELECTION
+    : LEGACY_M6_WHEEL_SELECTION;
 }
 
 export function createM6Wheel(
