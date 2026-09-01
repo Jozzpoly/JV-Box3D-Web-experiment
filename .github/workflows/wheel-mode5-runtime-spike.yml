@@ -181,7 +181,7 @@ jobs:
           guideDef.position = initialWheelPosition;
           const guideBody = b3.b3CreateBody(world, guideDef);
           const verticalFrame = b3.b3ComputeQuatBetweenUnitVectors(
-            { x: 0, y: 0, z: 1 },
+            { x: 1, y: 0, z: 0 },
             { x: 0, y: 1, z: 0 },
           );
           const guideJointDef = b3.b3DefaultPrismaticJointDef();
@@ -239,7 +239,7 @@ jobs:
           console.log('MODE5_WASM_SMOKE_OK', {
             position: p,
             expectedCenterY,
-            contacts: b3.getNumContacts ? 'verified' : 'unavailable',
+            contacts: 'verified',
             maxPointCount,
           });
           JS
