@@ -7,16 +7,43 @@ import type {
   b3Vec3,
 } from "../../physics/box3d-runtime-contract.js";
 import type { VehicleVisualFrameV1 } from "../../runtime/vehicle-visual-frame.js";
-import type { LegacySplitWheelReceipt } from "./legacy-split-wheel-backend.js";
-import type { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";
+import {
+  MODE5_M6_WHEEL_SELECTION,
+  m6WheelBackendId,
+  type M6WheelBackendId,
+  type M6WheelReceipt,
+} from "./m6-wheel-backend.js";
 import type { RateSteeringProfileId } from "./rate-steering-profile.js";
 
+export interface M6TopologyCounts {
+  readonly bodies: number;
+  readonly joints: number;
+  readonly shapes: number;
+  readonly corners: number;
+}
+
+// Accepted mode3 baseline. Keep this constant stable for existing callers/tests.
 export const M6_TOPOLOGY_COUNTS = Object.freeze({
   bodies: 19,
   joints: 28,
   shapes: 9,
   corners: 4,
 } as const);
+
+export const M6_MODE5_TOPOLOGY_COUNTS = Object.freeze({
+  bodies: 19,
+  joints: 28,
+  shapes: 5,
+  corners: 4,
+} as const);
+
+export function m6TopologyCountsForWheelBackend(
+  wheelBackendId: M6WheelBackendId,
+): M6TopologyCounts {
+  return wheelBackendId === m6WheelBackendId(MODE5_M6_WHEEL_SELECTION)
+    ? M6_MODE5_TOPOLOGY_COUNTS
+    : M6_TOPOLOGY_COUNTS;
+}
 
 export type M6SteeringActuatorState = "OFF" | "POSITION" | "RATE";
 export type M6HandsOnEdge = "NONE" | "ENGAGE" | "REVERSE";
@@ -93,7 +120,7 @@ export interface M6TraceFrame {
   readonly steering: M6SteeringMechanismTrace;
   readonly drive: M6DriveTrace;
   readonly collisionGroupIndex: number;
-  readonly wheelBackendId: typeof LEGACY_SPLIT_WHEEL_BACKEND_ID;
+  readonly wheelBackendId: M6WheelBackendId;
   readonly visualGeometry: M6VisualGeometry;
   readonly visualFrame: VehicleVisualFrameV1;
   readonly chassisPosition: b3Vec3;
@@ -122,7 +149,7 @@ export interface M6VisualSegmentRuntime {
 }
 
 export interface M6CornerRuntime {
-  readonly wheel: LegacySplitWheelReceipt;
+  readonly wheel: M6WheelReceipt;
   readonly knuckleId: b3BodyId;
   readonly suspensionCarrierId: b3BodyId;
   readonly steeringJointId: b3JointId | null;
@@ -143,6 +170,8 @@ export interface M6CornerRuntime {
 }
 
 export interface M6VehicleRuntime {
+  readonly wheelBackendId: M6WheelBackendId;
+  readonly topologyCounts: M6TopologyCounts;
   readonly chassisId: b3BodyId;
   readonly chassisShapeId: b3ShapeId;
   readonly rackId: b3BodyId;
