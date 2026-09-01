@@ -1,0 +1,69 @@
+name: Wheel mode5 Owner A-B snapshot
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-runtime-spike-2026-09-01
+    paths:
+      - .github/workflows/wheel-mode5-owner-ab-preview.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout experiment branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup canonical Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Build exact validated candidate
+        shell: bash
+        run: |
+          set -euxo pipefail
+          branch_head="$(git rev-parse HEAD)"
+          candidate="30d80fbc2cc133d995798321e5d06c0780c7e30b"
+          git merge-base --is-ancestor "$candidate" "$branch_head"
+          git checkout --detach "$candidate"
+          npm ci
+          npm run build:portable
+          test "$(node -p "JSON.parse(require('fs').readFileSync('dist/build-manifest.json','utf8')).source.commit")" = "$candidate"
+          rm -rf /tmp/jv-wheel-owner-ab
+          mkdir -p /tmp/jv-wheel-owner-ab
+          cp -a dist/. /tmp/jv-wheel-owner-ab/
+          git checkout "$branch_head"
+
+      - name: Persist isolated snapshot without touching product source
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf owner-ab
+          mkdir -p owner-ab
+          cp -a /tmp/jv-wheel-owner-ab/. owner-ab/
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('owner-ab/build-manifest.json').read_text())
+          expected = '30d80fbc2cc133d995798321e5d06c0780c7e30b'
+          if manifest['source']['commit'] != expected:
+              raise SystemExit(f"snapshot provenance drift: {manifest['source']['commit']}")
+          index = Path('owner-ab/index.html').read_text()
+          if '/JV-Box3D-Web-experiment/' in index:
+              raise SystemExit('snapshot index contains root-bound experiment path')
+          print(f"OWNER_AB_SNAPSHOT_OK source={expected} files={len(manifest['files'])}")
+          PY
+          git add owner-ab
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "preview: publish wheel mode5 owner A-B snapshot"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
