@@ -21,6 +21,17 @@ export const BOX3D_RUNTIME_IDENTITY = Object.freeze({
   buildVariant: "inline-single-threaded",
 } as const);
 
+export interface Box3DRuntimePatchReceipt {
+  readonly id: string;
+  readonly donorRepository: string;
+  readonly donorSealCommit: string;
+  readonly patchBaseCommit: string;
+  readonly patchHeadCommit: string;
+  readonly patchSha256: string;
+  readonly inlineArtifactSha256: string;
+  readonly validatedRunId: number;
+}
+
 export type F2ValidationId = "B0" | "B1" | "B2" | "B3" | "B4" | "B5";
 export type ValidationStatus = "PASS" | "PENDING" | "FAIL";
 
@@ -33,6 +44,7 @@ export interface F2ValidationLevel {
 
 export interface Box3DRuntimeReceipt {
   readonly identity: typeof BOX3D_RUNTIME_IDENTITY;
+  readonly runtimePatch?: Box3DRuntimePatchReceipt;
   readonly engineVersion: Readonly<{ major: number; minor: number; revision: number }>;
   readonly defaultWorld: Readonly<{
     gravityY: number;

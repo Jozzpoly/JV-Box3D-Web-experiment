@@ -10,7 +10,6 @@ import type {
   b3Vec3,
   b3WorldId,
 } from "../../physics/box3d-runtime-contract.js";
-import { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";
 import {
   add3,
   clampNumber,
@@ -27,7 +26,7 @@ import {
   destroyM6VehicleRuntime,
 } from "./m6-runtime-builder.js";
 import {
-  M6_TOPOLOGY_COUNTS,
+  type M6TopologyCounts,
   type M6CornerTrace,
   type M6DriveMode,
   type M6DriveTrace,
@@ -124,8 +123,8 @@ export class M6VehicleController {
     return this.#collisionGroupIndex;
   }
 
-  get topologyCounts(): typeof M6_TOPOLOGY_COUNTS {
-    return M6_TOPOLOGY_COUNTS;
+  get topologyCounts(): M6TopologyCounts {
+    return this.#runtime.topologyCounts;
   }
 
   get lastTrace(): M6TraceFrame | null {
@@ -439,7 +438,7 @@ export class M6VehicleController {
       steering,
       drive,
       collisionGroupIndex: this.#collisionGroupIndex,
-      wheelBackendId: LEGACY_SPLIT_WHEEL_BACKEND_ID,
+      wheelBackendId: this.#runtime.wheelBackendId,
       visualGeometry: {
         chassisHalfExtents: clone3(this.#config.chassisHalfExtents),
         wheelRadius: this.#config.wheelRadius,

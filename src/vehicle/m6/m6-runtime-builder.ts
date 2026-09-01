@@ -7,7 +7,11 @@ import type {
   b3Vec3,
   b3WorldId,
 } from "../../physics/box3d-runtime-contract.js";
-import { createLegacySplitWheel } from "./legacy-split-wheel-backend.js";
+import {
+  createM6Wheel,
+  m6WheelBackendId,
+  m6WheelSelectionForRuntime,
+} from "./m6-wheel-backend.js";
 import {
   M6_DEGREES_TO_RADIANS,
   add3,
@@ -28,7 +32,7 @@ import {
 } from "./m6-geometry.js";
 import type { M6TopologyConfig } from "./m6-topology-config.js";
 import {
-  M6_TOPOLOGY_COUNTS,
+  m6TopologyCountsForWheelBackend,
   type M6CornerRuntime,
   type M6VehicleRuntime,
 } from "./m6-topology-contract.js";
@@ -205,6 +209,9 @@ export function createM6VehicleRuntime(
   const bodyIds: b3BodyId[] = [];
   const jointIds: b3JointId[] = [];
   const shapeIds: b3ShapeId[] = [];
+  const wheelSelection = m6WheelSelectionForRuntime(b3);
+  const wheelBackendId = m6WheelBackendId(wheelSelection);
+  const topologyCounts = m6TopologyCountsForWheelBackend(wheelBackendId);
 
   try {
     const chassisId = createDynamicBody(
@@ -293,7 +300,7 @@ export function createM6VehicleRuntime(
     const corners: M6CornerRuntime[] = [];
     for (
       let corner = 0;
-      corner < M6_TOPOLOGY_COUNTS.corners;
+      corner < topologyCounts.corners;
       corner += 1
     ) {
       const restLocal = m6CornerOffset(config, corner);
@@ -374,7 +381,8 @@ export function createM6VehicleRuntime(
         jointIds.push(steeringJointId);
       }
 
-      const wheel = createLegacySplitWheel(
+      const wheel = createM6Wheel(
+        wheelSelection,
         b3,
         worldId,
         config,
@@ -382,10 +390,7 @@ export function createM6VehicleRuntime(
         collisionGroupIndex,
       );
       bodyIds.push(wheel.bodyId);
-      shapeIds.push(
-        wheel.rollingShapeId,
-        wheel.sidewallShapeId,
-      );
+      shapeIds.push(...wheel.shapeIds);
 
       const suspensionAxis = normalize3(
         sub3(
@@ -599,9 +604,9 @@ export function createM6VehicleRuntime(
     }
 
     if (
-      bodyIds.length !== M6_TOPOLOGY_COUNTS.bodies ||
-      jointIds.length !== M6_TOPOLOGY_COUNTS.joints ||
-      shapeIds.length !== M6_TOPOLOGY_COUNTS.shapes
+      bodyIds.length !== topologyCounts.bodies ||
+      jointIds.length !== topologyCounts.joints ||
+      shapeIds.length !== topologyCounts.shapes
     ) {
       throw new Error(
         `M6 topology mismatch: bodies=${bodyIds.length}, joints=${jointIds.length}, shapes=${shapeIds.length}.`,
@@ -609,6 +614,8 @@ export function createM6VehicleRuntime(
     }
 
     return {
+      wheelBackendId,
+      topologyCounts,
       chassisId,
       chassisShapeId,
       rackId,

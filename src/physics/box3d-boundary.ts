@@ -9,6 +9,10 @@ import {
   type RateSteeringProfileId,
 } from "../vehicle/m6/m6-topology-world.js";
 import { NATIVE_INLINE_SHIMS, multiplyQuat } from "./native-inline-compat.js";
+import {
+  BOX3D_MODE5_RUNTIME_PATCH,
+  loadMode5Box3DModule,
+} from "./mode5-box3d-runtime.js";
 import { MinimalContactFixture } from "./minimal-contact-fixture.js";
 import {
   BOX3D_RUNTIME_IDENTITY,
@@ -99,7 +103,26 @@ const REQUIRED_EXPORTS = [
   "destroyContactsBuffer",
 ] as const satisfies readonly (keyof Box3DModule)[];
 
+const MODE5_REQUIRED_EXPORTS = [
+  "b3CreateWheelShapeFlat",
+  "b3DestroyShape",
+] as const;
+
+export type Box3DRuntimeVariant = "stock" | "mode5-experiment";
+
+let configuredRuntimeVariant: Box3DRuntimeVariant = "stock";
 let sharedBoundaryPromise: Promise<Box3DBoundary> | null = null;
+
+export function configureBox3DRuntimeVariant(
+  variant: Box3DRuntimeVariant,
+): void {
+  if (sharedBoundaryPromise !== null && variant !== configuredRuntimeVariant) {
+    throw new Error(
+      "Box3D runtime variant cannot change after boundary loading has started.",
+    );
+  }
+  configuredRuntimeVariant = variant;
+}
 
 export class Box3DBoundary {
   readonly #b3: Box3DModule;
@@ -125,9 +148,16 @@ export class Box3DBoundary {
   }
 
   static async #loadFresh(): Promise<Box3DBoundary> {
-    const b3 = await Box3DFactory();
-    const missing = REQUIRED_EXPORTS.filter(
-      (name) => typeof b3[name] !== "function",
+    const runtimeVariant = configuredRuntimeVariant;
+    const b3: Box3DModule = runtimeVariant === "mode5-experiment"
+      ? await loadMode5Box3DModule()
+      : await Box3DFactory();
+    const requiredExports: readonly string[] = runtimeVariant === "mode5-experiment"
+      ? [...REQUIRED_EXPORTS, ...MODE5_REQUIRED_EXPORTS]
+      : REQUIRED_EXPORTS;
+    const moduleRecord = b3 as unknown as Record<string, unknown>;
+    const missing = requiredExports.filter(
+      (name) => typeof moduleRecord[name] !== "function",
     );
     if (missing.length > 0) {
       throw new Error(
@@ -155,8 +185,11 @@ export class Box3DBoundary {
         workerCount: world.workerCount,
         internalValue: world.internalValue,
       },
-      requiredExports: [...REQUIRED_EXPORTS],
+      requiredExports: [...requiredExports],
       nativeInlineShims: NATIVE_INLINE_SHIMS,
+      ...(runtimeVariant === "mode5-experiment"
+        ? { runtimePatch: BOX3D_MODE5_RUNTIME_PATCH }
+        : {}),
     };
 
     const identityPass =
@@ -204,7 +237,7 @@ export class Box3DBoundary {
         "PASS",
         "Required F2/F4/F5 and product-world exports are callable.",
         [
-          `exports=${REQUIRED_EXPORTS.length}`,
+          `exports=${requiredExports.length}`,
           "world=box+capsule+mesh+owned-mesh-teardown",
         ],
       ),

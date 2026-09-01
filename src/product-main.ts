@@ -37,6 +37,7 @@ import {
 } from "./product-steering-settings.js";
 import { installJvBuildIdentity } from "./runtime/build-identity.js";
 import { installJvPerformanceObserver } from "./runtime/performance-observer.js";
+import { configureBox3DRuntimeVariant } from "./physics/box3d-boundary.js";
 import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
 import { installProductControls } from "./product-controls.js";
 import { installUtilityDrawer } from "./utility-drawer.js";
@@ -80,6 +81,12 @@ function selectedGridVisible(): boolean {
 
 function selectedSteeringPlateVisible(): boolean {
   return new URL(window.location.href).searchParams.get("jvSteeringPlate") === "1";
+}
+
+function selectedBox3DRuntimeVariant(): "stock" | "mode5-experiment" {
+  return new URL(window.location.href).searchParams.get("jvWheel") === "mode5"
+    ? "mode5-experiment"
+    : "stock";
 }
 
 const spawnTarget = parseProductSpawnTarget(window.location.search);
@@ -145,6 +152,7 @@ if (spawnTarget !== "map") {
   globalThis.fetch = productFetch;
 }
 
+configureBox3DRuntimeVariant(selectedBox3DRuntimeVariant());
 const productRuntime = await import("./main.js");
 
 const scenePanel = document.querySelector<HTMLElement>(".scene-panel");

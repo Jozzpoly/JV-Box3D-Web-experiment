@@ -1,4 +1,4 @@
-import { readdir, rm } from "node:fs/promises";
+import { copyFile, mkdir, readdir, rm } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
@@ -16,6 +16,19 @@ const compile = spawnSync(process.execPath, [tsc, "-p", "tsconfig.test.json"], {
 if (compile.status !== 0) {
   process.exit(compile.status ?? 1);
 }
+
+const testVendorDirectory = fileURLToPath(
+  new URL("../.test-dist/physics/vendor/", import.meta.url),
+);
+await mkdir(testVendorDirectory, { recursive: true });
+await copyFile(
+  fileURLToPath(
+    new URL("../src/physics/vendor/box3d-mode5.inline.mjs", import.meta.url),
+  ),
+  fileURLToPath(
+    new URL("../.test-dist/physics/vendor/box3d-mode5.inline.mjs", import.meta.url),
+  ),
+);
 
 const requestedTestFiles = process.argv.slice(2);
 for (const testFile of requestedTestFiles) {
