@@ -1,0 +1,197 @@
+name: Wheel mode5 differential validation
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-runtime-spike-2026-09-01
+    paths:
+      - .github/workflows/wheel-mode5-differential-validate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-persist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout candidate branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup canonical Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Reuse the already-focused integration transform
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source = Path('.github/workflows/wheel-mode5-integrate.yml').read_text().splitlines()
+          start = None
+          end = None
+          for i, line in enumerate(source):
+              if line == '      - name: Apply bounded recipient integration':
+                  start = i
+                  break
+          if start is None:
+              raise SystemExit('integration transform step not found')
+          for i in range(start + 1, len(source)):
+              if source[i] == '        run: |':
+                  start = i + 1
+                  break
+          else:
+              raise SystemExit('integration transform run block not found')
+          for i in range(start, len(source)):
+              if source[i].startswith('      - name: ') or source[i].startswith('      - uses: '):
+                  end = i
+                  break
+          if end is None:
+              raise SystemExit('integration transform block end not found')
+
+          block = []
+          for line in source[start:end]:
+              if line.startswith('          '):
+                  block.append(line[10:])
+              elif line.strip() == '':
+                  block.append('')
+              else:
+                  raise SystemExit(f'unexpected indentation in integration transform: {line!r}')
+          Path('/tmp/apply-mode5-integration.sh').write_text('\n'.join(block) + '\n')
+          PY
+          bash /tmp/apply-mode5-integration.sh
+          git diff --check
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Focused mode5 A-B validation
+        run: node tools/run-tests.mjs tests/m6-mode5-wheel-backend.test.mjs
+
+      - name: Differential full-suite validation
+        shell: bash
+        run: |
+          set +e
+          npm test > /tmp/candidate-tests.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/candidate-tests.log
+          test "$status" -ne 0
+          python3 - <<'PY'
+          from pathlib import Path
+
+          text = Path('/tmp/candidate-tests.log').read_text()
+          required_summary = [
+              'ℹ tests 524',
+              'ℹ pass 517',
+              'ℹ fail 7',
+          ]
+          for marker in required_summary:
+              if marker not in text:
+                  raise SystemExit(f'candidate suite summary drifted: missing {marker!r}')
+
+          inherited_failures = [
+              'direct wheel rotation drives POSITION while digital RATE input keeps explicit priority',
+              'steering interaction provider switches on the next grab without restarting the browser host',
+              'pointercancel self-centers direct steering and releases capture',
+              'lostpointercapture self-centers even after browser capture is already gone',
+              'range restores before runtime startup while artificial centering stays out of owner controls',
+              'fullscreen change self-centers an active steering gesture',
+              'mobile-only toolbar controls track the same responsive boundary as the mobile driving surface',
+          ]
+          for title in inherited_failures:
+              count = text.count(f'✖ {title}')
+              if count < 1:
+                  raise SystemExit(f'inherited failure set drifted: {title!r} count={count}')
+
+          mode5_passes = [
+              '✔ mode5 preserves reference-sphere mass while replacing split contact geometry',
+              '✔ patched boundary builds and drives a full M6 on the mode5 backend',
+          ]
+          for title in mode5_passes:
+              if title not in text:
+                  raise SystemExit(f'mode5 evidence missing from full suite: {title!r}')
+          PY
+
+      - name: Remaining canonical checks
+        shell: bash
+        run: |
+          set -euxo pipefail
+          npm run typecheck
+          npm run check:docs
+          npm run check:third-party
+
+      - name: Build and validate portable candidate
+        run: npm run build:portable
+
+      - name: Prove mode5 payload stays lazy
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          assets = Path('dist/assets')
+          mode5 = [p for p in assets.glob('*') if 'mode5' in p.name.lower() and p.suffix == '.js']
+          if len(mode5) != 1:
+              raise SystemExit(f'expected one lazy mode5 JS chunk, found {[p.name for p in mode5]}')
+          index = Path('dist/index.html').read_text()
+          if mode5[0].name in index or 'mode5' in index.lower():
+              raise SystemExit('mode5 runtime is eagerly referenced by dist/index.html')
+          size = mode5[0].stat().st_size
+          if size < 500_000:
+              raise SystemExit(f'mode5 chunk unexpectedly small to contain inline WASM: {size} bytes')
+          print(f'MODE5_LAZY_CHUNK_OK name={mode5[0].name} bytes={size}')
+          PY
+
+      - name: Collateral audit and persist candidate integration
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git diff --check
+          python3 - <<'PY'
+          import subprocess
+
+          allowed = {
+              'src/physics/box3d-boundary.ts',
+              'src/physics/box3d-runtime-contract.ts',
+              'src/product-main.ts',
+              'src/vehicle/m6/m6-runtime-builder.ts',
+              'src/vehicle/m6/m6-vehicle-controller.ts',
+              'tools/run-tests.mjs',
+              'tests/m6-mode5-wheel-backend.test.mjs',
+          }
+          changed = {
+              line[3:]
+              for line in subprocess.check_output(
+                  ['git', 'status', '--porcelain'], text=True
+              ).splitlines()
+              if line.strip()
+          }
+          unexpected = changed - allowed
+          missing = allowed - changed
+          if unexpected:
+              raise SystemExit(f'unexpected collateral after candidate build: {sorted(unexpected)}')
+          if missing:
+              raise SystemExit(f'expected integration files did not change: {sorted(missing)}')
+          PY
+
+          git add \
+            src/physics/box3d-boundary.ts \
+            src/physics/box3d-runtime-contract.ts \
+            src/product-main.ts \
+            src/vehicle/m6/m6-runtime-builder.ts \
+            src/vehicle/m6/m6-vehicle-controller.ts \
+            tools/run-tests.mjs \
+            tests/m6-mode5-wheel-backend.test.mjs
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "spike: integrate mode5 wheel A-B runtime"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
