@@ -1,10 +1,11 @@
 import type {
   Box3DModule,
   b3BodyId,
-  b3ShapeDef,
   b3ShapeId,
   b3Vec3,
 } from "./box3d-runtime-contract.js";
+
+type B3ShapeDef = Parameters<Box3DModule["b3CreateSphereShape"]>[1];
 
 export const BOX3D_MODE5_RUNTIME_PATCH = Object.freeze({
   id: "B3X-WHEEL-001",
@@ -20,7 +21,7 @@ export const BOX3D_MODE5_RUNTIME_PATCH = Object.freeze({
 export interface Mode5Box3DModule extends Box3DModule {
   b3CreateWheelShapeFlat(
     bodyId: b3BodyId,
-    shapeDef: b3ShapeDef,
+    shapeDef: B3ShapeDef,
     center: b3Vec3,
     axis: b3Vec3,
     radius: number,
