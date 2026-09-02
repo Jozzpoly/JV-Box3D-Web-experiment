@@ -69,12 +69,22 @@ jobs:
           print(f"OWNER_AB_SNAPSHOT_OK source={expected} files={len(manifest['files'])}")
           PY
 
-      - name: Stage and validate snapshot delta
+      - name: Stage isolated snapshot
         shell: bash
         run: |
           set -euxo pipefail
           git add owner-ab
+
+      - name: Confirm staged snapshot delta
+        shell: bash
+        run: |
+          set -euxo pipefail
           test -n "$(git diff --cached --name-only -- owner-ab)"
+
+      - name: Validate staged snapshot diff
+        shell: bash
+        run: |
+          set -euxo pipefail
           git diff --cached --check
 
       - name: Commit isolated snapshot
