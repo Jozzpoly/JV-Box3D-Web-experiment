@@ -15,7 +15,7 @@ on:
       - .github/workflows/wheel-mode5-geometry-audit.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   audit:
@@ -36,3 +36,88 @@ jobs:
           set -euxo pipefail
           node --version
           node --test tests/owner-vehicle-wheel-profile-audit.test.mjs
+
+      - name: Persist deterministic asset-profile evidence
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p docs/evidence
+          node --input-type=module <<'JS'
+          import { readFile, writeFile } from 'node:fs/promises';
+          import { inspectBlockbenchRigidPartsV1 } from './tools/owner-vehicle/blockbench-gltf-rigid-parts.mjs';
+          import { parseM6FactoryConfig } from './tools/owner-vehicle/owner-m6-full-rig-calibration-r2.mjs';
+          import { auditOwnerWheelProfileR3 } from './tools/owner-vehicle/owner-m6-wheel-profile-audit.mjs';
+          import { buildOwnerWheelProfileCandidateSetV1 } from './tools/owner-vehicle/owner-m6-wheel-profile-candidates.mjs';
+          import { auditOwnerWheelSupportCandidatesV1 } from './tools/owner-vehicle/owner-m6-wheel-support-audit.mjs';
+
+          const wheelPath = 'assets/owner-vehicle/source/Offroad_Big_Wheels.gltf';
+          const receiptPath = 'public/receipts/jv_m6_factory_receipt.json';
+          const backendPath = 'src/vehicle/m6/mode5-wheel-backend.ts';
+          const [wheelText, receiptText, backendText] = await Promise.all([
+            readFile(wheelPath, 'utf8'),
+            readFile(receiptPath, 'utf8'),
+            readFile(backendPath, 'utf8'),
+          ]);
+          const cornerMatch = backendText.match(/const OWNER_SELECTED_CORNER_RADIUS = ([0-9.]+);/);
+          if (!cornerMatch) throw new Error('mode5 corner radius declaration not found');
+
+          const rigidParts = inspectBlockbenchRigidPartsV1(wheelText, 'Offroad_Big_Wheels.gltf');
+          const config = parseM6FactoryConfig(receiptText);
+          const audit = auditOwnerWheelProfileR3(rigidParts, config.wheelRadius, config.wheelWidth);
+          const candidateSet = buildOwnerWheelProfileCandidateSetV1(audit, Number(cornerMatch[1]));
+          const support = auditOwnerWheelSupportCandidatesV1(rigidParts, audit, candidateSet);
+          const supportById = new Map(support.candidates.map((candidate) => [candidate.id, candidate]));
+
+          const candidates = candidateSet.candidates.map((candidate) => {
+            const supportCandidate = supportById.get(candidate.id);
+            return {
+              id: candidate.id,
+              source: candidate.source,
+              targetStatistic: candidate.targetStatistic,
+              targetStrategy: candidate.targetStrategy,
+              cornerRadius: candidate.cornerRadius,
+              profileCount: candidate.profileCount,
+              profile: candidate.profile,
+              surfaceGrid: candidate.metrics,
+              supportUniformTiltGrid: supportCandidate?.uniformTiltGrid ?? null,
+              supportPureRadial: supportCandidate?.pureRadial ?? null,
+            };
+          });
+
+          const evidence = {
+            schema: 'JV_WEB_WHEEL_PROFILE_CANDIDATES_V1',
+            sourceCommit: process.env.GITHUB_SHA,
+            sourceAsset: wheelPath,
+            expectedWheelSourceGitBlob: 'c13c77a8e5552175ee8266b2da33a54691f1dae9',
+            requestedRadius: audit.frame.requestedRadius,
+            requestedWidth: audit.frame.requestedWidth,
+            observedOuterRadius: audit.physical.outerRadius,
+            observedAxialWidth: audit.physical.axialWidth,
+            observedAngularOuterRadiusSpread: audit.angularEnvelope.outerRadiusSpread,
+            donorSemantics: candidateSet.donorSemantics,
+            supportSemantics: support.semantics,
+            candidates,
+            rejected: candidateSet.rejected,
+          };
+          await writeFile(
+            'docs/evidence/WHEEL_MODE5_ASSET_PROFILE_CANDIDATES_2026-09-02.json',
+            JSON.stringify(evidence, null, 2) + '\n',
+          );
+          console.log('WHEEL_PROFILE_CANDIDATE_EVIDENCE_OK', {
+            candidates: candidates.length,
+            assetDerived: candidates.filter((candidate) => candidate.source === 'ASSET_DERIVED').length,
+          });
+          JS
+
+      - name: Commit candidate evidence to experiment branch
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git add docs/evidence/WHEEL_MODE5_ASSET_PROFILE_CANDIDATES_2026-09-02.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "audit: persist mode5 asset profile candidates"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
