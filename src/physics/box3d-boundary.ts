@@ -105,6 +105,7 @@ const REQUIRED_EXPORTS = [
 
 const MODE5_REQUIRED_EXPORTS = [
   "b3CreateWheelShapeFlat",
+  "b3CreateWheelShapeProfile",
   "b3DestroyShape",
 ] as const;
 
