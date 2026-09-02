@@ -42,13 +42,20 @@ jobs:
           cp -a dist/. /tmp/jv-wheel-owner-ab/
           git checkout "$branch_head"
 
-      - name: Persist isolated snapshot without touching product source
+      - name: Materialize isolated snapshot
         shell: bash
         run: |
           set -euxo pipefail
           rm -rf owner-ab
           mkdir -p owner-ab
           cp -a /tmp/jv-wheel-owner-ab/. owner-ab/
+          test -f owner-ab/build-manifest.json
+          test -f owner-ab/index.html
+
+      - name: Validate snapshot provenance and portability
+        shell: bash
+        run: |
+          set -euxo pipefail
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -61,9 +68,25 @@ jobs:
               raise SystemExit('snapshot index contains root-bound experiment path')
           print(f"OWNER_AB_SNAPSHOT_OK source={expected} files={len(manifest['files'])}")
           PY
+
+      - name: Stage and validate snapshot delta
+        shell: bash
+        run: |
+          set -euxo pipefail
           git add owner-ab
+          test -n "$(git diff --cached --name-only -- owner-ab)"
           git diff --cached --check
+
+      - name: Commit isolated snapshot
+        shell: bash
+        run: |
+          set -euxo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "preview: publish wheel mode5 owner A-B snapshot"
+
+      - name: Push isolated snapshot
+        shell: bash
+        run: |
+          set -euxo pipefail
           git push origin "HEAD:${GITHUB_REF_NAME}"
