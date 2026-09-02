@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_AB_POINTER_V1",
-  "sourceCommit": "6bed3281e161a77062ffd6849aa674e55db7f758",
+  "sourceCommit": "d52aa3776e022649af21cddc6d9dcfae3bac42f9",
   "experiment": "wheel-mode5-contact-geometry",
   "variants": [
     {
@@ -14,7 +14,11 @@
     {
       "id": "solver-aware-profile",
       "viteMode5WheelGeometry": "solver-aware-profile"
+    },
+    {
+      "id": "core-torus64",
+      "viteMode5WheelGeometry": "core-torus64"
     }
   ],
-  "purpose": "Owner same-source wheel contact falsifier: A historical Flat c200mm control, B Owner-falsified asymmetric P25+c20mm profile, and C validated symmetric solver-aware upper-quartile i25+c5 profile; accepted Owner Preview root remains unchanged"
+  "purpose": "Owner same-source wheel contact falsifier: A historical Flat c200mm control, B Owner-falsified asymmetric P25+c20mm profile, C validated symmetric solver-aware upper-quartile i25+c5 profile, and D exact CORE torus64 candidate; accepted Owner Preview root remains unchanged"
 }

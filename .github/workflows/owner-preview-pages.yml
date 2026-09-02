@@ -23,540 +23,272 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 24
     steps:
       - name: Checkout preview control lane
         uses: actions/checkout@v7
         with:
           persist-credentials: false
 
-      - name: Resolve exact preview composition
+      - name: Resolve exact accepted root and wheel A-B-C-D composition
         id: candidate
         run: |
           python3 - <<'PY'
-          import json
-          import os
-          import re
+          import json, os, re
           from pathlib import Path
 
-          pointer = json.loads(Path("preview/owner.json").read_text(encoding="utf-8"))
-          schema = pointer.get("schema")
-          source_sha = str(pointer.get("sourceCommit", "")).strip().lower()
-          if re.fullmatch(r"[0-9a-f]{40}", source_sha) is None:
-              raise SystemExit("preview/owner.json must contain an exact 40-character sourceCommit SHA")
+          owner = json.loads(Path("preview/owner.json").read_text(encoding="utf-8"))
+          if owner.get("schema") != "JV_OWNER_PREVIEW_POINTER_V2":
+              raise SystemExit("Owner Preview must use the accepted V2 pointer")
+          root_sha = str(owner.get("sourceCommit", "")).strip().lower()
+          if root_sha != "529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0":
+              raise SystemExit(f"accepted Owner Preview executable source drifted: {root_sha}")
+          layers = owner.get("staticLayers")
+          if not isinstance(layers, list) or len(layers) != 1:
+              raise SystemExit("Owner Preview requires exactly one accepted static layer")
+          scan = layers[0]
+          if scan != {
+              "role": "accepted-jsprev2",
+              "repository": "Jozzpoly/JV-Box3D-Web-Public",
+              "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f",
+              "receipt": "receipts/jv_friends_scan_receipt.json",
+          }:
+              raise SystemExit(f"accepted JSPREV2 layer drifted: {scan!r}")
 
-          if schema == "JV_OWNER_PREVIEW_POINTER_V1":
-              scan = {
-                  "role": "accepted-jsprev2",
-                  "repository": "Jozzpoly/JV-Box3D-Web-Public",
-                  "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f",
-                  "receipt": "receipts/jv_friends_scan_receipt.json",
-              }
-          elif schema == "JV_OWNER_PREVIEW_POINTER_V2":
-              layers = pointer.get("staticLayers")
-              if not isinstance(layers, list) or len(layers) != 1:
-                  raise SystemExit("Owner Preview V2 requires exactly one accepted static layer")
-              scan = layers[0]
-          else:
-              raise SystemExit("preview/owner.json has an unsupported schema")
+          wheel = json.loads(Path("preview/owner-ab.json").read_text(encoding="utf-8"))
+          if wheel.get("schema") != "JV_OWNER_AB_POINTER_V1" or wheel.get("experiment") != "wheel-mode5-contact-geometry":
+              raise SystemExit("Owner wheel pointer identity drifted")
+          wheel_sha = str(wheel.get("sourceCommit", "")).strip().lower()
+          if wheel_sha != "d52aa3776e022649af21cddc6d9dcfae3bac42f9":
+              raise SystemExit(f"Owner wheel A-B-C-D source drifted: {wheel_sha}")
+          expected = [
+              {"id": "flat-control", "viteMode5WheelGeometry": "flat-control"},
+              {"id": "asset-profile", "viteMode5WheelGeometry": "asset-profile"},
+              {"id": "solver-aware-profile", "viteMode5WheelGeometry": "solver-aware-profile"},
+              {"id": "core-torus64", "viteMode5WheelGeometry": "core-torus64"},
+          ]
+          if wheel.get("variants") != expected:
+              raise SystemExit(f"Owner wheel A-B-C-D variants drifted: {wheel.get('variants')!r}")
+          if re.fullmatch(r"[0-9a-f]{40}", wheel_sha) is None:
+              raise SystemExit("Owner wheel source must be an exact commit")
 
-          if not isinstance(scan, dict) or scan.get("role") != "accepted-jsprev2":
-              raise SystemExit("Owner Preview static layer must be accepted-jsprev2")
-          if scan.get("repository") != "Jozzpoly/JV-Box3D-Web-Public":
-              raise SystemExit("Owner Preview JSPREV2 must come from the accepted public artifact repository")
-          scan_sha = str(scan.get("commit", "")).strip().lower()
-          if re.fullmatch(r"[0-9a-f]{40}", scan_sha) is None:
-              raise SystemExit("Owner Preview JSPREV2 layer must pin an exact 40-character commit SHA")
-          if scan.get("receipt") != "receipts/jv_friends_scan_receipt.json":
-              raise SystemExit("Owner Preview JSPREV2 layer must use the canonical Friends scan receipt")
-
-          ab = json.loads(Path("preview/owner-ab.json").read_text(encoding="utf-8"))
-          if ab.get("schema") != "JV_OWNER_AB_POINTER_V1":
-              raise SystemExit("preview/owner-ab.json has an unsupported schema")
-          if ab.get("experiment") != "wheel-mode5-contact-geometry":
-              raise SystemExit("Owner wheel pointer must name the wheel-mode5-contact-geometry experiment")
-          ab_sha = str(ab.get("sourceCommit", "")).strip().lower()
-          if re.fullmatch(r"[0-9a-f]{40}", ab_sha) is None:
-              raise SystemExit("preview/owner-ab.json must pin an exact 40-character sourceCommit SHA")
-          variants = ab.get("variants")
-          if not isinstance(variants, list) or len(variants) != 3:
-              raise SystemExit("Owner wheel experiment requires exactly three A/B/C variants")
-          variant_map = {
-              item.get("id"): item.get("viteMode5WheelGeometry")
-              for item in variants
-              if isinstance(item, dict)
-          }
-          expected_variants = {
-              "flat-control": "flat-control",
-              "asset-profile": "asset-profile",
-              "solver-aware-profile": "solver-aware-profile",
-          }
-          if variant_map != expected_variants:
-              raise SystemExit(f"Owner wheel A/B/C variants drifted: {variant_map!r}")
-
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              output.write(f"sha={source_sha}\n")
-              output.write(f"scan_repository={scan['repository']}\n")
-              output.write(f"scan_sha={scan_sha}\n")
-              output.write(f"scan_receipt={scan['receipt']}\n")
-              output.write(f"ab_sha={ab_sha}\n")
-              output.write("ab_flat=flat-control\n")
-              output.write("ab_profile=asset-profile\n")
-              output.write("ab_solver=solver-aware-profile\n")
-          print(f"Owner Preview executable candidate: {source_sha}")
-          print(f"Owner Preview accepted JSPREV2 layer: {scan['repository']}@{scan_sha}")
-          print(f"Owner wheel A/B/C same-source candidate: {ab_sha}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"root_sha={root_sha}\n")
+              out.write(f"scan_repository={scan['repository']}\n")
+              out.write(f"scan_sha={scan['commit']}\n")
+              out.write(f"scan_receipt={scan['receipt']}\n")
+              out.write(f"wheel_sha={wheel_sha}\n")
+          print(f"accepted root={root_sha}; wheel A-B-C-D={wheel_sha}")
           PY
 
-      - name: Checkout exact source candidate
+      - name: Checkout exact accepted executable source
         uses: actions/checkout@v7
         with:
-          ref: ${{ steps.candidate.outputs.sha }}
+          ref: ${{ steps.candidate.outputs.root_sha }}
           fetch-depth: 1
           persist-credentials: false
-
-      - name: Verify exact candidate checkout
-        env:
-          EXPECTED_SHA: ${{ steps.candidate.outputs.sha }}
-        run: |
-          actual="$(git rev-parse HEAD)"
-          test "$actual" = "$EXPECTED_SHA"
-          test -z "$(git status --porcelain --untracked-files=all)"
 
       - name: Setup canonical Node
         uses: actions/setup-node@v7
         with:
-          node-version-file: .node-version
-          package-manager-cache: false
+          node-version: 24.16.0
+          cache: npm
 
-      - name: Install declared npm version
-        run: |
-          package_manager="$(node -p 'JSON.parse(require("fs").readFileSync("package.json", "utf8")).packageManager')"
-          case "$package_manager" in
-            npm@*) ;;
-            *) echo "Expected packageManager to declare npm, got: $package_manager" >&2; exit 1 ;;
-          esac
-          (cd "$RUNNER_TEMP" && npm install --global "$package_manager")
-          echo "Node: $(node --version)"
-          echo "npm:  $(npm --version)"
-          test "$(node --version)" = "v$(cat .node-version)"
-          test "npm@$(npm --version)" = "$package_manager"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Typecheck candidate
-        run: npm run typecheck
-
-      - name: Build and validate portable candidate
-        run: npm run build:portable
-
-      - name: Verify build identity equals preview pointer
+      - name: Install and validate accepted executable
         env:
-          EXPECTED_SHA: ${{ steps.candidate.outputs.sha }}
+          ROOT_SHA: ${{ steps.candidate.outputs.root_sha }}
         run: |
+          set -euxo pipefail
+          test "$(git rev-parse HEAD)" = "$ROOT_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          test "$(node --version)" = "v24.16.0"
+          npm ci
+          npm run typecheck
+          npm run build:portable
           node tools/validate-build-identity.mjs
           node --input-type=module <<'NODE'
           import { readFile } from "node:fs/promises";
           const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
-          const expected = process.env.EXPECTED_SHA;
-          if (manifest?.source?.commit !== expected) {
-            throw new Error(`Preview manifest source ${manifest?.source?.commit} != ${expected}`);
+          if (manifest?.source?.commit !== process.env.ROOT_SHA || manifest?.source?.workingTreeClean !== true) {
+            throw new Error(`accepted root manifest drift: ${JSON.stringify(manifest?.source)}`);
           }
-          if (manifest?.source?.workingTreeClean !== true) {
-            throw new Error("Owner Preview requires a clean committed source candidate.");
-          }
-          if (manifest?.publication?.publishedByBuild !== false) {
-            throw new Error("Portable candidate must not claim it published itself.");
-          }
-          console.log(`Preview executable identity verified: ${expected.slice(0, 12)}.`);
           NODE
 
-      - name: Fetch exact accepted JSPREV2 layer
+      - name: Fetch and verify exact accepted JSPREV2
         env:
           SCAN_REPOSITORY: ${{ steps.candidate.outputs.scan_repository }}
           SCAN_SHA: ${{ steps.candidate.outputs.scan_sha }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
+          ROOT_SHA: ${{ steps.candidate.outputs.root_sha }}
         run: |
+          set -euxo pipefail
           scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
           rm -rf "$scan_checkout"
-          git clone --filter=blob:none --no-checkout \
-            "https://github.com/${SCAN_REPOSITORY}.git" \
-            "$scan_checkout"
+          git clone --filter=blob:none --no-checkout "https://github.com/${SCAN_REPOSITORY}.git" "$scan_checkout"
           git -C "$scan_checkout" sparse-checkout init --cone
           git -C "$scan_checkout" sparse-checkout set __jv_scan__ receipts
           git -C "$scan_checkout" checkout --detach "$SCAN_SHA"
           test "$(git -C "$scan_checkout" rev-parse HEAD)" = "$SCAN_SHA"
-          test -f "$scan_checkout/receipts/jv_friends_scan_receipt.json"
-          test -f "$scan_checkout/__jv_scan__/index.json"
-
-      - name: Compose and validate Owner Preview
-        env:
-          SOURCE_SHA: ${{ steps.candidate.outputs.sha }}
-          SCAN_REPOSITORY: ${{ steps.candidate.outputs.scan_repository }}
-          SCAN_SHA: ${{ steps.candidate.outputs.scan_sha }}
-          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
-        run: |
-          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
           test ! -e dist/__jv_scan__
-          test ! -e "dist/$SCAN_RECEIPT"
           mkdir -p dist/receipts
           cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
           cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
-
           python3 - <<'PY'
-          import hashlib
-          import json
-          import os
+          import hashlib, json, os
           from pathlib import Path
-
           dist = Path("dist")
           receipt_path = Path(os.environ["SCAN_RECEIPT"])
           receipt = json.loads((dist / receipt_path).read_text(encoding="utf-8"))
-
-          if (
-              receipt.get("schema") != "JV_WEB_FRIENDS_SCAN_RELEASE_V1"
-              or receipt.get("schemaVersion") != 1
-              or receipt.get("releaseId") != "friends-r1"
-              or receipt.get("publicationClass") != "FRIENDS_PUBLIC_INPUT"
-              or receipt.get("sourceMetadataPreserved") is not True
-          ):
-              raise SystemExit("Accepted JSPREV2 receipt identity is invalid")
-
-          runtime = receipt.get("runtime")
-          if not isinstance(runtime, dict) or runtime.get("root") != "__jv_scan__/":
-              raise SystemExit("Accepted JSPREV2 receipt runtime root is invalid")
-
+          if receipt.get("schema") != "JV_WEB_FRIENDS_SCAN_RELEASE_V1" or receipt.get("schemaVersion") != 1 or receipt.get("releaseId") != "friends-r1" or receipt.get("publicationClass") != "FRIENDS_PUBLIC_INPUT" or receipt.get("sourceMetadataPreserved") is not True:
+              raise SystemExit("accepted JSPREV2 receipt identity drifted")
           records = receipt.get("files")
           if not isinstance(records, list) or len(records) != 33:
-              raise SystemExit("Accepted JSPREV2 receipt must record exactly 33 runtime files")
-
-          verified_bytes = 0
-          seen = set()
+              raise SystemExit("accepted JSPREV2 must contain exactly 33 recorded files")
+          total = 0
           for record in records:
-              if not isinstance(record, dict):
-                  raise SystemExit("Accepted JSPREV2 receipt contains a non-object file record")
-              relative = record.get("path")
-              expected_bytes = record.get("bytes")
-              expected_sha = record.get("sha256")
-              if (
-                  not isinstance(relative, str)
-                  or not relative.startswith("__jv_scan__/")
-                  or relative in seen
-                  or not isinstance(expected_bytes, int)
-                  or not isinstance(expected_sha, str)
-                  or len(expected_sha) != 64
-              ):
-                  raise SystemExit(f"Invalid accepted JSPREV2 file record: {record!r}")
-              seen.add(relative)
-              payload = dist / relative
-              if not payload.is_file():
-                  raise SystemExit(f"Accepted JSPREV2 payload is missing: {relative}")
-              actual_bytes = payload.stat().st_size
-              if actual_bytes != expected_bytes:
-                  raise SystemExit(
-                      f"Accepted JSPREV2 byte mismatch for {relative}: "
-                      f"{actual_bytes} != {expected_bytes}"
-                  )
-              digest = hashlib.sha256(payload.read_bytes()).hexdigest()
-              if digest != expected_sha:
-                  raise SystemExit(
-                      f"Accepted JSPREV2 SHA-256 mismatch for {relative}: "
-                      f"{digest} != {expected_sha}"
-                  )
-              verified_bytes += actual_bytes
-
-          index_record = runtime.get("index")
-          if not isinstance(index_record, dict) or index_record.get("path") != "__jv_scan__/index.json":
-              raise SystemExit("Accepted JSPREV2 receipt does not pin the canonical index")
-
+              path = dist / record["path"]
+              if not path.is_file() or path.stat().st_size != record["bytes"]:
+                  raise SystemExit(f"accepted JSPREV2 byte mismatch: {record['path']}")
+              if hashlib.sha256(path.read_bytes()).hexdigest() != record["sha256"]:
+                  raise SystemExit(f"accepted JSPREV2 hash mismatch: {record['path']}")
+              total += path.stat().st_size
           index = json.loads((dist / "__jv_scan__/index.json").read_text(encoding="utf-8"))
-          if (
-              index.get("schema") != "JV_WEB_JSPREV2_INDEX_V2"
-              or index.get("available") is not True
-              or index.get("packId") != "scan/photogrammetry-primary"
-          ):
-              raise SystemExit("Accepted JSPREV2 index identity is invalid")
-
+          if index.get("schema") != "JV_WEB_JSPREV2_INDEX_V2" or index.get("available") is not True or index.get("packId") != "scan/photogrammetry-primary":
+              raise SystemExit("accepted JSPREV2 runtime index drifted")
           composition = {
               "schema": "JV_OWNER_PREVIEW_COMPOSITION_V1",
               "executableSource": {
                   "repository": "Jozzpoly/JV-Box3D-Web-experiment",
-                  "commit": os.environ["SOURCE_SHA"],
+                  "commit": os.environ["ROOT_SHA"],
                   "manifest": "build-manifest.json",
               },
-              "staticLayers": [
-                  {
-                      "role": "accepted-jsprev2",
-                      "repository": os.environ["SCAN_REPOSITORY"],
-                      "commit": os.environ["SCAN_SHA"],
-                      "receipt": os.environ["SCAN_RECEIPT"],
-                      "previewContentSha256": receipt["source"]["previewContentSha256"],
-                      "runtimeFiles": len(records),
-                      "runtimeBytes": verified_bytes,
-                  }
-              ],
+              "staticLayers": [{
+                  "role": "accepted-jsprev2",
+                  "repository": os.environ["SCAN_REPOSITORY"],
+                  "commit": os.environ["SCAN_SHA"],
+                  "receipt": os.environ["SCAN_RECEIPT"],
+                  "previewContentSha256": receipt["source"]["previewContentSha256"],
+                  "runtimeFiles": len(records),
+                  "runtimeBytes": total,
+              }],
           }
-          (dist / "owner-preview-composition.json").write_text(
-              json.dumps(composition, indent=2) + "\n",
-              encoding="utf-8",
-          )
-          print(
-              f"Owner Preview composition verified: source {os.environ['SOURCE_SHA'][:12]}, "
-              f"JSPREV2 {os.environ['SCAN_SHA'][:12]}, "
-              f"{len(records)} files / {verified_bytes} bytes."
-          )
+          (dist / "owner-preview-composition.json").write_text(json.dumps(composition, indent=2) + "\n", encoding="utf-8")
           PY
 
-      - name: Verify executable layer stayed unchanged
-        env:
-          EXPECTED_SHA: ${{ steps.candidate.outputs.sha }}
-        run: |
-          node tools/validate-build-identity.mjs
-          node --input-type=module <<'NODE'
-          import { readFile } from "node:fs/promises";
-          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
-          if (manifest?.source?.commit !== process.env.EXPECTED_SHA) {
-            throw new Error("Owner Preview composition changed executable source identity.");
-          }
-          const composition = JSON.parse(
-            await readFile("dist/owner-preview-composition.json", "utf8"),
-          );
-          if (composition?.executableSource?.commit !== process.env.EXPECTED_SHA) {
-            throw new Error("Owner Preview composition provenance disagrees with executable source.");
-          }
-          NODE
-
-      - name: Preserve accepted root before experimental composition
+      - name: Snapshot accepted root before experiments
         run: |
           set -euxo pipefail
           root_snapshot="$RUNNER_TEMP/jv-owner-accepted-root"
           rm -rf "$root_snapshot"
           mkdir -p "$root_snapshot"
           cp -a dist/. "$root_snapshot/"
-          (
-            cd "$root_snapshot"
-            find . -type f -print0 | sort -z | xargs -0 sha256sum
-          ) > "$RUNNER_TEMP/jv-owner-accepted-root.sha256"
+          (cd "$root_snapshot" && find . -type f -print0 | sort -z | xargs -0 sha256sum) > "$RUNNER_TEMP/jv-owner-accepted-root.sha256"
 
-      - name: Checkout exact wheel A-B-C source
+      - name: Checkout exact same-source wheel A-B-C-D candidate
         uses: actions/checkout@v7
         with:
-          ref: ${{ steps.candidate.outputs.ab_sha }}
+          ref: ${{ steps.candidate.outputs.wheel_sha }}
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Verify exact wheel A-B-C source checkout
+      - name: Build four portable wheel variants from the exact same source
         env:
-          EXPECTED_SHA: ${{ steps.candidate.outputs.ab_sha }}
+          WHEEL_SHA: ${{ steps.candidate.outputs.wheel_sha }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
         run: |
-          actual="$(git rev-parse HEAD)"
-          test "$actual" = "$EXPECTED_SHA"
+          set -euxo pipefail
+          test "$(git rev-parse HEAD)" = "$WHEEL_SHA"
           test -z "$(git status --porcelain --untracked-files=all)"
-
-      - name: Install wheel A-B-C dependencies
-        run: npm ci
-
-      - name: Typecheck wheel A-B-C source
-        run: npm run typecheck
-
-      - name: Build Flat control variant
-        env:
-          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
-          AB_VARIANT: ${{ steps.candidate.outputs.ab_flat }}
-          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
-        run: |
-          set -euxo pipefail
-          rm -rf dist
-          VITE_JV_MODE5_WHEEL_GEOMETRY="$AB_VARIANT" npm run build:portable
-          node tools/validate-build-identity.mjs
-          node --input-type=module <<'NODE'
-          import { readFile } from "node:fs/promises";
-          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
-          if (manifest?.source?.commit !== process.env.AB_SHA) {
-            throw new Error(`Flat A-B-C source drift: ${manifest?.source?.commit}`);
-          }
-          if (manifest?.source?.workingTreeClean !== true) {
-            throw new Error("Flat A-B-C build requires clean committed source.");
-          }
-          NODE
+          npm ci
+          npm run typecheck
           scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
-          mkdir -p dist/receipts
-          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
-          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
-          python3 - <<'PY'
+          for spec in \
+            'flat:flat-control' \
+            'profile:asset-profile' \
+            'solver:solver-aware-profile' \
+            'torus:core-torus64'
+          do
+            path="${spec%%:*}"
+            variant="${spec#*:}"
+            rm -rf dist
+            VITE_JV_MODE5_WHEEL_GEOMETRY="$variant" npm run build:portable
+            node tools/validate-build-identity.mjs
+            VARIANT="$variant" python3 - <<'PY'
           import json, os
           from pathlib import Path
+          manifest = json.loads(Path("dist/build-manifest.json").read_text(encoding="utf-8"))
+          if manifest.get("source", {}).get("commit") != os.environ["WHEEL_SHA"] or manifest.get("source", {}).get("workingTreeClean") is not True:
+              raise SystemExit(f"wheel variant source drift: {manifest.get('source')!r}")
           Path("dist/owner-ab-variant.json").write_text(json.dumps({
               "schema": "JV_OWNER_AB_VARIANT_V1",
               "experiment": "wheel-mode5-contact-geometry",
-              "sourceCommit": os.environ["AB_SHA"],
-              "variant": os.environ["AB_VARIANT"],
+              "sourceCommit": os.environ["WHEEL_SHA"],
+              "variant": os.environ["VARIANT"],
               "buildManifest": "build-manifest.json",
           }, indent=2) + "\n", encoding="utf-8")
           PY
-          flat="$RUNNER_TEMP/jv-wheel-ab-flat"
-          rm -rf "$flat"
-          mkdir -p "$flat"
-          cp -a dist/. "$flat/"
+            if [ "$variant" = "core-torus64" ]; then
+              grep -Rqs 'native_m6_mode5_core_torus64' dist
+              grep -Rqs 'core-torus64-parity' dist
+            fi
+            mkdir -p dist/receipts
+            cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
+            cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
+            target="$RUNNER_TEMP/jv-wheel-$path"
+            rm -rf "$target"
+            mkdir -p "$target"
+            cp -a dist/. "$target/"
+          done
 
-      - name: Build falsified asset-profile B variant
+      - name: Prove four executable cores are pairwise distinct
         env:
-          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
-          AB_VARIANT: ${{ steps.candidate.outputs.ab_profile }}
-          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
-        run: |
-          set -euxo pipefail
-          rm -rf dist
-          VITE_JV_MODE5_WHEEL_GEOMETRY="$AB_VARIANT" npm run build:portable
-          node tools/validate-build-identity.mjs
-          node --input-type=module <<'NODE'
-          import { readFile } from "node:fs/promises";
-          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
-          if (manifest?.source?.commit !== process.env.AB_SHA) {
-            throw new Error(`Profile B source drift: ${manifest?.source?.commit}`);
-          }
-          if (manifest?.source?.workingTreeClean !== true) {
-            throw new Error("Profile B build requires clean committed source.");
-          }
-          NODE
-          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
-          mkdir -p dist/receipts
-          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
-          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
-          python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          Path("dist/owner-ab-variant.json").write_text(json.dumps({
-              "schema": "JV_OWNER_AB_VARIANT_V1",
-              "experiment": "wheel-mode5-contact-geometry",
-              "sourceCommit": os.environ["AB_SHA"],
-              "variant": os.environ["AB_VARIANT"],
-              "buildManifest": "build-manifest.json",
-          }, indent=2) + "\n", encoding="utf-8")
-          PY
-          profile="$RUNNER_TEMP/jv-wheel-ab-profile"
-          rm -rf "$profile"
-          mkdir -p "$profile"
-          cp -a dist/. "$profile/"
-
-      - name: Build solver-aware C variant
-        env:
-          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
-          AB_VARIANT: ${{ steps.candidate.outputs.ab_solver }}
-          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
-        run: |
-          set -euxo pipefail
-          rm -rf dist
-          VITE_JV_MODE5_WHEEL_GEOMETRY="$AB_VARIANT" npm run build:portable
-          node tools/validate-build-identity.mjs
-          node --input-type=module <<'NODE'
-          import { readFile } from "node:fs/promises";
-          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
-          if (manifest?.source?.commit !== process.env.AB_SHA) {
-            throw new Error(`Solver C source drift: ${manifest?.source?.commit}`);
-          }
-          if (manifest?.source?.workingTreeClean !== true) {
-            throw new Error("Solver C build requires clean committed source.");
-          }
-          NODE
-          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
-          mkdir -p dist/receipts
-          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
-          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
-          python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          Path("dist/owner-ab-variant.json").write_text(json.dumps({
-              "schema": "JV_OWNER_AB_VARIANT_V1",
-              "experiment": "wheel-mode5-contact-geometry",
-              "sourceCommit": os.environ["AB_SHA"],
-              "variant": os.environ["AB_VARIANT"],
-              "buildManifest": "build-manifest.json",
-          }, indent=2) + "\n", encoding="utf-8")
-          PY
-          solver="$RUNNER_TEMP/jv-wheel-ab-solver"
-          rm -rf "$solver"
-          mkdir -p "$solver"
-          cp -a dist/. "$solver/"
-
-      - name: Validate same-source A-B-C build separation
-        env:
-          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+          WHEEL_SHA: ${{ steps.candidate.outputs.wheel_sha }}
         run: |
           python3 - <<'PY'
-          import hashlib
-          import json
-          import os
+          import hashlib, json, os
           from pathlib import Path
-
-          flat = Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-ab-flat"
-          profile = Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-ab-profile"
-          solver = Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-ab-solver"
-
-          def manifest(root):
-              return json.loads((root / "build-manifest.json").read_text(encoding="utf-8"))
-
-          for name, root, expected_variant in (
-              ("flat", flat, "flat-control"),
-              ("profile", profile, "asset-profile"),
-              ("solver", solver, "solver-aware-profile"),
-          ):
-              data = manifest(root)
-              if data.get("source", {}).get("commit") != os.environ["AB_SHA"]:
-                  raise SystemExit(f"{name} build manifest source drift")
+          roots = {
+              "flat": (Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-flat", "flat-control"),
+              "profile": (Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-profile", "asset-profile"),
+              "solver": (Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-solver", "solver-aware-profile"),
+              "torus": (Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-torus", "core-torus64"),
+          }
+          digests = {}
+          for name, (root, expected_variant) in roots.items():
               marker = json.loads((root / "owner-ab-variant.json").read_text(encoding="utf-8"))
-              if marker.get("sourceCommit") != os.environ["AB_SHA"] or marker.get("variant") != expected_variant:
-                  raise SystemExit(f"{name} A-B-C marker drift")
-
-          ignored_prefixes = ("__jv_scan__/", "receipts/")
-          ignored_files = {"build-manifest.json", "owner-ab-variant.json"}
-          def core_digest(root):
+              manifest = json.loads((root / "build-manifest.json").read_text(encoding="utf-8"))
+              if marker.get("sourceCommit") != os.environ["WHEEL_SHA"] or marker.get("variant") != expected_variant:
+                  raise SystemExit(f"{name} marker drift")
+              if manifest.get("source", {}).get("commit") != os.environ["WHEEL_SHA"]:
+                  raise SystemExit(f"{name} manifest source drift")
               digest = hashlib.sha256()
-              paths = []
-              for path in root.rglob("*"):
-                  if not path.is_file():
+              for path in sorted(p for p in root.rglob("*") if p.is_file()):
+                  rel = path.relative_to(root).as_posix()
+                  if rel in {"build-manifest.json", "owner-ab-variant.json"} or rel.startswith(("__jv_scan__/", "receipts/")):
                       continue
-                  relative = path.relative_to(root).as_posix()
-                  if relative in ignored_files or relative.startswith(ignored_prefixes):
-                      continue
-                  paths.append(relative)
-              for relative in sorted(paths):
-                  payload = (root / relative).read_bytes()
-                  digest.update(relative.encode("utf-8"))
+                  digest.update(rel.encode())
                   digest.update(b"\0")
-                  digest.update(hashlib.sha256(payload).digest())
-              return digest.hexdigest(), paths
-
-          flat_digest, flat_paths = core_digest(flat)
-          profile_digest, profile_paths = core_digest(profile)
-          solver_digest, solver_paths = core_digest(solver)
-          if len({flat_digest, profile_digest, solver_digest}) != 3:
-              raise SystemExit("Flat, falsified B and solver-aware C core builds must be pairwise distinct")
-          print(
-              "OWNER_WHEEL_ABC_BUILD_SEPARATION_OK",
-              os.environ["AB_SHA"],
-              flat_digest,
-              profile_digest,
-              solver_digest,
-              len(flat_paths),
-              len(profile_paths),
-              len(solver_paths),
-          )
+                  digest.update(hashlib.sha256(path.read_bytes()).digest())
+              digests[name] = digest.hexdigest()
+          if len(set(digests.values())) != 4:
+              raise SystemExit(f"A-B-C-D executable cores are not pairwise distinct: {digests!r}")
+          print("OWNER_WHEEL_ABCD_BUILD_SEPARATION_OK", os.environ["WHEEL_SHA"], digests)
           PY
 
-      - name: Compose isolated wheel A-B-C paths into accepted root
+      - name: Compose isolated A-B-C-D paths into the accepted root
         env:
-          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+          WHEEL_SHA: ${{ steps.candidate.outputs.wheel_sha }}
         run: |
           set -euxo pipefail
-          root_snapshot="$RUNNER_TEMP/jv-owner-accepted-root"
           rm -rf dist
           mkdir -p dist
-          cp -a "$root_snapshot/." dist/
-          experiment_root="dist/__experiments__/wheel-mode5"
-          mkdir -p "$experiment_root/flat" "$experiment_root/profile" "$experiment_root/solver"
-          cp -a "$RUNNER_TEMP/jv-wheel-ab-flat/." "$experiment_root/flat/"
-          cp -a "$RUNNER_TEMP/jv-wheel-ab-profile/." "$experiment_root/profile/"
-          cp -a "$RUNNER_TEMP/jv-wheel-ab-solver/." "$experiment_root/solver/"
+          cp -a "$RUNNER_TEMP/jv-owner-accepted-root/." dist/
+          root="dist/__experiments__/wheel-mode5"
+          mkdir -p "$root/flat" "$root/profile" "$root/solver" "$root/torus"
+          cp -a "$RUNNER_TEMP/jv-wheel-flat/." "$root/flat/"
+          cp -a "$RUNNER_TEMP/jv-wheel-profile/." "$root/profile/"
+          cp -a "$RUNNER_TEMP/jv-wheel-solver/." "$root/solver/"
+          cp -a "$RUNNER_TEMP/jv-wheel-torus/." "$root/torus/"
           python3 - <<'PY'
           import json, os
           from pathlib import Path
@@ -564,48 +296,42 @@ jobs:
           (root / "index.json").write_text(json.dumps({
               "schema": "JV_OWNER_AB_INDEX_V1",
               "experiment": "wheel-mode5-contact-geometry",
-              "sourceCommit": os.environ["AB_SHA"],
+              "sourceCommit": os.environ["WHEEL_SHA"],
               "sameSource": True,
               "variants": [
                   {"id": "flat-control", "path": "flat/"},
                   {"id": "asset-profile", "path": "profile/"},
                   {"id": "solver-aware-profile", "path": "solver/"},
+                  {"id": "core-torus64", "path": "torus/"},
               ],
           }, indent=2) + "\n", encoding="utf-8")
           PY
 
-      - name: Verify accepted root remained unchanged after A-B-C composition
+      - name: Prove accepted root stayed byte-identical outside experiments
         env:
-          EXPECTED_SHA: ${{ steps.candidate.outputs.sha }}
-          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+          ROOT_SHA: ${{ steps.candidate.outputs.root_sha }}
+          WHEEL_SHA: ${{ steps.candidate.outputs.wheel_sha }}
         run: |
           set -euxo pipefail
-          (
-            cd dist
-            find . -path './__experiments__' -prune -o -type f -print0 | sort -z | xargs -0 sha256sum
-          ) > "$RUNNER_TEMP/jv-owner-accepted-root-after.sha256"
+          (cd dist && find . -path './__experiments__' -prune -o -type f -print0 | sort -z | xargs -0 sha256sum) > "$RUNNER_TEMP/jv-owner-accepted-root-after.sha256"
           diff -u "$RUNNER_TEMP/jv-owner-accepted-root.sha256" "$RUNNER_TEMP/jv-owner-accepted-root-after.sha256"
           node --input-type=module <<'NODE'
           import { readFile } from "node:fs/promises";
           const rootManifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
-          if (rootManifest?.source?.commit !== process.env.EXPECTED_SHA) {
-            throw new Error("Accepted Owner Preview root source changed during A-B-C composition.");
+          if (rootManifest?.source?.commit !== process.env.ROOT_SHA) throw new Error("accepted root source changed");
+          const index = JSON.parse(await readFile("dist/__experiments__/wheel-mode5/index.json", "utf8"));
+          const expected = [
+            {id:"flat-control",path:"flat/"},
+            {id:"asset-profile",path:"profile/"},
+            {id:"solver-aware-profile",path:"solver/"},
+            {id:"core-torus64",path:"torus/"},
+          ];
+          if (index?.sourceCommit !== process.env.WHEEL_SHA || index?.sameSource !== true || JSON.stringify(index?.variants) !== JSON.stringify(expected)) throw new Error("A-B-C-D index provenance drift");
+          for (const path of ["flat","profile","solver","torus"]) {
+            const manifest = JSON.parse(await readFile(`dist/__experiments__/wheel-mode5/${path}/build-manifest.json`, "utf8"));
+            if (manifest?.source?.commit !== process.env.WHEEL_SHA) throw new Error(`${path} source drift`);
           }
-          const index = JSON.parse(
-            await readFile("dist/__experiments__/wheel-mode5/index.json", "utf8"),
-          );
-          if (index?.sourceCommit !== process.env.AB_SHA || index?.sameSource !== true) {
-            throw new Error("Wheel A-B-C index provenance is invalid.");
-          }
-          for (const path of ["flat", "profile", "solver"]) {
-            const manifest = JSON.parse(
-              await readFile(`dist/__experiments__/wheel-mode5/${path}/build-manifest.json`, "utf8"),
-            );
-            if (manifest?.source?.commit !== process.env.AB_SHA) {
-              throw new Error(`Wheel A-B-C ${path} source drifted.`);
-            }
-          }
-          console.log(`Accepted root preserved; wheel A-B-C pinned to ${process.env.AB_SHA.slice(0, 12)}.`);
+          console.log(`OWNER_PREVIEW_ABCD_COMPOSITION_OK root=${process.env.ROOT_SHA} wheel=${process.env.WHEEL_SHA}`);
           NODE
 
       - name: Upload Pages artifact
@@ -625,7 +351,6 @@ jobs:
     steps:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
-
       - name: Deploy Owner Preview
         id: deployment
         uses: actions/deploy-pages@v5

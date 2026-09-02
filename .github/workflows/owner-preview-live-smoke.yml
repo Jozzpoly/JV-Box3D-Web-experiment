@@ -8,6 +8,7 @@ on:
       - preview/owner.json
       - preview/owner-ab.json
       - .github/workflows/owner-preview-live-smoke.yml
+      - .github/workflows/owner-preview-pages.yml
 
 permissions:
   contents: read
@@ -19,40 +20,48 @@ concurrency:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 7
     steps:
       - name: Checkout preview control lane
         uses: actions/checkout@v7
         with:
           persist-credentials: false
 
-      - name: Verify deployed Owner Preview and wheel A-B-C
+      - name: Verify deployed accepted root and wheel A-B-C-D over public HTTP
         env:
           BASE_URL: https://jozzpoly.github.io/JV-Box3D-Web-experiment/
         run: |
           set -euxo pipefail
           python3 - <<'PY'
-          import json
-          import os
-          import re
-          import time
-          import urllib.parse
-          import urllib.request
+          import json, os, re, time, urllib.parse, urllib.request
           from pathlib import Path
 
           base = os.environ["BASE_URL"].rstrip("/") + "/"
           owner = json.loads(Path("preview/owner.json").read_text(encoding="utf-8"))
-          ab = json.loads(Path("preview/owner-ab.json").read_text(encoding="utf-8"))
+          wheel = json.loads(Path("preview/owner-ab.json").read_text(encoding="utf-8"))
           expected_root = owner["sourceCommit"]
-          expected_ab = ab["sourceCommit"]
+          expected_wheel = wheel["sourceCommit"]
+          expected_variants = [
+              {"id": "flat-control", "path": "flat/"},
+              {"id": "asset-profile", "path": "profile/"},
+              {"id": "solver-aware-profile", "path": "solver/"},
+              {"id": "core-torus64", "path": "torus/"},
+          ]
+          expected_paths = {
+              "flat": "flat-control",
+              "profile": "asset-profile",
+              "solver": "solver-aware-profile",
+              "torus": "core-torus64",
+          }
 
           def fetch(relative, attempt):
               separator = "&" if "?" in relative else "?"
-              url = urllib.parse.urljoin(base, relative) + f"{separator}jv_smoke={expected_ab[:12]}-{attempt}"
-              request = urllib.request.Request(
-                  url,
-                  headers={"Cache-Control": "no-cache", "User-Agent": "JV-Web-Owner-Preview-Smoke/1"},
-              )
+              stamp = f"{expected_wheel[:12]}-{attempt}-{int(time.time())}"
+              url = urllib.parse.urljoin(base, relative) + f"{separator}jv_smoke={stamp}"
+              request = urllib.request.Request(url, headers={
+                  "Cache-Control": "no-cache",
+                  "User-Agent": "JV-Web-Owner-Preview-ABCD-Smoke/1",
+              })
               with urllib.request.urlopen(request, timeout=20) as response:
                   if response.status != 200:
                       raise RuntimeError(f"HTTP {response.status} for {url}")
@@ -63,78 +72,54 @@ jobs:
               try:
                   return json.loads(payload.decode("utf-8")), url
               except Exception as error:
-                  raise RuntimeError(f"Invalid JSON at {url}: {error}") from error
+                  raise RuntimeError(f"invalid JSON at {url}: {error}") from error
 
           def validate_html_tree(relative, attempt):
               payload, _, url = fetch(relative, attempt)
               html = payload.decode("utf-8")
               if "<html" not in html.lower() or "</html>" not in html.lower():
-                  raise RuntimeError(f"Expected HTML document at {url}")
+                  raise RuntimeError(f"expected HTML document at {url}")
               refs = []
               refs.extend(re.findall(r'<script[^>]+src=["\']([^"\']+)["\']', html, flags=re.I))
               refs.extend(re.findall(r'<link[^>]+href=["\']([^"\']+)["\']', html, flags=re.I))
-              local_refs = [ref for ref in refs if not ref.startswith(("http://", "https://", "data:", "#"))]
-              if not local_refs:
-                  raise RuntimeError(f"No local executable/style assets referenced by {url}")
+              local = [ref for ref in refs if not ref.startswith(("http://", "https://", "data:", "#"))]
+              if not local:
+                  raise RuntimeError(f"no local executable/style assets referenced by {url}")
               root = relative if relative.endswith("/") else relative.rsplit("/", 1)[0] + "/"
-              for ref in local_refs:
-                  target = urllib.parse.urljoin(root, ref)
-                  fetch(target, attempt)
+              for ref in local:
+                  fetch(urllib.parse.urljoin(root, ref), attempt)
 
           last_error = None
-          for attempt in range(1, 25):
+          for attempt in range(1, 31):
               try:
                   root_manifest, _ = fetch_json("build-manifest.json", attempt)
                   if root_manifest.get("source", {}).get("commit") != expected_root:
-                      raise RuntimeError(
-                          f"accepted root source is {root_manifest.get('source', {}).get('commit')}, expected {expected_root}"
-                      )
+                      raise RuntimeError(f"accepted root source mismatch: {root_manifest.get('source', {}).get('commit')}")
+                  scan_index, _ = fetch_json("__jv_scan__/index.json", attempt)
+                  if scan_index.get("packId") != "scan/photogrammetry-primary" or scan_index.get("available") is not True:
+                      raise RuntimeError(f"accepted JSPREV2 mismatch: {scan_index!r}")
 
                   index, _ = fetch_json("__experiments__/wheel-mode5/index.json", attempt)
-                  if (
-                      index.get("schema") != "JV_OWNER_AB_INDEX_V1"
-                      or index.get("sourceCommit") != expected_ab
-                      or index.get("sameSource") is not True
-                      or index.get("variants") != [
-                          {"id": "flat-control", "path": "flat/"},
-                          {"id": "asset-profile", "path": "profile/"},
-                          {"id": "solver-aware-profile", "path": "solver/"},
-                      ]
-                  ):
-                      raise RuntimeError(f"wheel A-B-C index mismatch: {index!r}")
+                  if index.get("schema") != "JV_OWNER_AB_INDEX_V1" or index.get("sourceCommit") != expected_wheel or index.get("sameSource") is not True or index.get("variants") != expected_variants:
+                      raise RuntimeError(f"wheel A-B-C-D index mismatch: {index!r}")
 
-                  expected = {
-                      "flat": "flat-control",
-                      "profile": "asset-profile",
-                      "solver": "solver-aware-profile",
-                  }
-                  for path, variant in expected.items():
-                      marker, _ = fetch_json(
-                          f"__experiments__/wheel-mode5/{path}/owner-ab-variant.json",
-                          attempt,
-                      )
-                      manifest, _ = fetch_json(
-                          f"__experiments__/wheel-mode5/{path}/build-manifest.json",
-                          attempt,
-                      )
-                      if marker.get("sourceCommit") != expected_ab or marker.get("variant") != variant:
+                  validate_html_tree("", attempt)
+                  for path, variant in expected_paths.items():
+                      marker, _ = fetch_json(f"__experiments__/wheel-mode5/{path}/owner-ab-variant.json", attempt)
+                      manifest, _ = fetch_json(f"__experiments__/wheel-mode5/{path}/build-manifest.json", attempt)
+                      if marker.get("sourceCommit") != expected_wheel or marker.get("variant") != variant:
                           raise RuntimeError(f"{path} marker mismatch: {marker!r}")
-                      if manifest.get("source", {}).get("commit") != expected_ab:
+                      if manifest.get("source", {}).get("commit") != expected_wheel:
                           raise RuntimeError(f"{path} manifest source mismatch")
                       validate_html_tree(f"__experiments__/wheel-mode5/{path}/", attempt)
 
-                  print(
-                      "JV_OWNER_PREVIEW_LIVE_SMOKE_OK",
-                      f"root={expected_root}",
-                      f"abc={expected_ab}",
-                      f"base={base}",
-                  )
+                  print("JV_OWNER_PREVIEW_LIVE_ABCD_OK", f"root={expected_root}", f"wheel={expected_wheel}", f"base={base}")
                   break
               except Exception as error:
                   last_error = error
-                  if attempt == 24:
+                  if attempt == 30:
                       raise
-                  print(f"Live Pages not coherent yet (attempt {attempt}/24): {error}")
+                  print(f"Live Pages not coherent yet (attempt {attempt}/30): {error}")
                   time.sleep(10)
           else:
               raise RuntimeError(str(last_error))
