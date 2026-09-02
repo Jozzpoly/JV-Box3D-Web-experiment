@@ -26,7 +26,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Verify deployed Owner Preview and wheel A-B
+      - name: Verify deployed Owner Preview and wheel A-B-C
         env:
           BASE_URL: https://jozzpoly.github.io/JV-Box3D-Web-experiment/
         run: |
@@ -98,13 +98,15 @@ jobs:
                       or index.get("variants") != [
                           {"id": "flat-control", "path": "flat/"},
                           {"id": "asset-profile", "path": "profile/"},
+                          {"id": "solver-aware-profile", "path": "solver/"},
                       ]
                   ):
-                      raise RuntimeError(f"wheel A-B index mismatch: {index!r}")
+                      raise RuntimeError(f"wheel A-B-C index mismatch: {index!r}")
 
                   expected = {
                       "flat": "flat-control",
                       "profile": "asset-profile",
+                      "solver": "solver-aware-profile",
                   }
                   for path, variant in expected.items():
                       marker, _ = fetch_json(
@@ -124,7 +126,7 @@ jobs:
                   print(
                       "JV_OWNER_PREVIEW_LIVE_SMOKE_OK",
                       f"root={expected_root}",
-                      f"ab={expected_ab}",
+                      f"abc={expected_ab}",
                       f"base={base}",
                   )
                   break
