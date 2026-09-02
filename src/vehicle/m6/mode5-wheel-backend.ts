@@ -12,10 +12,8 @@ import type {
 import type { M6TopologyConfig } from "./m6-topology-config.js";
 import { vec3 } from "./m6-geometry.js";
 
-// Frozen historical control used by the real-asset geometry audit. Keep this
-// unchanged while the experimental backend runs the asset-derived candidate.
-const OWNER_SELECTED_CORNER_RADIUS = 0.2;
-
+export const MODE5_FLAT_CONTROL_ID = "flat-control-c200mm" as const;
+export const MODE5_FLAT_CONTROL_CORNER_RADIUS = 0.2;
 export const MODE5_ASSET_PROFILE_ID =
   "asset-lower-quartile-c20mm" as const;
 export const MODE5_ASSET_PROFILE_CORNER_RADIUS = 0.02;
@@ -25,12 +23,26 @@ export const MODE5_ASSET_PROFILE = Object.freeze([
   Object.freeze({ x: 0.19875, y: 0.4459531255119426 }),
 ] as const);
 
+export const MODE5_FLAT_CONTROL_GEOMETRY = "flat-control" as const;
+export const MODE5_ASSET_PROFILE_GEOMETRY = "asset-profile" as const;
+export type Mode5WheelGeometryVariant =
+  | typeof MODE5_FLAT_CONTROL_GEOMETRY
+  | typeof MODE5_ASSET_PROFILE_GEOMETRY;
+
+export const MODE5_WHEEL_GEOMETRY_VARIANT: Mode5WheelGeometryVariant =
+  import.meta.env.VITE_JV_MODE5_WHEEL_GEOMETRY === MODE5_FLAT_CONTROL_GEOMETRY
+    ? MODE5_FLAT_CONTROL_GEOMETRY
+    : MODE5_ASSET_PROFILE_GEOMETRY;
+
 export const MODE5_WHEEL_BACKEND_ID =
-  "native_m6_mode5_asset_profile_wheel" as const;
+  "native_m6_mode5_analytic_wheel" as const;
 
 export interface Mode5WheelReceipt {
   readonly backendId: typeof MODE5_WHEEL_BACKEND_ID;
-  readonly profileId: typeof MODE5_ASSET_PROFILE_ID;
+  readonly geometryVariant: Mode5WheelGeometryVariant;
+  readonly profileId:
+    | typeof MODE5_FLAT_CONTROL_ID
+    | typeof MODE5_ASSET_PROFILE_ID;
   readonly bodyId: b3BodyId;
   readonly rollingShapeId: b3ShapeId;
   readonly shapeIds: readonly [b3ShapeId];
@@ -39,7 +51,6 @@ export interface Mode5WheelReceipt {
   readonly radius: number;
   readonly width: number;
   readonly cornerRadius: number;
-  readonly flatControlCornerRadius: number;
   readonly collisionGroupIndex: number;
 }
 
@@ -70,8 +81,6 @@ function wheelShapeDef(
   shapeDef.baseMaterial.restitution = 0.02;
   shapeDef.baseMaterial.rollingResistance =
     config.wheelRollingResistance;
-  // Native mode5 is one physical tire surface. Do not reproduce mode3's
-  // terrain/non-terrain split masks on the analytic shape.
   shapeDef.filter.groupIndex = collisionGroupIndex;
   shapeDef.enableContactEvents = true;
   return shapeDef;
@@ -97,7 +106,8 @@ function freezeReferenceSphereMass(
   return massData;
 }
 
-export function createMode5Wheel(
+export function createMode5WheelForGeometry(
+  geometryVariant: Mode5WheelGeometryVariant,
   b3: Box3DModule,
   worldId: b3WorldId,
   config: M6TopologyConfig,
@@ -113,52 +123,73 @@ export function createMode5Wheel(
 
   const bodyId = createDynamicWheelBody(b3, worldId, position);
   try {
-    // Native hard rule: compare contact geometry with wheel mass/inertia frozen
-    // to an engine-created reference sphere, never to a hand-derived formula.
     const referenceMass = freezeReferenceSphereMass(
       b3,
       bodyId,
       config,
       collisionGroupIndex,
     );
+    const shapeDef = wheelShapeDef(b3, config, collisionGroupIndex);
 
-    const shapeDef = wheelShapeDef(
-      b3,
-      config,
-      collisionGroupIndex,
-    );
-    const cornerRadius = Math.min(
-      MODE5_ASSET_PROFILE_CORNER_RADIUS,
-      0.5 * config.wheelWidth,
-      config.wheelRadius,
-    );
-    const rollingShapeId = b3.b3CreateWheelShapeProfile(
-      bodyId,
-      shapeDef,
-      vec3(),
-      vec3(0, 1, 0),
-      MODE5_ASSET_PROFILE,
-      cornerRadius,
-    );
+    let rollingShapeId: b3ShapeId;
+    let profileId: Mode5WheelReceipt["profileId"];
+    let profileCount: number;
+    let cornerRadius: number;
+
+    if (geometryVariant === MODE5_FLAT_CONTROL_GEOMETRY) {
+      cornerRadius = Math.min(
+        MODE5_FLAT_CONTROL_CORNER_RADIUS,
+        0.5 * config.wheelWidth,
+        config.wheelRadius,
+      );
+      rollingShapeId = b3.b3CreateWheelShapeFlat(
+        bodyId,
+        shapeDef,
+        vec3(),
+        vec3(0, 1, 0),
+        config.wheelRadius,
+        0.5 * config.wheelWidth,
+        cornerRadius,
+      );
+      profileId = MODE5_FLAT_CONTROL_ID;
+      profileCount = 2;
+    } else {
+      cornerRadius = Math.min(
+        MODE5_ASSET_PROFILE_CORNER_RADIUS,
+        0.5 * config.wheelWidth,
+        config.wheelRadius,
+      );
+      rollingShapeId = b3.b3CreateWheelShapeProfile(
+        bodyId,
+        shapeDef,
+        vec3(),
+        vec3(0, 1, 0),
+        MODE5_ASSET_PROFILE,
+        cornerRadius,
+      );
+      profileId = MODE5_ASSET_PROFILE_ID;
+      profileCount = MODE5_ASSET_PROFILE.length;
+    }
+
     if (!b3.b3Shape_IsValid(rollingShapeId)) {
       throw new Error(
-        `Mode5 asset profile ${MODE5_ASSET_PROFILE_ID} produced an invalid wheel shape.`,
+        `Mode5 geometry ${geometryVariant} produced an invalid wheel shape.`,
       );
     }
     b3.b3Body_SetMassData(bodyId, referenceMass);
 
     return {
       backendId: MODE5_WHEEL_BACKEND_ID,
-      profileId: MODE5_ASSET_PROFILE_ID,
+      geometryVariant,
+      profileId,
       bodyId,
       rollingShapeId,
       shapeIds: [rollingShapeId],
       shapeCount: 1,
-      profileCount: MODE5_ASSET_PROFILE.length,
+      profileCount,
       radius: config.wheelRadius,
       width: config.wheelWidth,
       cornerRadius,
-      flatControlCornerRadius: OWNER_SELECTED_CORNER_RADIUS,
       collisionGroupIndex,
     };
   } catch (error: unknown) {
@@ -167,4 +198,21 @@ export function createMode5Wheel(
     }
     throw error;
   }
+}
+
+export function createMode5Wheel(
+  b3: Box3DModule,
+  worldId: b3WorldId,
+  config: M6TopologyConfig,
+  position: b3Vec3,
+  collisionGroupIndex: number,
+): Mode5WheelReceipt {
+  return createMode5WheelForGeometry(
+    MODE5_WHEEL_GEOMETRY_VARIANT,
+    b3,
+    worldId,
+    config,
+    position,
+    collisionGroupIndex,
+  );
 }
