@@ -1,0 +1,43 @@
+name: Wheel mode5 D real-rock matrix
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - tools/wheel-mode5-d-exact-falsifier.mjs
+      - tools/wheel-mode5-d-real-rock-matrix.mjs
+      - .github/workflows/wheel-mode5-d-real-rock-matrix.yml
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile exact D source
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('src/vehicle/m6/mode5-wheel-backend.ts')
+          text = path.read_text(encoding='utf-8')
+          old = 'const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
+          new = 'const requestedGeometry = "core-torus64";'
+          if text.count(old) != 1:
+              raise SystemExit('mode5 selector source drifted; refusing diagnostic rewrite')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          rm -rf .test-dist
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Scan exact D against all procedural rock boxes
+        run: node tools/wheel-mode5-d-real-rock-matrix.mjs
