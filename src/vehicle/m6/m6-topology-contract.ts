@@ -7,12 +7,14 @@ import type {
   b3Vec3,
 } from "../../physics/box3d-runtime-contract.js";
 import type { VehicleVisualFrameV1 } from "../../runtime/vehicle-visual-frame.js";
-import {
-  MODE5_M6_WHEEL_SELECTION,
-  m6WheelBackendId,
-  type M6WheelBackendId,
-  type M6WheelReceipt,
+import type {
+  M6WheelBackendId,
+  M6WheelReceipt,
 } from "./m6-wheel-backend.js";
+import {
+  MODE5_CORE_TORUS_BACKEND_ID,
+  MODE5_WHEEL_BACKEND_ID,
+} from "./mode5-wheel-backend.js";
 import type { RateSteeringProfileId } from "./rate-steering-profile.js";
 
 export interface M6TopologyCounts {
@@ -37,12 +39,26 @@ export const M6_MODE5_TOPOLOGY_COUNTS = Object.freeze({
   corners: 4,
 } as const);
 
+// Exact recovered CORE torus: one chassis shape plus 64 capsule shapes on each
+// of four wheel bodies. Bodies/joints are intentionally unchanged so the
+// falsifier isolates contact-surface topology from the rest of M6.
+export const M6_MODE5_CORE_TORUS_TOPOLOGY_COUNTS = Object.freeze({
+  bodies: 19,
+  joints: 28,
+  shapes: 257,
+  corners: 4,
+} as const);
+
 export function m6TopologyCountsForWheelBackend(
   wheelBackendId: M6WheelBackendId,
 ): M6TopologyCounts {
-  return wheelBackendId === m6WheelBackendId(MODE5_M6_WHEEL_SELECTION)
-    ? M6_MODE5_TOPOLOGY_COUNTS
-    : M6_TOPOLOGY_COUNTS;
+  if (wheelBackendId === MODE5_CORE_TORUS_BACKEND_ID) {
+    return M6_MODE5_CORE_TORUS_TOPOLOGY_COUNTS;
+  }
+  if (wheelBackendId === MODE5_WHEEL_BACKEND_ID) {
+    return M6_MODE5_TOPOLOGY_COUNTS;
+  }
+  return M6_TOPOLOGY_COUNTS;
 }
 
 export type M6SteeringActuatorState = "OFF" | "POSITION" | "RATE";
