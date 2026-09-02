@@ -1,4 +1,4 @@
-name: Wheel mode5 geometry audit
+name: Wheel mode5 geometry and runtime validation
 
 on:
   push:
@@ -9,8 +9,11 @@ on:
       - tools/owner-vehicle/owner-m6-wheel-profile-candidates.mjs
       - tools/owner-vehicle/owner-m6-wheel-support-audit.mjs
       - tests/owner-vehicle-wheel-profile-audit.test.mjs
+      - tests/m6-mode5-wheel-backend.test.mjs
       - assets/owner-vehicle/source/Offroad_Big_Wheels.gltf
       - public/receipts/jv_m6_factory_receipt.json
+      - src/physics/mode5-box3d-runtime.ts
+      - src/physics/vendor/box3d-mode5.inline.d.mts
       - src/vehicle/m6/mode5-wheel-backend.ts
       - .github/workflows/wheel-mode5-geometry-audit.yml
 
@@ -20,7 +23,7 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - name: Checkout exact experiment source
         uses: actions/checkout@v4
@@ -29,6 +32,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24.16.0
+          cache: npm
 
       - name: Run focused real-asset wheel profile audit
         shell: bash
@@ -59,7 +63,7 @@ jobs:
             readFile(backendPath, 'utf8'),
           ]);
           const cornerMatch = backendText.match(/const OWNER_SELECTED_CORNER_RADIUS = ([0-9.]+);/);
-          if (!cornerMatch) throw new Error('mode5 corner radius declaration not found');
+          if (!cornerMatch) throw new Error('frozen flat-control corner radius declaration not found');
 
           const rigidParts = inspectBlockbenchRigidPartsV1(wheelText, 'Offroad_Big_Wheels.gltf');
           const config = parseM6FactoryConfig(receiptText);
@@ -108,6 +112,16 @@ jobs:
             assetDerived: candidates.filter((candidate) => candidate.source === 'ASSET_DERIVED').length,
           });
           JS
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Run focused profile-wheel runtime validation
+        shell: bash
+        run: |
+          set -euxo pipefail
+          node tools/run-tests.mjs tests/m6-mode5-wheel-backend.test.mjs
+          npm run typecheck
 
       - name: Commit candidate evidence to experiment branch
         shell: bash
