@@ -1,0 +1,98 @@
+name: Wheel mode5 torus candidate dynamic falsifier
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - .github/workflows/wheel-mode5-torus-candidate-dynamic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  dynamic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Dynamically falsify the static crown-sweep minimum
+        run: |
+          set -euo pipefail
+          cp src/vehicle/m6/mode5-wheel-backend.ts "$RUNNER_TEMP/mode5-wheel-backend.original.ts"
+          : > "$RUNNER_TEMP/candidate-results.jsonl"
+
+          run_case() {
+            local ratio="$1"
+            local label="$2"
+            local rock_json="$3"
+            local direction_json="$4"
+            JV_TORUS_RATIO="$ratio" \
+            JV_TORUS_LABEL="$label" \
+            JV_TORUS_ROCK_JSON="$rock_json" \
+            JV_TORUS_DIRECTION_JSON="$direction_json" \
+              node tools/wheel-mode5-torus-candidate-dynamic.mjs \
+              | tee "$RUNNER_TEMP/$label.log"
+            grep '^TORUS_CANDIDATE_DYNAMIC_RESULT ' "$RUNNER_TEMP/$label.log" \
+              | sed 's/^TORUS_CANDIDATE_DYNAMIC_RESULT //' \
+              >> "$RUNNER_TEMP/candidate-results.jsonl"
+          }
+
+          ROCK37='{"halfExtents":{"x":0.18968351112876303,"y":0.1733717649251473,"z":0.15188399438015224},"rotation":{"x":0.11196812796178847,"y":0.0628143245143099,"z":0.007092072565069843,"w":-0.9916991486651963},"friction":1}'
+          ROCK154='{"halfExtents":{"x":0.14324683093020932,"y":0.14713364609826413,"z":0.133019879534135},"rotation":{"x":0.010355617308967183,"y":0.9876052342086731,"z":-0.13796069074400497,"w":0.07413170956627996},"friction":1}'
+          REAR_SIDE_LOW='{"x":-0.4707565417620042,"y":-0.21398024625545645,"z":0.8559209850218258}'
+
+          for ratio in 0.45 0.55 0.65; do
+            cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" src/vehicle/m6/mode5-wheel-backend.ts
+            RATIO="$ratio" python3 - <<'PY'
+          import os
+          from pathlib import Path
+          path = Path('src/vehicle/m6/mode5-wheel-backend.ts')
+          text = path.read_text(encoding='utf-8')
+          old_ratio = 'export const MODE5_CORE_TORUS_CROWN_RATIO = 0.914;'
+          new_ratio = f'export const MODE5_CORE_TORUS_CROWN_RATIO = {os.environ["RATIO"]};'
+          old_select = 'const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
+          new_select = 'const requestedGeometry = "core-torus64";'
+          if text.count(old_ratio) != 1 or text.count(old_select) != 1:
+              raise SystemExit('candidate dynamic source anchors drifted')
+          path.write_text(text.replace(old_ratio, new_ratio).replace(old_select, new_select), encoding='utf-8')
+          PY
+            rm -rf .test-dist
+            node node_modules/typescript/bin/tsc -p tsconfig.test.json
+            mkdir -p .test-dist/physics/vendor
+            cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+            run_case "$ratio" "r${ratio}-rock37" "$ROCK37" "$REAR_SIDE_LOW"
+            run_case "$ratio" "r${ratio}-rock154" "$ROCK154" "$REAR_SIDE_LOW"
+          done
+
+          cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" src/vehicle/m6/mode5-wheel-backend.ts
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          rows=[json.loads(line) for line in Path(os.environ['RUNNER_TEMP'],'candidate-results.jsonl').read_text().splitlines() if line.strip()]
+          summary=[]
+          for row in rows:
+              impulses=[]
+              for result in row['results']:
+                  impulses.append({
+                      'speculative':result['speculative'],
+                      'speed':result['speed'],
+                      'gapBeforeImpulseMm':None if result['visualGapBeforeFirstImpulse'] is None else result['visualGapBeforeFirstImpulse']*1000,
+                      'gapAfterImpulseMm':None if result['visualGapAfterFirstImpulse'] is None else result['visualGapAfterFirstImpulse']*1000,
+                      'contactShapesAtImpulse':None if result['firstImpulse'] is None else result['firstImpulse']['contact']['contactShapes'],
+                      'maxNormalImpulse':None if result['firstImpulse'] is None else result['firstImpulse']['contact']['maxNormalImpulse'],
+                  })
+              summary.append({
+                  'label':row['label'],
+                  'ratio':row['ratio'],
+                  'staticVisualGapMm':row['staticOnset']['onset']['visualGap']*1000,
+                  'staticMinSeparationMm':row['staticOnset']['onset']['contact']['minSeparation']*1000,
+                  'impulses':impulses,
+              })
+          print('TORUS_CANDIDATE_DYNAMIC_SWEEP_RESULT',json.dumps(summary,separators=(',',':')))
+          PY
