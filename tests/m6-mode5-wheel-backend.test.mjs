@@ -60,6 +60,122 @@ function closeMassData(actual, expected, label) {
   }
 }
 
+function createStaticBox(b3, worldId, position, halfExtents) {
+  const bodyDef = b3.b3DefaultBodyDef();
+  bodyDef.type = b3.b3BodyType.b3_staticBody;
+  bodyDef.position = position;
+  const bodyId = b3.b3CreateBody(worldId, bodyDef);
+  b3.b3CreateBoxShape(
+    bodyId,
+    b3.b3DefaultShapeDef(),
+    halfExtents.x,
+    halfExtents.y,
+    halfExtents.z,
+  );
+  return bodyId;
+}
+
+function addVerticalGuide(b3, worldId, bodyId, position) {
+  const guideDef = b3.b3DefaultBodyDef();
+  guideDef.type = b3.b3BodyType.b3_staticBody;
+  guideDef.position = position;
+  const guideId = b3.b3CreateBody(worldId, guideDef);
+  const verticalFrame = b3.b3ComputeQuatBetweenUnitVectors(
+    { x: 1, y: 0, z: 0 },
+    { x: 0, y: 1, z: 0 },
+  );
+  const jointDef = b3.b3DefaultPrismaticJointDef();
+  jointDef.base.bodyIdA = guideId;
+  jointDef.base.bodyIdB = bodyId;
+  jointDef.base.localFrameA = {
+    p: { x: 0, y: 0, z: 0 },
+    q: verticalFrame,
+  };
+  jointDef.base.localFrameB = {
+    p: { x: 0, y: 0, z: 0 },
+    q: verticalFrame,
+  };
+  jointDef.base.collideConnected = false;
+  jointDef.enableSpring = false;
+  jointDef.enableLimit = false;
+  b3.b3CreatePrismaticJoint(worldId, jointDef);
+}
+
+async function runGuidedProfileContactCase({
+  axis,
+  centerX = 0,
+  addStep = false,
+}) {
+  const b3 = await loadMode5Box3DModule();
+  const worldDef = b3.b3DefaultWorldDef();
+  worldDef.gravity = { x: 0, y: -10, z: 0 };
+  const worldId = b3.b3CreateWorld(worldDef);
+  try {
+    createStaticBox(
+      b3,
+      worldId,
+      { x: 0, y: -0.25, z: 0 },
+      { x: 4, y: 0.25, z: 2 },
+    );
+    if (addStep) {
+      createStaticBox(
+        b3,
+        worldId,
+        { x: 0.5, y: 0.04, z: 0 },
+        { x: 0.25, y: 0.04, z: 1 },
+      );
+    }
+
+    const initial = { x: centerX, y: 1.25, z: 0 };
+    const bodyDef = b3.b3DefaultBodyDef();
+    bodyDef.type = b3.b3BodyType.b3_dynamicBody;
+    bodyDef.position = initial;
+    bodyDef.allowFastRotation = true;
+    const bodyId = b3.b3CreateBody(worldId, bodyDef);
+    const shapeDef = b3.b3DefaultShapeDef();
+    shapeDef.density = 1;
+    shapeDef.baseMaterial.friction = 0.8;
+    shapeDef.enableContactEvents = true;
+    const shapeId = b3.b3CreateWheelShapeProfile(
+      bodyId,
+      shapeDef,
+      { x: 0, y: 0, z: 0 },
+      axis,
+      MODE5_ASSET_PROFILE,
+      MODE5_ASSET_PROFILE_CORNER_RADIUS,
+    );
+    assert.ok(b3.b3Shape_IsValid(shapeId));
+    addVerticalGuide(b3, worldId, bodyId, initial);
+
+    for (let index = 0; index < 360; index += 1) {
+      b3.b3World_Step(worldId, 1 / 60, 4);
+    }
+
+    const position = b3.b3Body_GetPosition(bodyId);
+    assert.ok(Number.isFinite(position.x));
+    assert.ok(Number.isFinite(position.y));
+    assert.ok(Number.isFinite(position.z));
+    assert.ok(
+      position.y > 0.35 && position.y < 0.85,
+      `profile contact settled outside plausible height: ${JSON.stringify(position)}`,
+    );
+
+    const contacts = b3.createContactsBuffer();
+    try {
+      b3.getShapeContactData(contacts, shapeId);
+      assert.ok(
+        b3.getNumContacts(contacts) >= 1,
+        `profile contact case has no contact at ${JSON.stringify(position)}`,
+      );
+    } finally {
+      b3.destroyContactsBuffer(contacts);
+    }
+    return position;
+  } finally {
+    b3.b3DestroyWorld(worldId);
+  }
+}
+
 test("mode5 asset profile preserves reference-sphere mass while replacing split contact geometry", async () => {
   const b3 = await loadMode5Box3DModule();
   const worldDef = b3.b3DefaultWorldDef();
@@ -109,6 +225,29 @@ test("mode5 asset profile preserves reference-sphere mass while replacing split 
   }
 });
 
+test("mode5 asset profile keeps finite contact on flat, edge-biased and tilted-shoulder microcases", async () => {
+  const flat = await runGuidedProfileContactCase({
+    axis: { x: 0, y: 0, z: 1 },
+  });
+  const edge = await runGuidedProfileContactCase({
+    axis: { x: 0, y: 0, z: 1 },
+    centerX: 0,
+    addStep: true,
+  });
+  const tiltRadians = 20 * Math.PI / 180;
+  const shoulder = await runGuidedProfileContactCase({
+    axis: {
+      x: 0,
+      y: Math.sin(tiltRadians),
+      z: Math.cos(tiltRadians),
+    },
+  });
+
+  assert.ok(flat.y > 0.45, `flat rest height unexpectedly low: ${flat.y}`);
+  assert.ok(edge.y >= flat.y - 0.03, `edge contact collapsed below flat rest: ${edge.y} vs ${flat.y}`);
+  assert.ok(shoulder.y > 0.4, `tilted shoulder rest height unexpectedly low: ${shoulder.y}`);
+});
+
 test("patched boundary builds and drives a full M6 on the asset-profile mode5 backend", async () => {
   configureBox3DRuntimeVariant("mode5-experiment");
   const boundary = await Box3DBoundary.load();
@@ -119,6 +258,10 @@ test("patched boundary builds and drives a full M6 on the asset-profile mode5 ba
   assert.equal(
     boundary.receipt.runtimePatch?.inlineArtifactSha256,
     BOX3D_MODE5_RUNTIME_PATCH.inlineArtifactSha256,
+  );
+  assert.ok(
+    boundary.receipt.requiredExports.includes("b3CreateWheelShapeProfile"),
+    "mode5 boundary receipt must name the general profile export",
   );
 
   const world = boundary.createM6TopologyWorld(receipt);
