@@ -197,6 +197,7 @@ function buildAxialSliceEnvelope(triangles, minAxial, maxAxial, axialBinCount, a
       outerRadiusP75: quantile(outerRadii, 0.75),
       outerRadiusMax: quantile(outerRadii, 1),
       outerRadiusSpread: outerRadii.length > 0 ? outerRadii[outerRadii.length - 1] - outerRadii[0] : null,
+      outerRadii: Object.freeze([...outerRadii]),
     });
   }
   return bins;

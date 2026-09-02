@@ -6,9 +6,11 @@ on:
       - work/wheel-mode5-runtime-spike-2026-09-01
     paths:
       - tools/owner-vehicle/owner-m6-wheel-profile-audit.mjs
+      - tools/owner-vehicle/owner-m6-wheel-profile-candidates.mjs
       - tests/owner-vehicle-wheel-profile-audit.test.mjs
       - assets/owner-vehicle/source/Offroad_Big_Wheels.gltf
       - public/receipts/jv_m6_factory_receipt.json
+      - src/vehicle/m6/mode5-wheel-backend.ts
       - .github/workflows/wheel-mode5-geometry-audit.yml
 
 permissions:
