@@ -1,0 +1,26 @@
+JV-WEB MODE5 GENERAL PROFILE BINDING SPIKE
+validated run: 33659887064
+box3d.js binding commit: 2617a0ff763a60c9f17cee57c6ea72aab75a5077
+stock engine base: 8441b4a06d6d09dcfb0b0f704df4d847d1437b92
+wheel patch base: 77a67132ffc4f003e84c6ffe4e72abfbcded4d33
+wheel patch head: 241fe10a9056836332c21d9614471d32d749ce3d
+donor seal head: b0a0082252cb1f3c964f804162233bc82254bc4b
+Emscripten: 6.0.2
+Node: 24.16.0
+pnpm: 10.32.1
+B3X-WHEEL-001.patch sha256: 83ee212f062e7a81578993fc4bba93f8a6b3a8f1c786eef9769007bffe77f4d5
+box3d-mode5.inline.mjs sha256: d6e8b97a183c9074322496f37129fc80597ac672c1d879c712da7592989f4fa8
+box3d-mode5.inline.d.ts sha256: 10980d2f52c87c38b83cceac46f5e54ed5a18dc012f3187af7aee85fead9c472
+MODE5_PROFILE_WASM_SMOKE_OK {
+  flat: {
+    position: { x: -1.5000423192977905, y: 1.0140269994735718, z: 0 },
+    maxPointCount: 2
+  },
+  profile: {
+    position: { x: 1.5, y: 1.0139920711517334, z: 0 },
+    maxPointCount: 1
+  },
+  profileOuterRadius: 0.514062464,
+  profilePointCount: 5,
+  profileCornerRadius: 0.01
+}

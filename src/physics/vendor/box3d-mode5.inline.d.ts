@@ -1028,6 +1028,7 @@ interface EmbindModule {
   b3DynamicTree_GetAreaRatio(tree: b3DynamicTree | null): number;
   b3Body_SetName(bodyId: b3BodyId, name: EmbindString): void;
   b3Body_GetName(bodyId: b3BodyId): string;
+  b3CreateWheelShapeProfile(bodyId: b3BodyId, shapeDef: b3ShapeDef, center: b3Vec3, axis: b3Vec3, profile: any, cornerRadius: number): b3ShapeId;
   b3CreateHull(points: any): b3HullData | null;
   b3GetHullVertices(hull: b3HullData | null): any;
   b3CreateMesh(positions: any, indices: any): b3MeshData | null;
