@@ -1,0 +1,70 @@
+name: Wheel mode5 canonical failure extractor
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-canonical-failure-extractor.yml
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Run canonical check and extract failure context
+        shell: bash
+        run: |
+          set +e
+          npm run check > /tmp/jv-canonical-check.log 2>&1
+          status=$?
+          set -e
+          CHECK_STATUS="$status" python3 - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+
+          path = Path('/tmp/jv-canonical-check.log')
+          lines = path.read_text(encoding='utf-8', errors='replace').splitlines()
+          patterns = [
+              re.compile(r'✖'),
+              re.compile(r'AssertionError'),
+              re.compile(r'ERR_ASSERTION'),
+              re.compile(r'failing tests', re.I),
+              re.compile(r'not ok', re.I),
+              re.compile(r'Error:'),
+              re.compile(r'FAIL'),
+          ]
+          hits = []
+          for i, line in enumerate(lines):
+              if any(p.search(line) for p in patterns):
+                  hits.append(i)
+
+          print(f'CANONICAL_CHECK_STATUS={os.environ["CHECK_STATUS"]}')
+          print(f'CANONICAL_CHECK_LINES={len(lines)}')
+          print('=== FAILURE CONTEXTS ===')
+          emitted = set()
+          for i in hits[:20]:
+              start = max(0, i - 5)
+              end = min(len(lines), i + 12)
+              key = (start, end)
+              if key in emitted:
+                  continue
+              emitted.add(key)
+              print(f'--- lines {start + 1}-{end} ---')
+              for j in range(start, end):
+                  print(f'{j + 1:05d}: {lines[j]}')
+          print('=== LOG TAIL ===')
+          for j in range(max(0, len(lines) - 140), len(lines)):
+              print(f'{j + 1:05d}: {lines[j]}')
+          PY
+          exit "$status"
