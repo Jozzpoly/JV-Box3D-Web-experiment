@@ -1,0 +1,129 @@
+name: Wheel mode5 world registration diagnostic v2
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-registration-diagnostic-v2.yml
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  registration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile and stage test runtime
+        run: |
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Measure actual Box3D wheel registration
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          import { validatePinnedNativeFactoryReceiptText } from "./.test-dist/config/native-factory-receipt.js";
+          import { loadMode5Box3DModule } from "./.test-dist/physics/mode5-box3d-runtime.js";
+          import {
+            createMode5WheelForGeometry,
+            MODE5_FLAT_CONTROL_GEOMETRY,
+            MODE5_ASSET_PROFILE_GEOMETRY,
+          } from "./.test-dist/vehicle/m6/mode5-wheel-backend.js";
+          import { m6TopologyConfigFromReceipt } from "./.test-dist/vehicle/m6/m6-topology-config.js";
+
+          const receipt = await validatePinnedNativeFactoryReceiptText(
+            await readFile("public/receipts/jv_m6_factory_receipt.json", "utf8"),
+          );
+          const config = m6TopologyConfigFromReceipt(receipt);
+          const b3 = await loadMode5Box3DModule();
+          const worldDef = b3.b3DefaultWorldDef();
+          worldDef.gravity = { x: 0, y: 0, z: 0 };
+          const worldId = b3.b3CreateWorld(worldDef);
+          const normalize = (v) => {
+            const n = Math.hypot(v.x, v.y, v.z);
+            return { x: v.x / n, y: v.y / n, z: v.z / n };
+          };
+          const directions = [
+            ["X", { x: 1, y: 0, z: 0 }],
+            ["Y", { x: 0, y: 1, z: 0 }],
+            ["Z", { x: 0, y: 0, z: 1 }],
+            ["XY45", normalize({ x: 1, y: 1, z: 0 })],
+            ["XZ45", normalize({ x: 1, y: 0, z: 1 })],
+            ["YZ45", normalize({ x: 0, y: 1, z: 1 })],
+            ["XYZ", normalize({ x: 1, y: 1, z: 1 })],
+          ];
+          const v = (p) => ({ x: p.x, y: p.y, z: p.z });
+          try {
+            for (const [label, geometry, group] of [
+              ["FLAT", MODE5_FLAT_CONTROL_GEOMETRY, -5101],
+              ["PROFILE", MODE5_ASSET_PROFILE_GEOMETRY, -5102],
+            ]) {
+              const wheel = createMode5WheelForGeometry(
+                geometry, b3, worldId, config, { x: 0, y: 0, z: 0 }, group,
+              );
+              const count = b3.b3Body_GetShapeCount(wheel.bodyId);
+              const rotation = b3.b3Body_GetRotation(wheel.bodyId);
+              const worldAxis = b3.b3Body_GetWorldVector(wheel.bodyId, { x: 0, y: 1, z: 0 });
+              const aabb = b3.b3Shape_GetAABB(wheel.rollingShapeId);
+              const halfExtents = {
+                x: (aabb.upperBound.x - aabb.lowerBound.x) / 2,
+                y: (aabb.upperBound.y - aabb.lowerBound.y) / 2,
+                z: (aabb.upperBound.z - aabb.lowerBound.z) / 2,
+              };
+              const aabbCenter = {
+                x: (aabb.upperBound.x + aabb.lowerBound.x) / 2,
+                y: (aabb.upperBound.y + aabb.lowerBound.y) / 2,
+                z: (aabb.upperBound.z + aabb.lowerBound.z) / 2,
+              };
+              const closest = {};
+              for (const [name, dir] of directions) {
+                const target = { x: dir.x * 3, y: dir.y * 3, z: dir.z * 3 };
+                const point = b3.b3Shape_GetClosestPoint(wheel.rollingShapeId, target);
+                closest[name] = {
+                  point: v(point),
+                  projection: point.x * dir.x + point.y * dir.y + point.z * dir.z,
+                  distanceFromCenter: Math.hypot(point.x, point.y, point.z),
+                };
+              }
+              console.log(`MODE5_WORLD_${label}`, JSON.stringify({
+                geometry: wheel.geometryVariant,
+                profileId: wheel.profileId,
+                shapeCount: count,
+                cornerRadius: wheel.cornerRadius,
+                bodyRotation: { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w },
+                localYAxisInWorld: v(worldAxis),
+                aabb: { lowerBound: v(aabb.lowerBound), upperBound: v(aabb.upperBound), center: aabbCenter, halfExtents },
+                closest,
+              }));
+              if (count !== 1) throw new Error(`${label}: unexpected shape count ${count}`);
+              const axisError = Math.hypot(worldAxis.x, worldAxis.y, worldAxis.z - 1);
+              if (axisError > 1e-5) throw new Error(`${label}: wheel axis registration error ${axisError}`);
+              if (Math.hypot(aabbCenter.x, aabbCenter.y, aabbCenter.z) > 1e-5) {
+                throw new Error(`${label}: wheel collider is offset from body center`);
+              }
+            }
+            console.log("MODE5_WORLD_REGISTRATION_OK", JSON.stringify({
+              wheelRadius: config.wheelRadius,
+              wheelWidth: config.wheelWidth,
+              chassisHalfExtents: config.chassisHalfExtents,
+              cgVerticalOffset: config.cgVerticalOffset,
+              axleHalfSpacing: config.axleHalfSpacing,
+              trackHalfWidth: config.trackHalfWidth,
+              restDrop: config.restDrop,
+            }));
+          } finally {
+            b3.b3DestroyWorld(worldId);
+          }
+          NODE
