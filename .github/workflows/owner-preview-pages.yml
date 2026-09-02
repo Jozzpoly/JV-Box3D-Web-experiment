@@ -6,6 +6,7 @@ on:
       - preview/owner-control
     paths:
       - preview/owner.json
+      - preview/owner-ab.json
       - .github/workflows/owner-preview-pages.yml
 
 permissions:
@@ -68,13 +69,40 @@ jobs:
           if scan.get("receipt") != "receipts/jv_friends_scan_receipt.json":
               raise SystemExit("Owner Preview JSPREV2 layer must use the canonical Friends scan receipt")
 
+          ab = json.loads(Path("preview/owner-ab.json").read_text(encoding="utf-8"))
+          if ab.get("schema") != "JV_OWNER_AB_POINTER_V1":
+              raise SystemExit("preview/owner-ab.json has an unsupported schema")
+          if ab.get("experiment") != "wheel-mode5-contact-geometry":
+              raise SystemExit("Owner A-B pointer must name the wheel-mode5-contact-geometry experiment")
+          ab_sha = str(ab.get("sourceCommit", "")).strip().lower()
+          if re.fullmatch(r"[0-9a-f]{40}", ab_sha) is None:
+              raise SystemExit("preview/owner-ab.json must pin an exact 40-character sourceCommit SHA")
+          variants = ab.get("variants")
+          if not isinstance(variants, list) or len(variants) != 2:
+              raise SystemExit("Owner wheel A-B requires exactly two variants")
+          variant_map = {
+              item.get("id"): item.get("viteMode5WheelGeometry")
+              for item in variants
+              if isinstance(item, dict)
+          }
+          expected_variants = {
+              "flat-control": "flat-control",
+              "asset-profile": "asset-profile",
+          }
+          if variant_map != expected_variants:
+              raise SystemExit(f"Owner wheel A-B variants drifted: {variant_map!r}")
+
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
               output.write(f"sha={source_sha}\n")
               output.write(f"scan_repository={scan['repository']}\n")
               output.write(f"scan_sha={scan_sha}\n")
               output.write(f"scan_receipt={scan['receipt']}\n")
+              output.write(f"ab_sha={ab_sha}\n")
+              output.write("ab_flat=flat-control\n")
+              output.write("ab_profile=asset-profile\n")
           print(f"Owner Preview executable candidate: {source_sha}")
           print(f"Owner Preview accepted JSPREV2 layer: {scan['repository']}@{scan_sha}")
+          print(f"Owner wheel A-B same-source candidate: {ab_sha}")
           PY
 
       - name: Checkout exact source candidate
@@ -293,6 +321,242 @@ jobs:
           if (composition?.executableSource?.commit !== process.env.EXPECTED_SHA) {
             throw new Error("Owner Preview composition provenance disagrees with executable source.");
           }
+          NODE
+
+      - name: Preserve accepted root before experimental composition
+        run: |
+          set -euxo pipefail
+          root_snapshot="$RUNNER_TEMP/jv-owner-accepted-root"
+          rm -rf "$root_snapshot"
+          mkdir -p "$root_snapshot"
+          cp -a dist/. "$root_snapshot/"
+          (
+            cd "$root_snapshot"
+            find . -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > "$RUNNER_TEMP/jv-owner-accepted-root.sha256"
+
+      - name: Checkout exact wheel A-B source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.candidate.outputs.ab_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify exact wheel A-B source checkout
+        env:
+          EXPECTED_SHA: ${{ steps.candidate.outputs.ab_sha }}
+        run: |
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Install wheel A-B dependencies
+        run: npm ci
+
+      - name: Typecheck wheel A-B source
+        run: npm run typecheck
+
+      - name: Build Flat control variant
+        env:
+          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+          AB_VARIANT: ${{ steps.candidate.outputs.ab_flat }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
+        run: |
+          set -euxo pipefail
+          rm -rf dist
+          VITE_JV_MODE5_WHEEL_GEOMETRY="$AB_VARIANT" npm run build:portable
+          node tools/validate-build-identity.mjs
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          if (manifest?.source?.commit !== process.env.AB_SHA) {
+            throw new Error(`Flat A-B source drift: ${manifest?.source?.commit}`);
+          }
+          if (manifest?.source?.workingTreeClean !== true) {
+            throw new Error("Flat A-B build requires clean committed source.");
+          }
+          NODE
+          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
+          mkdir -p dist/receipts
+          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
+          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          Path("dist/owner-ab-variant.json").write_text(json.dumps({
+              "schema": "JV_OWNER_AB_VARIANT_V1",
+              "experiment": "wheel-mode5-contact-geometry",
+              "sourceCommit": os.environ["AB_SHA"],
+              "variant": os.environ["AB_VARIANT"],
+              "buildManifest": "build-manifest.json",
+          }, indent=2) + "\n", encoding="utf-8")
+          PY
+          flat="$RUNNER_TEMP/jv-wheel-ab-flat"
+          rm -rf "$flat"
+          mkdir -p "$flat"
+          cp -a dist/. "$flat/"
+
+      - name: Build asset-profile variant
+        env:
+          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+          AB_VARIANT: ${{ steps.candidate.outputs.ab_profile }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
+        run: |
+          set -euxo pipefail
+          rm -rf dist
+          VITE_JV_MODE5_WHEEL_GEOMETRY="$AB_VARIANT" npm run build:portable
+          node tools/validate-build-identity.mjs
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          if (manifest?.source?.commit !== process.env.AB_SHA) {
+            throw new Error(`Profile A-B source drift: ${manifest?.source?.commit}`);
+          }
+          if (manifest?.source?.workingTreeClean !== true) {
+            throw new Error("Profile A-B build requires clean committed source.");
+          }
+          NODE
+          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
+          mkdir -p dist/receipts
+          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
+          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          Path("dist/owner-ab-variant.json").write_text(json.dumps({
+              "schema": "JV_OWNER_AB_VARIANT_V1",
+              "experiment": "wheel-mode5-contact-geometry",
+              "sourceCommit": os.environ["AB_SHA"],
+              "variant": os.environ["AB_VARIANT"],
+              "buildManifest": "build-manifest.json",
+          }, indent=2) + "\n", encoding="utf-8")
+          PY
+          profile="$RUNNER_TEMP/jv-wheel-ab-profile"
+          rm -rf "$profile"
+          mkdir -p "$profile"
+          cp -a dist/. "$profile/"
+
+      - name: Validate same-source A-B build separation
+        env:
+          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          flat = Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-ab-flat"
+          profile = Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-ab-profile"
+
+          def manifest(root):
+              return json.loads((root / "build-manifest.json").read_text(encoding="utf-8"))
+
+          for name, root, expected_variant in (
+              ("flat", flat, "flat-control"),
+              ("profile", profile, "asset-profile"),
+          ):
+              data = manifest(root)
+              if data.get("source", {}).get("commit") != os.environ["AB_SHA"]:
+                  raise SystemExit(f"{name} build manifest source drift")
+              marker = json.loads((root / "owner-ab-variant.json").read_text(encoding="utf-8"))
+              if marker.get("sourceCommit") != os.environ["AB_SHA"] or marker.get("variant") != expected_variant:
+                  raise SystemExit(f"{name} A-B marker drift")
+
+          ignored_prefixes = ("__jv_scan__/", "receipts/")
+          ignored_files = {"build-manifest.json", "owner-ab-variant.json"}
+          def core_digest(root):
+              digest = hashlib.sha256()
+              paths = []
+              for path in root.rglob("*"):
+                  if not path.is_file():
+                      continue
+                  relative = path.relative_to(root).as_posix()
+                  if relative in ignored_files or relative.startswith(ignored_prefixes):
+                      continue
+                  paths.append(relative)
+              for relative in sorted(paths):
+                  payload = (root / relative).read_bytes()
+                  digest.update(relative.encode("utf-8"))
+                  digest.update(b"\0")
+                  digest.update(hashlib.sha256(payload).digest())
+              return digest.hexdigest(), paths
+
+          flat_digest, flat_paths = core_digest(flat)
+          profile_digest, profile_paths = core_digest(profile)
+          if flat_digest == profile_digest:
+              raise SystemExit("Flat and asset-profile core builds are byte-identical; selector did not separate A-B outputs")
+          print(
+              "OWNER_WHEEL_AB_BUILD_SEPARATION_OK",
+              os.environ["AB_SHA"],
+              flat_digest,
+              profile_digest,
+              len(flat_paths),
+              len(profile_paths),
+          )
+          PY
+
+      - name: Compose isolated wheel A-B paths into accepted root
+        env:
+          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+        run: |
+          set -euxo pipefail
+          root_snapshot="$RUNNER_TEMP/jv-owner-accepted-root"
+          rm -rf dist
+          mkdir -p dist
+          cp -a "$root_snapshot/." dist/
+          experiment_root="dist/__experiments__/wheel-mode5"
+          mkdir -p "$experiment_root/flat" "$experiment_root/profile"
+          cp -a "$RUNNER_TEMP/jv-wheel-ab-flat/." "$experiment_root/flat/"
+          cp -a "$RUNNER_TEMP/jv-wheel-ab-profile/." "$experiment_root/profile/"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path("dist/__experiments__/wheel-mode5")
+          (root / "index.json").write_text(json.dumps({
+              "schema": "JV_OWNER_AB_INDEX_V1",
+              "experiment": "wheel-mode5-contact-geometry",
+              "sourceCommit": os.environ["AB_SHA"],
+              "sameSource": True,
+              "variants": [
+                  {"id": "flat-control", "path": "flat/"},
+                  {"id": "asset-profile", "path": "profile/"},
+              ],
+          }, indent=2) + "\n", encoding="utf-8")
+          PY
+
+      - name: Verify accepted root remained unchanged after A-B composition
+        env:
+          EXPECTED_SHA: ${{ steps.candidate.outputs.sha }}
+          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+        run: |
+          set -euxo pipefail
+          (
+            cd dist
+            find . -path './__experiments__' -prune -o -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > "$RUNNER_TEMP/jv-owner-accepted-root-after.sha256"
+          diff -u "$RUNNER_TEMP/jv-owner-accepted-root.sha256" "$RUNNER_TEMP/jv-owner-accepted-root-after.sha256"
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const rootManifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          if (rootManifest?.source?.commit !== process.env.EXPECTED_SHA) {
+            throw new Error("Accepted Owner Preview root source changed during A-B composition.");
+          }
+          const index = JSON.parse(
+            await readFile("dist/__experiments__/wheel-mode5/index.json", "utf8"),
+          );
+          if (index?.sourceCommit !== process.env.AB_SHA || index?.sameSource !== true) {
+            throw new Error("Wheel A-B index provenance is invalid.");
+          }
+          for (const path of ["flat", "profile"]) {
+            const manifest = JSON.parse(
+              await readFile(`dist/__experiments__/wheel-mode5/${path}/build-manifest.json`, "utf8"),
+            );
+            if (manifest?.source?.commit !== process.env.AB_SHA) {
+              throw new Error(`Wheel A-B ${path} source drifted.`);
+            }
+          }
+          console.log(`Accepted root preserved; wheel A-B pinned to ${process.env.AB_SHA.slice(0, 12)}.`);
           NODE
 
       - name: Upload Pages artifact
