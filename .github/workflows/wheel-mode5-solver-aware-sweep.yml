@@ -1,0 +1,37 @@
+name: Wheel mode5 solver-aware candidate sweep
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - tools/owner-vehicle/wheel-mode5-solver-aware-sweep.mjs
+      - .github/workflows/wheel-mode5-solver-aware-sweep.yml
+      - docs/evidence/WHEEL_MODE5_ASSET_PROFILE_CANDIDATES_2026-09-02.json
+      - owner-ab/vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb
+      - src/physics/vendor/box3d-mode5.inline.mjs
+      - src/physics/vendor/box3d-mode5.inline.d.ts
+      - src/physics/mode5-box3d-runtime.ts
+      - src/config/native-factory-receipt.ts
+      - src/vehicle/m6/m6-topology-config.ts
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile and stage mode5 runtime
+        run: |
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Sweep symmetric solver-aware profiles against R3 rubber
+        run: node tools/owner-vehicle/wheel-mode5-solver-aware-sweep.mjs
