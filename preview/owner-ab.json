@@ -1,6 +1,6 @@
 {
   "schema": "JV_OWNER_AB_POINTER_V1",
-  "sourceCommit": "36b79e7d43a39c57d283f289d368dda52c2d3d57",
+  "sourceCommit": "6bed3281e161a77062ffd6849aa674e55db7f758",
   "experiment": "wheel-mode5-contact-geometry",
   "variants": [
     {
@@ -10,7 +10,11 @@
     {
       "id": "asset-profile",
       "viteMode5WheelGeometry": "asset-profile"
+    },
+    {
+      "id": "solver-aware-profile",
+      "viteMode5WheelGeometry": "solver-aware-profile"
     }
   ],
-  "purpose": "Owner same-source driving falsifier: historical Flat c200mm contact geometry versus asset-derived P25+c20mm profile; executable source is identical between variants"
+  "purpose": "Owner same-source wheel contact falsifier: A historical Flat c200mm control, B Owner-falsified asymmetric P25+c20mm profile, and C validated symmetric solver-aware upper-quartile i25+c5 profile; accepted Owner Preview root remains unchanged"
 }
