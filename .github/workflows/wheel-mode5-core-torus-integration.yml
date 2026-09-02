@@ -1,0 +1,46 @@
+name: Wheel mode5 CORE torus integration
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - src/vehicle/m6/mode5-wheel-backend.ts
+      - src/vehicle/m6/m6-wheel-backend.ts
+      - src/vehicle/m6/m6-topology-contract.ts
+      - tests/m6-mode5-core-torus.test.mjs
+      - .github/workflows/wheel-mode5-core-torus-integration.yml
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Typecheck source
+        run: npm run typecheck
+      - name: Compile focused Node test surface
+        run: |
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Validate exact torus factory and topology contract
+        run: node --test tests/m6-mode5-core-torus.test.mjs
+      - name: Build the actual browser bundle with CORE torus selected
+        env:
+          VITE_JV_MODE5_WHEEL_GEOMETRY: core-torus64
+        run: npm run build:bundle
+      - name: Prove torus selection reached the browser bundle
+        run: |
+          set -euo pipefail
+          grep -Rqs 'native_m6_mode5_core_torus64' dist
+          grep -Rqs 'core-torus64-parity' dist
+          echo MODE5_CORE_TORUS_BROWSER_BUNDLE_OK
