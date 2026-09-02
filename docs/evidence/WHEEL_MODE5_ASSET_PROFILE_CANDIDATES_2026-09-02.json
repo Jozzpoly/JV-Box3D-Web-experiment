@@ -1,0 +1,2170 @@
+{
+  "schema": "JV_WEB_WHEEL_PROFILE_CANDIDATES_V1",
+  "sourceCommit": "d38664451b1fd9a618ca1dd4519ec1d83f381708",
+  "sourceAsset": "assets/owner-vehicle/source/Offroad_Big_Wheels.gltf",
+  "expectedWheelSourceGitBlob": "c13c77a8e5552175ee8266b2da33a54691f1dae9",
+  "requestedRadius": 0.514062464,
+  "requestedWidth": 0.4375,
+  "observedOuterRadius": 0.5455107634974198,
+  "observedAxialWidth": 0.4375,
+  "observedAngularOuterRadiusSpread": 0.06310599970202696,
+  "donorSemantics": {
+    "maxProfilePoints": 8,
+    "linearSlopMeters": 0.005,
+    "minProfileSpacingMeters": 0.01,
+    "profileNormalization": "SORT_MERGE_UPPER_CONVEX_HULL_THIN_IF_BELOW_2X_LINEAR_SLOP",
+    "cornerSweep": "MINKOWSKI_BALL_SWEEP"
+  },
+  "supportSemantics": {
+    "realTireSupport": "MAX_DOT_OVER_REFERENCED_TIRE_VERTICES",
+    "candidateSupport": "MAX_PROFILE_DOT_PLUS_CORNER_RADIUS",
+    "radialDirectionCount": 72,
+    "tiltStepDegrees": 5,
+    "tiltCount": 37,
+    "directionCount": 2664,
+    "linearSlopMeters": 0.005
+  },
+  "candidates": [
+    {
+      "id": "current-mode5-flat",
+      "source": "CURRENT_MODE5_CONTROL",
+      "targetStatistic": null,
+      "targetStrategy": null,
+      "cornerRadius": 0.2,
+      "profileCount": 2,
+      "profile": [
+        [
+          -0.01874999999999999,
+          0.314062464
+        ],
+        [
+          0.01874999999999999,
+          0.314062464
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": -0.04682610907137998,
+        "meanAbsoluteError": 0.048363587719178175,
+        "p95AbsoluteError": 0.10356344979437876,
+        "maxAbsoluteError": 0.14707678820675252,
+        "meanOutsideRubber": 0.0007687393238991069,
+        "maxOutsideRubber": 0.05712883157473153,
+        "outsideOverLinearSlopRate": 0.013888888888888888,
+        "meanInsetFromRubber": 0.04759484839527907,
+        "maxInsetFromRubber": 0.14707678820675252,
+        "insetOverLinearSlopRate": 0.9861111111111112,
+        "candidateRadius": 0.514062464,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.031448299497419785
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0549947891794097,
+        "meanAbsoluteError": 0.0549947891794097,
+        "p95AbsoluteError": 0.08036575282190843,
+        "maxAbsoluteError": 0.08199221261816514,
+        "meanOutsideEnvelope": 0,
+        "maxOutsideEnvelope": 0,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.0549947891794097,
+        "maxInsetFromEnvelope": 0.08199221261816514,
+        "insetOverLinearSlopRate": 0.9459459459459459
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.514062464,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.03043518019214981,
+          "meanAbsoluteError": 0.03043518019214981,
+          "p95AbsoluteError": 0.031400120244653995,
+          "maxAbsoluteError": 0.031400120244653995,
+          "meanOutsideEnvelope": 0,
+          "maxOutsideEnvelope": 0,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.03043518019214981,
+          "maxInsetFromEnvelope": 0.031400120244653995,
+          "insetOverLinearSlopRate": 1
+        }
+      }
+    },
+    {
+      "id": "asset-lower-quartile-c0mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP25",
+      "targetStrategy": "lower-quartile",
+      "cornerRadius": 0,
+      "profileCount": 8,
+      "profile": [
+        [
+          -0.21875,
+          0.45138297322010906
+        ],
+        [
+          -0.1982421875,
+          0.4862720345622794
+        ],
+        [
+          -0.1435546875,
+          0.5264745932169497
+        ],
+        [
+          -0.1298828125,
+          0.5268780543540278
+        ],
+        [
+          0.1298828125,
+          0.526779605436884
+        ],
+        [
+          0.1435546875,
+          0.5263854366131012
+        ],
+        [
+          0.1982421875,
+          0.48636778552417664
+        ],
+        [
+          0.21875,
+          0.45138297322010906
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": -0.005478142391200414,
+        "meanAbsoluteError": 0.015171116838728032,
+        "p95AbsoluteError": 0.034183762286155384,
+        "maxAbsoluteError": 0.1542684434278443,
+        "meanOutsideRubber": 0.0048464872237638,
+        "maxOutsideRubber": 0.1542684434278443,
+        "outsideOverLinearSlopRate": 0.14149305555555555,
+        "meanInsetFromRubber": 0.010324629614964224,
+        "maxInsetFromRubber": 0.04996909334093885,
+        "insetOverLinearSlopRate": 0.5577256944444444,
+        "candidateRadius": 0.5268780543540278,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.01863270914339199
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0202197647713458,
+        "meanAbsoluteError": 0.0202197647713458,
+        "p95AbsoluteError": 0.032611202824408436,
+        "maxAbsoluteError": 0.03354948242500749,
+        "meanOutsideEnvelope": 0,
+        "maxOutsideEnvelope": 0,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.0202197647713458,
+        "maxInsetFromEnvelope": 0.03354948242500749,
+        "insetOverLinearSlopRate": 0.9279279279279279
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5268780543540278,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.01761958983812201,
+          "meanAbsoluteError": 0.01761958983812201,
+          "p95AbsoluteError": 0.0185845298906262,
+          "maxAbsoluteError": 0.0185845298906262,
+          "meanOutsideEnvelope": 0,
+          "maxOutsideEnvelope": 0,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.01761958983812201,
+          "maxInsetFromEnvelope": 0.0185845298906262,
+          "insetOverLinearSlopRate": 1
+        }
+      }
+    },
+    {
+      "id": "asset-lower-quartile-c5mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP25",
+      "targetStrategy": "lower-quartile",
+      "cornerRadius": 0.005,
+      "profileCount": 8,
+      "profile": [
+        [
+          -0.21375,
+          0.45002229904690816
+        ],
+        [
+          -0.19445253428540824,
+          0.48285224934340226
+        ],
+        [
+          -0.14184909236320428,
+          0.5215227491708756
+        ],
+        [
+          -0.12981000007900434,
+          0.5218780263996662
+        ],
+        [
+          0.12980980360760025,
+          0.5217796327475344
+        ],
+        [
+          0.1418566205207749,
+          0.5214323153786299
+        ],
+        [
+          0.1944529203918628,
+          0.4829449027741106
+        ],
+        [
+          0.21375,
+          0.45002551129306745
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": -0.00550382898502777,
+        "meanAbsoluteError": 0.015185532658666777,
+        "p95AbsoluteError": 0.034183762286155495,
+        "maxAbsoluteError": 0.1542684434278443,
+        "meanOutsideRubber": 0.004840851836819519,
+        "maxOutsideRubber": 0.1542684434278443,
+        "outsideOverLinearSlopRate": 0.14149305555555555,
+        "meanInsetFromRubber": 0.01034468082184726,
+        "maxInsetFromRubber": 0.0499690933409388,
+        "insetOverLinearSlopRate": 0.5577256944444444,
+        "candidateRadius": 0.5268780263996662,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.018632737097753593
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.020335397569722278,
+        "meanAbsoluteError": 0.020335397569722278,
+        "p95AbsoluteError": 0.032709045629261246,
+        "maxAbsoluteError": 0.03360513201993709,
+        "meanOutsideEnvelope": 0,
+        "maxOutsideEnvelope": 0,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.020335397569722278,
+        "maxInsetFromEnvelope": 0.03360513201993709,
+        "insetOverLinearSlopRate": 0.9279279279279279
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5268780263996662,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.01761961779248361,
+          "meanAbsoluteError": 0.01761961779248361,
+          "p95AbsoluteError": 0.018584557844987803,
+          "maxAbsoluteError": 0.018584557844987803,
+          "meanOutsideEnvelope": 0,
+          "maxOutsideEnvelope": 0,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.01761961779248361,
+          "maxInsetFromEnvelope": 0.018584557844987803,
+          "insetOverLinearSlopRate": 1
+        }
+      }
+    },
+    {
+      "id": "asset-lower-quartile-c10mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP25",
+      "targetStrategy": "lower-quartile",
+      "cornerRadius": 0.01,
+      "profileCount": 8,
+      "profile": [
+        [
+          -0.20875,
+          0.44866162487370725
+        ],
+        [
+          -0.19066288107081655,
+          0.47943246412452506
+        ],
+        [
+          -0.1401434972264087,
+          0.5165709051248013
+        ],
+        [
+          -0.12973718765800124,
+          0.5168779984453047
+        ],
+        [
+          0.12973679471519262,
+          0.516779660058185
+        ],
+        [
+          0.14015855354154988,
+          0.5164791941441583
+        ],
+        [
+          0.19066365328372548,
+          0.4795220200240447
+        ],
+        [
+          0.20875,
+          0.44866804936602583
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": -0.005529515578855054,
+        "meanAbsoluteError": 0.015201527446818202,
+        "p95AbsoluteError": 0.034183762286155384,
+        "maxAbsoluteError": 0.1542684434278443,
+        "meanOutsideRubber": 0.004836005933981545,
+        "maxOutsideRubber": 0.1542684434278443,
+        "outsideOverLinearSlopRate": 0.14149305555555555,
+        "meanInsetFromRubber": 0.01036552151283666,
+        "maxInsetFromRubber": 0.0499690933409388,
+        "insetOverLinearSlopRate": 0.5577256944444444,
+        "candidateRadius": 0.5268779984453047,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.018632765052115086
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.020451030368099067,
+        "meanAbsoluteError": 0.020451030368099067,
+        "p95AbsoluteError": 0.032806888434114,
+        "maxAbsoluteError": 0.033660781614866686,
+        "meanOutsideEnvelope": 0,
+        "maxOutsideEnvelope": 0,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.020451030368099067,
+        "maxInsetFromEnvelope": 0.033660781614866686,
+        "insetOverLinearSlopRate": 0.93993993993994
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5268779984453047,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.017619645746845103,
+          "meanAbsoluteError": 0.017619645746845103,
+          "p95AbsoluteError": 0.018584585799349296,
+          "maxAbsoluteError": 0.018584585799349296,
+          "meanOutsideEnvelope": 0,
+          "maxOutsideEnvelope": 0,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.017619645746845103,
+          "maxInsetFromEnvelope": 0.018584585799349296,
+          "insetOverLinearSlopRate": 1
+        }
+      }
+    },
+    {
+      "id": "asset-lower-quartile-c20mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP25",
+      "targetStrategy": "lower-quartile",
+      "cornerRadius": 0.02,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.19875,
+          0.44594027652730533
+        ],
+        [
+          -0.12959156281600986,
+          0.5068779425365814
+        ],
+        [
+          0.19875,
+          0.4459531255119426
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": -0.027300337850548206,
+        "meanAbsoluteError": 0.03299608746466432,
+        "p95AbsoluteError": 0.06187011997203433,
+        "maxAbsoluteError": 0.15223379933098452,
+        "meanOutsideRubber": 0.0028478748070581133,
+        "maxOutsideRubber": 0.15223379933098452,
+        "outsideOverLinearSlopRate": 0.06336805555555555,
+        "meanInsetFromRubber": 0.03014821265760626,
+        "maxInsetFromRubber": 0.0689745867491458,
+        "insetOverLinearSlopRate": 0.8736979166666666,
+        "candidateRadius": 0.5268779425365814,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.018632820960838403
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.028150540707378244,
+        "meanAbsoluteError": 0.028150540707378244,
+        "p95AbsoluteError": 0.057298887678963115,
+        "maxAbsoluteError": 0.06652188076913101,
+        "meanOutsideEnvelope": 0,
+        "maxOutsideEnvelope": 0,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.028150540707378244,
+        "maxInsetFromEnvelope": 0.06652188076913101,
+        "insetOverLinearSlopRate": 0.93993993993994
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5268779425365814,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.017619701655568424,
+          "meanAbsoluteError": 0.017619701655568424,
+          "p95AbsoluteError": 0.018584641708072613,
+          "maxAbsoluteError": 0.018584641708072613,
+          "meanOutsideEnvelope": 0,
+          "maxOutsideEnvelope": 0,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.017619701655568424,
+          "maxInsetFromEnvelope": 0.018584641708072613,
+          "insetOverLinearSlopRate": 1
+        }
+      }
+    },
+    {
+      "id": "asset-lower-quartile-c30mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP25",
+      "targetStrategy": "lower-quartile",
+      "cornerRadius": 0.03,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.18875,
+          0.44321892818090347
+        ],
+        [
+          -0.1294459379740112,
+          0.49687788662785826
+        ],
+        [
+          0.18875,
+          0.4432382016578594
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": -0.024596398118362894,
+        "meanAbsoluteError": 0.03064715354378507,
+        "p95AbsoluteError": 0.057590312700406474,
+        "maxAbsoluteError": 0.15352580843851604,
+        "meanOutsideRubber": 0.0030253777127110092,
+        "maxOutsideRubber": 0.15352580843851604,
+        "outsideOverLinearSlopRate": 0.07378472222222222,
+        "meanInsetFromRubber": 0.027621775831073933,
+        "maxInsetFromRubber": 0.06423051592747658,
+        "insetOverLinearSlopRate": 0.8567708333333334,
+        "candidateRadius": 0.5268778866278583,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.0186328768695615
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.027369199379295793,
+        "meanAbsoluteError": 0.027369199379295793,
+        "p95AbsoluteError": 0.05275277216506789,
+        "maxAbsoluteError": 0.06391535872754162,
+        "meanOutsideEnvelope": 0,
+        "maxOutsideEnvelope": 0,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.027369199379295793,
+        "maxInsetFromEnvelope": 0.06391535872754162,
+        "insetOverLinearSlopRate": 0.9459459459459459
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5268778866278583,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.017619757564291516,
+          "meanAbsoluteError": 0.017619757564291516,
+          "p95AbsoluteError": 0.01858469761679571,
+          "maxAbsoluteError": 0.01858469761679571,
+          "meanOutsideEnvelope": 0,
+          "maxOutsideEnvelope": 0,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.017619757564291516,
+          "maxInsetFromEnvelope": 0.01858469761679571,
+          "insetOverLinearSlopRate": 1
+        }
+      }
+    },
+    {
+      "id": "asset-lower-quartile-c40mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP25",
+      "targetStrategy": "lower-quartile",
+      "cornerRadius": 0.04,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.17875,
+          0.4404975798345017
+        ],
+        [
+          -0.12930031313201426,
+          0.48687783071913504
+        ],
+        [
+          0.17875,
+          0.4405232778037761
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": -0.02192016679315461,
+        "meanAbsoluteError": 0.028382533020350893,
+        "p95AbsoluteError": 0.053117053566163766,
+        "maxAbsoluteError": 0.15411106482076714,
+        "meanOutsideRubber": 0.0032311831135981247,
+        "maxOutsideRubber": 0.15411106482076714,
+        "outsideOverLinearSlopRate": 0.07725694444444445,
+        "meanInsetFromRubber": 0.025151349906752704,
+        "maxInsetFromRubber": 0.05924106027685749,
+        "insetOverLinearSlopRate": 0.8146701388888888,
+        "candidateRadius": 0.5268778307191351,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.018632932778284705
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.026507227831715642,
+        "meanAbsoluteError": 0.026507227831715642,
+        "p95AbsoluteError": 0.048704129331546435,
+        "maxAbsoluteError": 0.05832551856455004,
+        "meanOutsideEnvelope": 0,
+        "maxOutsideEnvelope": 0,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.026507227831715642,
+        "maxInsetFromEnvelope": 0.05832551856455004,
+        "insetOverLinearSlopRate": 0.9459459459459459
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5268778307191351,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.017619813473014723,
+          "meanAbsoluteError": 0.017619813473014723,
+          "p95AbsoluteError": 0.018584753525518916,
+          "maxAbsoluteError": 0.018584753525518916,
+          "meanOutsideEnvelope": 0,
+          "maxOutsideEnvelope": 0,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.017619813473014723,
+          "maxInsetFromEnvelope": 0.018584753525518916,
+          "insetOverLinearSlopRate": 1
+        }
+      }
+    },
+    {
+      "id": "asset-median-c0mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMedian",
+      "targetStrategy": "median",
+      "cornerRadius": 0,
+      "profileCount": 6,
+      "profile": [
+        [
+          -0.21875,
+          0.5031273985284663
+        ],
+        [
+          -0.1298828125,
+          0.540054574611301
+        ],
+        [
+          -0.1162109375,
+          0.5432528186917226
+        ],
+        [
+          -0.0888671875,
+          0.5434800348303013
+        ],
+        [
+          0.1162109375,
+          0.5434104671392563
+        ],
+        [
+          0.21875,
+          0.5031273985284663
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.012331913422107266,
+        "meanAbsoluteError": 0.014394306812349473,
+        "p95AbsoluteError": 0.04043369945425711,
+        "maxAbsoluteError": 0.1971918166412176,
+        "meanOutsideRubber": 0.013363110117228377,
+        "maxOutsideRubber": 0.1971918166412176,
+        "outsideOverLinearSlopRate": 0.5052083333333334,
+        "meanInsetFromRubber": 0.0010311966951210849,
+        "maxInsetFromRubber": 0.012842447987707395,
+        "insetOverLinearSlopRate": 0.05381944444444445,
+        "candidateRadius": 0.5434800348303013,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.0020307286671185087
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0039316052632339775,
+        "meanAbsoluteError": 0.0039450542323730565,
+        "p95AbsoluteError": 0.00942005637426313,
+        "maxAbsoluteError": 0.013431454037751811,
+        "meanOutsideEnvelope": 0.0000067244845695331005,
+        "maxOutsideEnvelope": 0.0017376592218916187,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.003938329747803517,
+        "maxInsetFromEnvelope": 0.013431454037751811,
+        "insetOverLinearSlopRate": 0.3581081081081081
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5434800348303013,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.0010176093618485275,
+          "meanAbsoluteError": 0.001403755779021812,
+          "p95AbsoluteError": 0.001982549414352719,
+          "maxAbsoluteError": 0.001982549414352719,
+          "meanOutsideEnvelope": 0.0001930732085866422,
+          "maxOutsideEnvelope": 0.0017376592218916187,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.0012106825704351698,
+          "maxInsetFromEnvelope": 0.001982549414352719,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-median-c5mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMedian",
+      "targetStrategy": "median",
+      "cornerRadius": 0.005,
+      "profileCount": 6,
+      "profile": [
+        [
+          -0.21375,
+          0.4997905719327297
+        ],
+        [
+          -0.12834372862855187,
+          0.5352796259945771
+        ],
+        [
+          -0.11561341758675048,
+          0.5382576112329857
+        ],
+        [
+          -0.0888472618608604,
+          0.5384800277833356
+        ],
+        [
+          0.11526320558935524,
+          0.5384107883462255
+        ],
+        [
+          0.21375,
+          0.49971967688320834
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.012327565737757305,
+        "meanAbsoluteError": 0.014394306812349449,
+        "p95AbsoluteError": 0.04043369945425711,
+        "maxAbsoluteError": 0.1971918166412176,
+        "meanOutsideRubber": 0.013360936275053387,
+        "maxOutsideRubber": 0.1971918166412176,
+        "outsideOverLinearSlopRate": 0.5052083333333334,
+        "meanInsetFromRubber": 0.0010333705372960805,
+        "maxInsetFromRubber": 0.012842447987707395,
+        "insetOverLinearSlopRate": 0.05381944444444445,
+        "candidateRadius": 0.5434800277833356,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.0020307357140841864
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.004441826664245784,
+        "meanAbsoluteError": 0.004454577366306542,
+        "p95AbsoluteError": 0.009449201177047617,
+        "maxAbsoluteError": 0.013453758709775832,
+        "meanOutsideEnvelope": 0.000006375351030379845,
+        "maxOutsideEnvelope": 0.001737652174925941,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.0044482020152761615,
+        "maxInsetFromEnvelope": 0.013453758709775832,
+        "insetOverLinearSlopRate": 0.42117117117117114
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5434800277833356,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.0010176164088142052,
+          "meanAbsoluteError": 0.0014037612599951167,
+          "p95AbsoluteError": 0.0019825564613183966,
+          "maxAbsoluteError": 0.0019825564613183966,
+          "meanOutsideEnvelope": 0.00019307242559045578,
+          "maxOutsideEnvelope": 0.001737652174925941,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.001210688834404661,
+          "maxInsetFromEnvelope": 0.0019825564613183966,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-median-c10mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMedian",
+      "targetStrategy": "median",
+      "cornerRadius": 0.01,
+      "profileCount": 6,
+      "profile": [
+        [
+          -0.20875,
+          0.49645374533699305
+        ],
+        [
+          -0.12680464475710318,
+          0.5305046773778535
+        ],
+        [
+          -0.11501589767350195,
+          0.5332624037742486
+        ],
+        [
+          -0.08882733622172082,
+          0.5334800207363698
+        ],
+        [
+          0.11431547367871045,
+          0.5334111095531944
+        ],
+        [
+          0.20875,
+          0.4963119552379503
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.012323218053407236,
+        "meanAbsoluteError": 0.014394602191383991,
+        "p95AbsoluteError": 0.04043369945425711,
+        "maxAbsoluteError": 0.1971918166412176,
+        "meanOutsideRubber": 0.013358910122395627,
+        "maxOutsideRubber": 0.1971918166412176,
+        "outsideOverLinearSlopRate": 0.5052083333333334,
+        "meanInsetFromRubber": 0.0010356920689883707,
+        "maxInsetFromRubber": 0.012842447987707506,
+        "insetOverLinearSlopRate": 0.05381944444444445,
+        "candidateRadius": 0.5434800207363698,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.002030742761049975
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.004952048065257627,
+        "meanAbsoluteError": 0.004964329460522737,
+        "p95AbsoluteError": 0.009650737148901745,
+        "maxAbsoluteError": 0.013476063381799963,
+        "meanOutsideEnvelope": 0.000006140697632555319,
+        "maxOutsideEnvelope": 0.0017376451279601524,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.004958188762890183,
+        "maxInsetFromEnvelope": 0.013476063381799963,
+        "insetOverLinearSlopRate": 0.46996996996997
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5434800207363698,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.0010176234557799939,
+          "meanAbsoluteError": 0.001403766740968508,
+          "p95AbsoluteError": 0.0019825635082841853,
+          "maxAbsoluteError": 0.0019825635082841853,
+          "meanOutsideEnvelope": 0.00019307164259425703,
+          "maxOutsideEnvelope": 0.0017376451279601524,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.001210695098374251,
+          "maxInsetFromEnvelope": 0.0019825635082841853,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-median-c20mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMedian",
+      "targetStrategy": "median",
+      "cornerRadius": 0.02,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.19875,
+          0.48978009214551976
+        ],
+        [
+          -0.08878748494342878,
+          0.5234800066424385
+        ],
+        [
+          0.19875,
+          0.48949651194743427
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.00307111818448121,
+        "meanAbsoluteError": 0.015589094328770044,
+        "p95AbsoluteError": 0.03288940349043206,
+        "maxAbsoluteError": 0.19606076596456162,
+        "meanOutsideRubber": 0.009330106256625639,
+        "maxOutsideRubber": 0.19606076596456162,
+        "outsideOverLinearSlopRate": 0.3524305555555556,
+        "meanInsetFromRubber": 0.006258988072144422,
+        "maxInsetFromRubber": 0.029351625449481444,
+        "insetOverLinearSlopRate": 0.4166666666666667,
+        "candidateRadius": 0.5434800066424386,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.0020307568549812194
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.007729028344911003,
+        "meanAbsoluteError": 0.007739464565267862,
+        "p95AbsoluteError": 0.02022992350914102,
+        "maxAbsoluteError": 0.026623334336454585,
+        "meanOutsideEnvelope": 0.000005218110178429637,
+        "maxOutsideEnvelope": 0.001737631034028908,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.007734246455089432,
+        "maxInsetFromEnvelope": 0.026623334336454585,
+        "insetOverLinearSlopRate": 0.6936936936936937
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5434800066424386,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.0010176375497112382,
+          "meanAbsoluteError": 0.0014037777029150312,
+          "p95AbsoluteError": 0.0019825776022154296,
+          "maxAbsoluteError": 0.0019825776022154296,
+          "meanOutsideEnvelope": 0.00019307007660189656,
+          "maxOutsideEnvelope": 0.001737631034028908,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.0012107076263131347,
+          "maxInsetFromEnvelope": 0.0019825776022154296,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-median-c30mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMedian",
+      "targetStrategy": "median",
+      "cornerRadius": 0.03,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.18875,
+          0.48310643895404654
+        ],
+        [
+          -0.08874763366514957,
+          0.5134799925485071
+        ],
+        [
+          0.18875,
+          0.4826810686569183
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.003769231771629203,
+        "meanAbsoluteError": 0.015488808810929804,
+        "p95AbsoluteError": 0.03409503905020102,
+        "maxAbsoluteError": 0.19339404573470315,
+        "meanOutsideRubber": 0.009629020291279529,
+        "maxOutsideRubber": 0.19339404573470315,
+        "outsideOverLinearSlopRate": 0.3697916666666667,
+        "meanInsetFromRubber": 0.005859788519650332,
+        "maxInsetFromRubber": 0.02762934511816928,
+        "insetOverLinearSlopRate": 0.3715277777777778,
+        "candidateRadius": 0.5434799925485071,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.0020307709489126857
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.008639653204975731,
+        "meanAbsoluteError": 0.008650089340684354,
+        "p95AbsoluteError": 0.01990243444204553,
+        "maxAbsoluteError": 0.02507171750583903,
+        "meanOutsideEnvelope": 0.000005218067854311119,
+        "maxOutsideEnvelope": 0.0017376169400974417,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.008644871272830042,
+        "maxInsetFromEnvelope": 0.02507171750583903,
+        "insetOverLinearSlopRate": 0.7702702702702703
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5434799925485071,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.0010176516436427045,
+          "meanAbsoluteError": 0.0014037886648617273,
+          "p95AbsoluteError": 0.001982591696146896,
+          "maxAbsoluteError": 0.001982591696146896,
+          "meanOutsideEnvelope": 0.0001930685106095114,
+          "maxOutsideEnvelope": 0.0017376169400974417,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.001210720154252216,
+          "maxInsetFromEnvelope": 0.001982591696146896,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-median-c40mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMedian",
+      "targetStrategy": "median",
+      "cornerRadius": 0.04,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.17875,
+          0.47643278576257325
+        ],
+        [
+          -0.08870778238685754,
+          0.5034799784545758
+        ],
+        [
+          0.17875,
+          0.47586562536640226
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.004377598957631258,
+        "meanAbsoluteError": 0.015414352892137535,
+        "p95AbsoluteError": 0.03603153832432311,
+        "maxAbsoluteError": 0.1900205727795643,
+        "meanOutsideRubber": 0.009895975924884398,
+        "maxOutsideRubber": 0.1900205727795643,
+        "outsideOverLinearSlopRate": 0.3802083333333333,
+        "meanInsetFromRubber": 0.005518376967253146,
+        "maxInsetFromRubber": 0.02579867351528009,
+        "insetOverLinearSlopRate": 0.3767361111111111,
+        "candidateRadius": 0.5434799784545759,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -0.00203078504284393
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.00955027806504068,
+        "meanAbsoluteError": 0.009560714116101068,
+        "p95AbsoluteError": 0.019317530565744725,
+        "maxAbsoluteError": 0.023520100675223587,
+        "meanOutsideEnvelope": 0.000005218025530193268,
+        "maxOutsideEnvelope": 0.0017376028461661974,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.009555496090570874,
+        "maxInsetFromEnvelope": 0.023520100675223587,
+        "insetOverLinearSlopRate": 0.8205705705705706
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5434799784545759,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": -0.0010176657375739488,
+          "meanAbsoluteError": 0.0014037996268082508,
+          "p95AbsoluteError": 0.00198260579007814,
+          "maxAbsoluteError": 0.00198260579007814,
+          "meanOutsideEnvelope": 0.00019306694461715092,
+          "maxOutsideEnvelope": 0.0017376028461661974,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0.0012107326821910998,
+          "maxInsetFromEnvelope": 0.00198260579007814,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-upper-quartile-c0mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP75",
+      "targetStrategy": "upper-quartile",
+      "cornerRadius": 0,
+      "profileCount": 5,
+      "profile": [
+        [
+          -0.21875,
+          0.5056851584088587
+        ],
+        [
+          -0.1435546875,
+          0.5434219812350661
+        ],
+        [
+          -0.1298828125,
+          0.5455107508534434
+        ],
+        [
+          0.1298828125,
+          0.5455107508534434
+        ],
+        [
+          0.21875,
+          0.5056851584088587
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.015954421448454235,
+        "meanAbsoluteError": 0.016181019062137196,
+        "p95AbsoluteError": 0.04738897394542272,
+        "maxAbsoluteError": 0.2003396447721661,
+        "meanOutsideRubber": 0.01606772025529571,
+        "maxOutsideRubber": 0.2003396447721661,
+        "outsideOverLinearSlopRate": 0.5885416666666666,
+        "meanInsetFromRubber": 0.00011329880684147259,
+        "maxInsetFromRubber": 0.006127026866220242,
+        "insetOverLinearSlopRate": 0.006944444444444444,
+        "candidateRadius": 0.5455107508534434,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -1.2643976421422565e-8
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0016741445006319112,
+        "meanAbsoluteError": 0.0022336616333344756,
+        "p95AbsoluteError": 0.005495999001980056,
+        "maxAbsoluteError": 0.006929547508223832,
+        "meanOutsideEnvelope": 0.0002797585663512847,
+        "maxOutsideEnvelope": 0.0063478893661516045,
+        "outsideOverLinearSlopRate": 0.002627627627627628,
+        "meanInsetFromEnvelope": 0.0019539030669831875,
+        "maxInsetFromEnvelope": 0.006929547508223832,
+        "insetOverLinearSlopRate": 0.1021021021021021
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107508534434,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131066612935598,
+          "meanAbsoluteError": 0.0010131066612935598,
+          "p95AbsoluteError": 0.003768374865960683,
+          "maxAbsoluteError": 0.003768375245033706,
+          "meanOutsideEnvelope": 0.0010131066612935598,
+          "maxOutsideEnvelope": 0.003768375245033706,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-upper-quartile-c5mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP75",
+      "targetStrategy": "upper-quartile",
+      "cornerRadius": 0.005,
+      "profileCount": 5,
+      "profile": [
+        [
+          -0.21375,
+          0.5026000976474063
+        ],
+        [
+          -0.14201833525038177,
+          0.5385986863052464
+        ],
+        [
+          -0.1295030691985953,
+          0.5405107508534434
+        ],
+        [
+          0.12881367033591362,
+          0.5405107508534434
+        ],
+        [
+          0.21375,
+          0.502446761836791
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.015948319293015864,
+        "meanAbsoluteError": 0.016178808803930755,
+        "p95AbsoluteError": 0.04738897394542272,
+        "maxAbsoluteError": 0.2003396447721661,
+        "meanOutsideRubber": 0.0160635640484733,
+        "maxOutsideRubber": 0.2003396447721661,
+        "outsideOverLinearSlopRate": 0.5885416666666666,
+        "meanInsetFromRubber": 0.00011524475545743096,
+        "maxInsetFromRubber": 0.006127026866220242,
+        "insetOverLinearSlopRate": 0.006944444444444444,
+        "candidateRadius": 0.5455107508534434,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -1.2643976421422565e-8
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0021117258590083255,
+        "meanAbsoluteError": 0.00256899862975449,
+        "p95AbsoluteError": 0.005898575817327112,
+        "maxAbsoluteError": 0.0069776228477050894,
+        "meanOutsideEnvelope": 0.0002286363853730844,
+        "maxOutsideEnvelope": 0.00629001129611273,
+        "outsideOverLinearSlopRate": 0.0022522522522522522,
+        "meanInsetFromEnvelope": 0.002340362244381405,
+        "maxInsetFromEnvelope": 0.0069776228477050894,
+        "insetOverLinearSlopRate": 0.14414414414414414
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107508534434,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131066612935598,
+          "meanAbsoluteError": 0.0010131066612935598,
+          "p95AbsoluteError": 0.003768374865960683,
+          "maxAbsoluteError": 0.003768375245033706,
+          "meanOutsideEnvelope": 0.0010131066612935598,
+          "maxOutsideEnvelope": 0.003768375245033706,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-upper-quartile-c10mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP75",
+      "targetStrategy": "upper-quartile",
+      "cornerRadius": 0.01,
+      "profileCount": 5,
+      "profile": [
+        [
+          -0.20875,
+          0.49951503688595383
+        ],
+        [
+          -0.1404819830007639,
+          0.5337753913754267
+        ],
+        [
+          -0.1291233258971906,
+          0.5355107508534434
+        ],
+        [
+          0.12774452817182758,
+          0.5355107508534434
+        ],
+        [
+          0.20875,
+          0.49920836526472334
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.015942217137577545,
+        "meanAbsoluteError": 0.01617659856315314,
+        "p95AbsoluteError": 0.04738897394542272,
+        "maxAbsoluteError": 0.2003396447721661,
+        "meanOutsideRubber": 0.01605940785036533,
+        "maxOutsideRubber": 0.2003396447721661,
+        "outsideOverLinearSlopRate": 0.5885416666666666,
+        "meanInsetFromRubber": 0.00011719071278779363,
+        "maxInsetFromRubber": 0.006127026866220242,
+        "insetOverLinearSlopRate": 0.006944444444444444,
+        "candidateRadius": 0.5455107508534434,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -1.2643976421422565e-8
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0025493072173847263,
+        "meanAbsoluteError": 0.002948117319192021,
+        "p95AbsoluteError": 0.006556796103155388,
+        "maxAbsoluteError": 0.007025698187186347,
+        "meanOutsideEnvelope": 0.00019940505090364983,
+        "maxOutsideEnvelope": 0.006232133226074077,
+        "outsideOverLinearSlopRate": 0.0022522522522522522,
+        "meanInsetFromEnvelope": 0.002748712268288376,
+        "maxInsetFromEnvelope": 0.007025698187186347,
+        "insetOverLinearSlopRate": 0.18618618618618618
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107508534434,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131066612935598,
+          "meanAbsoluteError": 0.0010131066612935598,
+          "p95AbsoluteError": 0.003768374865960683,
+          "maxAbsoluteError": 0.003768375245033706,
+          "meanOutsideEnvelope": 0.0010131066612935598,
+          "maxOutsideEnvelope": 0.003768375245033706,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-upper-quartile-c20mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP75",
+      "targetStrategy": "upper-quartile",
+      "cornerRadius": 0.02,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.19875,
+          0.4933449153630489
+        ],
+        [
+          -0.12836383929438194,
+          0.5255107508534433
+        ],
+        [
+          0.19875,
+          0.49273157212058794
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.0058618512375179475,
+        "meanAbsoluteError": 0.016669236350993308,
+        "p95AbsoluteError": 0.040634100635744685,
+        "maxAbsoluteError": 0.19962558918209078,
+        "meanOutsideRubber": 0.011265543794255603,
+        "maxOutsideRubber": 0.19962558918209078,
+        "outsideOverLinearSlopRate": 0.4010416666666667,
+        "meanInsetFromRubber": 0.005403692556737675,
+        "maxInsetFromRubber": 0.027148056709544344,
+        "insetOverLinearSlopRate": 0.3524305555555556,
+        "candidateRadius": 0.5455107508534434,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -1.2643976421422565e-8
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.005187144411498808,
+        "meanAbsoluteError": 0.005387089371615778,
+        "p95AbsoluteError": 0.018753798758534335,
+        "maxAbsoluteError": 0.024123292533799967,
+        "meanOutsideEnvelope": 0.0000999724800584806,
+        "maxOutsideEnvelope": 0.0043212622668202805,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.005287116891557294,
+        "maxInsetFromEnvelope": 0.024123292533799967,
+        "insetOverLinearSlopRate": 0.44894894894894893
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107508534434,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131066612935598,
+          "meanAbsoluteError": 0.0010131066612935598,
+          "p95AbsoluteError": 0.003768374865960683,
+          "maxAbsoluteError": 0.003768375245033706,
+          "meanOutsideEnvelope": 0.0010131066612935598,
+          "maxOutsideEnvelope": 0.003768375245033706,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-upper-quartile-c30mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP75",
+      "targetStrategy": "upper-quartile",
+      "cornerRadius": 0.03,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.18875,
+          0.48717479384014406
+        ],
+        [
+          -0.12760435269157255,
+          0.5155107508534433
+        ],
+        [
+          0.18875,
+          0.4862547789764525
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.00681713079493035,
+        "meanAbsoluteError": 0.01650879063164753,
+        "p95AbsoluteError": 0.04108412139891415,
+        "maxAbsoluteError": 0.19746240062080073,
+        "meanOutsideRubber": 0.011662960713288928,
+        "maxOutsideRubber": 0.19746240062080073,
+        "outsideOverLinearSlopRate": 0.421875,
+        "meanInsetFromRubber": 0.004845829918358587,
+        "maxInsetFromRubber": 0.024948379458869074,
+        "insetOverLinearSlopRate": 0.3315972222222222,
+        "candidateRadius": 0.5455107508534434,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -1.2643976421422565e-8
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.005917968529136437,
+        "meanAbsoluteError": 0.006115720115505802,
+        "p95AbsoluteError": 0.017349729766663182,
+        "maxAbsoluteError": 0.024019045895742663,
+        "meanOutsideEnvelope": 0.00009887579318468112,
+        "maxOutsideEnvelope": 0.004664576342214399,
+        "outsideOverLinearSlopRate": 0,
+        "meanInsetFromEnvelope": 0.006016844322321115,
+        "maxInsetFromEnvelope": 0.024019045895742663,
+        "insetOverLinearSlopRate": 0.5645645645645646
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107508534434,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131066612935598,
+          "meanAbsoluteError": 0.0010131066612935598,
+          "p95AbsoluteError": 0.003768374865960683,
+          "maxAbsoluteError": 0.003768375245033706,
+          "meanOutsideEnvelope": 0.0010131066612935598,
+          "maxOutsideEnvelope": 0.003768375245033706,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-upper-quartile-c40mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusP75",
+      "targetStrategy": "upper-quartile",
+      "cornerRadius": 0.04,
+      "profileCount": 3,
+      "profile": [
+        [
+          -0.17875,
+          0.4810046723172392
+        ],
+        [
+          -0.12684486608876314,
+          0.5055107508534433
+        ],
+        [
+          0.17875,
+          0.4797779858323171
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.007706841693695619,
+        "meanAbsoluteError": 0.01638637916691655,
+        "p95AbsoluteError": 0.04151754384801043,
+        "maxAbsoluteError": 0.19459245933423025,
+        "meanOutsideRubber": 0.012046610430306078,
+        "maxOutsideRubber": 0.19459245933423025,
+        "outsideOverLinearSlopRate": 0.4496527777777778,
+        "meanInsetFromRubber": 0.004339768736610464,
+        "maxInsetFromRubber": 0.022627578385560954,
+        "insetOverLinearSlopRate": 0.3177083333333333,
+        "candidateRadius": 0.5455107508534434,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": -1.2643976421422565e-8
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.006614373841621106,
+        "meanAbsoluteError": 0.006816998190759839,
+        "p95AbsoluteError": 0.01596495645574092,
+        "maxAbsoluteError": 0.02291529580513474,
+        "meanOutsideEnvelope": 0.00010131217456936173,
+        "maxOutsideEnvelope": 0.005007890417608518,
+        "outsideOverLinearSlopRate": 0.00037537537537537537,
+        "meanInsetFromEnvelope": 0.0067156860161904745,
+        "maxInsetFromEnvelope": 0.02291529580513474,
+        "insetOverLinearSlopRate": 0.6328828828828829
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107508534434,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131066612935598,
+          "meanAbsoluteError": 0.0010131066612935598,
+          "p95AbsoluteError": 0.003768374865960683,
+          "maxAbsoluteError": 0.003768375245033706,
+          "meanOutsideEnvelope": 0.0010131066612935598,
+          "maxOutsideEnvelope": 0.003768375245033706,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-outer-envelope-c0mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMax",
+      "targetStrategy": "outer-envelope",
+      "cornerRadius": 0,
+      "profileCount": 4,
+      "profile": [
+        [
+          -0.21875,
+          0.5129817536751047
+        ],
+        [
+          -0.1435546875,
+          0.5455107634974198
+        ],
+        [
+          0.1435546875,
+          0.5455107634974198
+        ],
+        [
+          0.21875,
+          0.5129817536751047
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.018038420386744653,
+        "meanAbsoluteError": 0.018038420386744653,
+        "p95AbsoluteError": 0.05137566445556011,
+        "maxAbsoluteError": 0.2071628024926036,
+        "meanOutsideRubber": 0.018038420386744653,
+        "maxOutsideRubber": 0.2071628024926036,
+        "outsideOverLinearSlopRate": 0.6232638888888888,
+        "meanInsetFromRubber": 0,
+        "maxInsetFromRubber": 0,
+        "insetOverLinearSlopRate": 0,
+        "candidateRadius": 0.5455107634974198,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": 0
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": 0.0015607704521246638,
+        "meanAbsoluteError": 0.0017113490853892593,
+        "p95AbsoluteError": 0.005940756951670179,
+        "maxAbsoluteError": 0.00924591397391994,
+        "meanOutsideEnvelope": 0.0016360597687569622,
+        "maxOutsideEnvelope": 0.00924591397391994,
+        "outsideOverLinearSlopRate": 0.07732732732732733,
+        "meanInsetFromEnvelope": 0.00007528931663229587,
+        "maxInsetFromEnvelope": 0.002666840593998021,
+        "insetOverLinearSlopRate": 0
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107634974198,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131193052699812,
+          "meanAbsoluteError": 0.0010131193052699812,
+          "p95AbsoluteError": 0.0037683875099371045,
+          "maxAbsoluteError": 0.0037683878890101274,
+          "meanOutsideEnvelope": 0.0010131193052699812,
+          "maxOutsideEnvelope": 0.0037683878890101274,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-outer-envelope-c5mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMax",
+      "targetStrategy": "outer-envelope",
+      "cornerRadius": 0.005,
+      "profileCount": 4,
+      "profile": [
+        [
+          -0.21375,
+          0.5096969302826062
+        ],
+        [
+          -0.1425195558343965,
+          0.5405107634974198
+        ],
+        [
+          0.14251955583439657,
+          0.5405107634974198
+        ],
+        [
+          0.21375,
+          0.5096969302826062
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.018031650190061563,
+        "meanAbsoluteError": 0.01803465905691506,
+        "p95AbsoluteError": 0.05137566445556011,
+        "maxAbsoluteError": 0.2071628024926036,
+        "meanOutsideRubber": 0.018033154623488312,
+        "maxOutsideRubber": 0.2071628024926036,
+        "outsideOverLinearSlopRate": 0.6232638888888888,
+        "meanInsetFromRubber": 0.0000015044334267606973,
+        "maxInsetFromRubber": 0.00010832314692954537,
+        "insetOverLinearSlopRate": 0,
+        "candidateRadius": 0.5455107634974198,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": 0
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": 0.0010751296754379675,
+        "meanAbsoluteError": 0.0014948536524651995,
+        "p95AbsoluteError": 0.005459145182431069,
+        "maxAbsoluteError": 0.009193414989359772,
+        "meanOutsideEnvelope": 0.0012849916639515852,
+        "maxOutsideEnvelope": 0.009193414989359772,
+        "outsideOverLinearSlopRate": 0.05855855855855856,
+        "meanInsetFromEnvelope": 0.00020986198851361885,
+        "maxInsetFromEnvelope": 0.0027193395785581886,
+        "insetOverLinearSlopRate": 0
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107634974198,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131193052699812,
+          "meanAbsoluteError": 0.0010131193052699812,
+          "p95AbsoluteError": 0.0037683875099371045,
+          "maxAbsoluteError": 0.0037683878890101274,
+          "meanOutsideEnvelope": 0.0010131193052699812,
+          "maxOutsideEnvelope": 0.0037683878890101274,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-outer-envelope-c10mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMax",
+      "targetStrategy": "outer-envelope",
+      "cornerRadius": 0.01,
+      "profileCount": 4,
+      "profile": [
+        [
+          -0.20875,
+          0.5064121068901078
+        ],
+        [
+          -0.14148442416879298,
+          0.5355107634974198
+        ],
+        [
+          0.14148442416879298,
+          0.5355107634974198
+        ],
+        [
+          0.20875,
+          0.5064121068901077
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.018024879993378446,
+        "meanAbsoluteError": 0.018030897836535567,
+        "p95AbsoluteError": 0.05137566445556011,
+        "maxAbsoluteError": 0.2071628024926036,
+        "meanOutsideRubber": 0.018027888914957005,
+        "maxOutsideRubber": 0.2071628024926036,
+        "outsideOverLinearSlopRate": 0.6232638888888888,
+        "meanInsetFromRubber": 0.0000030089215785614806,
+        "maxInsetFromRubber": 0.00021664629385920176,
+        "insetOverLinearSlopRate": 0,
+        "candidateRadius": 0.5455107634974198,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": 0
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": 0.0005894888987512983,
+        "meanAbsoluteError": 0.0014908987636945243,
+        "p95AbsoluteError": 0.005253315713540485,
+        "maxAbsoluteError": 0.009140916004799493,
+        "meanOutsideEnvelope": 0.0010401938312229104,
+        "maxOutsideEnvelope": 0.009140916004799493,
+        "outsideOverLinearSlopRate": 0.052177177177177174,
+        "meanInsetFromEnvelope": 0.0004507049324716114,
+        "maxInsetFromEnvelope": 0.002771838563118467,
+        "insetOverLinearSlopRate": 0
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107634974198,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131193052699812,
+          "meanAbsoluteError": 0.0010131193052699812,
+          "p95AbsoluteError": 0.0037683875099371045,
+          "maxAbsoluteError": 0.0037683878890101274,
+          "meanOutsideEnvelope": 0.0010131193052699812,
+          "maxOutsideEnvelope": 0.0037683878890101274,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-outer-envelope-c20mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMax",
+      "targetStrategy": "outer-envelope",
+      "cornerRadius": 0.02,
+      "profileCount": 4,
+      "profile": [
+        [
+          -0.19875,
+          0.4998424601051109
+        ],
+        [
+          -0.139414160837586,
+          0.5255107634974198
+        ],
+        [
+          0.139414160837586,
+          0.5255107634974198
+        ],
+        [
+          0.19875,
+          0.4998424601051109
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.017946360314484038,
+        "meanAbsoluteError": 0.017958396110248367,
+        "p95AbsoluteError": 0.05137566445556011,
+        "maxAbsoluteError": 0.20612313392415277,
+        "meanOutsideRubber": 0.017952378212366202,
+        "maxOutsideRubber": 0.20612313392415277,
+        "outsideOverLinearSlopRate": 0.6232638888888888,
+        "meanInsetFromRubber": 0.000006017897882159963,
+        "maxInsetFromRubber": 0.0004332925877182925,
+        "insetOverLinearSlopRate": 0,
+        "candidateRadius": 0.5455107634974198,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": 0
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0003817926546220508,
+        "meanAbsoluteError": 0.0018657322820054233,
+        "p95AbsoluteError": 0.004398718048458039,
+        "maxAbsoluteError": 0.009035918035679158,
+        "meanOutsideEnvelope": 0.0007419698136916826,
+        "maxOutsideEnvelope": 0.009035918035679158,
+        "outsideOverLinearSlopRate": 0.03903903903903904,
+        "meanInsetFromEnvelope": 0.001123762468313733,
+        "maxInsetFromEnvelope": 0.0038494089423158906,
+        "insetOverLinearSlopRate": 0
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107634974198,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131193052699812,
+          "meanAbsoluteError": 0.0010131193052699812,
+          "p95AbsoluteError": 0.0037683875099371045,
+          "maxAbsoluteError": 0.0037683878890101274,
+          "meanOutsideEnvelope": 0.0010131193052699812,
+          "maxOutsideEnvelope": 0.0037683878890101274,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-outer-envelope-c30mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMax",
+      "targetStrategy": "outer-envelope",
+      "cornerRadius": 0.03,
+      "profileCount": 4,
+      "profile": [
+        [
+          -0.18875,
+          0.493272813320114
+        ],
+        [
+          -0.137343897506379,
+          0.5155107634974198
+        ],
+        [
+          0.13734389750637904,
+          0.5155107634974198
+        ],
+        [
+          0.18875,
+          0.493272813320114
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.017772650307156485,
+        "meanAbsoluteError": 0.017808626125785123,
+        "p95AbsoluteError": 0.05137566445556011,
+        "maxAbsoluteError": 0.20356042010077063,
+        "meanOutsideRubber": 0.017790638216470804,
+        "maxOutsideRubber": 0.20356042010077063,
+        "outsideOverLinearSlopRate": 0.6232638888888888,
+        "meanInsetFromRubber": 0.000017987909314340817,
+        "maxInsetFromRubber": 0.0006499388815774942,
+        "insetOverLinearSlopRate": 0,
+        "candidateRadius": 0.5455107634974198,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": 0
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0013530742079954333,
+        "meanAbsoluteError": 0.002536637844749217,
+        "p95AbsoluteError": 0.0056176261030265245,
+        "maxAbsoluteError": 0.008930920066558823,
+        "meanOutsideEnvelope": 0.0005917818183768865,
+        "maxOutsideEnvelope": 0.008930920066558823,
+        "outsideOverLinearSlopRate": 0.030405405405405407,
+        "meanInsetFromEnvelope": 0.0019448560263723247,
+        "maxInsetFromEnvelope": 0.005809123976229458,
+        "insetOverLinearSlopRate": 0.0960960960960961
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107634974198,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131193052699812,
+          "meanAbsoluteError": 0.0010131193052699812,
+          "p95AbsoluteError": 0.0037683875099371045,
+          "maxAbsoluteError": 0.0037683878890101274,
+          "meanOutsideEnvelope": 0.0010131193052699812,
+          "maxOutsideEnvelope": 0.0037683878890101274,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    },
+    {
+      "id": "asset-outer-envelope-c40mm",
+      "source": "ASSET_DERIVED",
+      "targetStatistic": "outerRadiusMax",
+      "targetStrategy": "outer-envelope",
+      "cornerRadius": 0.04,
+      "profileCount": 4,
+      "profile": [
+        [
+          -0.17875,
+          0.48670316653511714
+        ],
+        [
+          -0.13527363417517202,
+          0.5055107634974197
+        ],
+        [
+          0.13527363417517202,
+          0.5055107634974197
+        ],
+        [
+          0.17875,
+          0.48670316653511714
+        ]
+      ],
+      "surfaceGrid": {
+        "observationCount": 2304,
+        "missingSliceCount": 0,
+        "signedMeanError": 0.017540964822412367,
+        "meanAbsoluteError": 0.0176737771088889,
+        "p95AbsoluteError": 0.05137566445556011,
+        "maxAbsoluteError": 0.2002909535521082,
+        "meanOutsideRubber": 0.017607370965650633,
+        "maxOutsideRubber": 0.2002909535521082,
+        "outsideOverLinearSlopRate": 0.609375,
+        "meanInsetFromRubber": 0.00006640614323825261,
+        "maxInsetFromRubber": 0.003914666229375863,
+        "insetOverLinearSlopRate": 0,
+        "candidateRadius": 0.5455107634974198,
+        "candidateWidth": 0.4375,
+        "widthError": 0,
+        "radiusErrorVsObservedMaximum": 0
+      },
+      "supportUniformTiltGrid": {
+        "observationCount": 2664,
+        "signedMeanError": -0.0023243557613688197,
+        "meanAbsoluteError": 0.0033243580247894417,
+        "p95AbsoluteError": 0.007306529862235067,
+        "maxAbsoluteError": 0.008825922097438377,
+        "meanOutsideEnvelope": 0.000500001131710316,
+        "maxOutsideEnvelope": 0.008825922097438377,
+        "outsideOverLinearSlopRate": 0.030405405405405407,
+        "meanInsetFromEnvelope": 0.0028243568930791246,
+        "maxInsetFromEnvelope": 0.00776883901014308,
+        "insetOverLinearSlopRate": 0.25225225225225223
+      },
+      "supportPureRadial": {
+        "tiltDegrees": 0,
+        "axialComponent": 0,
+        "radialLength": 1,
+        "actualSupport": {
+          "min": 0.5417423756084097,
+          "p25": 0.5440188122485993,
+          "median": 0.5446271723456555,
+          "p75": 0.5452596519155729,
+          "max": 0.545462584244654,
+          "spread": 0.0037202086362443376
+        },
+        "candidateSupport": 0.5455107634974198,
+        "errors": {
+          "observationCount": 72,
+          "signedMeanError": 0.0010131193052699812,
+          "meanAbsoluteError": 0.0010131193052699812,
+          "p95AbsoluteError": 0.0037683875099371045,
+          "maxAbsoluteError": 0.0037683878890101274,
+          "meanOutsideEnvelope": 0.0010131193052699812,
+          "maxOutsideEnvelope": 0.0037683878890101274,
+          "outsideOverLinearSlopRate": 0,
+          "meanInsetFromEnvelope": 0,
+          "maxInsetFromEnvelope": 0,
+          "insetOverLinearSlopRate": 0
+        }
+      }
+    }
+  ],
+  "rejected": []
+}
