@@ -1,0 +1,82 @@
+name: Wheel mode5 capsule-torus crown family sweep
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - .github/workflows/wheel-mode5-torus-crown-sweep.yml
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Sweep recovered torus crown ratio against all 3208 real-rock cases
+        run: |
+          set -euo pipefail
+          cp src/vehicle/m6/mode5-wheel-backend.ts "$RUNNER_TEMP/mode5-wheel-backend.original.ts"
+          : > "$RUNNER_TEMP/torus-crown-summary.jsonl"
+          for ratio in 0.25 0.35 0.45 0.55 0.65 0.75 0.85 0.914; do
+            cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" src/vehicle/m6/mode5-wheel-backend.ts
+            RATIO="$ratio" python3 - <<'PY'
+          import os
+          from pathlib import Path
+          path = Path('src/vehicle/m6/mode5-wheel-backend.ts')
+          text = path.read_text(encoding='utf-8')
+          old_ratio = 'export const MODE5_CORE_TORUS_CROWN_RATIO = 0.914;'
+          new_ratio = f'export const MODE5_CORE_TORUS_CROWN_RATIO = {os.environ["RATIO"]};'
+          old_select = 'const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
+          new_select = 'const requestedGeometry = "core-torus64";'
+          if text.count(old_ratio) != 1 or text.count(old_select) != 1:
+              raise SystemExit('torus crown sweep source anchors drifted')
+          path.write_text(text.replace(old_ratio, new_ratio).replace(old_select, new_select), encoding='utf-8')
+          PY
+            rm -rf .test-dist
+            node node_modules/typescript/bin/tsc -p tsconfig.test.json
+            mkdir -p .test-dist/physics/vendor
+            cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+            node tools/wheel-mode5-d-real-rock-matrix.mjs > "$RUNNER_TEMP/matrix-$ratio.log"
+            RATIO="$ratio" LOG="$RUNNER_TEMP/matrix-$ratio.log" python3 - <<'PY' >> "$RUNNER_TEMP/torus-crown-summary.jsonl"
+          import json, os
+          from pathlib import Path
+          line = next(
+              line for line in Path(os.environ['LOG']).read_text(encoding='utf-8').splitlines()
+              if line.startswith('D_REAL_ROCK_MATRIX_RESULT ')
+          )
+          data = json.loads(line[len('D_REAL_ROCK_MATRIX_RESULT '):])
+          ratio = float(os.environ['RATIO'])
+          half_width = 0.4375 / 2
+          crown = ratio * half_width
+          ring = 0.514062464 - crown
+          print(json.dumps({
+              'crownRatio': ratio,
+              'crownRadiusMm': crown * 1000,
+              'ringRadiusMm': ring * 1000,
+              'innerVoidRadiusMm': (ring - crown) * 1000,
+              'maxVisualGapMm': data['maxVisualGapMm'],
+              'gapThresholds': data['gapThresholds'],
+              'maxContactShapesAtFirstContact': data['maxContactShapes'],
+              'multiplicityCounts': data['multiplicityCounts'],
+              'worstCase': data['topGap'][0],
+          }, separators=(',', ':')))
+          PY
+          done
+          cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" src/vehicle/m6/mode5-wheel-backend.ts
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          rows = [json.loads(line) for line in Path(os.environ['RUNNER_TEMP'], 'torus-crown-summary.jsonl').read_text().splitlines() if line.strip()]
+          rows.sort(key=lambda row: (row['maxVisualGapMm'], next(x['count'] for x in row['gapThresholds'] if x['mm'] == 20)))
+          print('TORUS_CROWN_FAMILY_SWEEP_RESULT', json.dumps(rows, separators=(',', ':')))
+          print('TORUS_CROWN_FAMILY_SWEEP_BEST', json.dumps(rows[0], separators=(',', ':')))
+          PY
