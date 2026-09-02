@@ -9,6 +9,7 @@ on:
       - src/vehicle/m6/m6-wheel-backend.ts
       - src/vehicle/m6/m6-topology-contract.ts
       - tests/m6-mode5-core-torus.test.mjs
+      - tests/m6-mode5-core-torus-full-runtime.test.mjs
       - .github/workflows/wheel-mode5-core-torus-integration.yml
 
 permissions:
@@ -17,7 +18,7 @@ permissions:
 jobs:
   integration:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 14
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -44,3 +45,21 @@ jobs:
           grep -Rqs 'native_m6_mode5_core_torus64' dist
           grep -Rqs 'core-torus64-parity' dist
           echo MODE5_CORE_TORUS_BROWSER_BUNDLE_OK
+      - name: Compile full M6 runtime with CORE torus selected
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('src/vehicle/m6/mode5-wheel-backend.ts')
+          text = path.read_text(encoding='utf-8')
+          old = 'const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
+          new = 'const requestedGeometry = "core-torus64";'
+          if text.count(old) != 1:
+              raise SystemExit('mode5 selector source drifted; refusing test-only rewrite')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          rm -rf .test-dist
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Settle and drive the full M6 on CORE torus
+        run: node --test tests/m6-mode5-core-torus-full-runtime.test.mjs
