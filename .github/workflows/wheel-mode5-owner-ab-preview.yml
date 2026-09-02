@@ -81,11 +81,15 @@ jobs:
           set -euxo pipefail
           test -n "$(git diff --cached --name-only -- owner-ab)"
 
-      - name: Validate staged snapshot diff
+      - name: Validate staged snapshot isolation
         shell: bash
         run: |
           set -euxo pipefail
-          git diff --cached --check
+          unexpected="$(git diff --cached --name-only | grep -v '^owner-ab/' || true)"
+          if [ -n "$unexpected" ]; then
+            printf 'unexpected staged path(s):\n%s\n' "$unexpected" >&2
+            exit 1
+          fi
 
       - name: Commit isolated snapshot
         shell: bash
