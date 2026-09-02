@@ -18,7 +18,7 @@ permissions:
 jobs:
   integration:
     runs-on: ubuntu-24.04
-    timeout-minutes: 14
+    timeout-minutes: 16
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -26,8 +26,8 @@ jobs:
           node-version: 24.16.0
           cache: npm
       - run: npm ci
-      - name: Typecheck source
-        run: npm run typecheck
+      - name: Run canonical source checks with default C preserved
+        run: npm run check
       - name: Compile focused Node test surface
         run: |
           node node_modules/typescript/bin/tsc -p tsconfig.test.json
