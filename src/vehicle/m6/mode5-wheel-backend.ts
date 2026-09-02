@@ -43,47 +43,92 @@ export const MODE5_SOLVER_AWARE_PROFILE = Object.freeze([
   Object.freeze({ x: 0.18875, y: 0.48717479384014406 }),
 ] as const);
 
+// Exact recovery of the Owner-approved ride winner from JV_CORE. This is a
+// non-convex union of axle-aligned capsules, not an analytic b3Wheel profile.
+// Keep the constants explicit so the Web falsifier remains provenance-bound to
+// the recovered CORE contract rather than becoming another hand-tuned tire.
+export const MODE5_CORE_TORUS_ID = "core-torus64-parity" as const;
+export const MODE5_CORE_TORUS_SEGMENTS = 64;
+export const MODE5_CORE_TORUS_CROWN_RATIO = 0.914;
+
 export const MODE5_FLAT_CONTROL_GEOMETRY = "flat-control" as const;
 export const MODE5_ASSET_PROFILE_GEOMETRY = "asset-profile" as const;
 export const MODE5_SOLVER_AWARE_PROFILE_GEOMETRY =
   "solver-aware-profile" as const;
+export const MODE5_CORE_TORUS_GEOMETRY = "core-torus64" as const;
 export type Mode5WheelGeometryVariant =
   | typeof MODE5_FLAT_CONTROL_GEOMETRY
   | typeof MODE5_ASSET_PROFILE_GEOMETRY
-  | typeof MODE5_SOLVER_AWARE_PROFILE_GEOMETRY;
+  | typeof MODE5_SOLVER_AWARE_PROFILE_GEOMETRY
+  | typeof MODE5_CORE_TORUS_GEOMETRY;
 
 const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];
 
-// The diagnostic branch defaults to C so full M6 settle/drive exercises the
-// new candidate. A and falsified B remain explicitly selectable for causal
-// comparison builds and regression tests.
+// The diagnostic branch still defaults to C. The recovered CORE torus is only
+// selected by an explicit build variable until the live Owner falsifier earns
+// a product judgement.
 export const MODE5_WHEEL_GEOMETRY_VARIANT: Mode5WheelGeometryVariant =
-  requestedGeometry === MODE5_FLAT_CONTROL_GEOMETRY
-    ? MODE5_FLAT_CONTROL_GEOMETRY
-    : requestedGeometry === MODE5_ASSET_PROFILE_GEOMETRY
-      ? MODE5_ASSET_PROFILE_GEOMETRY
-      : MODE5_SOLVER_AWARE_PROFILE_GEOMETRY;
+  requestedGeometry === MODE5_CORE_TORUS_GEOMETRY
+    ? MODE5_CORE_TORUS_GEOMETRY
+    : requestedGeometry === MODE5_FLAT_CONTROL_GEOMETRY
+      ? MODE5_FLAT_CONTROL_GEOMETRY
+      : requestedGeometry === MODE5_ASSET_PROFILE_GEOMETRY
+        ? MODE5_ASSET_PROFILE_GEOMETRY
+        : MODE5_SOLVER_AWARE_PROFILE_GEOMETRY;
 
 export const MODE5_WHEEL_BACKEND_ID =
   "native_m6_mode5_analytic_wheel" as const;
+export const MODE5_CORE_TORUS_BACKEND_ID =
+  "native_m6_mode5_core_torus64" as const;
+export type Mode5WheelBackendId =
+  | typeof MODE5_WHEEL_BACKEND_ID
+  | typeof MODE5_CORE_TORUS_BACKEND_ID;
+
+export function mode5WheelBackendIdForGeometry(
+  geometryVariant: Mode5WheelGeometryVariant,
+): Mode5WheelBackendId {
+  return geometryVariant === MODE5_CORE_TORUS_GEOMETRY
+    ? MODE5_CORE_TORUS_BACKEND_ID
+    : MODE5_WHEEL_BACKEND_ID;
+}
+
+export function mode5WheelShapeCountForGeometry(
+  geometryVariant: Mode5WheelGeometryVariant,
+): number {
+  return geometryVariant === MODE5_CORE_TORUS_GEOMETRY
+    ? MODE5_CORE_TORUS_SEGMENTS
+    : 1;
+}
 
 export interface Mode5WheelReceipt {
-  readonly backendId: typeof MODE5_WHEEL_BACKEND_ID;
+  readonly backendId: Mode5WheelBackendId;
   readonly geometryVariant: Mode5WheelGeometryVariant;
+  readonly contactGeometryId:
+    | typeof MODE5_FLAT_CONTROL_ID
+    | typeof MODE5_ASSET_PROFILE_ID
+    | typeof MODE5_SOLVER_AWARE_PROFILE_ID
+    | typeof MODE5_CORE_TORUS_ID;
   readonly profileId:
     | typeof MODE5_FLAT_CONTROL_ID
     | typeof MODE5_ASSET_PROFILE_ID
-    | typeof MODE5_SOLVER_AWARE_PROFILE_ID;
+    | typeof MODE5_SOLVER_AWARE_PROFILE_ID
+    | null;
   readonly bodyId: b3BodyId;
-  readonly rollingShapeId: b3ShapeId;
-  readonly shapeIds: readonly [b3ShapeId];
-  readonly shapeCount: 1;
+  // Analytic variants have one canonical rolling shape. A recovered CORE torus
+  // deliberately does not: all 64 capsules jointly form the rolling surface.
+  readonly rollingShapeId: b3ShapeId | null;
+  readonly shapeIds: readonly b3ShapeId[];
+  readonly shapeCount: number;
   readonly profileCount: number;
   readonly radius: number;
   readonly width: number;
   readonly cornerRadius: number;
   readonly flatControlCornerRadius: number;
   readonly collisionGroupIndex: number;
+  readonly torusSegments: number | null;
+  readonly torusCrownRadius: number | null;
+  readonly torusRingRadius: number | null;
+  readonly torusCapsuleHalfLength: number | null;
 }
 
 function createDynamicWheelBody(
@@ -138,6 +183,54 @@ function freezeReferenceSphereMass(
   return massData;
 }
 
+function createCoreTorusShapes(
+  b3: Mode5Box3DModule,
+  bodyId: b3BodyId,
+  shapeDef: ReturnType<typeof wheelShapeDef>,
+  config: M6TopologyConfig,
+) {
+  const halfWidth = 0.5 * config.wheelWidth;
+  const crownRadius = MODE5_CORE_TORUS_CROWN_RATIO * halfWidth;
+  const ringRadius = config.wheelRadius - crownRadius;
+  const capsuleHalfLength = halfWidth - crownRadius;
+
+  if (
+    !(halfWidth > 0) ||
+    !(crownRadius > 0) ||
+    !(ringRadius > 0) ||
+    capsuleHalfLength < 0
+  ) {
+    throw new Error(
+      `Invalid recovered CORE torus dimensions: R=${config.wheelRadius}, W=${config.wheelWidth}, crown=${crownRadius}.`,
+    );
+  }
+
+  const shapeIds: b3ShapeId[] = [];
+  for (let index = 0; index < MODE5_CORE_TORUS_SEGMENTS; index += 1) {
+    const angle = (2 * Math.PI * index) / MODE5_CORE_TORUS_SEGMENTS;
+    const x = ringRadius * Math.cos(angle);
+    const z = ringRadius * Math.sin(angle);
+    const shapeId = b3.b3CreateCapsuleShape(bodyId, shapeDef, {
+      center1: vec3(x, -capsuleHalfLength, z),
+      center2: vec3(x, capsuleHalfLength, z),
+      radius: crownRadius,
+    });
+    if (!b3.b3Shape_IsValid(shapeId)) {
+      throw new Error(
+        `Recovered CORE torus produced invalid capsule ${index}.`,
+      );
+    }
+    shapeIds.push(shapeId);
+  }
+
+  return {
+    shapeIds,
+    crownRadius,
+    ringRadius,
+    capsuleHalfLength,
+  };
+}
+
 export function createMode5WheelForGeometry(
   geometryVariant: Mode5WheelGeometryVariant,
   b3: Box3DModule,
@@ -163,12 +256,29 @@ export function createMode5WheelForGeometry(
     );
     const shapeDef = wheelShapeDef(b3, config, collisionGroupIndex);
 
-    let rollingShapeId: b3ShapeId;
+    let rollingShapeId: b3ShapeId | null = null;
+    let shapeIds: readonly b3ShapeId[];
+    let contactGeometryId: Mode5WheelReceipt["contactGeometryId"];
     let profileId: Mode5WheelReceipt["profileId"];
     let profileCount: number;
     let cornerRadius: number;
+    let torusSegments: number | null = null;
+    let torusCrownRadius: number | null = null;
+    let torusRingRadius: number | null = null;
+    let torusCapsuleHalfLength: number | null = null;
 
-    if (geometryVariant === MODE5_FLAT_CONTROL_GEOMETRY) {
+    if (geometryVariant === MODE5_CORE_TORUS_GEOMETRY) {
+      const torus = createCoreTorusShapes(b3, bodyId, shapeDef, config);
+      shapeIds = torus.shapeIds;
+      contactGeometryId = MODE5_CORE_TORUS_ID;
+      profileId = null;
+      profileCount = 0;
+      cornerRadius = 0;
+      torusSegments = MODE5_CORE_TORUS_SEGMENTS;
+      torusCrownRadius = torus.crownRadius;
+      torusRingRadius = torus.ringRadius;
+      torusCapsuleHalfLength = torus.capsuleHalfLength;
+    } else if (geometryVariant === MODE5_FLAT_CONTROL_GEOMETRY) {
       cornerRadius = Math.min(
         MODE5_FLAT_CONTROL_CORNER_RADIUS,
         0.5 * config.wheelWidth,
@@ -183,6 +293,8 @@ export function createMode5WheelForGeometry(
         0.5 * config.wheelWidth,
         cornerRadius,
       );
+      shapeIds = [rollingShapeId];
+      contactGeometryId = MODE5_FLAT_CONTROL_ID;
       profileId = MODE5_FLAT_CONTROL_ID;
       profileCount = 2;
     } else if (geometryVariant === MODE5_ASSET_PROFILE_GEOMETRY) {
@@ -199,6 +311,8 @@ export function createMode5WheelForGeometry(
         MODE5_ASSET_PROFILE,
         cornerRadius,
       );
+      shapeIds = [rollingShapeId];
+      contactGeometryId = MODE5_ASSET_PROFILE_ID;
       profileId = MODE5_ASSET_PROFILE_ID;
       profileCount = MODE5_ASSET_PROFILE.length;
     } else {
@@ -215,31 +329,40 @@ export function createMode5WheelForGeometry(
         MODE5_SOLVER_AWARE_PROFILE,
         cornerRadius,
       );
+      shapeIds = [rollingShapeId];
+      contactGeometryId = MODE5_SOLVER_AWARE_PROFILE_ID;
       profileId = MODE5_SOLVER_AWARE_PROFILE_ID;
       profileCount = MODE5_SOLVER_AWARE_PROFILE.length;
     }
 
-    if (!b3.b3Shape_IsValid(rollingShapeId)) {
-      throw new Error(
-        `Mode5 geometry ${geometryVariant} produced an invalid wheel shape.`,
-      );
+    for (const shapeId of shapeIds) {
+      if (!b3.b3Shape_IsValid(shapeId)) {
+        throw new Error(
+          `Mode5 geometry ${geometryVariant} produced an invalid wheel shape.`,
+        );
+      }
     }
     b3.b3Body_SetMassData(bodyId, referenceMass);
 
     return {
-      backendId: MODE5_WHEEL_BACKEND_ID,
+      backendId: mode5WheelBackendIdForGeometry(geometryVariant),
       geometryVariant,
+      contactGeometryId,
       profileId,
       bodyId,
       rollingShapeId,
-      shapeIds: [rollingShapeId],
-      shapeCount: 1,
+      shapeIds,
+      shapeCount: shapeIds.length,
       profileCount,
       radius: config.wheelRadius,
       width: config.wheelWidth,
       cornerRadius,
       flatControlCornerRadius: MODE5_FLAT_CONTROL_CORNER_RADIUS,
       collisionGroupIndex,
+      torusSegments,
+      torusCrownRadius,
+      torusRingRadius,
+      torusCapsuleHalfLength,
     };
   } catch (error: unknown) {
     if (b3.b3Body_IsValid(bodyId)) {
