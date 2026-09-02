@@ -1,0 +1,285 @@
+name: JV Owner wheel ABCD atomic migration
+
+on:
+  push:
+    branches:
+      - preview/owner-control
+    paths:
+      - .github/workflows/owner-preview-abcd-migrate.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact control lane
+        uses: actions/checkout@v7
+        with:
+          ref: preview/owner-control
+          fetch-depth: 1
+
+      - name: Atomically extend Owner wheel publication from A-B-C to A-B-C-D
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          D_SHA = "d52aa3776e022649af21cddc6d9dcfae3bac42f9"
+          C_SHA = "6bed3281e161a77062ffd6849aa674e55db7f758"
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected exactly one anchor, found {count}")
+              return text.replace(old, new, 1)
+
+          # Pointer: preserve historical schema/file identity, extend the variant list to D,
+          # and pin all four builds to the clean exact D executable source.
+          pointer_path = Path("preview/owner-ab.json")
+          pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+          if pointer.get("schema") != "JV_OWNER_AB_POINTER_V1":
+              raise SystemExit("unexpected Owner wheel pointer schema")
+          if pointer.get("sourceCommit") != C_SHA:
+              raise SystemExit(f"Owner wheel pointer source drifted: {pointer.get('sourceCommit')}")
+          expected_old_variants = [
+              {"id": "flat-control", "viteMode5WheelGeometry": "flat-control"},
+              {"id": "asset-profile", "viteMode5WheelGeometry": "asset-profile"},
+              {"id": "solver-aware-profile", "viteMode5WheelGeometry": "solver-aware-profile"},
+          ]
+          if pointer.get("variants") != expected_old_variants:
+              raise SystemExit(f"Owner wheel pointer variants drifted: {pointer.get('variants')!r}")
+          pointer["sourceCommit"] = D_SHA
+          pointer["variants"] = expected_old_variants + [
+              {"id": "core-torus64", "viteMode5WheelGeometry": "core-torus64"},
+          ]
+          pointer["purpose"] = (
+              "Owner same-source wheel contact falsifier: A historical Flat c200mm control, "
+              "B Owner-falsified asymmetric P25+c20mm profile, C validated symmetric solver-aware "
+              "upper-quartile i25+c5 profile, and D exact CORE torus64 candidate; accepted Owner "
+              "Preview root remains unchanged"
+          )
+          pointer_path.write_text(json.dumps(pointer, indent=2) + "\n", encoding="utf-8")
+
+          pages_path = Path(".github/workflows/owner-preview-pages.yml")
+          pages = pages_path.read_text(encoding="utf-8")
+          pages = replace_once(
+              pages,
+              "if not isinstance(variants, list) or len(variants) != 3:",
+              "if not isinstance(variants, list) or len(variants) != 4:",
+              "variant count",
+          )
+          pages = replace_once(
+              pages,
+              'raise SystemExit("Owner wheel experiment requires exactly three A/B/C variants")',
+              'raise SystemExit("Owner wheel experiment requires exactly four A/B/C/D variants")',
+              "variant count message",
+          )
+          pages = replace_once(
+              pages,
+              '              "solver-aware-profile": "solver-aware-profile",\n          }',
+              '              "solver-aware-profile": "solver-aware-profile",\n              "core-torus64": "core-torus64",\n          }',
+              "variant map",
+          )
+          pages = replace_once(
+              pages,
+              '              output.write("ab_solver=solver-aware-profile\\n")',
+              '              output.write("ab_solver=solver-aware-profile\\n")\n              output.write("ab_torus=core-torus64\\n")',
+              "torus output",
+          )
+          pages = replace_once(
+              pages,
+              '          print(f"Owner wheel A/B/C same-source candidate: {ab_sha}")',
+              '          print(f"Owner wheel A/B/C/D same-source candidate: {ab_sha}")',
+              "candidate print",
+          )
+
+          solver_tail = '''          solver="$RUNNER_TEMP/jv-wheel-ab-solver"
+          rm -rf "$solver"
+          mkdir -p "$solver"
+          cp -a dist/. "$solver/"
+
+      - name: Validate same-source A-B-C build separation'''
+          solver_plus_torus = '''          solver="$RUNNER_TEMP/jv-wheel-ab-solver"
+          rm -rf "$solver"
+          mkdir -p "$solver"
+          cp -a dist/. "$solver/"
+
+      - name: Build exact CORE torus D variant
+        env:
+          AB_SHA: ${{ steps.candidate.outputs.ab_sha }}
+          AB_VARIANT: ${{ steps.candidate.outputs.ab_torus }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
+        run: |
+          set -euxo pipefail
+          rm -rf dist
+          VITE_JV_MODE5_WHEEL_GEOMETRY="$AB_VARIANT" npm run build:portable
+          node tools/validate-build-identity.mjs
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          if (manifest?.source?.commit !== process.env.AB_SHA) {
+            throw new Error(`CORE torus D source drift: ${manifest?.source?.commit}`);
+          }
+          if (manifest?.source?.workingTreeClean !== true) {
+            throw new Error("CORE torus D build requires clean committed source.");
+          }
+          NODE
+          grep -Rqs 'native_m6_mode5_core_torus64' dist
+          grep -Rqs 'core-torus64-parity' dist
+          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
+          mkdir -p dist/receipts
+          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
+          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          Path("dist/owner-ab-variant.json").write_text(json.dumps({
+              "schema": "JV_OWNER_AB_VARIANT_V1",
+              "experiment": "wheel-mode5-contact-geometry",
+              "sourceCommit": os.environ["AB_SHA"],
+              "variant": os.environ["AB_VARIANT"],
+              "buildManifest": "build-manifest.json",
+          }, indent=2) + "\\n", encoding="utf-8")
+          PY
+          torus="$RUNNER_TEMP/jv-wheel-ab-torus"
+          rm -rf "$torus"
+          mkdir -p "$torus"
+          cp -a dist/. "$torus/"
+
+      - name: Validate same-source A-B-C-D build separation'''
+          pages = replace_once(pages, solver_tail, solver_plus_torus, "D build insertion")
+
+          pages = replace_once(
+              pages,
+              '          solver = Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-ab-solver"',
+              '          solver = Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-ab-solver"\n          torus = Path(os.environ["RUNNER_TEMP"]) / "jv-wheel-ab-torus"',
+              "torus temp root",
+          )
+          pages = replace_once(
+              pages,
+              '              ("solver", solver, "solver-aware-profile"),\n          ):',
+              '              ("solver", solver, "solver-aware-profile"),\n              ("torus", torus, "core-torus64"),\n          ):',
+              "torus validation tuple",
+          )
+          pages = replace_once(
+              pages,
+              '''          solver_digest, solver_paths = core_digest(solver)
+          if len({flat_digest, profile_digest, solver_digest}) != 3:
+              raise SystemExit("Flat, falsified B and solver-aware C core builds must be pairwise distinct")''',
+              '''          solver_digest, solver_paths = core_digest(solver)
+          torus_digest, torus_paths = core_digest(torus)
+          if len({flat_digest, profile_digest, solver_digest, torus_digest}) != 4:
+              raise SystemExit("Flat, falsified B, solver-aware C and CORE torus D core builds must be pairwise distinct")''',
+              "ABCD digest validation",
+          )
+          pages = replace_once(
+              pages,
+              '''              "OWNER_WHEEL_ABC_BUILD_SEPARATION_OK",
+              os.environ["AB_SHA"],
+              flat_digest,
+              profile_digest,
+              solver_digest,
+              len(flat_paths),
+              len(profile_paths),
+              len(solver_paths),''',
+              '''              "OWNER_WHEEL_ABCD_BUILD_SEPARATION_OK",
+              os.environ["AB_SHA"],
+              flat_digest,
+              profile_digest,
+              solver_digest,
+              torus_digest,
+              len(flat_paths),
+              len(profile_paths),
+              len(solver_paths),
+              len(torus_paths),''',
+              "ABCD digest print",
+          )
+          pages = replace_once(
+              pages,
+              "      - name: Compose isolated wheel A-B-C paths into accepted root",
+              "      - name: Compose isolated wheel A-B-C-D paths into accepted root",
+              "compose step name",
+          )
+          pages = replace_once(
+              pages,
+              '          mkdir -p "$experiment_root/flat" "$experiment_root/profile" "$experiment_root/solver"',
+              '          mkdir -p "$experiment_root/flat" "$experiment_root/profile" "$experiment_root/solver" "$experiment_root/torus"',
+              "compose mkdir",
+          )
+          pages = replace_once(
+              pages,
+              '          cp -a "$RUNNER_TEMP/jv-wheel-ab-solver/." "$experiment_root/solver/"',
+              '          cp -a "$RUNNER_TEMP/jv-wheel-ab-solver/." "$experiment_root/solver/"\n          cp -a "$RUNNER_TEMP/jv-wheel-ab-torus/." "$experiment_root/torus/"',
+              "compose torus copy",
+          )
+          pages = replace_once(
+              pages,
+              '                  {"id": "solver-aware-profile", "path": "solver/"},\n              ],',
+              '                  {"id": "solver-aware-profile", "path": "solver/"},\n                  {"id": "core-torus64", "path": "torus/"},\n              ],',
+              "index torus variant",
+          )
+          pages = replace_once(
+              pages,
+              "      - name: Verify accepted root remained unchanged after A-B-C composition",
+              "      - name: Verify accepted root remained unchanged after A-B-C-D composition",
+              "root verification name",
+          )
+          pages = replace_once(
+              pages,
+              '          for (const path of ["flat", "profile", "solver"]) {',
+              '          for (const path of ["flat", "profile", "solver", "torus"]) {',
+              "manifest verification paths",
+          )
+          pages = replace_once(
+              pages,
+              '          console.log(`Accepted root preserved; wheel A-B-C pinned to ${process.env.AB_SHA.slice(0, 12)}.`);',
+              '          console.log(`Accepted root preserved; wheel A-B-C-D pinned to ${process.env.AB_SHA.slice(0, 12)}.`);',
+              "root verification print",
+          )
+          pages_path.write_text(pages, encoding="utf-8")
+
+          smoke_path = Path(".github/workflows/owner-preview-live-smoke.yml")
+          smoke = smoke_path.read_text(encoding="utf-8")
+          smoke = replace_once(
+              smoke,
+              "      - name: Verify deployed Owner Preview and wheel A-B-C",
+              "      - name: Verify deployed Owner Preview and wheel A-B-C-D",
+              "smoke step name",
+          )
+          smoke = replace_once(
+              smoke,
+              '                          {"id": "solver-aware-profile", "path": "solver/"},\n                      ]',
+              '                          {"id": "solver-aware-profile", "path": "solver/"},\n                          {"id": "core-torus64", "path": "torus/"},\n                      ]',
+              "smoke index D",
+          )
+          smoke = replace_once(
+              smoke,
+              '                      "solver": "solver-aware-profile",\n                  }',
+              '                      "solver": "solver-aware-profile",\n                      "torus": "core-torus64",\n                  }',
+              "smoke expected D",
+          )
+          smoke = replace_once(
+              smoke,
+              '                      f"abc={expected_ab}",',
+              '                      f"abcd={expected_ab}",',
+              "smoke print",
+          )
+          smoke_path.write_text(smoke, encoding="utf-8")
+
+          # This workflow is scaffolding only; remove it from the final publication commit.
+          Path(".github/workflows/owner-preview-abcd-migrate.yml").unlink()
+          PY
+
+          git diff --check
+          git status --short
+          git diff -- preview/owner-ab.json .github/workflows/owner-preview-pages.yml .github/workflows/owner-preview-live-smoke.yml
+          test ! -e .github/workflows/owner-preview-abcd-migrate.yml
+
+          git config user.name "Jozzpoly"
+          git config user.email "100104127+Jozzpoly@users.noreply.github.com"
+          git add preview/owner-ab.json .github/workflows/owner-preview-pages.yml .github/workflows/owner-preview-live-smoke.yml .github/workflows/owner-preview-abcd-migrate.yml
+          git commit -m "preview: publish exact CORE torus D"
+          git push origin HEAD:preview/owner-control
