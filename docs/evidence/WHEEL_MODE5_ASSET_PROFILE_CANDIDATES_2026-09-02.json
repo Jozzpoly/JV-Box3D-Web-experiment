@@ -1,6 +1,6 @@
 {
   "schema": "JV_WEB_WHEEL_PROFILE_CANDIDATES_V1",
-  "sourceCommit": "057ae341d34919e5190f4c811568c81418260bcb",
+  "sourceCommit": "36b79e7d43a39c57d283f289d368dda52c2d3d57",
   "sourceAsset": "assets/owner-vehicle/source/Offroad_Big_Wheels.gltf",
   "expectedWheelSourceGitBlob": "c13c77a8e5552175ee8266b2da33a54691f1dae9",
   "requestedRadius": 0.514062464,
