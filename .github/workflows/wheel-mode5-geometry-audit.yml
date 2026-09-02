@@ -118,11 +118,25 @@ jobs:
         run: npm ci
 
       - name: Compile mode5 test dependencies
+        id: compile_mode5_tests
         shell: bash
         run: |
-          set -euxo pipefail
+          set -uo pipefail
           rm -rf .test-dist
-          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          set +e
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json 2>&1 | tee .mode5-tsc.log
+          status=${PIPESTATUS[0]}
+          echo "status=${status}" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Upload mode5 compile diagnostics
+        if: failure() && steps.compile_mode5_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mode5-tsc-diagnostics
+          path: .mode5-tsc.log
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Stage pinned mode5 inline runtime
         shell: bash
