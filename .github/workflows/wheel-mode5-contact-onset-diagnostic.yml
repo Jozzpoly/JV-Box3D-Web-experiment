@@ -1,0 +1,119 @@
+name: Wheel mode5 contact onset diagnostic
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-contact-onset-diagnostic.yml
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  onset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile and stage mode5 runtime
+        run: |
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Measure tread contact onset against exact plane-like box
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          import { validatePinnedNativeFactoryReceiptText } from './.test-dist/config/native-factory-receipt.js';
+          import { loadMode5Box3DModule } from './.test-dist/physics/mode5-box3d-runtime.js';
+          import {
+            createMode5WheelForGeometry,
+            MODE5_FLAT_CONTROL_GEOMETRY,
+            MODE5_ASSET_PROFILE_GEOMETRY,
+          } from './.test-dist/vehicle/m6/mode5-wheel-backend.js';
+          import { m6TopologyConfigFromReceipt } from './.test-dist/vehicle/m6/m6-topology-config.js';
+
+          const receipt = await validatePinnedNativeFactoryReceiptText(
+            await readFile('public/receipts/jv_m6_factory_receipt.json','utf8'),
+          );
+          const config = m6TopologyConfigFromReceipt(receipt);
+          const b3 = await loadMode5Box3DModule();
+
+          function shapeKey(id) { return `${id.index1}:${id.world0}:${id.generation}`; }
+
+          function makeWorld() {
+            const wd = b3.b3DefaultWorldDef();
+            wd.gravity = {x:0,y:0,z:0};
+            wd.enableContinuous = false;
+            return b3.b3CreateWorld(wd);
+          }
+
+          function addPlaneBox(worldId, nearFaceX) {
+            const bd = b3.b3DefaultBodyDef();
+            bd.position = {x:nearFaceX + 0.01,y:0,z:0};
+            const body = b3.b3CreateBody(worldId,bd);
+            const sd = b3.b3DefaultShapeDef();
+            sd.enableContactEvents = true;
+            const shape = b3.b3CreateBoxShape(body,sd,0.01,2,2);
+            return {body,shape};
+          }
+
+          function probe(geometry, nearFaceX) {
+            const worldId = makeWorld();
+            const contacts = b3.createContactsBuffer();
+            try {
+              const wheel = createMode5WheelForGeometry(
+                geometry,b3,worldId,config,{x:0,y:0,z:0},-6200,
+              );
+              const wall = addPlaneBox(worldId,nearFaceX);
+              b3.b3World_Step(worldId,1/60,4);
+              b3.getShapeContactData(contacts,wheel.rollingShapeId);
+              const count = b3.getNumContacts(contacts);
+              const rows=[];
+              for(let i=0;i<count;i++) {
+                const contact=b3.getContactAt(b3.createContact(),contacts,i);
+                const manifolds=[];
+                for(let m=0;m<contact.manifoldCount;m++) {
+                  const manifold=b3.getManifoldAt(b3.createManifold(),contact,m);
+                  const points=[];
+                  for(let p=0;p<manifold.pointCount;p++) {
+                    const point=b3.getManifoldPointAt
+                      ? b3.getManifoldPointAt(b3.createPoint(),manifold,p)
+                      : null;
+                    if(point) points.push({separation:point.separation,baseSeparation:point.baseSeparation,normalImpulse:point.normalImpulse});
+                  }
+                  manifolds.push({normal:manifold.normal,pointCount:manifold.pointCount,points});
+                }
+                rows.push({shapeIdA:shapeKey(contact.shapeIdA),shapeIdB:shapeKey(contact.shapeIdB),wall:shapeKey(wall.shape),manifolds});
+              }
+              return {nearFaceX,count,rows};
+            } finally {
+              b3.destroyContactsBuffer(contacts);
+              b3.b3DestroyWorld(worldId);
+            }
+          }
+
+          for (const [label,geometry] of [
+            ['FLAT',MODE5_FLAT_CONTROL_GEOMETRY],
+            ['PROFILE',MODE5_ASSET_PROFILE_GEOMETRY],
+          ]) {
+            let first=null;
+            const samples=[];
+            for(let mm=570;mm>=490;mm--) {
+              const result=probe(geometry,mm/1000);
+              if(result.count>0 && first===null) first=result;
+              if(mm%5===0 || result.count>0 && (first===result || mm>=Math.round(first.nearFaceX*1000)-3)) samples.push(result);
+            }
+            console.log(`MODE5_CONTACT_ONSET_${label}`,JSON.stringify({first,samples}));
+          }
+          NODE
