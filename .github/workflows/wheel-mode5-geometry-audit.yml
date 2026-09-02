@@ -1,0 +1,35 @@
+name: Wheel mode5 geometry audit
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-runtime-spike-2026-09-01
+    paths:
+      - tools/owner-vehicle/owner-m6-wheel-profile-audit.mjs
+      - tests/owner-vehicle-wheel-profile-audit.test.mjs
+      - assets/owner-vehicle/source/Offroad_Big_Wheels.gltf
+      - public/receipts/jv_m6_factory_receipt.json
+      - .github/workflows/wheel-mode5-geometry-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact experiment source
+        uses: actions/checkout@v4
+
+      - name: Setup canonical Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+
+      - name: Run focused real-asset wheel profile audit
+        shell: bash
+        run: |
+          set -euxo pipefail
+          node --version
+          node --test tests/owner-vehicle-wheel-profile-audit.test.mjs
