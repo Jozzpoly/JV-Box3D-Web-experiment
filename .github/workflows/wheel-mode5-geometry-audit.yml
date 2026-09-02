@@ -117,60 +117,11 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
-      - name: Compile mode5 test dependencies
-        id: compile_mode5_tests
-        shell: bash
-        run: |
-          set -uo pipefail
-          rm -rf .test-dist
-          set +e
-          node node_modules/typescript/bin/tsc -p tsconfig.test.json 2>&1 | tee .mode5-tsc.log
-          status=${PIPESTATUS[0]}
-          echo "status=${status}" >> "$GITHUB_OUTPUT"
-          exit "$status"
-
-      - name: Upload mode5 compile diagnostics
-        if: failure() && steps.compile_mode5_tests.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: mode5-tsc-diagnostics
-          path: .mode5-tsc.log
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Stage pinned mode5 inline runtime
+      - name: Run focused profile-wheel runtime validation
         shell: bash
         run: |
           set -euxo pipefail
-          mkdir -p .test-dist/physics/vendor
-          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
-
-      - name: Diagnose same-source A-B contract
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -euxo pipefail
-          node --test --test-name-pattern="mode5 asset profile preserves reference-sphere mass|same-source mode5 A-B changes only analytic contact geometry contract" tests/m6-mode5-wheel-backend.test.mjs
-
-      - name: Diagnose profile contact microcases
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -euxo pipefail
-          node --test --test-name-pattern="mode5 asset profile keeps finite contact" tests/m6-mode5-wheel-backend.test.mjs
-
-      - name: Diagnose full M6 settle and drive
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -euxo pipefail
-          node --test --test-name-pattern="patched boundary builds and drives a full M6" tests/m6-mode5-wheel-backend.test.mjs
-
-      - name: Run complete focused profile-wheel test
-        shell: bash
-        run: |
-          set -euxo pipefail
-          node --test tests/m6-mode5-wheel-backend.test.mjs
+          node tools/run-tests.mjs tests/m6-mode5-wheel-backend.test.mjs
 
       - name: Typecheck selector integration
         shell: bash
