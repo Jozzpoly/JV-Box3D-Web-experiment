@@ -55,6 +55,7 @@ test("exact recovered CORE torus keeps the frozen sphere mass and 64-shape conta
   worldDef.gravity = { x: 0, y: 0, z: 0 };
   const worldId = b3.b3CreateWorld(worldDef);
   const config = m6TopologyConfigFromReceipt(receipt);
+  const groupIndex = -9401;
   try {
     const flat = createMode5WheelForGeometry(
       MODE5_FLAT_CONTROL_GEOMETRY,
@@ -62,7 +63,7 @@ test("exact recovered CORE torus keeps the frozen sphere mass and 64-shape conta
       worldId,
       config,
       { x: -2, y: 2, z: 0 },
-      -9401,
+      groupIndex,
     );
     const torus = createMode5WheelForGeometry(
       MODE5_CORE_TORUS_GEOMETRY,
@@ -70,7 +71,7 @@ test("exact recovered CORE torus keeps the frozen sphere mass and 64-shape conta
       worldId,
       config,
       { x: 2, y: 2, z: 0 },
-      -9402,
+      groupIndex,
     );
 
     assert.equal(torus.backendId, MODE5_CORE_TORUS_BACKEND_ID);
