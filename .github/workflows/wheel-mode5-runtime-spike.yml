@@ -1,19 +1,17 @@
-name: Wheel mode5 runtime feasibility spike
+name: Wheel mode5 profile binding spike
 
 on:
   push:
     branches:
       - work/wheel-mode5-runtime-spike-2026-09-01
-    paths-ignore:
-      - src/physics/vendor/box3d-mode5.inline.mjs
-      - src/physics/vendor/box3d-mode5.inline.d.ts
-      - docs/evidence/WHEEL_MODE5_RUNTIME_SPIKE_2026-09-01.txt
+    paths:
+      - .github/workflows/wheel-mode5-runtime-spike.yml
 
 permissions:
   contents: write
 
 jobs:
-  build-mode5-runtime:
+  build-mode5-profile-runtime:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -36,7 +34,7 @@ jobs:
           version: 6.0.2
           actions-cache-folder: emsdk-cache
 
-      - name: Recover exact wheel patch and binding source
+      - name: Recover exact wheel patch and expose profile binding
         shell: bash
         run: |
           set -euxo pipefail
@@ -103,10 +101,28 @@ jobs:
           needle = '''\tfunction( "b3CreateSphereShape(bodyId, shapeDef, sphere)",
           \t\t+[]( b3BodyId bodyId, b3ShapeDef def, b3Sphere sphere ) { return b3CreateSphereShape( bodyId, &def, &sphere ); } );
           '''
-          helper = needle + '''\t// JV-Web feasibility seam: expose only the Owner-selected flat mode5 constructor.
+          helper = needle + '''\t// JV-Web mode5 seam: preserve the validated flat control and expose the
+          \t// donor's general convex profile constructor without changing solver semantics.
           \tfunction( "b3CreateWheelShapeFlat(bodyId, shapeDef, center, axis, radius, halfWidth, cornerRadius)",
           \t\t+[]( b3BodyId bodyId, b3ShapeDef def, b3Vec3 center, b3Vec3 axis, float radius, float halfWidth, float cornerRadius ) {
           \t\t\tb3Wheel wheel = b3MakeWheel( center, axis, radius, halfWidth, cornerRadius );
+          \t\t\treturn b3CreateWheelShape( bodyId, &def, &wheel );
+          \t\t} );
+          \tfunction( "b3CreateWheelShapeProfile(bodyId, shapeDef, center, axis, profile, cornerRadius)",
+          \t\t+[]( b3BodyId bodyId, b3ShapeDef def, b3Vec3 center, b3Vec3 axis, val profile, float cornerRadius ) {
+          \t\t\tconst unsigned count = profile["length"].as<unsigned>();
+          \t\t\tif ( count < 2 || count > B3_MAX_WHEEL_PROFILE_POINTS )
+          \t\t\t{
+          \t\t\t\treturn b3_nullShapeId;
+          \t\t\t}
+          \t\t\tstd::vector<b3Vec2> points;
+          \t\t\tpoints.reserve( count );
+          \t\t\tfor ( unsigned i = 0; i < count; ++i )
+          \t\t\t{
+          \t\t\t\tval point = profile[i];
+          \t\t\t\tpoints.push_back( { point["x"].as<float>(), point["y"].as<float>() } );
+          \t\t\t}
+          \t\t\tb3Wheel wheel = b3MakeWheelProfile( center, axis, points.data(), (int)points.size(), cornerRadius );
           \t\t\treturn b3CreateWheelShape( bodyId, &def, &wheel );
           \t\t} );
           '''
@@ -137,15 +153,16 @@ jobs:
           pnpm build
           pnpm test
 
-      - name: Smoke flat mode5 wheel in inline WASM
+      - name: Smoke flat control and general profile in inline WASM
         shell: bash
         run: |
-          cat > wheel-smoke.mjs <<'JS'
+          cat > wheel-profile-smoke.mjs <<'JS'
           import assert from 'node:assert/strict';
           import Box3D from './box3djs/dist/box3d.inline.mjs';
 
           const b3 = await Box3D();
           assert.equal(typeof b3.b3CreateWheelShapeFlat, 'function');
+          assert.equal(typeof b3.b3CreateWheelShapeProfile, 'function');
 
           const worldDef = b3.b3DefaultWorldDef();
           worldDef.gravity = { x: 0, y: -10, z: 0 };
@@ -156,100 +173,130 @@ jobs:
           const ground = b3.b3CreateBody(world, groundDef);
           b3.b3CreateBoxShape(ground, b3.b3DefaultShapeDef(), 8, 0.5, 8);
 
-          const wheelRadius = 0.514062464;
-          const wheelHalfWidth = 0.21875;
-          const wheelCornerRadius = 0.2;
-          const initialWheelPosition = { x: 0, y: 2.0, z: 0 };
-
-          const wheelBodyDef = b3.b3DefaultBodyDef();
-          wheelBodyDef.type = b3.b3BodyType.b3_dynamicBody;
-          wheelBodyDef.position = initialWheelPosition;
-          wheelBodyDef.allowFastRotation = true;
-          const wheelBody = b3.b3CreateBody(world, wheelBodyDef);
-          const wheelShape = b3.b3CreateWheelShapeFlat(
-            wheelBody,
-            b3.b3DefaultShapeDef(),
-            { x: 0, y: 0, z: 0 },
-            { x: 1, y: 0, z: 0 },
-            wheelRadius,
-            wheelHalfWidth,
-            wheelCornerRadius,
-          );
-          assert.ok(b3.b3Shape_IsValid(wheelShape));
-
-          // A free finite-width wheel naturally tips onto its side. The vehicle rig
-          // constrains wheel attitude, so this smoke gives the wheel the minimum
-          // equivalent constraint: vertical translation only, no body rotation.
-          const guideDef = b3.b3DefaultBodyDef();
-          guideDef.type = b3.b3BodyType.b3_staticBody;
-          guideDef.position = initialWheelPosition;
-          const guideBody = b3.b3CreateBody(world, guideDef);
+          const initialY = 2.0;
           const verticalFrame = b3.b3ComputeQuatBetweenUnitVectors(
             { x: 1, y: 0, z: 0 },
             { x: 0, y: 1, z: 0 },
           );
-          const guideJointDef = b3.b3DefaultPrismaticJointDef();
-          guideJointDef.base.bodyIdA = guideBody;
-          guideJointDef.base.bodyIdB = wheelBody;
-          guideJointDef.base.localFrameA = {
-            p: { x: 0, y: 0, z: 0 },
-            q: verticalFrame,
-          };
-          guideJointDef.base.localFrameB = {
-            p: { x: 0, y: 0, z: 0 },
-            q: verticalFrame,
-          };
-          guideJointDef.base.collideConnected = false;
-          guideJointDef.enableSpring = false;
-          guideJointDef.enableLimit = false;
-          b3.b3CreatePrismaticJoint(world, guideJointDef);
+
+          function createGuidedBody(x) {
+            const bodyDef = b3.b3DefaultBodyDef();
+            bodyDef.type = b3.b3BodyType.b3_dynamicBody;
+            bodyDef.position = { x, y: initialY, z: 0 };
+            bodyDef.allowFastRotation = true;
+            const body = b3.b3CreateBody(world, bodyDef);
+
+            const guideDef = b3.b3DefaultBodyDef();
+            guideDef.type = b3.b3BodyType.b3_staticBody;
+            guideDef.position = { x, y: initialY, z: 0 };
+            const guide = b3.b3CreateBody(world, guideDef);
+            const jointDef = b3.b3DefaultPrismaticJointDef();
+            jointDef.base.bodyIdA = guide;
+            jointDef.base.bodyIdB = body;
+            jointDef.base.localFrameA = {
+              p: { x: 0, y: 0, z: 0 },
+              q: verticalFrame,
+            };
+            jointDef.base.localFrameB = {
+              p: { x: 0, y: 0, z: 0 },
+              q: verticalFrame,
+            };
+            jointDef.base.collideConnected = false;
+            jointDef.enableSpring = false;
+            jointDef.enableLimit = false;
+            b3.b3CreatePrismaticJoint(world, jointDef);
+            return body;
+          }
+
+          const radius = 0.514062464;
+          const halfWidth = 0.21875;
+          const flatBody = createGuidedBody(-1.5);
+          const flatShape = b3.b3CreateWheelShapeFlat(
+            flatBody,
+            b3.b3DefaultShapeDef(),
+            { x: 0, y: 0, z: 0 },
+            { x: 1, y: 0, z: 0 },
+            radius,
+            halfWidth,
+            0.2,
+          );
+          assert.ok(b3.b3Shape_IsValid(flatShape));
+
+          const profileCornerRadius = 0.01;
+          const profile = [
+            { x: -0.19875, y: 0.484062464 },
+            { x: -0.12, y: 0.500000000 },
+            { x: 0.0, y: 0.504062464 },
+            { x: 0.12, y: 0.500000000 },
+            { x: 0.19875, y: 0.484062464 },
+          ];
+          const profileBody = createGuidedBody(1.5);
+          const profileShape = b3.b3CreateWheelShapeProfile(
+            profileBody,
+            b3.b3DefaultShapeDef(),
+            { x: 0, y: 0, z: 0 },
+            { x: 1, y: 0, z: 0 },
+            profile,
+            profileCornerRadius,
+          );
+          assert.ok(b3.b3Shape_IsValid(profileShape));
 
           for (let i = 0; i < 360; i++) {
             b3.b3World_Step(world, 1 / 60, 4);
           }
 
-          const p = b3.b3Body_GetPosition(wheelBody);
-          assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z));
-          const expectedCenterY = 0.5 + wheelRadius;
-          assert.ok(
-            Math.abs(p.y - expectedCenterY) < 0.03,
-            `upright wheel settled at y=${p.y}; expected about ${expectedCenterY}`,
-          );
-          assert.ok(Math.abs(p.x) < 0.01 && Math.abs(p.z) < 0.01, 'guide leaked lateral motion');
+          function validateRestingWheel(body, shape, expectedCenterY, label) {
+            const p = b3.b3Body_GetPosition(body);
+            assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z));
+            assert.ok(
+              Math.abs(p.y - expectedCenterY) < 0.03,
+              `${label} settled at y=${p.y}; expected about ${expectedCenterY}`,
+            );
 
-          const contacts = b3.createContactsBuffer();
-          b3.getShapeContactData(contacts, wheelShape);
-          assert.ok(b3.getNumContacts(contacts) >= 1, 'wheel has no resting ground contact');
-
-          const contact = b3.createContact();
-          const manifold = b3.createManifold();
-          let maxPointCount = 0;
-          let hasVerticalManifold = false;
-          for (let i = 0; i < b3.getNumContacts(contacts); i++) {
-            b3.getContactAt(contact, contacts, i);
-            for (let m = 0; m < contact.manifoldCount; m++) {
-              b3.getManifoldAt(manifold, contact, m);
-              maxPointCount = Math.max(maxPointCount, manifold.pointCount);
-              if (Math.abs(manifold.normal.y) > 0.9) {
-                hasVerticalManifold = true;
+            const contacts = b3.createContactsBuffer();
+            b3.getShapeContactData(contacts, shape);
+            assert.ok(b3.getNumContacts(contacts) >= 1, `${label} has no resting ground contact`);
+            const contact = b3.createContact();
+            const manifold = b3.createManifold();
+            let hasVerticalManifold = false;
+            let maxPointCount = 0;
+            for (let i = 0; i < b3.getNumContacts(contacts); i++) {
+              b3.getContactAt(contact, contacts, i);
+              for (let m = 0; m < contact.manifoldCount; m++) {
+                b3.getManifoldAt(manifold, contact, m);
+                maxPointCount = Math.max(maxPointCount, manifold.pointCount);
+                if (Math.abs(manifold.normal.y) > 0.9) {
+                  hasVerticalManifold = true;
+                }
               }
             }
+            assert.ok(hasVerticalManifold, `${label} manifold normal is not ground-like`);
+            b3.destroyContactsBuffer(contacts);
+            return { position: p, maxPointCount };
           }
-          assert.ok(hasVerticalManifold, 'wheel contact manifold normal is not ground-like');
-          assert.ok(maxPointCount >= 2, `flat mode5 manifold exposed only ${maxPointCount} point(s)`);
 
-          b3.destroyContactsBuffer(contacts);
+          const flatResult = validateRestingWheel(flatBody, flatShape, 0.5 + radius, 'flat');
+          const profileOuterRadius = Math.max(...profile.map((point) => point.y)) + profileCornerRadius;
+          const profileResult = validateRestingWheel(
+            profileBody,
+            profileShape,
+            0.5 + profileOuterRadius,
+            'profile',
+          );
+          assert.ok(flatResult.maxPointCount >= 2, 'flat control lost its two-point resting manifold');
+
           b3.b3DestroyWorld(world);
-          console.log('MODE5_WASM_SMOKE_OK', {
-            position: p,
-            expectedCenterY,
-            contacts: 'verified',
-            maxPointCount,
+          console.log('MODE5_PROFILE_WASM_SMOKE_OK', {
+            flat: flatResult,
+            profile: profileResult,
+            profileOuterRadius,
+            profilePointCount: profile.length,
+            profileCornerRadius,
           });
           JS
-          node wheel-smoke.mjs
+          node wheel-profile-smoke.mjs | tee wheel-profile-smoke.txt
 
-      - name: Record and lock provenance
+      - name: Record profile-binding provenance
         shell: bash
         run: |
           set -euxo pipefail
@@ -257,11 +304,11 @@ jobs:
           runtime_sha="$(sha256sum box3djs/dist/box3d.inline.mjs | cut -d' ' -f1)"
           types_sha="$(sha256sum box3djs/dist/box3d.d.ts | cut -d' ' -f1)"
           test "$patch_sha" = "83ee212f062e7a81578993fc4bba93f8a6b3a8f1c786eef9769007bffe77f4d5"
-          test "$runtime_sha" = "c143b37b8c7a54345cc477df3c14767a2fc321c346d6d2a9fe728906d4a9b5fd"
-          test "$types_sha" = "e05b6adeeaf3cf4fcce4e9f41784914d48246a8d7d118f1ab94ec3179b32057c"
+          test -s box3djs/dist/box3d.inline.mjs
+          test -s box3djs/dist/box3d.d.ts
           {
-            echo 'JV-WEB MODE5 RUNTIME FEASIBILITY SPIKE'
-            echo 'validated run: 33526390618'
+            echo 'JV-WEB MODE5 GENERAL PROFILE BINDING SPIKE'
+            echo "validated run: ${GITHUB_RUN_ID}"
             echo 'box3d.js binding commit: 2617a0ff763a60c9f17cee57c6ea72aab75a5077'
             echo 'stock engine base: 8441b4a06d6d09dcfb0b0f704df4d847d1437b92'
             echo 'wheel patch base: 77a67132ffc4f003e84c6ffe4e72abfbcded4d33'
@@ -273,41 +320,38 @@ jobs:
             echo "B3X-WHEEL-001.patch sha256: $patch_sha"
             echo "box3d-mode5.inline.mjs sha256: $runtime_sha"
             echo "box3d-mode5.inline.d.ts sha256: $types_sha"
-            echo 'smoke expectedCenterY: 1.014062464'
-            echo 'smoke observedCenterY: 1.0140269994735718'
-            echo 'smoke flat-manifold maxPointCount: 2'
-          } > wheel-mode5-provenance.txt
-          cat wheel-mode5-provenance.txt
+            cat wheel-profile-smoke.txt
+          } > wheel-mode5-profile-binding-provenance.txt
+          cat wheel-mode5-profile-binding-provenance.txt
 
       - name: Upload spike artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheel-mode5-runtime-spike
+          name: wheel-mode5-profile-binding-spike
           if-no-files-found: error
           path: |
             B3X-WHEEL-001.patch
-            wheel-mode5-provenance.txt
+            wheel-mode5-profile-binding-provenance.txt
             box3djs/dist/box3d.inline.mjs
             box3djs/dist/box3d.d.ts
 
-      - name: Persist validated runtime on spike branch
-        if: github.actor != 'github-actions[bot]'
+      - name: Persist validated profile runtime on spike branch
         shell: bash
         run: |
           set -euxo pipefail
           mkdir -p src/physics/vendor docs/evidence
           cp box3djs/dist/box3d.inline.mjs src/physics/vendor/box3d-mode5.inline.mjs
           cp box3djs/dist/box3d.d.ts src/physics/vendor/box3d-mode5.inline.d.ts
-          cp wheel-mode5-provenance.txt docs/evidence/WHEEL_MODE5_RUNTIME_SPIKE_2026-09-01.txt
+          cp wheel-mode5-profile-binding-provenance.txt docs/evidence/WHEEL_MODE5_PROFILE_BINDING_SPIKE_2026-09-02.txt
 
           git add \
             src/physics/vendor/box3d-mode5.inline.mjs \
             src/physics/vendor/box3d-mode5.inline.d.ts \
-            docs/evidence/WHEEL_MODE5_RUNTIME_SPIKE_2026-09-01.txt
+            docs/evidence/WHEEL_MODE5_PROFILE_BINDING_SPIKE_2026-09-02.txt
           if git diff --cached --quiet; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "spike: persist validated mode5 runtime artifact"
+          git commit -m "spike: persist validated profile mode5 runtime"
           git push origin "HEAD:${GITHUB_REF_NAME}"
