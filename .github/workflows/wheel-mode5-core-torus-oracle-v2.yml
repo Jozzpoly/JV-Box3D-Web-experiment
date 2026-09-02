@@ -1,0 +1,85 @@
+name: Wheel mode5 CORE torus oracle v2
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-core-torus-oracle-v2.yml
+
+permissions:
+  contents: read
+
+jobs:
+  oracle-v2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile and stage mode5 runtime
+        run: |
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Sweep first external contact for CORE torus and C
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          import { validatePinnedNativeFactoryReceiptText } from './.test-dist/config/native-factory-receipt.js';
+          import { loadMode5Box3DModule } from './.test-dist/physics/mode5-box3d-runtime.js';
+          import { createE2rWorld } from './.test-dist/scene/e2r-world.js';
+          import { m6TopologyConfigFromReceipt } from './.test-dist/vehicle/m6/m6-topology-config.js';
+          import { createMode5WheelForGeometry, MODE5_SOLVER_AWARE_PROFILE_GEOMETRY } from './.test-dist/vehicle/m6/mode5-wheel-backend.js';
+
+          const receipt = await validatePinnedNativeFactoryReceiptText(await readFile('public/receipts/jv_m6_factory_receipt.json','utf8'));
+          const config = m6TopologyConfigFromReceipt(receipt);
+          const b3 = await loadMode5Box3DModule();
+
+          const glb = new Uint8Array(await readFile('owner-ab/vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb'));
+          const view = new DataView(glb.buffer,glb.byteOffset,glb.byteLength);
+          const jsonLength=view.getUint32(12,true);
+          const json=JSON.parse(new TextDecoder().decode(glb.slice(20,20+jsonLength)).trim());
+          const binaryHeader=20+jsonLength;
+          const binaryLength=view.getUint32(binaryHeader,true);
+          const binary=glb.slice(binaryHeader+8,binaryHeader+8+binaryLength);
+          const dv=new DataView(binary.buffer,binary.byteOffset,binary.byteLength);
+          const node=json.nodes.find(n=>n.name==='JV_R3_Real_owner_fl_wheel');
+          if(!node||node.mesh===undefined)throw new Error('missing R3 FL wheel');
+          const vertices=[];
+          for(const primitive of json.meshes[node.mesh].primitives){
+            const a=json.accessors[primitive.attributes.POSITION],bv=json.bufferViews[a.bufferView],stride=bv.byteStride??12,start=(bv.byteOffset??0)+(a.byteOffset??0);
+            for(let i=0;i<a.count;i++){const o=start+i*stride;vertices.push({x:dv.getFloat32(o,true),y:dv.getFloat32(o+4,true),z:dv.getFloat32(o+8,true)});}
+          }
+
+          function rotate(q,v){const ux=q.x,uy=q.y,uz=q.z,s=q.w,d=ux*v.x+uy*v.y+uz*v.z,uu=ux*ux+uy*uy+uz*uz,cx=uy*v.z-uz*v.y,cy=uz*v.x-ux*v.z,cz=ux*v.y-uy*v.x;return {x:2*d*ux+(s*s-uu)*v.x+2*s*cx,y:2*d*uy+(s*s-uu)*v.y+2*s*cy,z:2*d*uz+(s*s-uu)*v.z+2*s*cz};}
+          function sub(a,b){return{x:a.x-b.x,y:a.y-b.y,z:a.z-b.z};}
+          function pointObbDistance(point,box){const q=box.rotation,local=rotate({x:-q.x,y:-q.y,z:-q.z,w:q.w},sub(point,box.center));const dx=Math.max(Math.abs(local.x)-box.halfExtents.x,0),dy=Math.max(Math.abs(local.y)-box.halfExtents.y,0),dz=Math.max(Math.abs(local.z)-box.halfExtents.z,0);return Math.hypot(dx,dy,dz);}
+          function vertexGap(bodyId,box){let best=Infinity;for(const v of vertices){const p=b3.b3Body_GetWorldPoint(bodyId,v);best=Math.min(best,pointObbDistance(p,box));}return best;}
+          function makeShapeDef(groupIndex){const d=b3.b3DefaultShapeDef();d.density=config.wheelDensity;d.baseMaterial.friction=config.wheelFriction;d.baseMaterial.restitution=0.02;d.baseMaterial.rollingResistance=config.wheelRollingResistance;d.filter.groupIndex=groupIndex;d.enableContactEvents=true;return d;}
+          function makeBody(worldId){const d=b3.b3DefaultBodyDef();d.type=b3.b3BodyType.b3_dynamicBody;d.rotation=b3.b3ComputeQuatBetweenUnitVectors({x:0,y:1,z:0},{x:0,y:0,z:1});d.allowFastRotation=true;return b3.b3CreateBody(worldId,d);}
+          function makeTorus(worldId){const bodyId=makeBody(worldId),sd=makeShapeDef(-9201);const ref=b3.b3CreateSphereShape(bodyId,sd,{center:{x:0,y:0,z:0},radius:config.wheelRadius}),mass=b3.b3Body_GetMassData(bodyId);b3.b3DestroyShape(ref,false);const halfWidth=0.5*config.wheelWidth,crown=0.914*halfWidth,ring=config.wheelRadius-crown,halfLen=halfWidth-crown,shapeIds=[];for(let i=0;i<64;i++){const a=2*Math.PI*i/64,x=ring*Math.cos(a),z=ring*Math.sin(a);shapeIds.push(b3.b3CreateCapsuleShape(bodyId,sd,{center1:{x,y:-halfLen,z},center2:{x,y:+halfLen,z},radius:crown}));}b3.b3Body_SetMassData(bodyId,mass);return{bodyId,shapeIds,contract:{halfWidth,crown,ring,halfLen,segments:64}};}
+          function makeC(worldId){const w=createMode5WheelForGeometry(MODE5_SOLVER_AWARE_PROFILE_GEOMETRY,b3,worldId,config,{x:0,y:0,z:0},-9202);return{bodyId:w.bodyId,shapeIds:[w.rollingShapeId],contract:{profileId:w.profileId,cornerRadius:w.cornerRadius}};}
+          function createRock(worldId,box){const bd=b3.b3DefaultBodyDef();bd.position=box.center;bd.rotation={v:{x:box.rotation.x,y:box.rotation.y,z:box.rotation.z},s:box.rotation.w};const id=b3.b3CreateBody(worldId,bd),sd=b3.b3DefaultShapeDef();sd.enableContactEvents=true;b3.b3CreateBoxShape(id,sd,box.halfExtents.x,box.halfExtents.y,box.halfExtents.z);}
+          function summarize(shapeIds){let contacts=0,minSeparation=Infinity,maxImpulse=0;for(const shapeId of shapeIds){const buf=b3.createContactsBuffer();try{b3.getShapeContactData(buf,shapeId);contacts+=b3.getNumContacts(buf);for(let i=0;i<b3.getNumContacts(buf);i++){const c=b3.getContactAt(b3.createContact(),buf,i);for(let m=0;m<c.manifoldCount;m++){const man=b3.getManifoldAt(b3.createManifold(),c,m);for(let p=0;p<man.pointCount;p++){const cp=man.points[p];minSeparation=Math.min(minSeparation,cp.separation);maxImpulse=Math.max(maxImpulse,cp.totalNormalImpulse??cp.normalImpulse??0);}}}}finally{b3.destroyContactsBuffer(buf);}}return{contacts,minSeparation:Number.isFinite(minSeparation)?minSeparation:null,maxImpulse};}
+          function sample(kind,template,dir,distance){const wd=b3.b3DefaultWorldDef();wd.gravity={x:0,y:0,z:0};wd.enableContinuous=false;const worldId=b3.b3CreateWorld(wd);try{const wheel=kind==='torus'?makeTorus(worldId):makeC(worldId),box={...template,center:{x:dir.x*distance,y:dir.y*distance,z:dir.z*distance}};createRock(worldId,box);const gap=vertexGap(wheel.bodyId,box);b3.b3World_Step(worldId,1/60,4);return{kind,distance,vertexGap:gap,contact:summarize(wheel.shapeIds),contract:wheel.contract};}finally{b3.b3DestroyWorld(worldId);}}
+          function firstExternalContact(kind,template,dir,far=1.25,near=0.0,coarse=0.01){let previous=sample(kind,template,dir,far);if(previous.contact.contacts)throw new Error(`${kind} far already contacts`);let bracket=null;for(let d=far-coarse;d>=near-1e-9;d-=coarse){const current=sample(kind,template,dir,Math.max(near,d));if(current.contact.contacts>0){bracket={far:previous.distance,near:current.distance};break;}previous=current;}if(!bracket)return{first:null,contactPhases:0};let lo=bracket.far,hi=bracket.near;for(let i=0;i<14;i++){const mid=0.5*(lo+hi),r=sample(kind,template,dir,mid);if(r.contact.contacts>0)hi=mid;else lo=mid;}const first=sample(kind,template,dir,hi);let phases=1,was=true;for(let d=hi-coarse;d>=near-1e-9;d-=coarse){const hit=sample(kind,template,dir,Math.max(near,d)).contact.contacts>0;if(hit!==was){if(hit)phases++;was=hit;}}return{first,contactPhases:phases};}
+
+          const rock=createE2rWorld().boxes.slice(9)[45];
+          const d0={x:0.15,y:-0.25,z:1},l=Math.hypot(d0.x,d0.y,d0.z),dir={x:d0.x/l,y:d0.y/l,z:d0.z/l};
+          const worst={C:firstExternalContact('C',rock,dir),torus:firstExternalContact('torus',rock,dir)};
+          console.log('MODE5_CORE_TORUS_SWEEP_WORST',JSON.stringify({rockIndex:45,direction:dir,halfExtents:rock.halfExtents,rotation:rock.rotation,...worst}));
+
+          const wall={halfExtents:{x:0.05,y:1,z:1},rotation:{x:0,y:0,z:0,w:1}},radialDir={x:1,y:0,z:0};
+          const radial={C:firstExternalContact('C',wall,radialDir,1.5,0.0),torus:firstExternalContact('torus',wall,radialDir,1.5,0.0)};
+          const visibleRadial=0.5417423844337463;
+          for(const key of ['C','torus'])if(radial[key].first)radial[key].first.onsetMinusVisible=(radial[key].first.distance-wall.halfExtents.x)-visibleRadial;
+          console.log('MODE5_CORE_TORUS_SWEEP_RADIAL',JSON.stringify(radial));
+          if(!worst.torus.first)throw new Error('CORE torus never contacts worst-rock path; investigate path through torus hole explicitly');
+          if(radial.torus.first?.onsetMinusVisible>0.01)throw new Error(`CORE torus contacts too far before visible tread: ${radial.torus.first.onsetMinusVisible}`);
+          console.log('MODE5_CORE_TORUS_ORACLE_V2_OK');
+          NODE
