@@ -12,20 +12,34 @@ import type {
 import type { M6TopologyConfig } from "./m6-topology-config.js";
 import { vec3 } from "./m6-geometry.js";
 
+// Frozen historical control used by the real-asset geometry audit. Keep this
+// unchanged while the experimental backend runs the asset-derived candidate.
 const OWNER_SELECTED_CORNER_RADIUS = 0.2;
 
+export const MODE5_ASSET_PROFILE_ID =
+  "asset-lower-quartile-c20mm" as const;
+export const MODE5_ASSET_PROFILE_CORNER_RADIUS = 0.02;
+export const MODE5_ASSET_PROFILE = Object.freeze([
+  Object.freeze({ x: -0.19875, y: 0.44594027652730533 }),
+  Object.freeze({ x: -0.12959156281600986, y: 0.5068779425365814 }),
+  Object.freeze({ x: 0.19875, y: 0.4459531255119426 }),
+] as const);
+
 export const MODE5_WHEEL_BACKEND_ID =
-  "native_m6_mode5_analytic_wheel" as const;
+  "native_m6_mode5_asset_profile_wheel" as const;
 
 export interface Mode5WheelReceipt {
   readonly backendId: typeof MODE5_WHEEL_BACKEND_ID;
+  readonly profileId: typeof MODE5_ASSET_PROFILE_ID;
   readonly bodyId: b3BodyId;
   readonly rollingShapeId: b3ShapeId;
   readonly shapeIds: readonly [b3ShapeId];
   readonly shapeCount: 1;
+  readonly profileCount: number;
   readonly radius: number;
   readonly width: number;
   readonly cornerRadius: number;
+  readonly flatControlCornerRadius: number;
   readonly collisionGroupIndex: number;
 }
 
@@ -114,30 +128,37 @@ export function createMode5Wheel(
       collisionGroupIndex,
     );
     const cornerRadius = Math.min(
-      OWNER_SELECTED_CORNER_RADIUS,
+      MODE5_ASSET_PROFILE_CORNER_RADIUS,
       0.5 * config.wheelWidth,
       config.wheelRadius,
     );
-    const rollingShapeId = b3.b3CreateWheelShapeFlat(
+    const rollingShapeId = b3.b3CreateWheelShapeProfile(
       bodyId,
       shapeDef,
       vec3(),
       vec3(0, 1, 0),
-      config.wheelRadius,
-      0.5 * config.wheelWidth,
+      MODE5_ASSET_PROFILE,
       cornerRadius,
     );
+    if (!b3.b3Shape_IsValid(rollingShapeId)) {
+      throw new Error(
+        `Mode5 asset profile ${MODE5_ASSET_PROFILE_ID} produced an invalid wheel shape.`,
+      );
+    }
     b3.b3Body_SetMassData(bodyId, referenceMass);
 
     return {
       backendId: MODE5_WHEEL_BACKEND_ID,
+      profileId: MODE5_ASSET_PROFILE_ID,
       bodyId,
       rollingShapeId,
       shapeIds: [rollingShapeId],
       shapeCount: 1,
+      profileCount: MODE5_ASSET_PROFILE.length,
       radius: config.wheelRadius,
       width: config.wheelWidth,
       cornerRadius,
+      flatControlCornerRadius: OWNER_SELECTED_CORNER_RADIUS,
       collisionGroupIndex,
     };
   } catch (error: unknown) {
