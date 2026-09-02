@@ -1,0 +1,94 @@
+name: Wheel R3 visual registration diagnostic
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-r3-visual-registration-diagnostic.yml
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  visual-registration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Measure R3 wheel mesh bounds and node transforms
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+
+          const root = 'owner-ab/vehicles/m6-owner-r3';
+          const pkg = JSON.parse(await readFile(`${root}/m6-owner-full-rig-r3.visual.json`, 'utf8'));
+          const glb = new Uint8Array(await readFile(`${root}/models/m6-owner-full-rig-r3.glb`));
+          const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
+          if (view.getUint32(0, true) !== 0x46546c67) throw new Error('not GLB');
+          const jsonLength = view.getUint32(12, true);
+          const json = JSON.parse(new TextDecoder().decode(glb.slice(20, 20 + jsonLength)).trim());
+          const binaryHeader = 20 + jsonLength;
+          const binaryLength = view.getUint32(binaryHeader, true);
+          const binary = glb.slice(binaryHeader + 8, binaryHeader + 8 + binaryLength);
+
+          const COMPONENT = { 5126: { bytes: 4, read: 'getFloat32' } };
+          function readPositions(accessorIndex) {
+            const accessor = json.accessors[accessorIndex];
+            if (accessor.componentType !== 5126 || accessor.type !== 'VEC3') {
+              throw new Error(`position accessor ${accessorIndex} is not float VEC3`);
+            }
+            const bufferView = json.bufferViews[accessor.bufferView];
+            const stride = bufferView.byteStride ?? 12;
+            const start = (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+            const dv = new DataView(binary.buffer, binary.byteOffset, binary.byteLength);
+            const min = [Infinity, Infinity, Infinity];
+            const max = [-Infinity, -Infinity, -Infinity];
+            let sum = [0,0,0];
+            for (let i=0;i<accessor.count;i++) {
+              const base = start + i * stride;
+              const p = [dv.getFloat32(base,true),dv.getFloat32(base+4,true),dv.getFloat32(base+8,true)];
+              for(let a=0;a<3;a++){min[a]=Math.min(min[a],p[a]);max[a]=Math.max(max[a],p[a]);sum[a]+=p[a];}
+            }
+            return { min, max, count: accessor.count, mean: sum.map(v=>v/accessor.count) };
+          }
+          function merge(bounds) {
+            const min=[Infinity,Infinity,Infinity], max=[-Infinity,-Infinity,-Infinity];
+            let count=0;
+            let weighted=[0,0,0];
+            for(const b of bounds){
+              for(let a=0;a<3;a++){min[a]=Math.min(min[a],b.min[a]);max[a]=Math.max(max[a],b.max[a]);weighted[a]+=b.mean[a]*b.count;}
+              count += b.count;
+            }
+            return { min,max,count,mean:weighted.map(v=>v/count),center:min.map((v,a)=>(v+max[a])/2),halfExtents:min.map((v,a)=>(max[a]-v)/2) };
+          }
+
+          for (const corner of ['fl','fr','rl','rr']) {
+            const binding = pkg.bindings.find(b => b.bindingId === `owner.${corner}.wheel`);
+            if (!binding) throw new Error(`missing ${corner} binding`);
+            const nodeIndex = json.nodes.findIndex(n => n.name === binding.nodeName);
+            if (nodeIndex < 0) throw new Error(`missing wheel node ${binding.nodeName}`);
+            const node = json.nodes[nodeIndex];
+            const mesh = json.meshes[node.mesh];
+            const meshBounds = merge(mesh.primitives.map(p => readPositions(p.attributes.POSITION)));
+            console.log(`R3_WHEEL_${corner.toUpperCase()}`, JSON.stringify({
+              bindingId: binding.bindingId,
+              nodeName: binding.nodeName,
+              localFromSource: binding.localFromSource,
+              nodeTransform: {
+                translation: node.translation ?? [0,0,0],
+                rotation: node.rotation ?? [0,0,0,1],
+                scale: node.scale ?? [1,1,1],
+                matrix: node.matrix ?? null,
+              },
+              meshBounds,
+            }));
+            const centerError = Math.hypot(...meshBounds.center);
+            if (centerError > 1e-4) throw new Error(`${corner} visual tire bounds center is offset ${centerError}`);
+          }
+          console.log('R3_WHEEL_VISUAL_REGISTRATION_OK');
+          NODE
