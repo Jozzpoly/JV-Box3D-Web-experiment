@@ -17,9 +17,14 @@ import {
 } from "../.test-dist/vehicle/m6/legacy-split-wheel-backend.js";
 import {
   createMode5Wheel,
+  createMode5WheelForGeometry,
   MODE5_ASSET_PROFILE,
   MODE5_ASSET_PROFILE_CORNER_RADIUS,
+  MODE5_ASSET_PROFILE_GEOMETRY,
   MODE5_ASSET_PROFILE_ID,
+  MODE5_FLAT_CONTROL_CORNER_RADIUS,
+  MODE5_FLAT_CONTROL_GEOMETRY,
+  MODE5_FLAT_CONTROL_ID,
   MODE5_WHEEL_BACKEND_ID,
 } from "../.test-dist/vehicle/m6/mode5-wheel-backend.js";
 import {
@@ -201,10 +206,11 @@ test("mode5 asset profile preserves reference-sphere mass while replacing split 
     assert.equal(legacy.shapeCount, 2);
     assert.equal(mode5.shapeCount, 1);
     assert.equal(mode5.backendId, MODE5_WHEEL_BACKEND_ID);
+    assert.equal(mode5.geometryVariant, MODE5_ASSET_PROFILE_GEOMETRY);
     assert.equal(mode5.profileId, MODE5_ASSET_PROFILE_ID);
     assert.equal(mode5.profileCount, MODE5_ASSET_PROFILE.length);
     assert.equal(mode5.cornerRadius, MODE5_ASSET_PROFILE_CORNER_RADIUS);
-    assert.equal(mode5.flatControlCornerRadius, 0.2);
+    assert.equal(mode5.flatControlCornerRadius, MODE5_FLAT_CONTROL_CORNER_RADIUS);
     closeMassData(
       b3.b3Body_GetMassData(mode5.bodyId),
       b3.b3Body_GetMassData(legacy.bodyId),
@@ -219,6 +225,62 @@ test("mode5 asset profile preserves reference-sphere mass while replacing split 
     assert.equal(
       b3.b3Shape_GetFilter(mode5.rollingShapeId).maskBits,
       fullMask,
+    );
+  } finally {
+    b3.b3DestroyWorld(worldId);
+  }
+});
+
+test("same-source mode5 A-B changes only analytic contact geometry contract", async () => {
+  const b3 = await loadMode5Box3DModule();
+  const worldDef = b3.b3DefaultWorldDef();
+  worldDef.gravity = { x: 0, y: 0, z: 0 };
+  const worldId = b3.b3CreateWorld(worldDef);
+  const config = m6TopologyConfigFromReceipt(receipt);
+  const groupIndex = -4100;
+  try {
+    const flat = createMode5WheelForGeometry(
+      MODE5_FLAT_CONTROL_GEOMETRY,
+      b3,
+      worldId,
+      config,
+      { x: -2, y: 2, z: 0 },
+      groupIndex,
+    );
+    const profile = createMode5WheelForGeometry(
+      MODE5_ASSET_PROFILE_GEOMETRY,
+      b3,
+      worldId,
+      config,
+      { x: 2, y: 2, z: 0 },
+      groupIndex,
+    );
+
+    assert.equal(flat.backendId, MODE5_WHEEL_BACKEND_ID);
+    assert.equal(profile.backendId, MODE5_WHEEL_BACKEND_ID);
+    assert.equal(flat.geometryVariant, MODE5_FLAT_CONTROL_GEOMETRY);
+    assert.equal(profile.geometryVariant, MODE5_ASSET_PROFILE_GEOMETRY);
+    assert.equal(flat.profileId, MODE5_FLAT_CONTROL_ID);
+    assert.equal(profile.profileId, MODE5_ASSET_PROFILE_ID);
+    assert.equal(flat.shapeCount, 1);
+    assert.equal(profile.shapeCount, 1);
+    assert.equal(flat.profileCount, 2);
+    assert.equal(profile.profileCount, MODE5_ASSET_PROFILE.length);
+    assert.equal(flat.cornerRadius, MODE5_FLAT_CONTROL_CORNER_RADIUS);
+    assert.equal(profile.cornerRadius, MODE5_ASSET_PROFILE_CORNER_RADIUS);
+    assert.equal(flat.flatControlCornerRadius, MODE5_FLAT_CONTROL_CORNER_RADIUS);
+    assert.equal(profile.flatControlCornerRadius, MODE5_FLAT_CONTROL_CORNER_RADIUS);
+    assert.equal(flat.radius, profile.radius);
+    assert.equal(flat.width, profile.width);
+    assert.equal(flat.collisionGroupIndex, profile.collisionGroupIndex);
+    closeMassData(
+      b3.b3Body_GetMassData(profile.bodyId),
+      b3.b3Body_GetMassData(flat.bodyId),
+      "profile vs flat A-B reference mass",
+    );
+    assert.deepEqual(
+      b3.b3Shape_GetFilter(profile.rollingShapeId),
+      b3.b3Shape_GetFilter(flat.rollingShapeId),
     );
   } finally {
     b3.b3DestroyWorld(worldId);
