@@ -6,6 +6,7 @@ on:
       - work/wheel-mode5-registration-diagnostic-2026-09-02
     paths:
       - src/vehicle/m6/mode5-wheel-backend.ts
+      - tests/m6-mode5-wheel-backend.test.mjs
       - tests/m6-mode5-solver-aware-profile.test.mjs
       - tests/m6-mode5-solver-aware-response.test.mjs
       - .github/workflows/wheel-mode5-solver-aware-c-validate.yml
@@ -32,6 +33,8 @@ jobs:
           node-version: 24.16.0
           cache: npm
       - run: npm ci
+      - name: Run focused mode5 runtime suite
+        run: node tools/run-tests.mjs tests/m6-mode5-wheel-backend.test.mjs
       - name: Run solver-aware R3 geometry and full-M6 regressions
         run: node tools/run-tests.mjs tests/m6-mode5-solver-aware-profile.test.mjs
       - name: Run no-air-contact dynamic response regression
