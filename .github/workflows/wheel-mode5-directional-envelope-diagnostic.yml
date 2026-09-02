@@ -1,0 +1,166 @@
+name: Wheel mode5 directional contact envelope diagnostic
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-directional-envelope-diagnostic.yml
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  envelope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile and stage mode5 runtime
+        run: |
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Map stationary contact onset against actual R3 wheel mesh
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          import { validatePinnedNativeFactoryReceiptText } from './.test-dist/config/native-factory-receipt.js';
+          import { loadMode5Box3DModule } from './.test-dist/physics/mode5-box3d-runtime.js';
+          import {
+            createMode5WheelForGeometry,
+            MODE5_FLAT_CONTROL_GEOMETRY,
+            MODE5_ASSET_PROFILE_GEOMETRY,
+          } from './.test-dist/vehicle/m6/mode5-wheel-backend.js';
+          import { m6TopologyConfigFromReceipt } from './.test-dist/vehicle/m6/m6-topology-config.js';
+
+          const receipt = await validatePinnedNativeFactoryReceiptText(
+            await readFile('public/receipts/jv_m6_factory_receipt.json','utf8'),
+          );
+          const config = m6TopologyConfigFromReceipt(receipt);
+          const b3 = await loadMode5Box3DModule();
+
+          function normalize(v){const n=Math.hypot(v.x,v.y,v.z);return{x:v.x/n,y:v.y/n,z:v.z/n};}
+          const dirs = [
+            ['radial-X', normalize({x:1,y:0,z:0})],
+            ['radial-Y', normalize({x:0,y:1,z:0})],
+            ['axial+Z', normalize({x:0,y:0,z:1})],
+            ['axial-Z', normalize({x:0,y:0,z:-1})],
+            ['shoulder-X+Z-30', normalize({x:Math.cos(Math.PI/6),y:0,z:Math.sin(Math.PI/6)})],
+            ['shoulder-X-Z-30', normalize({x:Math.cos(Math.PI/6),y:0,z:-Math.sin(Math.PI/6)})],
+            ['shoulder-X+Z-45', normalize({x:1,y:0,z:1})],
+            ['shoulder-X-Z-45', normalize({x:1,y:0,z:-1})],
+            ['shoulder-X+Z-60', normalize({x:0.5,y:0,z:Math.sqrt(3)/2})],
+            ['shoulder-X-Z-60', normalize({x:0.5,y:0,z:-Math.sqrt(3)/2})],
+          ];
+
+          function readR3WheelVertices(){
+            const path='owner-ab/vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb';
+            return readFile(path).then(buf=>{
+              const glb=new Uint8Array(buf); const dv=new DataView(glb.buffer,glb.byteOffset,glb.byteLength);
+              const jsonLength=dv.getUint32(12,true);
+              const json=JSON.parse(new TextDecoder().decode(glb.slice(20,20+jsonLength)).trim());
+              const bh=20+jsonLength; const binaryLength=dv.getUint32(bh,true);
+              const binary=glb.slice(bh+8,bh+8+binaryLength);
+              const node=json.nodes.find(n=>n.name==='JV_R3_Real_owner_fl_wheel');
+              if(!node) throw new Error('R3 FL visual wheel node missing');
+              const mesh=json.meshes[node.mesh];
+              const verts=[]; const bdv=new DataView(binary.buffer,binary.byteOffset,binary.byteLength);
+              for(const primitive of mesh.primitives){
+                const accessor=json.accessors[primitive.attributes.POSITION];
+                const view=json.bufferViews[accessor.bufferView];
+                const stride=view.byteStride??12;
+                const start=(view.byteOffset??0)+(accessor.byteOffset??0);
+                for(let i=0;i<accessor.count;i++){
+                  const off=start+i*stride;
+                  verts.push({x:bdv.getFloat32(off,true),y:bdv.getFloat32(off+4,true),z:bdv.getFloat32(off+8,true)});
+                }
+              }
+              return verts;
+            });
+          }
+          const visualVertices=await readR3WheelVertices();
+
+          function makeWorld(){
+            const wd=b3.b3DefaultWorldDef(); wd.gravity={x:0,y:0,z:0}; wd.enableContinuous=false;
+            return b3.b3CreateWorld(wd);
+          }
+          function wallAt(worldId,normal,nearFace){
+            const thickness=0.01;
+            const bd=b3.b3DefaultBodyDef();
+            bd.position={x:normal.x*(nearFace+thickness),y:normal.y*(nearFace+thickness),z:normal.z*(nearFace+thickness)};
+            bd.rotation=b3.b3ComputeQuatBetweenUnitVectors({x:1,y:0,z:0},normal);
+            const body=b3.b3CreateBody(worldId,bd);
+            const sd=b3.b3DefaultShapeDef(); sd.enableContactEvents=true;
+            return b3.b3CreateBoxShape(body,sd,thickness,2,2);
+          }
+          function visualSupportForWheel(wheel,normal){
+            const local=b3.b3Body_GetLocalVector(wheel.bodyId,normal);
+            let support=-Infinity;
+            for(const p of visualVertices) support=Math.max(support,p.x*local.x+p.y*local.y+p.z*local.z);
+            return {support,localDirection:local};
+          }
+          function contactAt(geometry,normal,nearFace){
+            const worldId=makeWorld(); const contacts=b3.createContactsBuffer();
+            try{
+              const wheel=createMode5WheelForGeometry(geometry,b3,worldId,config,{x:0,y:0,z:0},-6400);
+              wallAt(worldId,normal,nearFace);
+              b3.b3World_Step(worldId,1/60,4);
+              b3.getShapeContactData(contacts,wheel.rollingShapeId);
+              const count=b3.getNumContacts(contacts);
+              let minimumSeparation=null;
+              for(let i=0;i<count;i++){
+                const c=b3.getContactAt(b3.createContact(),contacts,i);
+                for(let m=0;m<c.manifoldCount;m++){
+                  const man=b3.getManifoldAt(b3.createManifold(),c,m);
+                  for(let p=0;p<man.pointCount;p++){
+                    const point=man.points[p];
+                    if(!point) continue;
+                    minimumSeparation=minimumSeparation===null?point.separation:Math.min(minimumSeparation,point.separation);
+                  }
+                }
+              }
+              return {count,minimumSeparation};
+            } finally { b3.destroyContactsBuffer(contacts); b3.b3DestroyWorld(worldId); }
+          }
+          function getVisualSupport(geometry,normal){
+            const worldId=makeWorld();
+            try{
+              const wheel=createMode5WheelForGeometry(geometry,b3,worldId,config,{x:0,y:0,z:0},-6401);
+              return visualSupportForWheel(wheel,normal);
+            }finally{b3.b3DestroyWorld(worldId);}
+          }
+          function findOnset(geometry,normal,visualSupport){
+            let first=null;
+            const high=visualSupport+0.05, low=Math.max(0,visualSupport-0.05);
+            for(let d=high; d>=low-1e-9; d-=0.0005){
+              const probe=contactAt(geometry,normal,d);
+              if(probe.count>0){ first={nearFace:d,...probe}; break; }
+            }
+            return first;
+          }
+
+          for(const [variant,geometry] of [['FLAT',MODE5_FLAT_CONTROL_GEOMETRY],['PROFILE_B',MODE5_ASSET_PROFILE_GEOMETRY]]){
+            const rows=[];
+            for(const [name,normal] of dirs){
+              const visual=getVisualSupport(geometry,normal);
+              const onset=findOnset(geometry,normal,visual.support);
+              rows.push({
+                direction:name,normal,localDirection:visual.localDirection,
+                visualSupport:visual.support,
+                onset,
+                onsetMinusVisible:onset===null?null:onset.nearFace-visual.support,
+              });
+            }
+            console.log(`MODE5_DIRECTIONAL_ENVELOPE_${variant}`,JSON.stringify(rows));
+          }
+          NODE
