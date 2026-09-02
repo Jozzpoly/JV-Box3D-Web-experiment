@@ -63,8 +63,8 @@ jobs:
             readFile(receiptPath, 'utf8'),
             readFile(backendPath, 'utf8'),
           ]);
-          const cornerMatch = backendText.match(/const OWNER_SELECTED_CORNER_RADIUS = ([0-9.]+);/);
-          if (!cornerMatch) throw new Error('frozen flat-control corner radius declaration not found');
+          const cornerMatch = backendText.match(/export const MODE5_FLAT_CONTROL_CORNER_RADIUS = ([0-9.]+);/);
+          if (!cornerMatch) throw new Error('explicit flat-control corner radius declaration not found');
 
           const rigidParts = inspectBlockbenchRigidPartsV1(wheelText, 'Offroad_Big_Wheels.gltf');
           const config = parseM6FactoryConfig(receiptText);
