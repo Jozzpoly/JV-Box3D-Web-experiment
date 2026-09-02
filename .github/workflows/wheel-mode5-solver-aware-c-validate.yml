@@ -1,0 +1,37 @@
+name: Wheel mode5 solver-aware C validation
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - src/vehicle/m6/mode5-wheel-backend.ts
+      - tests/m6-mode5-solver-aware-profile.test.mjs
+      - .github/workflows/wheel-mode5-solver-aware-c-validate.yml
+      - owner-ab/vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb
+      - public/receipts/jv_m6_factory_receipt.json
+      - src/physics/box3d-boundary.ts
+      - src/physics/mode5-box3d-runtime.ts
+      - src/physics/vendor/box3d-mode5.inline.mjs
+      - src/physics/vendor/box3d-mode5.inline.d.ts
+      - src/vehicle/m6/m6-runtime-builder.ts
+      - src/vehicle/m6/m6-wheel-backend.ts
+
+permissions:
+  contents: read
+
+jobs:
+  validate-c:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Run solver-aware R3 contact and full-M6 regressions
+        run: node tools/run-tests.mjs tests/m6-mode5-solver-aware-profile.test.mjs
+      - name: Typecheck C integration
+        run: npm run typecheck
