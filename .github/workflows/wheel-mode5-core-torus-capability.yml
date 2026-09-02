@@ -1,0 +1,90 @@
+name: Wheel mode5 CORE torus capability probe
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-core-torus-capability.yml
+
+permissions:
+  contents: read
+
+jobs:
+  capability:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile and stage mode5 runtime
+        run: |
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Probe capsule support and exact CORE torus construction
+        run: |
+          node --input-type=module <<'NODE'
+          import { loadMode5Box3DModule } from './.test-dist/physics/mode5-box3d-runtime.js';
+          const b3 = await loadMode5Box3DModule();
+          const capsuleType = typeof b3.b3CreateCapsuleShape;
+          console.log('MODE5_CORE_TORUS_CAPABILITY', JSON.stringify({
+            b3CreateCapsuleShape: capsuleType,
+            b3CreateSphereShape: typeof b3.b3CreateSphereShape,
+            b3DestroyShape: typeof b3.b3DestroyShape,
+          }));
+          if (capsuleType !== 'function') {
+            throw new Error('Current Web Box3D binding does not expose b3CreateCapsuleShape; torus oracle requires a bounded binding export before geometry work.');
+          }
+
+          const wheelRadius = 0.514062464;
+          const wheelWidth = 0.4375;
+          const halfWidth = 0.5 * wheelWidth;
+          const crown = 0.914 * halfWidth;
+          const ring = wheelRadius - crown;
+          const halfLen = halfWidth - crown;
+          const ratio = crown / ring;
+          const nMin = ratio > 0 && ratio < 1 ? Math.ceil(Math.PI / Math.asin(ratio)) : 1;
+          const segments = Math.max(64, nMin);
+          console.log('MODE5_CORE_TORUS_CONTRACT', JSON.stringify({
+            wheelRadius,
+            wheelWidth,
+            halfWidth,
+            crown,
+            ring,
+            halfLen,
+            nMin,
+            segments,
+          }));
+
+          const worldDef = b3.b3DefaultWorldDef();
+          worldDef.gravity = { x: 0, y: 0, z: 0 };
+          const worldId = b3.b3CreateWorld(worldDef);
+          try {
+            const bodyDef = b3.b3DefaultBodyDef();
+            bodyDef.type = b3.b3BodyType.b3_dynamicBody;
+            const bodyId = b3.b3CreateBody(worldId, bodyDef);
+            const shapeDef = b3.b3DefaultShapeDef();
+            shapeDef.density = 80;
+            for (let i = 0; i < segments; i += 1) {
+              const a = 2 * Math.PI * i / segments;
+              const x = ring * Math.cos(a);
+              const z = ring * Math.sin(a);
+              const id = b3.b3CreateCapsuleShape(bodyId, shapeDef, {
+                center1: { x, y: -halfLen, z },
+                center2: { x, y: +halfLen, z },
+                radius: crown,
+              });
+              if (!b3.b3Shape_IsValid(id)) throw new Error(`invalid torus capsule ${i}`);
+            }
+            console.log('MODE5_CORE_TORUS_SHAPE_COUNT', b3.b3Body_GetShapeCount(bodyId));
+            if (b3.b3Body_GetShapeCount(bodyId) !== segments) throw new Error('torus shape-count mismatch');
+          } finally {
+            b3.b3DestroyWorld(worldId);
+          }
+          console.log('MODE5_CORE_TORUS_CAPABILITY_OK');
+          NODE
