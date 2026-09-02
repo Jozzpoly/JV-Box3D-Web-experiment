@@ -1,0 +1,74 @@
+name: Wheel mode5 torus collider-surface matrix
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - .github/workflows/wheel-mode5-torus-surface-matrix.yml
+
+permissions:
+  contents: read
+
+jobs:
+  surface:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Measure actual torus surface error against all 3208 real-rock cases
+        run: |
+          set -euo pipefail
+          cp src/vehicle/m6/mode5-wheel-backend.ts "$RUNNER_TEMP/mode5-wheel-backend.original.ts"
+          : > "$RUNNER_TEMP/torus-surface-summary.jsonl"
+          for ratio in 0.45 0.55 0.65; do
+            cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" src/vehicle/m6/mode5-wheel-backend.ts
+            RATIO="$ratio" python3 - <<'PY'
+          import os
+          from pathlib import Path
+          path = Path('src/vehicle/m6/mode5-wheel-backend.ts')
+          text = path.read_text(encoding='utf-8')
+          old_ratio = 'export const MODE5_CORE_TORUS_CROWN_RATIO = 0.914;'
+          new_ratio = f'export const MODE5_CORE_TORUS_CROWN_RATIO = {os.environ["RATIO"]};'
+          old_select = 'const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
+          new_select = 'const requestedGeometry = "core-torus64";'
+          if text.count(old_ratio) != 1 or text.count(old_select) != 1:
+              raise SystemExit('torus surface matrix source anchors drifted')
+          path.write_text(text.replace(old_ratio, new_ratio).replace(old_select, new_select), encoding='utf-8')
+          PY
+            rm -rf .test-dist
+            node node_modules/typescript/bin/tsc -p tsconfig.test.json
+            mkdir -p .test-dist/physics/vendor
+            cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+            node tools/wheel-mode5-torus-surface-matrix.mjs > "$RUNNER_TEMP/surface-$ratio.log"
+            RATIO="$ratio" LOG="$RUNNER_TEMP/surface-$ratio.log" python3 - <<'PY' >> "$RUNNER_TEMP/torus-surface-summary.jsonl"
+          import json, os
+          from pathlib import Path
+          line=next(line for line in Path(os.environ['LOG']).read_text().splitlines() if line.startswith('TORUS_SURFACE_MATRIX_RESULT '))
+          data=json.loads(line[len('TORUS_SURFACE_MATRIX_RESULT '):])
+          print(json.dumps({
+              'crownRatio':float(os.environ['RATIO']),
+              'cases':data['cases'],
+              'proceduralRockCount':data['proceduralRockCount'],
+              'targetSeparationMm':data['targetSeparationMm'],
+              'maxVisualGapMm':data['maxVisualGapMm'],
+              'gapThresholds':data['gapThresholds'],
+              'worstCase':data['topGap'][0],
+              'topGap':data['topGap'][:10],
+          },separators=(',',':')))
+          PY
+          done
+          cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" src/vehicle/m6/mode5-wheel-backend.ts
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          rows=[json.loads(line) for line in Path(os.environ['RUNNER_TEMP'],'torus-surface-summary.jsonl').read_text().splitlines() if line.strip()]
+          rows.sort(key=lambda row:(row['maxVisualGapMm'],next(x['count'] for x in row['gapThresholds'] if x['mm']==5)))
+          print('TORUS_SURFACE_FAMILY_RESULT',json.dumps(rows,separators=(',',':')))
+          print('TORUS_SURFACE_FAMILY_BEST',json.dumps(rows[0],separators=(',',':')))
+          PY
