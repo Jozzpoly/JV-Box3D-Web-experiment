@@ -1,0 +1,327 @@
+name: Wheel mode5 real-rock speculative diagnostic
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-real-rock-speculative-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  real-rock:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile and stage runtime
+        run: |
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+      - name: Compare real-rock onset with speculative ON and OFF
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          import { validatePinnedNativeFactoryReceiptText } from './.test-dist/config/native-factory-receipt.js';
+          import { loadMode5Box3DModule } from './.test-dist/physics/mode5-box3d-runtime.js';
+          import { createE2rWorld } from './.test-dist/scene/e2r-world.js';
+          import { m6TopologyConfigFromReceipt } from './.test-dist/vehicle/m6/m6-topology-config.js';
+          import { createM6VehicleRuntime } from './.test-dist/vehicle/m6/m6-runtime-builder.js';
+          import {
+            createMode5WheelForGeometry,
+            MODE5_SOLVER_AWARE_PROFILE_GEOMETRY,
+          } from './.test-dist/vehicle/m6/mode5-wheel-backend.js';
+
+          const FULL_MASK = 0xffff_ffff_ffff_ffffn;
+          const receipt = await validatePinnedNativeFactoryReceiptText(
+            await readFile('public/receipts/jv_m6_factory_receipt.json', 'utf8'),
+          );
+          const config = m6TopologyConfigFromReceipt(receipt);
+          const b3 = await loadMode5Box3DModule();
+          const worldData = createE2rWorld();
+          const rocks = worldData.boxes.slice(9);
+
+          function readFlTireVertices() {
+            return readFile('owner-ab/vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb').then((buffer) => {
+              const glb = new Uint8Array(buffer);
+              const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
+              if (view.getUint32(0, true) !== 0x46546c67) throw new Error('R3 is not GLB');
+              const jsonLength = view.getUint32(12, true);
+              const json = JSON.parse(new TextDecoder().decode(glb.slice(20, 20 + jsonLength)).trim());
+              const binaryHeader = 20 + jsonLength;
+              const binaryLength = view.getUint32(binaryHeader, true);
+              const binary = glb.slice(binaryHeader + 8, binaryHeader + 8 + binaryLength);
+              const node = json.nodes.find((entry) => entry.name === 'JV_R3_Real_owner_fl_wheel');
+              if (!node || node.mesh === undefined) throw new Error('missing R3 FL wheel node');
+              const mesh = json.meshes[node.mesh];
+              const vertices = [];
+              for (const primitive of mesh.primitives) {
+                const accessor = json.accessors[primitive.attributes.POSITION];
+                if (accessor.componentType !== 5126 || accessor.type !== 'VEC3') throw new Error('unexpected R3 position accessor');
+                const bufferView = json.bufferViews[accessor.bufferView];
+                const stride = bufferView.byteStride ?? 12;
+                const start = (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+                const dv = new DataView(binary.buffer, binary.byteOffset, binary.byteLength);
+                for (let i = 0; i < accessor.count; i += 1) {
+                  const base = start + i * stride;
+                  vertices.push({
+                    x: dv.getFloat32(base, true),
+                    y: dv.getFloat32(base + 4, true),
+                    z: dv.getFloat32(base + 8, true),
+                  });
+                }
+              }
+              return vertices;
+            });
+          }
+
+          const tireVertices = await readFlTireVertices();
+
+          function norm(v) {
+            const length = Math.hypot(v.x, v.y, v.z);
+            return { x: v.x / length, y: v.y / length, z: v.z / length };
+          }
+          function add(a, b) { return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }; }
+          function sub(a, b) { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
+          function scale(s, v) { return { x: s * v.x, y: s * v.y, z: s * v.z }; }
+
+          function rotate(q, v) {
+            const ux = q.x, uy = q.y, uz = q.z, s = q.w;
+            const dotUV = ux * v.x + uy * v.y + uz * v.z;
+            const dotUU = ux * ux + uy * uy + uz * uz;
+            const cx = uy * v.z - uz * v.y;
+            const cy = uz * v.x - ux * v.z;
+            const cz = ux * v.y - uy * v.x;
+            return {
+              x: 2 * dotUV * ux + (s * s - dotUU) * v.x + 2 * s * cx,
+              y: 2 * dotUV * uy + (s * s - dotUU) * v.y + 2 * s * cy,
+              z: 2 * dotUV * uz + (s * s - dotUU) * v.z + 2 * s * cz,
+            };
+          }
+          function inverseRotate(q, v) {
+            return rotate({ x: -q.x, y: -q.y, z: -q.z, w: q.w }, v);
+          }
+          function pointObbDistance(point, box) {
+            const local = inverseRotate(box.rotation, sub(point, box.center));
+            const dx = Math.max(Math.abs(local.x) - box.halfExtents.x, 0);
+            const dy = Math.max(Math.abs(local.y) - box.halfExtents.y, 0);
+            const dz = Math.max(Math.abs(local.z) - box.halfExtents.z, 0);
+            return Math.hypot(dx, dy, dz);
+          }
+          function visualGap(bodyId, box) {
+            let minimum = Infinity;
+            for (const local of tireVertices) {
+              const point = b3.b3Body_GetWorldPoint(bodyId, local);
+              minimum = Math.min(minimum, pointObbDistance(point, box));
+            }
+            return minimum;
+          }
+
+          function createStaticRock(worldId, box) {
+            const bodyDef = b3.b3DefaultBodyDef();
+            bodyDef.position = { ...box.center };
+            bodyDef.rotation = {
+              v: { x: box.rotation.x, y: box.rotation.y, z: box.rotation.z },
+              s: box.rotation.w,
+            };
+            const bodyId = b3.b3CreateBody(worldId, bodyDef);
+            const shapeDef = b3.b3DefaultShapeDef();
+            shapeDef.baseMaterial.friction = box.friction;
+            shapeDef.filter.categoryBits = config.terrainCategoryBits;
+            shapeDef.filter.maskBits = FULL_MASK;
+            shapeDef.enableContactEvents = true;
+            const shapeId = b3.b3CreateBoxShape(
+              bodyId,
+              shapeDef,
+              box.halfExtents.x,
+              box.halfExtents.y,
+              box.halfExtents.z,
+            );
+            return { bodyId, shapeId };
+          }
+
+          function shapeContact(shapeId) {
+            const contacts = b3.createContactsBuffer();
+            try {
+              b3.getShapeContactData(contacts, shapeId);
+              let minSeparation = Infinity;
+              let maxNormalImpulse = 0;
+              let points = 0;
+              for (let i = 0; i < b3.getNumContacts(contacts); i += 1) {
+                const contact = b3.getContactAt(b3.createContact(), contacts, i);
+                for (let m = 0; m < contact.manifoldCount; m += 1) {
+                  const manifold = b3.getManifoldAt(b3.createManifold(), contact, m);
+                  for (let p = 0; p < manifold.pointCount; p += 1) {
+                    const point = manifold.points[p];
+                    minSeparation = Math.min(minSeparation, point.separation);
+                    maxNormalImpulse = Math.max(maxNormalImpulse, point.totalNormalImpulse ?? point.normalImpulse ?? 0);
+                    points += 1;
+                  }
+                }
+              }
+              return {
+                contacts: b3.getNumContacts(contacts),
+                points,
+                minSeparation: Number.isFinite(minSeparation) ? minSeparation : null,
+                maxNormalImpulse,
+              };
+            } finally {
+              b3.destroyContactsBuffer(contacts);
+            }
+          }
+
+          function isolatedAt(speculative, rockTemplate, direction, distance) {
+            const worldDef = b3.b3DefaultWorldDef();
+            worldDef.gravity = { x: 0, y: 0, z: 0 };
+            worldDef.enableContinuous = false;
+            const worldId = b3.b3CreateWorld(worldDef);
+            b3.b3World_EnableSpeculative(worldId, speculative);
+            try {
+              const wheel = createMode5WheelForGeometry(
+                MODE5_SOLVER_AWARE_PROFILE_GEOMETRY,
+                b3,
+                worldId,
+                config,
+                { x: 0, y: 0, z: 0 },
+                -7301,
+              );
+              const box = {
+                ...rockTemplate,
+                center: scale(distance, direction),
+              };
+              createStaticRock(worldId, box);
+              const gapBefore = visualGap(wheel.bodyId, box);
+              b3.b3World_Step(worldId, 1 / 60, 4);
+              const contact = shapeContact(wheel.rollingShapeId);
+              return { distance, gapBefore, contact };
+            } finally {
+              b3.b3DestroyWorld(worldId);
+            }
+          }
+
+          function findOnset(speculative, rock, direction) {
+            let far = 1.25;
+            let near = 0.20;
+            const farResult = isolatedAt(speculative, rock, direction, far);
+            const nearResult = isolatedAt(speculative, rock, direction, near);
+            if (farResult.contact.contacts !== 0) throw new Error('far probe unexpectedly contacts');
+            if (nearResult.contact.contacts === 0) throw new Error('near probe unexpectedly has no contact');
+            for (let i = 0; i < 13; i += 1) {
+              const mid = 0.5 * (far + near);
+              const result = isolatedAt(speculative, rock, direction, mid);
+              if (result.contact.contacts > 0) near = mid;
+              else far = mid;
+            }
+            return isolatedAt(speculative, rock, direction, near);
+          }
+
+          const directions = [
+            ['front', norm({ x: 1, y: 0, z: 0 })],
+            ['front-low', norm({ x: 1, y: -0.35, z: 0 })],
+            ['front-low-left-shoulder', norm({ x: 1, y: -0.30, z: 0.45 })],
+            ['front-low-right-shoulder', norm({ x: 1, y: -0.30, z: -0.45 })],
+            ['front-left-shoulder', norm({ x: 1, y: 0, z: 0.65 })],
+            ['side-low', norm({ x: 0.15, y: -0.25, z: 1 })],
+          ];
+
+          const ranked = rocks
+            .map((rock, index) => ({
+              rock,
+              index,
+              volume: 8 * rock.halfExtents.x * rock.halfExtents.y * rock.halfExtents.z,
+              maxHalf: Math.max(rock.halfExtents.x, rock.halfExtents.y, rock.halfExtents.z),
+            }))
+            .sort((a, b) => b.volume - a.volume);
+          const selected = [
+            ...ranked.slice(0, 4),
+            ranked[Math.floor(ranked.length * 0.25)],
+            ranked[Math.floor(ranked.length * 0.50)],
+            ranked[Math.floor(ranked.length * 0.75)],
+            ranked[ranked.length - 1],
+          ];
+
+          const results = [];
+          for (const sample of selected) {
+            for (const [directionName, direction] of directions) {
+              const on = findOnset(true, sample.rock, direction);
+              const off = findOnset(false, sample.rock, direction);
+              results.push({
+                rockIndex: sample.index,
+                volume: sample.volume,
+                halfExtents: sample.rock.halfExtents,
+                rotation: sample.rock.rotation,
+                directionName,
+                direction,
+                speculativeOn: on,
+                speculativeOff: off,
+                onsetDistanceDelta: on.distance - off.distance,
+                visualGapDelta: on.gapBefore - off.gapBefore,
+              });
+            }
+          }
+          results.sort((a, b) => b.speculativeOn.gapBefore - a.speculativeOn.gapBefore);
+          console.log('REAL_ROCK_SPECULATIVE_MATRIX', JSON.stringify(results));
+
+          const worst = results[0];
+          function fullM6At(speculative, caseData, distance) {
+            const worldDef = b3.b3DefaultWorldDef();
+            worldDef.gravity = { x: 0, y: 0, z: 0 };
+            worldDef.enableContinuous = false;
+            const worldId = b3.b3CreateWorld(worldDef);
+            b3.b3World_EnableSpeculative(worldId, speculative);
+            try {
+              const vehicle = createM6VehicleRuntime(
+                b3,
+                worldId,
+                config,
+                { x: 0, y: 0, z: 0 },
+                -7401,
+              );
+              const fl = vehicle.corners[0].wheel;
+              const wheelCenter = b3.b3Body_GetPosition(fl.bodyId);
+              const sourceRock = rocks[caseData.rockIndex];
+              const box = {
+                ...sourceRock,
+                center: add(wheelCenter, scale(distance, caseData.direction)),
+              };
+              createStaticRock(worldId, box);
+              const gapBefore = visualGap(fl.bodyId, box);
+              b3.b3World_Step(worldId, 1 / 60, 4);
+              const labels = [
+                ['chassis', vehicle.chassisShapeId],
+                ['fl-wheel', vehicle.corners[0].wheel.rollingShapeId],
+                ['fr-wheel', vehicle.corners[1].wheel.rollingShapeId],
+                ['rl-wheel', vehicle.corners[2].wheel.rollingShapeId],
+                ['rr-wheel', vehicle.corners[3].wheel.rollingShapeId],
+              ];
+              const contacts = Object.fromEntries(labels.map(([label, shapeId]) => [label, shapeContact(shapeId)]));
+              return { gapBefore, wheelCenter, boxCenter: box.center, contacts };
+            } finally {
+              b3.b3DestroyWorld(worldId);
+            }
+          }
+
+          const fullOn = fullM6At(true, worst, worst.speculativeOn.distance);
+          const fullOffSamePose = fullM6At(false, worst, worst.speculativeOn.distance);
+          const fullOffAtOffOnset = fullM6At(false, worst, worst.speculativeOff.distance);
+          console.log('REAL_ROCK_FULL_M6_WORST', JSON.stringify({
+            worst,
+            fullOn,
+            fullOffSamePose,
+            fullOffAtOffOnset,
+          }));
+          console.log('REAL_ROCK_SPECULATIVE_DIAGNOSTIC_OK', JSON.stringify({
+            cases: results.length,
+            worstVisualGapOn: worst.speculativeOn.gapBefore,
+            worstVisualGapOff: worst.speculativeOff.gapBefore,
+            worstDistanceDelta: worst.onsetDistanceDelta,
+          }));
+          NODE
