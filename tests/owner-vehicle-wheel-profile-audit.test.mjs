@@ -69,9 +69,23 @@ test('real Owner Tire produces a bounded wheel-frame geometry audit without mixi
       outerRadiusSpread: report.angularEnvelope.outerRadiusSpread,
     },
     axialEnvelope: {
+      method: report.axialEnvelope.method,
       binCount: report.axialEnvelope.binCount,
       coveredBinCount: report.axialEnvelope.coveredBinCount,
       coverage: report.axialEnvelope.coverage,
+      segmentSampleCount: report.axialEnvelope.segmentSampleCount,
+      bins: report.axialEnvelope.bins.map((bin) => ({
+        index: bin.index,
+        axial: bin.axial,
+        intersectionSegmentCount: bin.intersectionSegmentCount,
+        angularCoverage: bin.angularCoverage,
+        outerRadiusMin: bin.outerRadiusMin,
+        outerRadiusP25: bin.outerRadiusP25,
+        outerRadiusMedian: bin.outerRadiusMedian,
+        outerRadiusP75: bin.outerRadiusP75,
+        outerRadiusMax: bin.outerRadiusMax,
+        outerRadiusSpread: bin.outerRadiusSpread,
+      })),
     },
     provenance: report.provenance,
   }, null, 2));
