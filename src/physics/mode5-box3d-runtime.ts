@@ -6,6 +6,7 @@ import type {
 } from "./box3d-runtime-contract.js";
 
 type B3ShapeDef = Parameters<Box3DModule["b3CreateSphereShape"]>[1];
+type B3WheelProfilePoint = Readonly<{ x: number; y: number }>;
 
 export const BOX3D_MODE5_RUNTIME_PATCH = Object.freeze({
   id: "B3X-WHEEL-001",
@@ -14,8 +15,8 @@ export const BOX3D_MODE5_RUNTIME_PATCH = Object.freeze({
   patchBaseCommit: "77a67132ffc4f003e84c6ffe4e72abfbcded4d33",
   patchHeadCommit: "241fe10a9056836332c21d9614471d32d749ce3d",
   patchSha256: "83ee212f062e7a81578993fc4bba93f8a6b3a8f1c786eef9769007bffe77f4d5",
-  inlineArtifactSha256: "c143b37b8c7a54345cc477df3c14767a2fc321c346d6d2a9fe728906d4a9b5fd",
-  validatedRunId: 33_526_390_618,
+  inlineArtifactSha256: "e6217dee668822ddb861083a2f16fd24cad2b369d5214fea34ad0ee216710c76",
+  validatedRunId: 33_659_887_064,
 } as const);
 
 export interface Mode5Box3DModule extends Box3DModule {
@@ -28,11 +29,20 @@ export interface Mode5Box3DModule extends Box3DModule {
     halfWidth: number,
     cornerRadius: number,
   ): b3ShapeId;
+  b3CreateWheelShapeProfile(
+    bodyId: b3BodyId,
+    shapeDef: B3ShapeDef,
+    center: b3Vec3,
+    axis: b3Vec3,
+    profile: readonly B3WheelProfilePoint[],
+    cornerRadius: number,
+  ): b3ShapeId;
   b3DestroyShape(shapeId: b3ShapeId, updateBodyMass: boolean): void;
 }
 
 const MODE5_REQUIRED_EXPORTS = [
   "b3CreateWheelShapeFlat",
+  "b3CreateWheelShapeProfile",
   "b3DestroyShape",
 ] as const;
 
