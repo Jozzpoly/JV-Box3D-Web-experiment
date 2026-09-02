@@ -1,0 +1,16 @@
+{
+  "schema": "JV_OWNER_AB_POINTER_V1",
+  "sourceCommit": "36b79e7d43a39c57d283f289d368dda52c2d3d57",
+  "experiment": "wheel-mode5-contact-geometry",
+  "variants": [
+    {
+      "id": "flat-control",
+      "viteMode5WheelGeometry": "flat-control"
+    },
+    {
+      "id": "asset-profile",
+      "viteMode5WheelGeometry": "asset-profile"
+    }
+  ],
+  "purpose": "Owner same-source driving falsifier: historical Flat c200mm contact geometry versus asset-derived P25+c20mm profile; executable source is identical between variants"
+}
