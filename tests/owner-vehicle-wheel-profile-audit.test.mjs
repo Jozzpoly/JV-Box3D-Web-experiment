@@ -6,6 +6,7 @@ import { inspectBlockbenchRigidPartsV1 } from '../tools/owner-vehicle/blockbench
 import { parseM6FactoryConfig } from '../tools/owner-vehicle/owner-m6-full-rig-calibration-r2.mjs';
 import { auditOwnerWheelProfileR3 } from '../tools/owner-vehicle/owner-m6-wheel-profile-audit.mjs';
 import { buildOwnerWheelProfileCandidateSetV1 } from '../tools/owner-vehicle/owner-m6-wheel-profile-candidates.mjs';
+import { auditOwnerWheelSupportCandidatesV1 } from '../tools/owner-vehicle/owner-m6-wheel-support-audit.mjs';
 
 const WHEEL = 'assets/owner-vehicle/source/Offroad_Big_Wheels.gltf';
 const RECEIPT = 'public/receipts/jv_m6_factory_receipt.json';
@@ -24,7 +25,20 @@ function currentMode5CornerRadius(sourceText) {
   return value;
 }
 
-test('real Owner Tire produces a bounded wheel-frame geometry audit and donor-profile candidate comparison', async () => {
+function compactErrors(errors) {
+  return {
+    signedMeanError: errors.signedMeanError,
+    meanAbsoluteError: errors.meanAbsoluteError,
+    p95AbsoluteError: errors.p95AbsoluteError,
+    maxAbsoluteError: errors.maxAbsoluteError,
+    meanOutsideEnvelope: errors.meanOutsideEnvelope,
+    outsideOverLinearSlopRate: errors.outsideOverLinearSlopRate,
+    meanInsetFromEnvelope: errors.meanInsetFromEnvelope,
+    insetOverLinearSlopRate: errors.insetOverLinearSlopRate,
+  };
+}
+
+test('real Owner Tire produces asset-derived profile and convex-support evidence against current mode5', async () => {
   const [wheelText, receiptText, mode5BackendText] = await Promise.all([
     readFile(WHEEL, 'utf8'),
     readFile(RECEIPT, 'utf8'),
@@ -81,13 +95,75 @@ test('real Owner Tire produces a bounded wheel-frame geometry audit and donor-pr
     assert.ok(candidate.profileCount >= 1);
     assert.ok(candidate.profileCount <= candidateSet.donorSemantics.maxProfilePoints);
     assert.equal(candidate.metrics.missingSliceCount, 0);
-    for (const [label, value] of Object.entries(candidate.metrics)) {
-      if (label === 'missingSliceCount' || label === 'observationCount') continue;
-      finite(value, `${candidate.id}.${label}`);
+  }
+
+  const support = auditOwnerWheelSupportCandidatesV1(
+    rigidParts,
+    report,
+    candidateSet,
+  );
+  assert.equal(support.method, 'CONVEX_SUPPORT_FUNCTION_DIRECTION_GRID');
+  assert.ok(support.supportPointCount > 0);
+  assert.equal(support.semantics.radialDirectionCount, 72);
+  assert.equal(support.semantics.tiltStepDegrees, 5);
+  assert.equal(support.semantics.tiltCount, 37);
+  assert.equal(support.semantics.directionCount, 2664);
+  assert.equal(support.candidates.length, candidateSet.candidates.length);
+
+  const supportControl = support.candidates.find((candidate) => candidate.id === 'current-mode5-flat');
+  assert.ok(supportControl, 'support audit must retain current mode5 control');
+  assert.equal(supportControl.pureRadial.tiltDegrees, 0);
+  assert.equal(supportControl.negativeAxialSide.tiltDegrees, -90);
+  assert.equal(supportControl.positiveAxialSide.tiltDegrees, 90);
+
+  for (const candidate of support.candidates) {
+    for (const [label, value] of Object.entries(compactErrors(candidate.uniformTiltGrid))) {
+      finite(value, `${candidate.id}.support.uniform.${label}`);
+    }
+    for (const [label, value] of Object.entries(compactErrors(candidate.pureRadial.errors))) {
+      finite(value, `${candidate.id}.support.radial.${label}`);
     }
   }
 
-  console.log('OWNER_WHEEL_PROFILE_AUDIT', JSON.stringify({
+  const supportRanking = [...support.candidates]
+    .sort((a, b) => a.uniformTiltGrid.meanAbsoluteError - b.uniformTiltGrid.meanAbsoluteError)
+    .map((candidate) => ({
+      id: candidate.id,
+      source: candidate.source,
+      targetStrategy: candidate.targetStrategy,
+      cornerRadius: candidate.cornerRadius,
+      profileCount: candidate.profileCount,
+      uniformTiltGrid: compactErrors(candidate.uniformTiltGrid),
+      pureRadial: {
+        actualSupport: candidate.pureRadial.actualSupport,
+        candidateSupport: candidate.pureRadial.candidateSupport,
+        errors: compactErrors(candidate.pureRadial.errors),
+      },
+      tilt30: candidate.byTilt
+        .filter((row) => Math.abs(row.tiltDegrees) === 30)
+        .map((row) => ({
+          tiltDegrees: row.tiltDegrees,
+          candidateSupport: row.candidateSupport,
+          actualSupport: row.actualSupport,
+          errors: compactErrors(row.errors),
+        })),
+      tilt60: candidate.byTilt
+        .filter((row) => Math.abs(row.tiltDegrees) === 60)
+        .map((row) => ({
+          tiltDegrees: row.tiltDegrees,
+          candidateSupport: row.candidateSupport,
+          actualSupport: row.actualSupport,
+          errors: compactErrors(row.errors),
+        })),
+      axialSides: [candidate.negativeAxialSide, candidate.positiveAxialSide].map((row) => ({
+        tiltDegrees: row.tiltDegrees,
+        candidateSupport: row.candidateSupport,
+        actualSupport: row.actualSupport,
+        errors: compactErrors(row.errors),
+      })),
+    }));
+
+  console.log('OWNER_WHEEL_GEOMETRY_SUMMARY', JSON.stringify({
     piece: report.piece,
     frame: {
       requestedRadius: report.frame.requestedRadius,
@@ -97,8 +173,6 @@ test('real Owner Tire produces a bounded wheel-frame geometry audit and donor-pr
     },
     physical: report.physical,
     angularEnvelope: {
-      binCount: report.angularEnvelope.binCount,
-      coveredBinCount: report.angularEnvelope.coveredBinCount,
       coverage: report.angularEnvelope.coverage,
       outerRadiusMin: report.angularEnvelope.outerRadiusMin,
       outerRadiusMax: report.angularEnvelope.outerRadiusMax,
@@ -106,40 +180,28 @@ test('real Owner Tire produces a bounded wheel-frame geometry audit and donor-pr
     },
     axialEnvelope: {
       method: report.axialEnvelope.method,
-      binCount: report.axialEnvelope.binCount,
-      coveredBinCount: report.axialEnvelope.coveredBinCount,
       coverage: report.axialEnvelope.coverage,
-      segmentSampleCount: report.axialEnvelope.segmentSampleCount,
-      bins: report.axialEnvelope.bins.map((bin) => ({
-        index: bin.index,
-        axial: bin.axial,
-        intersectionSegmentCount: bin.intersectionSegmentCount,
-        angularCoverage: bin.angularCoverage,
-        outerRadiusMin: bin.outerRadiusMin,
-        outerRadiusP25: bin.outerRadiusP25,
-        outerRadiusMedian: bin.outerRadiusMedian,
-        outerRadiusP75: bin.outerRadiusP75,
-        outerRadiusMax: bin.outerRadiusMax,
-        outerRadiusSpread: bin.outerRadiusSpread,
-      })),
+      binCount: report.axialEnvelope.binCount,
     },
-    provenance: report.provenance,
-  }, null, 2));
-
-  console.log('OWNER_WHEEL_PROFILE_CANDIDATES', JSON.stringify({
-    currentMode5CornerRadius: mode5CornerRadius,
     donorSemantics: candidateSet.donorSemantics,
-    rejected: candidateSet.rejected,
+    supportSemantics: support.semantics,
+    supportPointCount: support.supportPointCount,
     candidates: candidateSet.candidates.map((candidate) => ({
       id: candidate.id,
-      source: candidate.source,
       targetStrategy: candidate.targetStrategy,
-      targetStatistic: candidate.targetStatistic,
       cornerRadius: candidate.cornerRadius,
       profileCount: candidate.profileCount,
       profile: candidate.profile,
-      targetOuterProfile: candidate.targetOuterProfile,
-      metrics: candidate.metrics,
+      surfaceGrid: {
+        meanAbsoluteError: candidate.metrics.meanAbsoluteError,
+        p95AbsoluteError: candidate.metrics.p95AbsoluteError,
+        meanOutsideRubber: candidate.metrics.meanOutsideRubber,
+        outsideOverLinearSlopRate: candidate.metrics.outsideOverLinearSlopRate,
+        meanInsetFromRubber: candidate.metrics.meanInsetFromRubber,
+        insetOverLinearSlopRate: candidate.metrics.insetOverLinearSlopRate,
+      },
     })),
   }, null, 2));
+
+  console.log('OWNER_WHEEL_SUPPORT_RANKING', JSON.stringify(supportRanking, null, 2));
 });
