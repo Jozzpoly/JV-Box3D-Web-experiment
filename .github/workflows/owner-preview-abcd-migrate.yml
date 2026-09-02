@@ -20,7 +20,7 @@ jobs:
           ref: preview/owner-control
           fetch-depth: 1
 
-      - name: Build one fail-closed A-B-C-D control commit
+      - name: Build and validate A-B-C-D working tree
         run: |
           set -euxo pipefail
           python3 tools/owner-preview-abcd-migrate.py
@@ -36,8 +36,63 @@ jobs:
           grep -q 'Build exact CORE torus D variant' .github/workflows/owner-preview-pages.yml
           grep -q '"torus": "core-torus64"' .github/workflows/owner-preview-live-smoke.yml
 
-          git config user.name "Jozzpoly"
-          git config user.email "100104127+Jozzpoly@users.noreply.github.com"
-          git add -A
-          git commit -m "preview: publish exact CORE torus D"
-          git push origin HEAD:preview/owner-control
+      - name: Create atomic publication commit object without moving the protected workflow ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: Jozzpoly/JV-Box3D-Web-experiment
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import urllib.request
+          from pathlib import Path
+
+          repo = os.environ["GH_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          parent = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          base_tree = subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], text=True).strip()
+
+          def post(path, payload):
+              request = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}/{path}",
+                  data=json.dumps(payload).encode("utf-8"),
+                  method="POST",
+                  headers={
+                      "Accept": "application/vnd.github+json",
+                      "Authorization": f"Bearer {token}",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "Content-Type": "application/json",
+                      "User-Agent": "JV-Web-ABCD-Migration/1",
+                  },
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.loads(response.read().decode("utf-8"))
+
+          entries = []
+          for path in [
+              ".github/workflows/owner-preview-live-smoke.yml",
+              ".github/workflows/owner-preview-pages.yml",
+              "preview/owner-ab.json",
+          ]:
+              blob = post("git/blobs", {
+                  "content": Path(path).read_text(encoding="utf-8"),
+                  "encoding": "utf-8",
+              })
+              entries.append({"path": path, "mode": "100644", "type": "blob", "sha": blob["sha"]})
+
+          entries.extend([
+              {"path": ".github/workflows/owner-preview-abcd-migrate.yml", "mode": "100644", "type": "blob", "sha": None},
+              {"path": "tools/owner-preview-abcd-migrate.py", "mode": "100644", "type": "blob", "sha": None},
+          ])
+          tree = post("git/trees", {"base_tree": base_tree, "tree": entries})
+          commit = post("git/commits", {
+              "message": "preview: publish exact CORE torus D",
+              "tree": tree["sha"],
+              "parents": [parent],
+          })
+          print(f"ABCD_ATOMIC_PARENT={parent}")
+          print(f"ABCD_ATOMIC_TREE={tree['sha']}")
+          print(f"ABCD_ATOMIC_COMMIT={commit['sha']}")
+          PY
