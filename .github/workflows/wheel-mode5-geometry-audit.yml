@@ -12,6 +12,7 @@ on:
       - tests/m6-mode5-wheel-backend.test.mjs
       - assets/owner-vehicle/source/Offroad_Big_Wheels.gltf
       - public/receipts/jv_m6_factory_receipt.json
+      - src/physics/box3d-boundary.ts
       - src/physics/mode5-box3d-runtime.ts
       - src/physics/vendor/box3d-mode5.inline.d.mts
       - src/vehicle/m6/mode5-wheel-backend.ts
