@@ -5,6 +5,7 @@ on:
     branches:
       - work/wheel-mode5-d-pathology-2026-09-03
     paths:
+      - tools/wheel-mode5-tire-cross-section-audit.mjs
       - .github/workflows/wheel-mode5-tire-cross-section-audit.yml
 
 permissions:
@@ -21,5 +22,5 @@ jobs:
           node-version: 24.16.0
           cache: npm
       - run: npm ci
-      - name: Recover skinned Tire and compare cross-section
+      - name: Recover Tire through validated R3 marker frame and compare cross-section
         run: node tools/wheel-mode5-tire-cross-section-audit.mjs
