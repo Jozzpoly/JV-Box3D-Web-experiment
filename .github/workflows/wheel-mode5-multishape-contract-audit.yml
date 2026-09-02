@@ -1,0 +1,31 @@
+name: Wheel mode5 multishape contract audit
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-multishape-contract-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v7
+      - name: Map single-shape assumptions
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' '=== rollingShapeId ==='
+          grep -RIn --exclude-dir=node_modules --exclude='*.mjs' 'rollingShapeId' src tests .github/workflows || true
+          printf '%s\n' '=== shapeCount ==='
+          grep -RIn --exclude-dir=node_modules 'shapeCount' src/vehicle tests/m6-* .github/workflows/wheel-mode5-* || true
+          printf '%s\n' '=== topology count callers ==='
+          grep -RIn --exclude-dir=node_modules 'm6TopologyCountsForWheelBackend\|M6_MODE5_TOPOLOGY_COUNTS' src tests || true
+          printf '%s\n' '=== shapeIds consumers ==='
+          grep -RIn --exclude-dir=node_modules 'wheel\.shapeIds\|shapeIds' src/vehicle/m6 tests/m6-* | head -n 250 || true
+          echo MODE5_MULTISHAPE_CONTRACT_AUDIT_OK
