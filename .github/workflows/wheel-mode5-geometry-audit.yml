@@ -117,11 +117,16 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
-      - name: Run focused profile-wheel runtime validation
+      - name: Run focused profile-wheel runtime test
         shell: bash
         run: |
           set -euxo pipefail
           node tools/run-tests.mjs tests/m6-mode5-wheel-backend.test.mjs
+
+      - name: Typecheck selector integration
+        shell: bash
+        run: |
+          set -euxo pipefail
           npm run typecheck
 
       - name: Commit candidate evidence to experiment branch
