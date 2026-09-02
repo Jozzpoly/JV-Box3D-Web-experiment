@@ -30,7 +30,7 @@ export type Mode5WheelGeometryVariant =
   | typeof MODE5_ASSET_PROFILE_GEOMETRY;
 
 export const MODE5_WHEEL_GEOMETRY_VARIANT: Mode5WheelGeometryVariant =
-  import.meta.env.VITE_JV_MODE5_WHEEL_GEOMETRY === MODE5_FLAT_CONTROL_GEOMETRY
+  import.meta.env?.VITE_JV_MODE5_WHEEL_GEOMETRY === MODE5_FLAT_CONTROL_GEOMETRY
     ? MODE5_FLAT_CONTROL_GEOMETRY
     : MODE5_ASSET_PROFILE_GEOMETRY;
 
@@ -51,6 +51,7 @@ export interface Mode5WheelReceipt {
   readonly radius: number;
   readonly width: number;
   readonly cornerRadius: number;
+  readonly flatControlCornerRadius: number;
   readonly collisionGroupIndex: number;
 }
 
@@ -190,6 +191,7 @@ export function createMode5WheelForGeometry(
       radius: config.wheelRadius,
       width: config.wheelWidth,
       cornerRadius,
+      flatControlCornerRadius: MODE5_FLAT_CONTROL_CORNER_RADIUS,
       collisionGroupIndex,
     };
   } catch (error: unknown) {
