@@ -17,6 +17,9 @@ import {
 } from "../.test-dist/vehicle/m6/legacy-split-wheel-backend.js";
 import {
   createMode5Wheel,
+  MODE5_ASSET_PROFILE,
+  MODE5_ASSET_PROFILE_CORNER_RADIUS,
+  MODE5_ASSET_PROFILE_ID,
   MODE5_WHEEL_BACKEND_ID,
 } from "../.test-dist/vehicle/m6/mode5-wheel-backend.js";
 import {
@@ -57,7 +60,7 @@ function closeMassData(actual, expected, label) {
   }
 }
 
-test("mode5 preserves reference-sphere mass while replacing split contact geometry", async () => {
+test("mode5 asset profile preserves reference-sphere mass while replacing split contact geometry", async () => {
   const b3 = await loadMode5Box3DModule();
   const worldDef = b3.b3DefaultWorldDef();
   worldDef.gravity = { x: 0, y: 0, z: 0 };
@@ -82,7 +85,10 @@ test("mode5 preserves reference-sphere mass while replacing split contact geomet
     assert.equal(legacy.shapeCount, 2);
     assert.equal(mode5.shapeCount, 1);
     assert.equal(mode5.backendId, MODE5_WHEEL_BACKEND_ID);
-    assert.equal(mode5.cornerRadius, 0.2);
+    assert.equal(mode5.profileId, MODE5_ASSET_PROFILE_ID);
+    assert.equal(mode5.profileCount, MODE5_ASSET_PROFILE.length);
+    assert.equal(mode5.cornerRadius, MODE5_ASSET_PROFILE_CORNER_RADIUS);
+    assert.equal(mode5.flatControlCornerRadius, 0.2);
     closeMassData(
       b3.b3Body_GetMassData(mode5.bodyId),
       b3.b3Body_GetMassData(legacy.bodyId),
@@ -103,7 +109,7 @@ test("mode5 preserves reference-sphere mass while replacing split contact geomet
   }
 });
 
-test("patched boundary builds and drives a full M6 on the mode5 backend", async () => {
+test("patched boundary builds and drives a full M6 on the asset-profile mode5 backend", async () => {
   configureBox3DRuntimeVariant("mode5-experiment");
   const boundary = await Box3DBoundary.load();
   assert.equal(
