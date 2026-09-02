@@ -1,135 +1,126 @@
 import { readFile } from 'node:fs/promises';
+import { inspectBlockbenchRigidPartsV1 } from './owner-vehicle/blockbench-gltf-rigid-parts.mjs';
+import { auditOwnerWheelProfileR3 } from './owner-vehicle/owner-m6-wheel-profile-audit.mjs';
 
-const path=new URL('../assets/owner-vehicle/source/Offroad_Big_Wheels.gltf',import.meta.url);
-const gltf=JSON.parse(await readFile(path,'utf8'));
-const uri=gltf.buffers?.[0]?.uri;
-if(typeof uri!=='string'||!uri.startsWith('data:application/octet-stream;base64,'))throw new Error('expected embedded glTF buffer');
-const bytes=Buffer.from(uri.slice(uri.indexOf(',')+1),'base64');
-const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+const WHEEL_PATH = new URL('../assets/owner-vehicle/source/Offroad_Big_Wheels.gltf', import.meta.url);
+const REQUESTED_RADIUS = 0.514062464;
+const REQUESTED_WIDTH = 0.4375;
+const HALF_WIDTH = REQUESTED_WIDTH / 2;
 
-function componentInfo(type){
-  if(type===5120)return{bytes:1,read:o=>dv.getInt8(o)};
-  if(type===5121)return{bytes:1,read:o=>dv.getUint8(o)};
-  if(type===5122)return{bytes:2,read:o=>dv.getInt16(o,true)};
-  if(type===5123)return{bytes:2,read:o=>dv.getUint16(o,true)};
-  if(type===5125)return{bytes:4,read:o=>dv.getUint32(o,true)};
-  if(type===5126)return{bytes:4,read:o=>dv.getFloat32(o,true)};
-  throw new Error(`unsupported component ${type}`);
+const text = await readFile(WHEEL_PATH, 'utf8');
+const rigidParts = inspectBlockbenchRigidPartsV1(text, 'Offroad_Big_Wheels.gltf');
+const audit = auditOwnerWheelProfileR3(rigidParts, REQUESTED_RADIUS, REQUESTED_WIDTH, {
+  angularBins: 72,
+  axialBins: 64,
+});
+
+if (audit.piece.triangleCount !== 396 || audit.piece.nonDegenerateTriangleCount !== 396) {
+  throw new Error(`validated Tire recovery drifted: ${JSON.stringify(audit.piece)}`);
 }
-const components={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT4:16};
-function accessor(index){
-  const a=gltf.accessors[index];
-  const bv=gltf.bufferViews[a.bufferView];
-  const info=componentInfo(a.componentType);
-  const n=components[a.type];
-  if(!n)throw new Error(`unsupported accessor type ${a.type}`);
-  const stride=bv.byteStride??info.bytes*n;
-  const start=(bv.byteOffset??0)+(a.byteOffset??0);
-  const out=[];
-  for(let row=0;row<a.count;row++){
-    const values=[];
-    for(let c=0;c<n;c++)values.push(info.read(start+row*stride+c*info.bytes));
-    out.push(n===1?values[0]:values);
+if (Math.abs(audit.physical.axialWidth - REQUESTED_WIDTH) > 1e-9) {
+  throw new Error(`validated Tire width drifted: ${audit.physical.axialWidth}`);
+}
+if (!(audit.physical.outerRadius > 0.54 && audit.physical.outerRadius < 0.55)) {
+  throw new Error(`validated Tire outer radius is implausible: ${audit.physical.outerRadius}`);
+}
+
+function torusOuterRadiusAtAxial(ratio, axial) {
+  const crownRadius = ratio * HALF_WIDTH;
+  const ringRadius = REQUESTED_RADIUS - crownRadius;
+  const capsuleHalfLength = HALF_WIDTH - crownRadius;
+  const shoulder = Math.max(Math.abs(axial) - capsuleHalfLength, 0);
+  if (shoulder > crownRadius) return null;
+  return ringRadius + Math.sqrt(Math.max(0, crownRadius * crownRadius - shoulder * shoulder));
+}
+
+function quantile(sorted, fraction) {
+  if (sorted.length === 0) return null;
+  if (sorted.length === 1) return sorted[0];
+  const position = (sorted.length - 1) * fraction;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  if (lower === upper) return sorted[lower];
+  return sorted[lower] + (sorted[upper] - sorted[lower]) * (position - lower);
+}
+
+function stats(values) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return {
+    min: sorted[0],
+    p25: quantile(sorted, 0.25),
+    median: quantile(sorted, 0.5),
+    p75: quantile(sorted, 0.75),
+    p95: quantile(sorted, 0.95),
+    max: sorted.at(-1),
+    mean,
+    rms: Math.sqrt(values.reduce((sum, value) => sum + value * value, 0) / values.length),
+  };
+}
+
+const fits = [];
+for (const ratio of [0.45, 0.55, 0.65, 0.914]) {
+  const rows = [];
+  for (const bin of audit.axialEnvelope.bins) {
+    if (!(bin.intersectionSegmentCount > 0) || bin.outerRadiusMedian === null) continue;
+    const torusOuter = torusOuterRadiusAtAxial(ratio, bin.axial);
+    if (torusOuter === null) continue;
+    rows.push({
+      axialMm: bin.axial * 1000,
+      angularCoverage: bin.angularCoverage,
+      visualMinMm: bin.outerRadiusMin * 1000,
+      visualP25Mm: bin.outerRadiusP25 * 1000,
+      visualMedianMm: bin.outerRadiusMedian * 1000,
+      visualP75Mm: bin.outerRadiusP75 * 1000,
+      visualMaxMm: bin.outerRadiusMax * 1000,
+      torusOuterMm: torusOuter * 1000,
+      torusMinusMinMm: (torusOuter - bin.outerRadiusMin) * 1000,
+      torusMinusP25Mm: (torusOuter - bin.outerRadiusP25) * 1000,
+      torusMinusMedianMm: (torusOuter - bin.outerRadiusMedian) * 1000,
+      torusMinusP75Mm: (torusOuter - bin.outerRadiusP75) * 1000,
+      torusMinusMaxMm: (torusOuter - bin.outerRadiusMax) * 1000,
+    });
   }
-  return out;
-}
-
-const tireNodeIndex=gltf.nodes.findIndex(n=>n.name==='Tire');
-if(tireNodeIndex<0)throw new Error('Tire node missing');
-const meshNode=gltf.nodes.find(n=>n.mesh!==undefined&&n.skin!==undefined);
-if(!meshNode)throw new Error('skinned mesh node missing');
-const skin=gltf.skins[meshNode.skin];
-const tireJointPaletteIndex=skin.joints.indexOf(tireNodeIndex);
-if(tireJointPaletteIndex<0)throw new Error('Tire node not present in skin joints');
-
-const vertices=[];
-const triangles=[];
-for(const primitive of gltf.meshes[meshNode.mesh].primitives){
-  const positions=accessor(primitive.attributes.POSITION);
-  const joints=accessor(primitive.attributes.JOINTS_0);
-  const weights=accessor(primitive.attributes.WEIGHTS_0);
-  const indices=primitive.indices===undefined?positions.map((_,i)=>i):accessor(primitive.indices);
-  const isTire=positions.map((_,i)=>{
-    let best=0;
-    for(let j=1;j<4;j++)if(weights[i][j]>weights[i][best])best=j;
-    return joints[i][best]===tireJointPaletteIndex && weights[i][best]>0.5;
-  });
-  for(let i=0;i<indices.length;i+=3){
-    const ids=[indices[i],indices[i+1],indices[i+2]];
-    if(ids.every(id=>isTire[id])){
-      triangles.push(ids.map(id=>positions[id]));
-      for(const id of ids)vertices.push(positions[id]);
-    }
-  }
-}
-if(triangles.length!==396)throw new Error(`Tire triangle recovery drifted: expected 396, got ${triangles.length}`);
-
-const uniqueMap=new Map();
-for(const p of vertices){
-  const key=p.map(v=>v.toFixed(8)).join(',');
-  if(!uniqueMap.has(key))uniqueMap.set(key,p);
-}
-const unique=[...uniqueMap.values()];
-const xs=unique.map(p=>p[0]);
-const minX=Math.min(...xs),maxX=Math.max(...xs),centerX=0.5*(minX+maxX);
-const radial=unique.map(p=>Math.hypot(p[1],p[2]));
-const maxRadius=Math.max(...radial);
-
-const BIN=0.01;
-const bins=new Map();
-for(const p of unique){
-  const axial=p[0]-centerX;
-  const r=Math.hypot(p[1],p[2]);
-  const key=Math.round(axial/BIN);
-  let row=bins.get(key);
-  if(!row){row={key,axials:[],radii:[]};bins.set(key,row);}
-  row.axials.push(axial);row.radii.push(r);
-}
-const profiles=[...bins.values()].map(row=>({
-  axialMm:1000*row.axials.reduce((a,b)=>a+b,0)/row.axials.length,
-  minRadiusMm:1000*Math.min(...row.radii),
-  maxRadiusMm:1000*Math.max(...row.radii),
-  samples:row.radii.length,
-})).sort((a,b)=>a.axialMm-b.axialMm);
-
-const WHEEL_RADIUS=0.514062464;
-const HALF_WIDTH=0.4375/2;
-function torusAt(ratio,axial){
-  const crown=ratio*HALF_WIDTH;
-  const ring=WHEEL_RADIUS-crown;
-  const capsuleHalfLength=HALF_WIDTH-crown;
-  const extra=Math.max(Math.abs(axial)-capsuleHalfLength,0);
-  if(extra>crown)return null;
-  const radialHalf=Math.sqrt(Math.max(0,crown*crown-extra*extra));
-  return{outer:ring+radialHalf,inner:ring-radialHalf};
-}
-const fits=[];
-for(const ratio of [0.45,0.55,0.65,0.914]){
-  const diffs=[];
-  const innerDiffs=[];
-  const rows=[];
-  for(const p of profiles){
-    const t=torusAt(ratio,p.axialMm/1000);
-    if(!t)continue;
-    const outerDiffMm=1000*t.outer-p.maxRadiusMm;
-    const innerDiffMm=p.minRadiusMm-1000*t.inner;
-    diffs.push(outerDiffMm);innerDiffs.push(innerDiffMm);
-    rows.push({axialMm:p.axialMm,visualOuterMm:p.maxRadiusMm,visualInnerMm:p.minRadiusMm,torusOuterMm:1000*t.outer,torusInnerMm:1000*t.inner,outerDiffMm,innerDiffMm});
-  }
+  const vsMin = rows.map((row) => row.torusMinusMinMm);
+  const vsP25 = rows.map((row) => row.torusMinusP25Mm);
+  const vsMedian = rows.map((row) => row.torusMinusMedianMm);
+  const vsP75 = rows.map((row) => row.torusMinusP75Mm);
+  const vsMax = rows.map((row) => row.torusMinusMaxMm);
   fits.push({
     ratio,
-    crownRadiusMm:ratio*HALF_WIDTH*1000,
-    ringRadiusMm:(WHEEL_RADIUS-ratio*HALF_WIDTH)*1000,
-    maxOuterProtrusionMm:Math.max(...diffs),
-    maxOuterUnderfillMm:-Math.min(...diffs),
-    rmsOuterMm:Math.sqrt(diffs.reduce((s,v)=>s+v*v,0)/diffs.length),
-    maxInnerFillBeyondVisualVoidMm:Math.max(...innerDiffs),
+    crownRadiusMm: ratio * HALF_WIDTH * 1000,
+    ringRadiusMm: (REQUESTED_RADIUS - ratio * HALF_WIDTH) * 1000,
+    capsuleHalfLengthMm: (HALF_WIDTH - ratio * HALF_WIDTH) * 1000,
+    sliceCount: rows.length,
+    torusMinusVisualMinMm: stats(vsMin),
+    torusMinusVisualP25Mm: stats(vsP25),
+    torusMinusVisualMedianMm: stats(vsMedian),
+    torusMinusVisualP75Mm: stats(vsP75),
+    torusMinusVisualMaxMm: stats(vsMax),
+    outsideMinOver5mmSlices: rows.filter((row) => row.torusMinusMinMm > 5).length,
+    outsideP25Over5mmSlices: rows.filter((row) => row.torusMinusP25Mm > 5).length,
+    outsideMedianOver5mmSlices: rows.filter((row) => row.torusMinusMedianMm > 5).length,
     rows,
   });
 }
-console.log('TIRE_CROSS_SECTION_AUDIT_RESULT',JSON.stringify({
-  tireNodeIndex,tireJointPaletteIndex,triangles:triangles.length,uniqueVertices:unique.length,
-  axialBoundsMm:[minX*1000,maxX*1000],axialCenterMm:centerX*1000,widthMm:(maxX-minX)*1000,
-  maxRadiusMm:maxRadius*1000,profiles,fits,
+
+console.log('TIRE_CROSS_SECTION_AUDIT_RESULT', JSON.stringify({
+  method: 'VALIDATED_R3_MARKER_FRAME_AXIAL_ENVELOPE',
+  piece: audit.piece,
+  frame: audit.frame,
+  physical: audit.physical,
+  angularEnvelope: {
+    binCount: audit.angularEnvelope.binCount,
+    coverage: audit.angularEnvelope.coverage,
+    outerRadiusMin: audit.angularEnvelope.outerRadiusMin,
+    outerRadiusMax: audit.angularEnvelope.outerRadiusMax,
+    outerRadiusSpread: audit.angularEnvelope.outerRadiusSpread,
+  },
+  axialEnvelope: {
+    binCount: audit.axialEnvelope.binCount,
+    coveredBinCount: audit.axialEnvelope.coveredBinCount,
+    coverage: audit.axialEnvelope.coverage,
+  },
+  fits,
 }));
 console.log('TIRE_CROSS_SECTION_AUDIT_OK');
