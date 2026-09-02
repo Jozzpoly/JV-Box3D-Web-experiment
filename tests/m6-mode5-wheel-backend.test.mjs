@@ -25,6 +25,10 @@ import {
   MODE5_FLAT_CONTROL_CORNER_RADIUS,
   MODE5_FLAT_CONTROL_GEOMETRY,
   MODE5_FLAT_CONTROL_ID,
+  MODE5_SOLVER_AWARE_PROFILE,
+  MODE5_SOLVER_AWARE_PROFILE_CORNER_RADIUS,
+  MODE5_SOLVER_AWARE_PROFILE_GEOMETRY,
+  MODE5_SOLVER_AWARE_PROFILE_ID,
   MODE5_WHEEL_BACKEND_ID,
 } from "../.test-dist/vehicle/m6/mode5-wheel-backend.js";
 import {
@@ -181,7 +185,7 @@ async function runGuidedProfileContactCase({
   }
 }
 
-test("mode5 asset profile preserves reference-sphere mass while replacing split contact geometry", async () => {
+test("mode5 solver-aware C preserves reference-sphere mass while replacing split contact geometry", async () => {
   const b3 = await loadMode5Box3DModule();
   const worldDef = b3.b3DefaultWorldDef();
   worldDef.gravity = { x: 0, y: 0, z: 0 };
@@ -206,10 +210,10 @@ test("mode5 asset profile preserves reference-sphere mass while replacing split 
     assert.equal(legacy.shapeCount, 2);
     assert.equal(mode5.shapeCount, 1);
     assert.equal(mode5.backendId, MODE5_WHEEL_BACKEND_ID);
-    assert.equal(mode5.geometryVariant, MODE5_ASSET_PROFILE_GEOMETRY);
-    assert.equal(mode5.profileId, MODE5_ASSET_PROFILE_ID);
-    assert.equal(mode5.profileCount, MODE5_ASSET_PROFILE.length);
-    assert.equal(mode5.cornerRadius, MODE5_ASSET_PROFILE_CORNER_RADIUS);
+    assert.equal(mode5.geometryVariant, MODE5_SOLVER_AWARE_PROFILE_GEOMETRY);
+    assert.equal(mode5.profileId, MODE5_SOLVER_AWARE_PROFILE_ID);
+    assert.equal(mode5.profileCount, MODE5_SOLVER_AWARE_PROFILE.length);
+    assert.equal(mode5.cornerRadius, MODE5_SOLVER_AWARE_PROFILE_CORNER_RADIUS);
     assert.equal(mode5.flatControlCornerRadius, MODE5_FLAT_CONTROL_CORNER_RADIUS);
     closeMassData(
       b3.b3Body_GetMassData(mode5.bodyId),
@@ -287,7 +291,7 @@ test("same-source mode5 A-B changes only analytic contact geometry contract", as
   }
 });
 
-test("mode5 asset profile keeps finite contact on flat, edge-biased and tilted-shoulder microcases", async () => {
+test("falsified B profile binding still keeps finite contact in historical microcases", async () => {
   const flat = await runGuidedProfileContactCase({
     axis: { x: 0, y: 0, z: 1 },
   });
@@ -310,7 +314,7 @@ test("mode5 asset profile keeps finite contact on flat, edge-biased and tilted-s
   assert.ok(shoulder.y > 0.4, `tilted shoulder rest height unexpectedly low: ${shoulder.y}`);
 });
 
-test("patched boundary builds and drives a full M6 on the asset-profile mode5 backend", async () => {
+test("patched boundary builds and drives a full M6 on solver-aware C", async () => {
   configureBox3DRuntimeVariant("mode5-experiment");
   const boundary = await Box3DBoundary.load();
   assert.equal(
