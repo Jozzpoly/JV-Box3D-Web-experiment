@@ -17,11 +17,11 @@ function finite(value, label) {
   assert.ok(Number.isFinite(value), `${label} must be finite, got ${value}`);
 }
 
-function currentMode5CornerRadius(sourceText) {
-  const match = sourceText.match(/const OWNER_SELECTED_CORNER_RADIUS = ([0-9.]+);/);
-  assert.ok(match, 'mode5 backend must expose OWNER_SELECTED_CORNER_RADIUS');
+function flatControlCornerRadius(sourceText) {
+  const match = sourceText.match(/export const MODE5_FLAT_CONTROL_CORNER_RADIUS = ([0-9.]+);/);
+  assert.ok(match, 'mode5 backend must expose the frozen flat-control corner radius');
   const value = Number(match[1]);
-  finite(value, 'current mode5 corner radius');
+  finite(value, 'flat-control corner radius');
   return value;
 }
 
@@ -38,7 +38,7 @@ function compactErrors(errors) {
   };
 }
 
-test('real Owner Tire produces asset-derived profile and convex-support evidence against current mode5', async () => {
+test('real Owner Tire produces asset-derived profile and convex-support evidence against frozen flat control', async () => {
   const [wheelText, receiptText, mode5BackendText] = await Promise.all([
     readFile(WHEEL, 'utf8'),
     readFile(RECEIPT, 'utf8'),
@@ -84,11 +84,11 @@ test('real Owner Tire produces asset-derived profile and convex-support evidence
   assert.ok(report.axialEnvelope.coverage >= 0.75);
   assert.ok(report.axialEnvelope.bins.every((bin) => bin.outerRadii.length > 0));
 
-  const mode5CornerRadius = currentMode5CornerRadius(mode5BackendText);
-  const candidateSet = buildOwnerWheelProfileCandidateSetV1(report, mode5CornerRadius);
+  const controlCornerRadius = flatControlCornerRadius(mode5BackendText);
+  const candidateSet = buildOwnerWheelProfileCandidateSetV1(report, controlCornerRadius);
   const control = candidateSet.candidates.find((candidate) => candidate.id === 'current-mode5-flat');
-  assert.ok(control, 'current mode5 geometry must remain an explicit control');
-  assert.equal(control.cornerRadius, Math.min(mode5CornerRadius, 0.5 * config.wheelWidth, config.wheelRadius));
+  assert.ok(control, 'frozen flat geometry must remain an explicit control');
+  assert.equal(control.cornerRadius, Math.min(controlCornerRadius, 0.5 * config.wheelWidth, config.wheelRadius));
   assert.ok(candidateSet.candidates.length > 1);
 
   for (const candidate of candidateSet.candidates) {
@@ -111,7 +111,7 @@ test('real Owner Tire produces asset-derived profile and convex-support evidence
   assert.equal(support.candidates.length, candidateSet.candidates.length);
 
   const supportControl = support.candidates.find((candidate) => candidate.id === 'current-mode5-flat');
-  assert.ok(supportControl, 'support audit must retain current mode5 control');
+  assert.ok(supportControl, 'support audit must retain the frozen flat control');
   assert.equal(supportControl.pureRadial.tiltDegrees, 0);
   assert.equal(supportControl.negativeAxialSide.tiltDegrees, -90);
   assert.equal(supportControl.positiveAxialSide.tiltDegrees, 90);
