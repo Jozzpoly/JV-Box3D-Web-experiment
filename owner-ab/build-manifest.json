@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "distribution": "portable_site",
+  "project": {
+    "id": "jv_web_demonstrator",
+    "version": "0.1.0"
+  },
+  "source": {
+    "repository": "Jozzpoly/JV-Box3D-Web-experiment",
+    "ref": {
+      "state": "DETACHED",
+      "fingerprint": null
+    },
+    "commit": "30d80fbc2cc133d995798321e5d06c0780c7e30b",
+    "commitDate": "2026-09-01T16:23:24Z",
+    "workingTreeClean": true
+  },
+  "runtimeBackend": {
+    "id": "legacy_ts_m6",
+    "role": "REFERENCE_BROWSER_FIXTURE",
+    "productPhysicsAuthority": false,
+    "nativeParity": "NOT_PROVEN"
+  },
+  "runtimeAssets": [
+    "receipts/jv_m6_factory_receipt.json",
+    "scenes/synthetic-flat-lab.scene.json",
+    "vehicles/tiny/vehicle.visual.json",
+    "vehicles/tiny/models/m6-rig-proof.glb",
+    "vehicles/m6-owner-r3/m6-owner-full-rig-r3.visual.json",
+    "vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb"
+  ],
+  "complianceFiles": [
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "publication": {
+    "mode": "DORMANT",
+    "pathPortableCandidate": true,
+    "publicReady": false,
+    "pagesPublicationApproved": false,
+    "publishedByBuild": false
+  },
+  "files": [
+    {
+      "path": ".nojekyll",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "assets/__vite-browser-external-BRyEmtFe.js",
+      "bytes": 103,
+      "sha256": "d7f5932de1313b3114c9bb06a6a5f9ca426be7a2ef25ad94a9ffce806ebdb4be"
+    },
+    {
+      "path": "assets/box3d-boundary-5jl9uFzc.js",
+      "bytes": 1183668,
+      "sha256": "c741e2922f9e8f4940965fcb8438bcb6c2b493ebafbca74b9edd94eb8e59b427"
+    },
+    {
+      "path": "assets/box3d-boundary-DMDfa454.css",
+      "bytes": 11185,
+      "sha256": "f1f05c747ffbde53509b76353c5c6f0111fa339f978eae6addee1107b1a1951e"
+    },
+    {
+      "path": "assets/box3d-mode5.inline-C_geB2HD.js",
+      "bytes": 1157582,
+      "sha256": "aebdb19a5623b05c6e90dd4da600ea033d9e01025e03ebbe47ca863bdf779347"
+    },
+    {
+      "path": "assets/index-D5vCY6Gp.js",
+      "bytes": 31431,
+      "sha256": "3d6849a371563b5b3c3095e1ef004a604f95aeddc5475eac3c1bc691e90c545e"
+    },
+    {
+      "path": "assets/index-tS5SPz0t.css",
+      "bytes": 19109,
+      "sha256": "db2839f88c8294de077397a2b24f8a6cabb5141fa2c4b5d5abacbcbe8c5678d1"
+    },
+    {
+      "path": "assets/main-BVlwWXpo.js",
+      "bytes": 162573,
+      "sha256": "4c1d4d3d85cea866a49e1b094380830ce9d41c286618ef126dd6d1f36459ca0c"
+    },
+    {
+      "path": "assets/preload-helper-HclGiUj8.js",
+      "bytes": 1211,
+      "sha256": "bba5840eec0028b00854bcd58fba80694d02d41e98417656424c05b26db7120c"
+    },
+    {
+      "path": "assets/rolldown-runtime-Bh1tDfsg.js",
+      "bytes": 567,
+      "sha256": "1b13387cb23dc39bf70e31677c21f6db5cad3377b96f286b6ee444496e5bfea7"
+    },
+    {
+      "path": "index.html",
+      "bytes": 846,
+      "sha256": "ec8f50ddb86f002f4f62e38f07cd9018db28b3e9f92ca27d0b81d3244ddfd963"
+    },
+    {
+      "path": "receipts/jv_m6_factory_receipt.json",
+      "bytes": 20368,
+      "sha256": "ab4e927e8156ae2fc25d8c5cfa422bceaaf3788aafadb665e50a8f15549be925"
+    },
+    {
+      "path": "scenes/synthetic-flat-lab.scene.json",
+      "bytes": 418,
+      "sha256": "2c6bbea634b8868e92af3081e7e9a224bfb98de6880e2fa07c244c61dddfd9f4"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "bytes": 4236,
+      "sha256": "f12f335318169e100b102458dd3fe5c400d732d1d74f7e07305786f10ee48ac2"
+    },
+    {
+      "path": "vehicles/m6-owner-r2/m6-owner-full-rig-r2.report.json",
+      "bytes": 21789,
+      "sha256": "48e7ac72bd10db1d22061493e77a544f5eb33316d434b8c5586bc8298aeffe9c"
+    },
+    {
+      "path": "vehicles/m6-owner-r2/m6-owner-full-rig-r2.visual.json",
+      "bytes": 30864,
+      "sha256": "308b441631cd316451c72b21d0f25ef8311fc6ad68a4c3c95449ff82bc90b8d3"
+    },
+    {
+      "path": "vehicles/m6-owner-r2/models/m6-owner-full-rig-r2.glb",
+      "bytes": 829076,
+      "sha256": "5b6421cb9991adff4a467b559ec2b69e25ea1667bd7cfee1e189d3d94cd116b3"
+    },
+    {
+      "path": "vehicles/m6-owner-r3/m6-owner-full-rig-r3.report.json",
+      "bytes": 60392,
+      "sha256": "928fa0c47436b070b81ec064be339df8d1e50e800ad5ff70c88f55981dbee0fc"
+    },
+    {
+      "path": "vehicles/m6-owner-r3/m6-owner-full-rig-r3.visual.json",
+      "bytes": 43276,
+      "sha256": "39788dda5d0caa6eafea982bbfc430a861611c123597a3524b8d874b798967db"
+    },
+    {
+      "path": "vehicles/m6-owner-r3/models/m6-owner-full-rig-r3.glb",
+      "bytes": 829936,
+      "sha256": "1e2619eb841c9d46e33d5a92918fe00c72af6a03202ab29dfe4c8e8ec07a12dc"
+    },
+    {
+      "path": "vehicles/tiny/models/m6-rig-proof.glb",
+      "bytes": 2628,
+      "sha256": "b243bf5ae6ed0b185885b6d341ab0a12fd377743408040e14226c1fecbb31281"
+    },
+    {
+      "path": "vehicles/tiny/vehicle.visual.json",
+      "bytes": 12435,
+      "sha256": "a744f4f4d5528cffff34343465540cf5fbe08c5e7da7ac3cf1819c065d1cc19b"
+    }
+  ]
+}
