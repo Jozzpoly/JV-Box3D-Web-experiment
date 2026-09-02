@@ -1,0 +1,98 @@
+name: Wheel mode5 CORE torus publication gate
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-registration-diagnostic-2026-09-02
+    paths:
+      - .github/workflows/wheel-mode5-core-torus-publication-gate.yml
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - name: Checkout exact D executable source
+        uses: actions/checkout@v7
+        with:
+          ref: d52aa3776e022649af21cddc6d9dcfae3bac42f9
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify exact source boundary
+        run: |
+          set -euxo pipefail
+          test "$(git rev-parse HEAD)" = "d52aa3776e022649af21cddc6d9dcfae3bac42f9"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck exact source
+        run: npm run typecheck
+
+      - name: Compile default-C focused runtime surface
+        run: |
+          set -euxo pipefail
+          rm -rf .test-dist
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+
+      - name: Prove default C and exact torus factory contract coexist
+        run: |
+          set -euxo pipefail
+          node --test tests/m6-mode5-wheel-backend.test.mjs
+          node --test tests/m6-mode5-core-torus.test.mjs
+
+      - name: Build and validate portable D bundle
+        env:
+          VITE_JV_MODE5_WHEEL_GEOMETRY: core-torus64
+        run: |
+          set -euxo pipefail
+          rm -rf dist
+          npm run build:portable
+          node tools/validate-build-identity.mjs
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          const expected = "d52aa3776e022649af21cddc6d9dcfae3bac42f9";
+          if (manifest?.source?.commit !== expected) {
+            throw new Error(`D portable manifest source ${manifest?.source?.commit} != ${expected}`);
+          }
+          if (manifest?.source?.workingTreeClean !== true) {
+            throw new Error("D portable build must come from a clean committed source.");
+          }
+          NODE
+          grep -Rqs 'native_m6_mode5_core_torus64' dist
+          grep -Rqs 'core-torus64-parity' dist
+          echo MODE5_CORE_TORUS_PORTABLE_BUILD_OK
+
+      - name: Compile full M6 with D selected
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('src/vehicle/m6/mode5-wheel-backend.ts')
+          text = path.read_text(encoding='utf-8')
+          old = 'const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
+          new = 'const requestedGeometry = "core-torus64";'
+          if text.count(old) != 1:
+              raise SystemExit('mode5 selector source drifted; refusing test-only rewrite')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          rm -rf .test-dist
+          node node_modules/typescript/bin/tsc -p tsconfig.test.json
+          mkdir -p .test-dist/physics/vendor
+          cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+
+      - name: Settle and drive full M6 on D
+        run: node --test tests/m6-mode5-core-torus-full-runtime.test.mjs
