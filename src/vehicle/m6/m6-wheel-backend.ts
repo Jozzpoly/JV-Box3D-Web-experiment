@@ -11,7 +11,9 @@ import {
 } from "./legacy-split-wheel-backend.js";
 import {
   createMode5Wheel,
-  MODE5_WHEEL_BACKEND_ID,
+  MODE5_WHEEL_GEOMETRY_VARIANT,
+  mode5WheelBackendIdForGeometry,
+  type Mode5WheelBackendId,
   type Mode5WheelReceipt,
 } from "./mode5-wheel-backend.js";
 import type { M6TopologyConfig } from "./m6-topology-config.js";
@@ -25,7 +27,7 @@ export type M6WheelBackendSelection =
 
 export type M6WheelBackendId =
   | typeof LEGACY_SPLIT_WHEEL_BACKEND_ID
-  | typeof MODE5_WHEEL_BACKEND_ID;
+  | Mode5WheelBackendId;
 
 export type M6WheelReceipt =
   | LegacySplitWheelReceipt
@@ -35,7 +37,7 @@ export function m6WheelBackendId(
   selection: M6WheelBackendSelection,
 ): M6WheelBackendId {
   return selection === MODE5_M6_WHEEL_SELECTION
-    ? MODE5_WHEEL_BACKEND_ID
+    ? mode5WheelBackendIdForGeometry(MODE5_WHEEL_GEOMETRY_VARIANT)
     : LEGACY_SPLIT_WHEEL_BACKEND_ID;
 }
 
