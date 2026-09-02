@@ -6,6 +6,7 @@ on:
       - work/wheel-mode5-registration-diagnostic-2026-09-02
     paths:
       - .github/workflows/wheel-mode5-speculative-response-diagnostic.yml
+      - src/vehicle/m6/mode5-wheel-backend.ts
 
 permissions:
   contents: read
@@ -40,6 +41,7 @@ jobs:
             createMode5WheelForGeometry,
             MODE5_FLAT_CONTROL_GEOMETRY,
             MODE5_ASSET_PROFILE_GEOMETRY,
+            MODE5_SOLVER_AWARE_PROFILE_GEOMETRY,
           } from './.test-dist/vehicle/m6/mode5-wheel-backend.js';
           import { m6TopologyConfigFromReceipt } from './.test-dist/vehicle/m6/m6-topology-config.js';
 
@@ -113,7 +115,11 @@ jobs:
             }
           }
 
-          for(const [label,geometry] of [['FLAT',MODE5_FLAT_CONTROL_GEOMETRY],['PROFILE',MODE5_ASSET_PROFILE_GEOMETRY]]){
+          for(const [label,geometry] of [
+            ['FLAT',MODE5_FLAT_CONTROL_GEOMETRY],
+            ['PROFILE_B',MODE5_ASSET_PROFILE_GEOMETRY],
+            ['PROFILE_C',MODE5_SOLVER_AWARE_PROFILE_GEOMETRY],
+          ]){
             const rows=[];
             for(const near of [0.555,0.550,0.546,0.544,0.542,0.540]){
               for(const speed of [0,0.5,1,2,5]) rows.push(run(geometry,near,speed));
