@@ -5,6 +5,7 @@ on:
     branches:
       - work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03
     paths:
+      - tools/wheel-mode5-e2a2p-patch-tilt-lock-binding.py
       - tools/wheel-mode5-e2a2p-patch-simultaneous-two-point-solve.py
       - tools/wheel-mode5-e2a2p-simultaneous-two-point-falsifier.mjs
       - .github/workflows/wheel-mode5-e2a2p-simultaneous-two-point-falsifier.yml
@@ -68,7 +69,7 @@ jobs:
             tools/wheel-mode5-e2a2f-patch-bindings.py \
             tools/wheel-mode5-e2a2g-patch-bindings.py \
             tools/wheel-mode5-e2a2i-patch-bindings.py \
-            tools/wheel-mode5-e2a2m-patch-tilt-lock-bindings.py \
+            tools/wheel-mode5-e2a2p-patch-tilt-lock-binding.py \
             tools/wheel-mode5-e2a2k-r2-patch-counterfactual-convex-solver.py \
             tools/wheel-mode5-e2a2o-patch-reverse-wheel-plane-points.py \
             tools/wheel-mode5-e2a2p-patch-simultaneous-two-point-solve.py
@@ -85,7 +86,7 @@ jobs:
           python3 tools/wheel-mode5-e2a2f-patch-bindings.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2g-patch-bindings.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2i-patch-bindings.py box3djs/src/bindings.cpp
-          python3 tools/wheel-mode5-e2a2m-patch-tilt-lock-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2p-patch-tilt-lock-binding.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2k-r2-patch-counterfactual-convex-solver.py box3djs/vendor/box3d/src/contact_solver.c
           git -C box3djs/vendor/box3d diff --check
           grep -F 'b3Vec3W ds = b3AddVW( dp, b3SubVW( rB, rA ) );' box3djs/vendor/box3d/src/contact_solver.c
