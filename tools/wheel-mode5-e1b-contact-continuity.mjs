@@ -65,7 +65,7 @@ function probeWorldBox(box, phase, acceptanceSkin = 0) {
     acceptanceSkin,
   );
   if (!row.valid) throw new Error(`native probe invalid: ${JSON.stringify({ box, phase })}`);
-  const result = {
+  return {
     hit: Boolean(row.hit),
     meshTriangleCount: row.meshTriangleCount,
     broadCandidates: row.broadCandidates,
@@ -79,17 +79,34 @@ function probeWorldBox(box, phase, acceptanceSkin = 0) {
     normalWorld: row.hit ? qrot(local.wheelQ, [row.normalX, row.normalY, row.normalZ]) : null,
     pointWorld: row.hit ? qrot(local.wheelQ, [row.pointX, row.pointY, row.pointZ]) : null,
   };
-  return result;
 }
 
-function findOnset(makeBox, phase, far, near, refine = 22) {
-  let separated = far;
-  let touching = near;
-  const farProbe = probeWorldBox(makeBox(far), phase, 0);
-  const nearProbe = probeWorldBox(makeBox(near), phase, 0);
-  if (farProbe.hit) throw new Error(`far endpoint already hits: ${far}`);
-  if (!nearProbe.hit) throw new Error(`near endpoint does not hit: ${near}`);
-  let touchingProbe = nearProbe;
+// An annular surface is non-convex. Along one inward translation a small box
+// may transition separated -> tire contact -> bore/no contact. Therefore the
+// first contact must be bracketed from the far side; a fixed near endpoint is
+// not required to remain touching.
+function findOnset(makeBox, phase, far, near, coarse = 96, refine = 22) {
+  let previousDistance = far;
+  let previousProbe = probeWorldBox(makeBox(far), phase, 0);
+  if (previousProbe.hit) throw new Error(`far endpoint already hits: ${far}`);
+
+  let separated = null;
+  let touching = null;
+  let touchingProbe = null;
+  for (let i = 1; i <= coarse; i += 1) {
+    const d = far + (near - far) * (i / coarse);
+    const row = probeWorldBox(makeBox(d), phase, 0);
+    if (!previousProbe.hit && row.hit) {
+      separated = previousDistance;
+      touching = d;
+      touchingProbe = row;
+      break;
+    }
+    previousDistance = d;
+    previousProbe = row;
+  }
+  if (touching === null) throw new Error(`no first-contact transition in [${near}, ${far}]`);
+
   for (let i = 0; i < refine; i += 1) {
     const mid = 0.5 * (separated + touching);
     const row = probeWorldBox(makeBox(mid), phase, 0);
