@@ -1,0 +1,29 @@
+name: Wheel mode5 E0b annular void provenance
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - tools/wheel-mode5-e0b-annular-void-provenance.mjs
+      - tools/owner-vehicle/owner-m6-tire-geometry-r3.mjs
+      - .github/workflows/wheel-mode5-e0b-annular-void-provenance.yml
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile diagnostic world source
+        run: node node_modules/typescript/bin/tsc -p tsconfig.test.json
+      - name: Validate historical phantom provenance and annular bore topology
+        run: node tools/wheel-mode5-e0b-annular-void-provenance.mjs
