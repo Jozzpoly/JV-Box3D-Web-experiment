@@ -87,4 +87,35 @@ jobs:
         run: |
           set -euxo pipefail
           node tools/wheel-mode5-e1d1-ground-outlier-forensic.mjs | tee e1d1.log
-          grep '^E1D1_GROUND_OUTLIER_RESULT ' e1d1.log
+          node <<'NODE'
+          const fs = require('node:fs');
+          const prefix = 'E1D1_GROUND_OUTLIER_RESULT ';
+          const line = fs.readFileSync('e1d1.log', 'utf8').split(/\r?\n/).find((row) => row.startsWith(prefix));
+          if (!line) throw new Error('E1d1 full result marker missing');
+          const result = JSON.parse(line.slice(prefix.length));
+          const importantPairs = new Set(['156-157', '157-158', '191-192']);
+          const transitions = result.adjacent.filter((row) => importantPairs.has(`${row.from}-${row.to}`));
+          const importantPhases = new Set([156, 157, 158, 191, 192]);
+          const rows = result.rows.filter((row) => importantPhases.has(row.phaseIndex)).map((row) => ({
+            phaseIndex: row.phaseIndex,
+            onset: row.onset,
+            acceptedCandidates: row.acceptedCandidates,
+            candidateSeparationMm: row.candidateSeparationMm,
+            stationCount: row.stationCount,
+            sectorCount: row.sectorCount,
+            pointCentroid: row.pointCentroid,
+            witnessCentroid: row.witnessCentroid,
+            pointZMm: row.pointZMm,
+            witnessZMm: row.witnessZMm,
+            winner: row.winner,
+            topStations: Object.entries(row.stationHistogram)
+              .map(([station, count]) => ({ station: Number(station), count }))
+              .sort((a, b) => b.count - a.count || a.station - b.station)
+              .slice(0, 8),
+          }));
+          const compact = { method: 'E1D1_COMPACT_FORENSIC', transitions, rows };
+          const json = JSON.stringify(compact);
+          console.log(`E1D1_COMPACT_RESULT ${json}`);
+          const escaped = json.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+          console.log(`::notice title=E1D1_COMPACT::${escaped}`);
+          NODE
