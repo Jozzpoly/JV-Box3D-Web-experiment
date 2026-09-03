@@ -59,19 +59,44 @@ jobs:
           p,n1,n3=rows
           if p['capturedTorusShapes'] != 256:
               raise SystemExit(f'PASSALL did not recover 256 torus shapes: {p["capturedTorusShapes"]}')
-          if p['coast']['meanAccepted'] < 40:
-              raise SystemExit(f'PASSALL did not reproduce high contact multiplicity: {p["coast"]["meanAccepted"]}')
-          if p['coast']['distanceMeters'] > 20 or p['coast']['endSpeed'] > 0.25:
-              raise SystemExit(f'PASSALL no longer reproduces prior T65 drag: distance={p["coast"]["distanceMeters"]}, end={p["coast"]["endSpeed"]}')
+
+          # PASSALL is a causal control. Pre-solve callback invocations are NOT the
+          # same quantity as world contact-graph entries, so validate the control
+          # against the previously executed T65 physical coast-down instead.
+          historical_distance=14.579286132301235
+          historical_end_speed=0.000058632352200648085
+          historical_world_contacts=56.416666666666664
+          if abs(p['coast']['distanceMeters']-historical_distance) > 0.02:
+              raise SystemExit(f'PASSALL distance lost prior T65 parity: {p["coast"]["distanceMeters"]}')
+          if abs(p['coast']['endSpeed']-historical_end_speed) > 0.01:
+              raise SystemExit(f'PASSALL end speed lost prior T65 parity: {p["coast"]["endSpeed"]}')
+          if abs(p['coast']['meanWorldContacts']-historical_world_contacts) > 1.0:
+              raise SystemExit(f'PASSALL contact graph lost prior T65 parity: {p["coast"]["meanWorldContacts"]}')
+
+          # Verify the selector did what this experiment claims. These are active
+          # solver responses observed by the pre-solve callback, not graph contacts.
+          if abs(n1['coast']['meanAccepted']-4.0) > 0.05 or n1['coast']['minAccepted'] != 4 or n1['coast']['maxAccepted'] != 4:
+              raise SystemExit(f'NEAREST1 did not hold one active sector per wheel: {n1["coast"]}')
+          if n3['coast']['meanAccepted'] <= n1['coast']['meanAccepted']:
+              raise SystemExit('NEAREST3 did not retain more solver responses than NEAREST1')
+
           comparison={
             'PASSALL':p['coast'],
             'NEAREST1':n1['coast'],
             'NEAREST3':n3['coast'],
+            'C_REFERENCE':{
+              'distanceMeters':34.219356252641596,
+              'endSpeed':2.851984383050456,
+              'speedRetention':0.708638920370617,
+              'meanWorldContacts':4.0,
+              'sourceRun':33697823815,
+            },
             'ratios':{
               'NEAREST1_distance_vs_PASSALL':n1['coast']['distanceMeters']/p['coast']['distanceMeters'],
               'NEAREST3_distance_vs_PASSALL':n3['coast']['distanceMeters']/p['coast']['distanceMeters'],
-              'NEAREST1_retention_vs_PASSALL':n1['coast']['speedRetention']/p['coast']['speedRetention'] if p['coast']['speedRetention'] else None,
-              'NEAREST3_retention_vs_PASSALL':n3['coast']['speedRetention']/p['coast']['speedRetention'] if p['coast']['speedRetention'] else None,
+              'NEAREST1_distance_vs_C':n1['coast']['distanceMeters']/34.219356252641596,
+              'NEAREST1_end_speed_vs_C':n1['coast']['endSpeed']/2.851984383050456,
+              'NEAREST1_retention_vs_C':n1['coast']['speedRetention']/0.708638920370617,
             }
           }
           print('TORUS_PRESOLVE_COMPARISON',json.dumps(comparison,separators=(',',':')))
