@@ -155,8 +155,8 @@ static val e2a2jProbeSphereSeparationDecomposition( float spinRadiansPerSecond, 
 
     // This probe starts at identity, so the observed end world rotation is the
     // same delta rotation that the solver applies to the stored world-space anchor.
-    float startQuatError = b3AbsFloat( startRotation.q.x ) + b3AbsFloat( startRotation.q.y ) +
-                           b3AbsFloat( startRotation.q.z ) + b3AbsFloat( startRotation.q.w - 1.0f );
+    float startQuatError = b3AbsFloat( startRotation.v.x ) + b3AbsFloat( startRotation.v.y ) +
+                           b3AbsFloat( startRotation.v.z ) + b3AbsFloat( startRotation.s - 1.0f );
     b3Vec3 rotatedSphereAnchor = b3RotateVector( endRotation, sphereAnchor );
     b3Vec3 anchorRotationDelta = b3Sub( rotatedSphereAnchor, sphereAnchor );
 
@@ -174,7 +174,7 @@ static val e2a2jProbeSphereSeparationDecomposition( float spinRadiansPerSecond, 
     float baseSeparation = selectedPoint->separation - preparedAnchorProjection;
     float reconstructedEndSeparation = selectedPoint->separation + translationContribution + rotationalContribution;
 
-    float qScalar = b3ClampFloat( b3AbsFloat( endRotation.q.w ), 0.0f, 1.0f );
+    float qScalar = b3ClampFloat( b3AbsFloat( endRotation.s ), 0.0f, 1.0f );
     float observedAngle = 2.0f * acosf( qScalar );
     float analyticRotationalContribution = spinAxis == 1 ? 0.0f : supportRadius * ( 1.0f - cosf( observedAngle ) );
 
