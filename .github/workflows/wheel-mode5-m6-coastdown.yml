@@ -1,0 +1,86 @@
+name: Wheel mode5 full M6 matched-speed coastdown
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - tools/wheel-mode5-m6-coastdown.mjs
+      - .github/workflows/wheel-mode5-m6-coastdown.yml
+
+permissions:
+  contents: read
+
+jobs:
+  coastdown:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Match 4 m/s then compare COAST decay
+        run: |
+          set -euo pipefail
+          SOURCE=src/vehicle/m6/mode5-wheel-backend.ts
+          cp "$SOURCE" "$RUNNER_TEMP/mode5-wheel-backend.original.ts"
+          : > "$RUNNER_TEMP/coast-results.jsonl"
+
+          compile_and_run() {
+            local label="$1"
+            local geometry="$2"
+            local ratio="$3"
+            cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" "$SOURCE"
+            GEOMETRY="$geometry" RATIO="$ratio" python3 - <<'PY'
+          import os
+          from pathlib import Path
+          path=Path('src/vehicle/m6/mode5-wheel-backend.ts')
+          text=path.read_text(encoding='utf-8')
+          old_select='const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
+          new_select=f'const requestedGeometry: string | undefined = "{os.environ["GEOMETRY"]}";'
+          old_ratio='export const MODE5_CORE_TORUS_CROWN_RATIO = 0.914;'
+          new_ratio=f'export const MODE5_CORE_TORUS_CROWN_RATIO = {os.environ["RATIO"]};'
+          if text.count(old_select)!=1 or text.count(old_ratio)!=1:
+              raise SystemExit('coastdown source anchors drifted')
+          path.write_text(text.replace(old_select,new_select).replace(old_ratio,new_ratio),encoding='utf-8')
+          PY
+            rm -rf .test-dist
+            node node_modules/typescript/bin/tsc -p tsconfig.test.json
+            mkdir -p .test-dist/physics/vendor
+            cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+            JV_COAST_LABEL="$label" JV_EXPECTED_GEOMETRY="$geometry" \
+              node tools/wheel-mode5-m6-coastdown.mjs | tee "$RUNNER_TEMP/$label.log"
+            grep '^M6_COASTDOWN_RESULT ' "$RUNNER_TEMP/$label.log" \
+              | sed 's/^M6_COASTDOWN_RESULT //' >> "$RUNNER_TEMP/coast-results.jsonl"
+          }
+
+          compile_and_run C solver-aware-profile 0.914
+          compile_and_run D914 core-torus64 0.914
+          compile_and_run T65 core-torus64 0.65
+          cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" "$SOURCE"
+
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          rows=[json.loads(line) for line in Path(os.environ['RUNNER_TEMP'],'coast-results.jsonl').read_text().splitlines() if line.strip()]
+          if [r['label'] for r in rows] != ['C','D914','T65']:
+              raise SystemExit(f'unexpected coast rows: {[r["label"] for r in rows]}')
+          print('M6_COASTDOWN_COMPARISON',json.dumps(rows,separators=(',',':')))
+          c,d,t=rows
+          comparison={
+              'T65_vs_C':{
+                  'retentionRatio':t['speedRetention']/c['speedRetention'] if c['speedRetention'] else None,
+                  'distanceRatio':t['distanceMeters']/c['distanceMeters'] if c['distanceMeters'] else None,
+                  'meanContactsRatio':t['meanContacts']/c['meanContacts'] if c['meanContacts'] else None,
+              },
+              'T65_vs_D914':{
+                  'retentionRatio':t['speedRetention']/d['speedRetention'] if d['speedRetention'] else None,
+                  'distanceRatio':t['distanceMeters']/d['distanceMeters'] if d['distanceMeters'] else None,
+              },
+          }
+          print('M6_COASTDOWN_RATIOS',json.dumps(comparison,separators=(',',':')))
+          print('M6_COASTDOWN_COMPARISON_OK')
+          PY
