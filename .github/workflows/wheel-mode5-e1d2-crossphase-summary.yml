@@ -1,0 +1,122 @@
+name: Wheel mode5 E1d2 cross-phase summary
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-e1d-recovery-2026-09-03
+    paths:
+      - .github/workflows/wheel-mode5-e1d2-crossphase-summary.yml
+
+permissions:
+  contents: read
+
+jobs:
+  cross-phase-summary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 6.0.2
+          actions-cache-folder: emsdk-cache
+
+      - run: npm ci
+
+      - name: Recover pinned mode5 Box3D.js source and donor wheel patch
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone https://github.com/isaac-mason/box3d.js.git box3djs
+          git -C box3djs checkout 2617a0ff763a60c9f17cee57c6ea72aab75a5077
+          git -C box3djs submodule update --init --recursive
+          test "$(git -C box3djs/vendor/box3d rev-parse HEAD)" = "8441b4a06d6d09dcfb0b0f704df4d847d1437b92"
+
+          git clone https://github.com/Jozzpoly/Box3d_FunProject.git native
+          git -C native fetch origin recovery/jv-reconstruction
+          git -C native diff --binary \
+            77a67132ffc4f003e84c6ffe4e72abfbcded4d33 \
+            241fe10a9056836332c21d9614471d32d749ce3d \
+            -- \
+            include/box3d/box3d.h include/box3d/collision.h include/box3d/types.h \
+            src/CMakeLists.txt src/contact.c src/mesh_contact.c src/physics_world.c \
+            src/shape.c src/shape.h src/wheel_shape.c > B3X-WHEEL-001.patch
+          test -s B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d apply --check ../../../B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d apply ../../../B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d diff --check
+
+      - name: Build diagnostic seam
+        shell: bash
+        run: |
+          set -euxo pipefail
+          node --check tools/wheel-mode5-e1d2-first-contact-epsilon-sweep.mjs
+          python3 -m py_compile tools/wheel-mode5-e1d-patch-bindings.py
+          JV_E1_ANNULAR_SEGMENTS=128 node tools/wheel-mode5-e1-write-annular-native-header.mjs box3djs/src/e1_annular_profile.h
+          python3 tools/wheel-mode5-e1-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e1d-patch-bindings.py box3djs/src/bindings.cpp
+
+      - name: Install Box3D.js workspace
+        working-directory: box3djs
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and smoke test
+        shell: bash
+        run: |
+          set -euxo pipefail
+          pnpm --dir box3djs build >/dev/null
+          pnpm --dir box3djs test >/dev/null
+
+      - name: Measure and print cross-phase E1d2 summary
+        shell: bash
+        run: |
+          set -euxo pipefail
+          node tools/wheel-mode5-e1d2-first-contact-epsilon-sweep.mjs > e1d2.log
+          node <<'NODE'
+          const fs = require('node:fs');
+          const prefix = 'E1D2_EPSILON_SWEEP_RESULT ';
+          const line = fs.readFileSync('e1d2.log', 'utf8').split(/\r?\n/).find((row) => row.startsWith(prefix));
+          if (!line) throw new Error('E1d2 result marker missing');
+          const r = JSON.parse(line.slice(prefix.length));
+          const byPhase = new Map(r.ground.map((p) => [p.phaseIndex, p]));
+          const pairs = [[156, 157], [157, 158], [191, 192]];
+          const insets = [0, 0.25, 1, 10, 100];
+          const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+          const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+          const norm = (a) => { const n = Math.hypot(...a); return a.map((v) => v / n); };
+          const angleDeg = (a, b) => Math.acos(Math.max(-1, Math.min(1, dot(norm(a), norm(b))))) * 180 / Math.PI;
+          const rowAt = (phase, um) => {
+            const row = byPhase.get(phase).rows.find((x) => x.approachInsetUm === um);
+            if (!row) throw new Error(`missing phase ${phase} inset ${um}`);
+            return row;
+          };
+          for (const [from, to] of pairs) {
+            for (const um of insets) {
+              const a = rowAt(from, um);
+              const b = rowAt(to, um);
+              const out = {
+                pair: `${from}->${to}`,
+                insetUm: um,
+                counts: [a.acceptedCandidates, b.acceptedCandidates],
+                pointCentroidStepMm: dist(a.pointCentroid, b.pointCentroid) * 1000,
+                witnessCentroidStepMm: dist(a.witnessCentroid, b.witnessCentroid) * 1000,
+                momentProxyStepMm: a.momentProxy && b.momentProxy ? dist(a.momentProxy, b.momentProxy) * 1000 : null,
+                normalMeanStepDeg: a.normalMean && b.normalMean ? angleDeg(a.normalMean, b.normalMean) : null,
+              };
+              console.log(`E1D2_CROSS_${from}_${to}_${String(um).replace('.', 'p')} ${JSON.stringify(out)}`);
+            }
+          }
+          console.log('E1D2_CROSS_PHASE_SUMMARY_DONE');
+          NODE
