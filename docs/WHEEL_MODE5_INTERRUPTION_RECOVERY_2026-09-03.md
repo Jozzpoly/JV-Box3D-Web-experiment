@@ -97,7 +97,7 @@ Using a `30 mm` half-extent probe box swept through the wheel bore:
 - +100 mm: grazing contact (`27/31` exact phases), annular onset inside phase envelope;
 - +120 mm: contact in all `31/31` phases, annular onset inside phase envelope.
 
-This is the strongest current evidence that the annular topology preserves the Tire hole rather than recreating the filled-profile phantom.
+This is the strongest geometry-only evidence that the annular topology preserves the Tire hole rather than recreating the filled-profile phantom.
 
 ## E1 — interrupted native diagnostic spike
 
@@ -114,29 +114,93 @@ This is **not yet a vehicle collider**.
 - Build one closed annular triangle surface in native memory (outer surface, inner surface, annular axial ends).
 - Do not register thousands of Box3D shapes.
 - Reuse Box3D's low-level hull-vs-triangle manifold builder for a diagnostic box probe.
-- Explicitly gate accepted candidate separation with a caller-provided `acceptanceSkin`; first gate should use `0 m` to avoid inheriting a 20 mm speculative contact envelope.
+- Explicitly gate accepted candidate separation with a caller-provided `acceptanceSkin`; first gate uses `0 m` to avoid inheriting a 20 mm speculative contact envelope.
 - Return one selected native boundary manifold candidate plus telemetry; do not yet alter the solver/contact graph of the vehicle.
 
-### E1 status at interruption
+## E1a — recovered and executed native static oracle
 
-- Header generator: written, not independently executed in CI after interruption.
-- Binding patcher: written, not yet proven to compile against the pinned Box3D.js source.
-- Native probe workflow: **not yet present**.
-- Vehicle/runtime integration: **not started**.
-- Owner preview/publication: **not touched**.
+Recovery branch:
+`work/wheel-mode5-recovery-checkpoint-2026-09-03`
+
+Recovery checkpoint commit:
+`ebbe5e95366c96889912be321184683d2cd216d5`
+
+E1a additions:
+
+- `36b6c50049b085955ce37c704626ff5fb517cd89` — native oracle driver;
+- `86e09068bdabfae1a6d9a7fa75605f27f5790268` — workflow.
+
+Workflow:
+`33761240785`
+job:
+`100667812161`
+result: **SUCCESS**.
+
+The patched Box3D.js build, upstream smoke tests, generated P75 annular header and native binding all compiled and executed successfully.
+
+Generated native profile:
+
+- 129 axial stations;
+- 64 angular sectors for the native diagnostic surface;
+- `33024` surface triangles;
+- inner radius range `0.1312499866 .. 0.2624999853 m`;
+- outer P75 range `0.5056460202 .. 0.5455107509 m`.
+
+### E1a zero-skin results
+
+Historical literal phantom case:
+
+- E0 P75-64 onset: `0.1700947544113708 m`;
+- native zero-skin onset: `0.17009475708007812 m`;
+- difference: ~`2.67e-9 m`;
+- accepted native separation at onset: `-7.45e-9 m` (effectively zero, not speculative positive separation);
+- exact Tire phase median: `0.167256184632239 m`;
+- native onset remains inside the exact Tire phase envelope.
+
+Bore controls, zero skin:
+
+- center: no contact through full sweep;
+- +50 mm: no contact;
+- +80 mm: no accepted contact despite broad/raw triangle candidates;
+- +100 mm: native onset `0.160062837600708 m`, only ~`0.00780 mm` from E0b annular onset;
+- +120 mm: native onset `0.16158034483591716 m`, only ~`0.00031 mm` from E0b.
+
+### 20 mm acceptance-skin causal control
+
+For the same historical literal case:
+
+- zero-skin onset: `0.1700947571 m`;
+- 20 mm-skin onset: `0.2044052649 m`;
+- early-contact lead along the oblique approach path: **`34.3105 mm`**;
+- accepted separation at that early onset: `0.0199999958 m`.
+
+This is strong executed evidence that the generalized annular geometry itself can preserve the Tire bore and reproduce the E0/E0b boundary in native Box3D collision math, while a 20 mm positive-separation acceptance policy independently recreates a large visible early-contact effect.
+
+E1a is still a **static collision oracle**, not a solver-integrated vehicle collider.
+
+## Current research verdict
+
+- Filled C: rejected.
+- Witness filtering of a filled shape: rejected as solution.
+- Multi-shape/sectorized rolling compounds: poor direction because contact multiplicity/faceting/rolling loss were demonstrated.
+- Generalized annular P75 topology: **survives E0, E0b and E1a**.
+- 20 mm acceptance/speculative envelope: demonstrated causal source of substantial early contact and should not be inherited blindly.
+- Dynamic rolling/contact continuity remains **NOT VALIDATED**.
 
 ## Next bounded gate
 
-**E1a — compile + native static oracle only.**
+Before solver integration, test the remaining high-value risk directly:
 
-1. Build against the same pinned Box3D.js + donor wheel patch family used by the current mode5 diagnostic runtime.
-2. Generate the E1 native profile header and patch bindings.
-3. Prove the new native probe compiles/exports.
-4. With `acceptanceSkin = 0`, reproduce:
-   - literal historical phantom case;
-   - center/50/80 mm bore no-hit controls;
-   - 100 mm grazing and 120 mm contact controls.
-5. Compare native onset with E0/E0b annular onset. A few millimetres may be tolerated for discretization/manifold semantics; centimetric early contact is a falsifier.
-6. Record `acceptanceSkin = 20 mm` only as a causal control, not as an accepted setting.
+**E1b — native contact-continuity oracle.**
 
-Only after E1a passes should research consider a dynamic single-manifold/native-shape spike. No product/runtime adoption is implied by E1a.
+Sweep wheel spin phase against representative flat-ground and oblique/small-obstacle cases while using the E1 native annular manifold query. Measure:
+
+- contact onset continuity;
+- normal-angle continuity;
+- contact-point continuity;
+- station/sector ownership transitions;
+- 64-sector vs a higher-resolution diagnostic surface as a convergence control.
+
+Purpose: falsify triangle-faceting or contact-patch hopping before investing in a solver-integrated custom shape.
+
+Only if E1b is satisfactory should the project proceed to a dynamic single-manifold/native-shape spike. No Owner Preview or accepted product change is implied by E1a/E1b.
