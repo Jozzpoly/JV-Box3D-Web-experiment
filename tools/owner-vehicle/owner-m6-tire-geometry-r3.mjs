@@ -69,12 +69,15 @@ function triangleAxialSegment(triangle, axial) {
   const unique = uniquePoints(intersections);
   return unique.length >= 2 ? farthestPair(unique) : null;
 }
-function radialMinOnSegment(a, b) {
+function radialExtremaOnSegment(a, b) {
   const ax = a[0], az = a[2];
   const dx = b[0] - ax, dz = b[2] - az;
   const denom = dx * dx + dz * dz;
   const t = denom > 1e-20 ? Math.max(0, Math.min(1, -(ax * dx + az * dz) / denom)) : 0;
-  return Math.hypot(ax + dx * t, az + dz * t);
+  return {
+    min: Math.hypot(ax + dx * t, az + dz * t),
+    max: Math.max(Math.hypot(a[0], a[2]), Math.hypot(b[0], b[2])),
+  };
 }
 function requireMarker(source, name) {
   const point = source.uniqueNodeWorldPositions[name];
@@ -156,22 +159,55 @@ export async function loadOwnerM6TireGeometryR3(
     throw new Error('Tire geometry radial bounds disagree with validated audit');
   }
 
-  function innerRadiusAt(axial) {
+  function radialIntervalAt(axial) {
     if (axial < axialMin - 1e-9 || axial > axialMax + 1e-9) return null;
     let minimum = Infinity;
+    let maximum = -Infinity;
     let segments = 0;
     for (const triangle of triangles) {
       const segment = triangleAxialSegment(triangle, axial);
       if (segment === null) continue;
       segments += 1;
-      minimum = Math.min(minimum, radialMinOnSegment(segment[0], segment[1]));
+      const extrema = radialExtremaOnSegment(segment[0], segment[1]);
+      minimum = Math.min(minimum, extrema.min);
+      maximum = Math.max(maximum, extrema.max);
     }
-    return segments > 0 && Number.isFinite(minimum) ? minimum : null;
+    return segments > 0 && Number.isFinite(minimum) && Number.isFinite(maximum)
+      ? Object.freeze({ innerRadius: minimum, outerRadius: maximum, segmentCount: segments })
+      : null;
+  }
+  function innerRadiusAt(axial) { return radialIntervalAt(axial)?.innerRadius ?? null; }
+  function outerRadiusAt(axial) { return radialIntervalAt(axial)?.outerRadius ?? null; }
+
+  const p75Bins = validated.axialEnvelope.bins
+    .filter((bin) => Number.isFinite(bin.outerRadiusP75))
+    .map((bin) => Object.freeze({ axial: bin.axial, outerRadiusP75: bin.outerRadiusP75 }));
+  if (p75Bins.length !== validated.axialEnvelope.binCount) {
+    throw new Error(`P75 axial envelope coverage drifted: ${p75Bins.length}/${validated.axialEnvelope.binCount}`);
+  }
+  function outerRadiusP75At(axial) {
+    if (axial < axialMin - 1e-9 || axial > axialMax + 1e-9) return null;
+    if (axial <= p75Bins[0].axial) return p75Bins[0].outerRadiusP75;
+    if (axial >= p75Bins.at(-1).axial) return p75Bins.at(-1).outerRadiusP75;
+    let lo = 0;
+    let hi = p75Bins.length - 1;
+    while (hi - lo > 1) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (p75Bins[mid].axial <= axial) lo = mid;
+      else hi = mid;
+    }
+    const a = p75Bins[lo], b = p75Bins[hi];
+    const t = (axial - a.axial) / (b.axial - a.axial);
+    return a.outerRadiusP75 + (b.outerRadiusP75 - a.outerRadiusP75) * t;
   }
 
   return Object.freeze({
     triangles: Object.freeze(triangles.map((triangle) => Object.freeze(triangle.map((point) => Object.freeze([...point]))))),
+    radialIntervalAt,
     innerRadiusAt,
+    outerRadiusAt,
+    outerRadiusP75At,
+    axialOuterP75Bins: Object.freeze(p75Bins),
     bounds: Object.freeze({ axialMin, axialMax, axialWidth: axialMax - axialMin, radialMin, outerRadius }),
     provenance: Object.freeze({
       triangleCount: triangles.length,
@@ -181,6 +217,9 @@ export async function loadOwnerM6TireGeometryR3(
       coordinateFrame: 'R1_VERIFIED_WHEEL_MARKERS',
       requestedRadius,
       requestedWidth,
+      outerP75Method: validated.axialEnvelope.method,
+      outerP75AngularBins: validated.angularEnvelope.binCount,
+      outerP75AxialBins: validated.axialEnvelope.binCount,
     }),
   });
 }
