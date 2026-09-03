@@ -11,9 +11,18 @@ const cases = [
   { direction: -1, spin: 40, expectedFrom: 1, expectedTo: 2, label: '1to2' },
 ];
 
+// Observe every predeclared case first. Assertions are deliberately applied only
+// after the full evidence object is emitted so an apparatus failure remains
+// diagnosable instead of hiding the other crossing directions/spins.
+const observations = cases.map((spec) => ({ spec, raw: b3.e2a2uRunDynamicSupportTransition(spec.spin, spec.direction) }));
+const rawResult = {
+  scope: 'E2a2u observation before validity assertions. Same geometry, motion and solver as the initial run; reporting order only is changed.',
+  observations,
+};
+console.log(`E2A2U_DYNAMIC_TRANSITION_OBSERVATION ${JSON.stringify(rawResult)}`);
+
 const rows = [];
-for ( const spec of cases ) {
-  const raw = b3.e2a2uRunDynamicSupportTransition(spec.spin, spec.direction);
+for ( const { spec, raw } of observations ) {
   assert.equal(raw.valid, true, `${spec.label} spin=${spec.spin}: invalid run`);
   assert.equal(raw.transitionLabel, spec.label, `${spec.label}: label drift`);
   assert.equal(raw.warmStarting, true, `${spec.label}: warm start disabled`);
