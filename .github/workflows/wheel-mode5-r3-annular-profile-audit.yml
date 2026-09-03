@@ -1,0 +1,26 @@
+name: Wheel mode5 exact R3 annular profile audit
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - tools/wheel-mode5-r3-annular-profile-audit.mjs
+      - .github/workflows/wheel-mode5-r3-annular-profile-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Recover exact R3 inner and outer tire profile
+        run: node tools/wheel-mode5-r3-annular-profile-audit.mjs
