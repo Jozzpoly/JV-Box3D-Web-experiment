@@ -1,0 +1,28 @@
+name: Wheel mode5 circular torus representability
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - tools/wheel-mode5-circular-torus-representability.mjs
+      - .github/workflows/wheel-mode5-circular-torus-representability.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile diagnostic imports
+        run: node node_modules/typescript/bin/tsc -p tsconfig.test.json
+      - name: Compare circular torus family with C outer and verified Tire inner profiles
+        run: node tools/wheel-mode5-circular-torus-representability.mjs
