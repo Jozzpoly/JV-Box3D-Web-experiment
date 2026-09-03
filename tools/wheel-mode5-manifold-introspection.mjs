@@ -20,7 +20,12 @@ function norm(v) {
   const n = Math.hypot(v.x, v.y, v.z);
   return { x: v.x / n, y: v.y / n, z: v.z / n };
 }
+function add(a, b) { return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }; }
+function mid(a, b) { return { x: 0.5 * (a.x + b.x), y: 0.5 * (a.y + b.y), z: 0.5 * (a.z + b.z) }; }
 function scale(s, v) { return { x: s * v.x, y: s * v.y, z: s * v.z }; }
+function sameId(a, b) {
+  return a?.index1 === b?.index1 && a?.world0 === b?.world0 && a?.generation === b?.generation;
+}
 function createStaticBox(worldId, box) {
   const bodyDef = b3.b3DefaultBodyDef();
   bodyDef.position = { ...box.center };
@@ -43,13 +48,22 @@ function createStaticBox(worldId, box) {
   );
   return { bodyId, shapeId };
 }
-function inspectShape(shapeId) {
+function inspectShape(wheelShapeId, wheelBodyId) {
   const contacts = b3.createContactsBuffer();
   try {
-    b3.getShapeContactData(contacts, shapeId);
+    b3.getShapeContactData(contacts, wheelShapeId);
     const out = [];
     for (let i = 0; i < b3.getNumContacts(contacts); i += 1) {
       const contact = b3.getContactAt(b3.createContact(), contacts, i);
+      const bodyA = b3.b3Shape_GetBody(contact.shapeIdA);
+      const bodyB = b3.b3Shape_GetBody(contact.shapeIdB);
+      const comA = b3.b3Body_GetWorldCenterOfMass(bodyA);
+      const comB = b3.b3Body_GetWorldCenterOfMass(bodyB);
+      const wheelIsA = sameId(contact.shapeIdA, wheelShapeId);
+      const wheelIsB = sameId(contact.shapeIdB, wheelShapeId);
+      if (wheelIsA === wheelIsB) {
+        throw new Error(`wheel shape ordering ambiguous: A=${JSON.stringify(contact.shapeIdA)} B=${JSON.stringify(contact.shapeIdB)}`);
+      }
       const manifolds = [];
       for (let m = 0; m < contact.manifoldCount; m += 1) {
         const manifold = b3.getManifoldAt(b3.createManifold(), contact, m);
@@ -57,25 +71,50 @@ function inspectShape(shapeId) {
           enumerableKeys: Object.keys(manifold),
           normal: manifold.normal,
           pointCount: manifold.pointCount,
-          triangleNormal: manifold.triangleNormal ?? null,
-          feature: manifold.feature ?? null,
           points: Array.from({ length: manifold.pointCount }, (_, p) => {
             const point = manifold.points[p];
+            const worldA = add(comA, point.anchorA);
+            const worldB = add(comB, point.anchorB);
+            const wheelWorld = wheelIsA ? worldA : worldB;
+            const obstacleWorld = wheelIsA ? worldB : worldA;
             return {
               enumerableKeys: Object.keys(point),
-              point: point.point ?? null,
-              anchorA: point.anchorA ?? null,
-              anchorB: point.anchorB ?? null,
+              anchorA: point.anchorA,
+              anchorB: point.anchorB,
+              worldA,
+              worldB,
+              wheelWorld,
+              obstacleWorld,
+              midpointWorld: mid(worldA, worldB),
+              wheelLocal: b3.b3Body_GetLocalPoint(wheelBodyId, wheelWorld),
+              obstacleLocal: b3.b3Body_GetLocalPoint(wheelBodyId, obstacleWorld),
+              midpointLocal: b3.b3Body_GetLocalPoint(wheelBodyId, mid(worldA, worldB)),
               separation: point.separation,
-              normalImpulse: point.normalImpulse ?? null,
-              totalNormalImpulse: point.totalNormalImpulse ?? null,
-              id: point.id ?? null,
-              persisted: point.persisted ?? null,
+              baseSeparation: point.baseSeparation,
+              normalImpulse: point.normalImpulse,
+              totalNormalImpulse: point.totalNormalImpulse,
+              normalVelocity: point.normalVelocity,
+              featureId: point.featureId,
+              triangleIndex: point.triangleIndex,
+              persisted: point.persisted,
             };
           }),
         });
       }
-      out.push({ manifoldCount: contact.manifoldCount, manifolds });
+      out.push({
+        shapeIdA: contact.shapeIdA,
+        shapeIdB: contact.shapeIdB,
+        wheelIsA,
+        wheelIsB,
+        bodyA,
+        bodyB,
+        comA,
+        comB,
+        bodyPositionA: b3.b3Body_GetPosition(bodyA),
+        bodyPositionB: b3.b3Body_GetPosition(bodyB),
+        manifoldCount: contact.manifoldCount,
+        manifolds,
+      });
     }
     return out;
   } finally {
@@ -99,19 +138,24 @@ function runCase(label, makeOther) {
     makeOther(worldId);
     const poseBefore = {
       position: b3.b3Body_GetPosition(wheel.bodyId),
+      centerOfMass: b3.b3Body_GetWorldCenterOfMass(wheel.bodyId),
+      localCenterOfMass: b3.b3Body_GetLocalCenterOfMass(wheel.bodyId),
       rotation: b3.b3Body_GetRotation(wheel.bodyId),
     };
     b3.b3World_Step(worldId, 1 / 60, 4);
     const report = {
       label,
       wheelBackendId: wheel.backendId,
+      rollingShapeId: wheel.rollingShapeId,
       rollingShapeIdValid: b3.b3Shape_IsValid(wheel.rollingShapeId),
       poseBefore,
       poseAfter: {
         position: b3.b3Body_GetPosition(wheel.bodyId),
+        centerOfMass: b3.b3Body_GetWorldCenterOfMass(wheel.bodyId),
+        localCenterOfMass: b3.b3Body_GetLocalCenterOfMass(wheel.bodyId),
         rotation: b3.b3Body_GetRotation(wheel.bodyId),
       },
-      contacts: inspectShape(wheel.rollingShapeId),
+      contacts: inspectShape(wheel.rollingShapeId, wheel.bodyId),
     };
     console.log('M6_MANIFOLD_INTROSPECTION', JSON.stringify(report));
     return report;
