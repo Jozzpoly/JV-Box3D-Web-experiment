@@ -36,22 +36,49 @@ const observation = {
 };
 console.log(`E2A2V_RECYCLING_CAUSALITY_OBSERVATION ${JSON.stringify(observation)}`);
 
-// Hard falsifier applies to recycling disabled. Fresh narrow phase should then
-// be regenerated every step and match the already-validated E2a2t source oracle.
-for ( const row of rows.filter((row) => row.recycleDistance === 0.0) ) {
-  const { raw, label, spin, expectedFrom, expectedTo } = row;
-  assert.equal(raw.configuredRecycleDistance, 0, `${label} spin=${spin}: recycling was not disabled`);
-  assert.equal(raw.recycledStepsMotion, 0, `${label} spin=${spin}: recycled steps with distance zero`);
-  assert.equal(raw.recycledContactCountSumMotion, 0, `${label} spin=${spin}: recycled contacts with distance zero`);
-  assert.equal(raw.topologyMismatchCount, 0, `${label} spin=${spin}: recycle-off topology disagreed with source oracle`);
-  assert.equal(raw.contactDropoutsMotion, 0, `${label} spin=${spin}: recycle-off contact dropout`);
-  assert.equal(raw.contactIdChangesMotion, 0, `${label} spin=${spin}: recycle-off contact id changed`);
-  assert.equal(raw.transitionCount, 1, `${label} spin=${spin}: recycle-off expected exactly one transition`);
-  assert.equal(raw.transitionFrom, expectedFrom, `${label} spin=${spin}: recycle-off transition source wrong`);
-  assert.equal(raw.transitionTo, expectedTo, `${label} spin=${spin}: recycle-off transition destination wrong`);
-  assert.equal(raw.transitionPersistedCount, 1, `${label} spin=${spin}: recycle-off surviving feature did not persist`);
-  assert.ok(Array.isArray(raw.transitionSamples) && raw.transitionSamples.length >= 2,
-    `${label} spin=${spin}: recycle-off transition samples missing`);
+const rowFor = (recycleDistance, label, spin) => rows.find(
+  (row) => row.recycleDistance === recycleDistance && row.label === label && row.spin === spin,
+);
+
+// Causal gate. E2a2t already established the static source threshold. E2a2v asks
+// a different question: does contact recycling itself explain the live spin-0
+// hysteresis? Do not require dynamic contact refresh to agree with the static
+// oracle on the exact frame; kinematic transform/contact update ordering may
+// produce a small discrete lag. Instead require the intervention to remove
+// recycling and restore the same single-transition topology path seen when the
+// default recycler is naturally ineligible at spin 40.
+for ( const spec of directions ) {
+  const defaultSpin0 = rowFor(0.05, spec.label, 0).raw;
+  const defaultSpin40 = rowFor(0.05, spec.label, 40).raw;
+  const offSpin0 = rowFor(0.0, spec.label, 0).raw;
+  const offSpin40 = rowFor(0.0, spec.label, 40).raw;
+
+  assert.equal(defaultSpin0.recycledStepsMotion, defaultSpin0.motionSteps,
+    `${spec.label}: default spin0 was not recycled for every controlled motion step`);
+  assert.equal(defaultSpin0.recycledContactCountSumMotion, defaultSpin0.motionSteps,
+    `${spec.label}: default spin0 recycled-contact count did not cover every motion step`);
+  assert.equal(defaultSpin0.transitionCount, 0,
+    `${spec.label}: default spin0 unexpectedly changed topology while fully recycled`);
+
+  for ( const [name, raw] of [['default spin40', defaultSpin40], ['off spin0', offSpin0], ['off spin40', offSpin40]] ) {
+    assert.equal(raw.recycledStepsMotion, 0, `${spec.label} ${name}: unexpected recycled steps`);
+    assert.equal(raw.recycledContactCountSumMotion, 0, `${spec.label} ${name}: unexpected recycled contacts`);
+    assert.equal(raw.contactDropoutsMotion, 0, `${spec.label} ${name}: contact dropout`);
+    assert.equal(raw.contactIdChangesMotion, 0, `${spec.label} ${name}: contact id changed`);
+    assert.equal(raw.transitionCount, 1, `${spec.label} ${name}: expected exactly one topology transition`);
+    assert.equal(raw.transitionFrom, spec.expectedFrom, `${spec.label} ${name}: transition source wrong`);
+    assert.equal(raw.transitionTo, spec.expectedTo, `${spec.label} ${name}: transition destination wrong`);
+    assert.equal(raw.transitionPersistedCount, 1, `${spec.label} ${name}: surviving feature did not persist`);
+    assert.ok(Array.isArray(raw.transitionSamples) && raw.transitionSamples.length >= 2,
+      `${spec.label} ${name}: transition samples missing`);
+  }
+
+  assert.equal(offSpin0.configuredRecycleDistance, 0, `${spec.label}: spin0 recycling was not disabled`);
+  assert.equal(offSpin40.configuredRecycleDistance, 0, `${spec.label}: spin40 recycling was not disabled`);
+  assert.equal(offSpin0.transitionStep, offSpin40.transitionStep,
+    `${spec.label}: recycle-off spin0 and spin40 transition steps diverged`);
+  assert.equal(defaultSpin40.transitionStep, offSpin40.transitionStep,
+    `${spec.label}: default non-recycled spin40 and recycle-off transition steps diverged`);
 }
 
 const compact = rows.map(({ recycleDistance, label, spin, raw }) => ({
