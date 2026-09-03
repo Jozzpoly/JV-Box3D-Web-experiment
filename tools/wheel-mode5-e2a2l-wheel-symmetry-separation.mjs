@@ -42,8 +42,13 @@ function runWheel(spin) {
   assert.equal(run.valid, true, `real wheel invalid at spin=${spin}`);
   assert.ok(run.firstImpulseStep >= 0, `real wheel never generated an impulse at spin=${spin}`);
   assert.equal(run.contactDropoutsAfterImpulse, 0, `real wheel contact dropout at spin=${spin}`);
-  assert.equal(run.minPointCountAfterImpulse, 2, `real wheel support segment collapsed at spin=${spin}`);
-  assert.equal(run.maxPointCountAfterImpulse, 2, `real wheel manifold topology changed at spin=${spin}`);
+  // E2a2 previously established that spin40 can collapse the nominal two-point
+  // plateau manifold to one point. That is measured pathology, not an apparatus
+  // failure. The valid topology envelope for this falsifier is therefore 1..2.
+  assert.ok(run.minPointCountAfterImpulse >= 1 && run.minPointCountAfterImpulse <= 2,
+    `real wheel minimum point count outside 1..2 at spin=${spin}`);
+  assert.ok(run.maxPointCountAfterImpulse >= 1 && run.maxPointCountAfterImpulse <= 2,
+    `real wheel maximum point count outside 1..2 at spin=${spin}`);
   return compactWheel(run);
 }
 
@@ -111,6 +116,10 @@ const wheelComparison = {
   finalVyDelta: wheelSpin40.finalVy - wheelSpin0.finalVy,
   totalImpulseRatio40to0: wheelSpin40.settledTotalImpulseMean / wheelSpin0.settledTotalImpulseMean,
   settledYRangeDeltaMm: (wheelSpin40.settledYRange - wheelSpin0.settledYRange) * 1000,
+  minPointCount0: wheelSpin0.minPointCountAfterImpulse,
+  minPointCount40: wheelSpin40.minPointCountAfterImpulse,
+  maxPointCount0: wheelSpin0.maxPointCountAfterImpulse,
+  maxPointCount40: wheelSpin40.maxPointCountAfterImpulse,
   finalAngularZ40: wheelSpin40.finalAngularZ,
   featureSetChanges40: wheelSpin40.featureSetChangesAfterImpulse,
   contactIdChanges40: wheelSpin40.contactIdChangesAfterImpulse,
