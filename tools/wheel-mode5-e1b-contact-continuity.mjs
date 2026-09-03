@@ -187,7 +187,7 @@ function continuitySummary(label, rows, expectedSurface, referenceOnset = null) 
     normalMean,
     pointMean,
     worstNormalStep: normalSteps.reduce((best, value, i) => value > best.value ? { value, phaseIndex: i, nextPhaseIndex: (i + 1) % rows.length } : best, { value: -1, phaseIndex: -1, nextPhaseIndex: -1 }),
-    worstPointStep: pointSteps.reduce((best, value, i) => value > best.value ? { valueMm: value * 1000, phaseIndex: i, nextPhaseIndex: (i + 1) % rows.length } : best, { value: -1, valueMm: -1, phaseIndex: -1, nextPhaseIndex: -1 }),
+    worstPointStep: pointSteps.reduce((best, value, i) => value > best.value ? { value, valueMm: value * 1000, phaseIndex: i, nextPhaseIndex: (i + 1) % rows.length } : best, { value: -1, valueMm: -1, phaseIndex: -1, nextPhaseIndex: -1 }),
   };
 }
 
