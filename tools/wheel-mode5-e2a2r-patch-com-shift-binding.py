@@ -50,6 +50,71 @@ if asym.count(shape_anchor) != 1:
     raise SystemExit(f'E2a2r expected exactly one wheel-shape anchor, found {asym.count(shape_anchor)}')
 asym = asym.replace(shape_anchor, shape_insert, 1)
 
+settled_anchor = '    float settledImpulseMax = -FLT_MAX;\n\n'
+settled_insert = settled_anchor + (
+    '    // E2a2r load-split proof. Sort the two support impulses by stable featureId\n'
+    '    // so point-order reversal cannot change which accumulator receives a point.\n'
+    '    int settledPairLoadSamples = 0;\n'
+    '    uint32_t settledLowFeatureId = 0xFFFFFFFFu;\n'
+    '    uint32_t settledHighFeatureId = 0xFFFFFFFFu;\n'
+    '    bool settledFeaturePairStable = true;\n'
+    '    double settledLowFeatureNormalImpulseSum = 0.0;\n'
+    '    double settledHighFeatureNormalImpulseSum = 0.0;\n\n'
+)
+if asym.count(settled_anchor) != 1:
+    raise SystemExit(f'E2a2r expected exactly one settled accumulator anchor, found {asym.count(settled_anchor)}')
+asym = asym.replace(settled_anchor, settled_insert, 1)
+
+step_anchor = '        float finalNormalImpulse = 0.0f;\n'
+step_insert = step_anchor + (
+    '        uint32_t stepFeatureIds[2] = { 0xFFFFFFFFu, 0xFFFFFFFFu };\n'
+    '        float stepFeatureNormalImpulses[2] = { 0.0f, 0.0f };\n'
+    '        int stepFeatureImpulseCount = 0;\n'
+)
+if asym.count(step_anchor) != 1:
+    raise SystemExit(f'E2a2r expected exactly one per-step impulse anchor, found {asym.count(step_anchor)}')
+asym = asym.replace(step_anchor, step_insert, 1)
+
+point_anchor = '                    finalNormalImpulse += point.normalImpulse;\n'
+point_insert = point_anchor + (
+    '                    if ( stepFeatureImpulseCount < 2 )\n'
+    '                    {\n'
+    '                        stepFeatureIds[stepFeatureImpulseCount] = point.featureId;\n'
+    '                        stepFeatureNormalImpulses[stepFeatureImpulseCount] = point.normalImpulse;\n'
+    '                        stepFeatureImpulseCount += 1;\n'
+    '                    }\n'
+)
+if asym.count(point_anchor) != 1:
+    raise SystemExit(f'E2a2r expected exactly one point impulse anchor, found {asym.count(point_anchor)}')
+asym = asym.replace(point_anchor, point_insert, 1)
+
+sample_anchor = '            settledSamples += 1;\n'
+load_split_insert = (
+    '            if ( stepFeatureImpulseCount == 2 )\n'
+    '            {\n'
+    '                int lowIndex = stepFeatureIds[0] <= stepFeatureIds[1] ? 0 : 1;\n'
+    '                int highIndex = 1 - lowIndex;\n'
+    '                uint32_t lowId = stepFeatureIds[lowIndex];\n'
+    '                uint32_t highId = stepFeatureIds[highIndex];\n'
+    '                if ( settledLowFeatureId == 0xFFFFFFFFu )\n'
+    '                {\n'
+    '                    settledLowFeatureId = lowId;\n'
+    '                    settledHighFeatureId = highId;\n'
+    '                }\n'
+    '                else if ( settledLowFeatureId != lowId || settledHighFeatureId != highId )\n'
+    '                {\n'
+    '                    settledFeaturePairStable = false;\n'
+    '                }\n'
+    '                settledLowFeatureNormalImpulseSum += stepFeatureNormalImpulses[lowIndex];\n'
+    '                settledHighFeatureNormalImpulseSum += stepFeatureNormalImpulses[highIndex];\n'
+    '                settledPairLoadSamples += 1;\n'
+    '            }\n'
+    + sample_anchor
+)
+if asym.count(sample_anchor) != 1:
+    raise SystemExit(f'E2a2r expected exactly one settled sample anchor, found {asym.count(sample_anchor)}')
+asym = asym.replace(sample_anchor, load_split_insert, 1)
+
 result_anchor = '    result.set( "mass", mass );\n'
 result_insert = result_anchor + (
     '    result.set( "requestedComShiftZ", comShiftZ );\n'
@@ -59,6 +124,19 @@ result_insert = result_anchor + (
 if asym.count(result_anchor) != 1:
     raise SystemExit(f'E2a2r expected exactly one mass result anchor, found {asym.count(result_anchor)}')
 asym = asym.replace(result_anchor, result_insert, 1)
+
+impulse_result_anchor = '    result.set( "settledTotalImpulseMax", settledSamples > 0 ? settledImpulseMax : NAN );\n'
+impulse_result_insert = impulse_result_anchor + (
+    '    result.set( "settledPairLoadSamples", settledPairLoadSamples );\n'
+    '    result.set( "settledFeaturePairStable", settledFeaturePairStable );\n'
+    '    result.set( "settledLowFeatureId", settledLowFeatureId == 0xFFFFFFFFu ? 0u : settledLowFeatureId );\n'
+    '    result.set( "settledHighFeatureId", settledHighFeatureId == 0xFFFFFFFFu ? 0u : settledHighFeatureId );\n'
+    '    result.set( "settledLowFeatureNormalImpulseMean", settledPairLoadSamples > 0 ? settledLowFeatureNormalImpulseSum / (double)settledPairLoadSamples : NAN );\n'
+    '    result.set( "settledHighFeatureNormalImpulseMean", settledPairLoadSamples > 0 ? settledHighFeatureNormalImpulseSum / (double)settledPairLoadSamples : NAN );\n'
+)
+if asym.count(impulse_result_anchor) != 1:
+    raise SystemExit(f'E2a2r expected exactly one settled impulse result anchor, found {asym.count(impulse_result_anchor)}')
+asym = asym.replace(impulse_result_anchor, impulse_result_insert, 1)
 
 text = text[:runner_end] + '\n\n' + asym + text[runner_end:]
 
