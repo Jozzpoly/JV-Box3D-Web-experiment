@@ -1,0 +1,101 @@
+name: Wheel mode5 E1 native annular static oracle
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-recovery-checkpoint-2026-09-03
+    paths:
+      - tools/wheel-mode5-e1-write-annular-native-header.mjs
+      - tools/wheel-mode5-e1-patch-bindings.py
+      - tools/wheel-mode5-e1-native-annular-probe.mjs
+      - tools/owner-vehicle/**
+      - assets/owner-vehicle/source/Offroad_Big_Wheels.gltf
+      - .github/workflows/wheel-mode5-e1-native-annular-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  native-oracle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 6.0.2
+          actions-cache-folder: emsdk-cache
+
+      - run: npm ci
+
+      - name: Recover pinned mode5 Box3D.js source and donor wheel patch
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git clone https://github.com/isaac-mason/box3d.js.git box3djs
+          git -C box3djs checkout 2617a0ff763a60c9f17cee57c6ea72aab75a5077
+          git -C box3djs submodule update --init --recursive
+          test "$(git -C box3djs/vendor/box3d rev-parse HEAD)" = "8441b4a06d6d09dcfb0b0f704df4d847d1437b92"
+
+          git clone https://github.com/Jozzpoly/Box3d_FunProject.git native
+          git -C native fetch origin recovery/jv-reconstruction
+          git -C native cat-file -e 77a67132ffc4f003e84c6ffe4e72abfbcded4d33^{commit}
+          git -C native cat-file -e 241fe10a9056836332c21d9614471d32d749ce3d^{commit}
+
+          git -C native diff --binary \
+            77a67132ffc4f003e84c6ffe4e72abfbcded4d33 \
+            241fe10a9056836332c21d9614471d32d749ce3d \
+            -- \
+            include/box3d/box3d.h \
+            include/box3d/collision.h \
+            include/box3d/types.h \
+            src/CMakeLists.txt \
+            src/contact.c \
+            src/mesh_contact.c \
+            src/physics_world.c \
+            src/shape.c \
+            src/shape.h \
+            src/wheel_shape.c \
+            > B3X-WHEEL-001.patch
+
+          test -s B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d apply --check ../../../B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d apply ../../../B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d diff --check
+
+      - name: Generate E1 profile and patch native bindings
+        shell: bash
+        run: |
+          set -euxo pipefail
+          node tools/wheel-mode5-e1-write-annular-native-header.mjs box3djs/src/e1_annular_profile.h
+          python3 -m py_compile tools/wheel-mode5-e1-patch-bindings.py
+          python3 tools/wheel-mode5-e1-patch-bindings.py box3djs/src/bindings.cpp
+          grep -n "e1ProbeAnnularP75Box" box3djs/src/bindings.cpp
+          grep -n "E1_ANNULAR_STATION_COUNT" box3djs/src/e1_annular_profile.h | head
+          git -C box3djs diff --check -- src/bindings.cpp
+
+      - name: Build patched Box3D.js
+        working-directory: box3djs
+        shell: bash
+        run: |
+          set -euxo pipefail
+          pnpm install --frozen-lockfile
+          pnpm build
+          pnpm test
+
+      - name: Run native zero-skin annular oracle
+        shell: bash
+        run: node tools/wheel-mode5-e1-native-annular-probe.mjs
