@@ -71,8 +71,6 @@ function compactSphere(run) {
     settledMaxAbsVy: run.settledMaxAbsVy,
     finalY: run.finalY,
     finalVy: run.finalVy,
-    finalAngularX: run.finalAngularX,
-    finalAngularY: run.finalAngularY,
     finalAngularZ: run.finalAngularZ,
   };
 }
@@ -137,6 +135,10 @@ const result = {
   sphereMatrix,
 };
 
+// Emit measurement before cross-build identity checks so an unexpected control
+// mismatch never hides the actual physical result from forensic review.
+console.log(`E2A2L_WHEEL_SYMMETRY_RESULT ${JSON.stringify(result)}`);
+
 if (mode === 'baseline-pinned') {
   if (!receiptPath) throw new Error('baseline-pinned requires receipt path');
   fs.writeFileSync(receiptPath, `${JSON.stringify(result)}\n`, 'utf8');
@@ -153,5 +155,4 @@ if (mode === 'baseline-pinned') {
     'E2a2l changed ordinary matched-sphere solver behavior');
 }
 
-console.log(`E2A2L_WHEEL_SYMMETRY_RESULT ${JSON.stringify(result)}`);
 console.log(`E2A2L_WHEEL_SYMMETRY_EXECUTED ${mode}`);
