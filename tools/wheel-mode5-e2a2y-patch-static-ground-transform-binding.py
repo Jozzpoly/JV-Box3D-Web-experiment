@@ -44,7 +44,7 @@ new_motion = '''        if ( step >= settleSteps && step < settleSteps + motionS
             float targetAngle = initialAngle + commandedAngularX * dt * (float)motionIndex;
             float targetHalf = 0.5f * targetAngle;
             b3Quat targetRotation = { { sinf( targetHalf ), 0.0f, 0.0f }, cosf( targetHalf ) };
-            b3Body_SetTransform( groundBody, e1Pos( 0.0, -0.10, 0.0 ), targetRotation );
+            b3Body_SetTransform( groundBody, groundBodyDef.position, targetRotation );
         }
 
         b3World_Step( worldId, dt, subStepCount );
