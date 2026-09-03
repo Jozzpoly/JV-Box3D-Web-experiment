@@ -6,6 +6,7 @@ on:
       - work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03
     paths:
       - tools/wheel-mode5-e2a2q-patch-coupled-two-point-lcp.py
+      - tools/wheel-mode5-e2a2q-r2-patch-pinned-mask-helpers.py
       - tools/wheel-mode5-e2a2q-patch-bindings.py
       - tools/wheel-mode5-e2a2q-coupled-two-point-falsifier.mjs
       - .github/workflows/wheel-mode5-e2a2q-coupled-two-point-falsifier.yml
@@ -77,6 +78,7 @@ jobs:
             tools/wheel-mode5-e2a2p-patch-simultaneous-two-point-solve.py \
             tools/wheel-mode5-e2a2p-r2-normalize-generated-tabs.py \
             tools/wheel-mode5-e2a2q-patch-coupled-two-point-lcp.py \
+            tools/wheel-mode5-e2a2q-r2-patch-pinned-mask-helpers.py \
             tools/wheel-mode5-e2a2q-patch-bindings.py
           node --check tools/wheel-mode5-e2a2q-coupled-two-point-falsifier.mjs
           JV_E1_ANNULAR_SEGMENTS=128 node tools/wheel-mode5-e1-write-annular-native-header.mjs box3djs/src/e1_annular_profile.h
@@ -135,9 +137,11 @@ jobs:
           python3 tools/wheel-mode5-e2a2p-patch-simultaneous-two-point-solve.py box3djs/vendor/box3d/src/contact_solver.c
           python3 tools/wheel-mode5-e2a2p-r2-normalize-generated-tabs.py box3djs/vendor/box3d/src/contact_solver.c
           python3 tools/wheel-mode5-e2a2q-patch-coupled-two-point-lcp.py box3djs/vendor/box3d/src/contact_solver.c
+          python3 tools/wheel-mode5-e2a2q-r2-patch-pinned-mask-helpers.py box3djs/vendor/box3d/src/contact_solver.c
           python3 tools/wheel-mode5-e2a2q-patch-bindings.py box3djs/src/bindings.cpp
           git -C box3djs/vendor/box3d diff --check
           grep -F 'E2a2q DIAGNOSTIC ONLY: coupled 2x2 normal mini-LCP.' box3djs/vendor/box3d/src/contact_solver.c
+          grep -F 'static inline b3FloatW e2a2qAndW' box3djs/vendor/box3d/src/contact_solver.c
           grep -F 'b3E2a2qGetPairSolveCounter' box3djs/src/bindings.cpp
       - name: Build coupled canonical variant
         shell: bash
