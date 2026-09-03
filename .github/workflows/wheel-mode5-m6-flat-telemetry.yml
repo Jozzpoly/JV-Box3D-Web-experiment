@@ -40,7 +40,7 @@ jobs:
           path=Path('src/vehicle/m6/mode5-wheel-backend.ts')
           text=path.read_text(encoding='utf-8')
           old_select='const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
-          new_select=f'const requestedGeometry = "{os.environ["GEOMETRY"]}";'
+          new_select=f'const requestedGeometry: string | undefined = "{os.environ["GEOMETRY"]}";'
           old_ratio='export const MODE5_CORE_TORUS_CROWN_RATIO = 0.914;'
           new_ratio=f'export const MODE5_CORE_TORUS_CROWN_RATIO = {os.environ["RATIO"]};'
           if text.count(old_select)!=1 or text.count(old_ratio)!=1:
