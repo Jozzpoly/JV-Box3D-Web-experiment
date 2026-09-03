@@ -61,6 +61,13 @@ jobs:
             tools/wheel-mode5-e1-patch-bindings.py \
             tools/wheel-mode5-e2a-patch-bindings.py \
             tools/wheel-mode5-e2a2-patch-bindings.py \
+            tools/wheel-mode5-e2a2b-patch-bindings.py \
+            tools/wheel-mode5-e2a2c-patch-bindings.py \
+            tools/wheel-mode5-e2a2d-patch-bindings.py \
+            tools/wheel-mode5-e2a2e-patch-bindings.py \
+            tools/wheel-mode5-e2a2f-patch-bindings.py \
+            tools/wheel-mode5-e2a2g-patch-bindings.py \
+            tools/wheel-mode5-e2a2i-patch-bindings.py \
             tools/wheel-mode5-e2a2m-patch-tilt-lock-bindings.py \
             tools/wheel-mode5-e2a2k-r2-patch-counterfactual-convex-solver.py \
             tools/wheel-mode5-e2a2o-patch-reverse-wheel-plane-points.py \
@@ -71,6 +78,13 @@ jobs:
           python3 tools/wheel-mode5-e1-patch-bindings.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a-patch-bindings.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2b-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2c-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2d-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2e-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2f-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2g-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2i-patch-bindings.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2m-patch-tilt-lock-bindings.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2k-r2-patch-counterfactual-convex-solver.py box3djs/vendor/box3d/src/contact_solver.c
           git -C box3djs/vendor/box3d diff --check
