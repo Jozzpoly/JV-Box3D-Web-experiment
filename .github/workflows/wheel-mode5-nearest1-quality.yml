@@ -1,0 +1,98 @@
+name: Wheel mode5 C vs NEAREST1 quality
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - tools/wheel-mode5-nearest1-quality.mjs
+      - .github/workflows/wheel-mode5-nearest1-quality.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile and run C / NEAREST1 matched-speed telemetry
+        run: |
+          set -euo pipefail
+          SOURCE=src/vehicle/m6/mode5-wheel-backend.ts
+          cp "$SOURCE" "$RUNNER_TEMP/mode5-wheel-backend.original.ts"
+          : > "$RUNNER_TEMP/quality-results.jsonl"
+
+          compile_and_run() {
+            local mode="$1"
+            local geometry="$2"
+            local ratio="$3"
+            cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" "$SOURCE"
+            GEOMETRY="$geometry" RATIO="$ratio" python3 - <<'PY'
+          import os
+          from pathlib import Path
+          path=Path('src/vehicle/m6/mode5-wheel-backend.ts')
+          text=path.read_text(encoding='utf-8')
+          old_select='const requestedGeometry = import.meta.env?.["VITE_JV_MODE5_WHEEL_GEOMETRY"];'
+          new_select=f'const requestedGeometry: string | undefined = "{os.environ["GEOMETRY"]}";'
+          old_ratio='export const MODE5_CORE_TORUS_CROWN_RATIO = 0.914;'
+          new_ratio=f'export const MODE5_CORE_TORUS_CROWN_RATIO = {os.environ["RATIO"]};'
+          if text.count(old_select)!=1 or text.count(old_ratio)!=1:
+              raise SystemExit('quality source anchors drifted')
+          path.write_text(text.replace(old_select,new_select).replace(old_ratio,new_ratio),encoding='utf-8')
+          PY
+            rm -rf .test-dist
+            node node_modules/typescript/bin/tsc -p tsconfig.test.json
+            mkdir -p .test-dist/physics/vendor
+            cp src/physics/vendor/box3d-mode5.inline.mjs .test-dist/physics/vendor/box3d-mode5.inline.mjs
+            JV_QUALITY_MODE="$mode" node tools/wheel-mode5-nearest1-quality.mjs | tee "$RUNNER_TEMP/$mode.log"
+            grep '^NEAREST1_QUALITY_RESULT ' "$RUNNER_TEMP/$mode.log" \
+              | sed 's/^NEAREST1_QUALITY_RESULT //' >> "$RUNNER_TEMP/quality-results.jsonl"
+          }
+
+          compile_and_run C solver-aware-profile 0.914
+          compile_and_run NEAREST1 core-torus64 0.65
+          cp "$RUNNER_TEMP/mode5-wheel-backend.original.ts" "$SOURCE"
+
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          rows=[json.loads(line) for line in Path(os.environ['RUNNER_TEMP'],'quality-results.jsonl').read_text().splitlines() if line.strip()]
+          if [r['mode'] for r in rows] != ['C','NEAREST1']:
+              raise SystemExit(f'unexpected quality rows: {[r["mode"] for r in rows]}')
+          c,n=rows
+          if c['geometry'] != 'solver-aware-profile' or n['geometry'] != 'core-torus64' or abs(n['crownRatio']-0.65)>1e-12:
+              raise SystemExit('compiled geometry provenance mismatch')
+          if abs(n['hold']['preSolveAccepted']['mean']-4.0)>1e-9 or n['hold']['preSolveAccepted']['min']!=4 or n['hold']['preSolveAccepted']['max']!=4:
+              raise SystemExit(f'NEAREST1 lost one-sector-per-wheel hold: {n["hold"]["preSolveAccepted"]}')
+          if not (3.0 <= c['hold']['forwardSpeed']['mean'] <= 5.0 and 3.0 <= n['hold']['forwardSpeed']['mean'] <= 5.0):
+              raise SystemExit(f'hold speed not matched enough: C={c["hold"]["forwardSpeed"]["mean"]}, N={n["hold"]["forwardSpeed"]["mean"]}')
+
+          def corner_ratios(metric, field):
+              out=[]
+              for cc,nn in zip(c['hold']['corners'],n['hold']['corners']):
+                  cv=cc[metric][field]
+                  nv=nn[metric][field]
+                  out.append(None if cv==0 else nv/cv)
+              return out
+          comparison={
+            'holdSpeedMean':{'C':c['hold']['forwardSpeed']['mean'],'NEAREST1':n['hold']['forwardSpeed']['mean']},
+            'holdTravelMeters':{'C':c['holdTravelMeters'],'NEAREST1':n['holdTravelMeters']},
+            'chassisY_deltaAbsP95_ratio':n['hold']['chassisY']['deltaAbsP95']/c['hold']['chassisY']['deltaAbsP95'] if c['hold']['chassisY']['deltaAbsP95'] else None,
+            'chassisVy_deltaAbsP95_ratio':n['hold']['chassisVy']['deltaAbsP95']/c['hold']['chassisVy']['deltaAbsP95'] if c['hold']['chassisVy']['deltaAbsP95'] else None,
+            'wheelY_deltaAbsP95_ratios':corner_ratios('wheelY','deltaAbsP95'),
+            'wheelY_secondDeltaAbsP95_ratios':corner_ratios('wheelY','secondDeltaAbsP95'),
+            'wheelSpin_deltaAbsP95_ratios':corner_ratios('wheelSpinSpeed','deltaAbsP95'),
+            'wheelSpin_secondDeltaAbsP95_ratios':corner_ratios('wheelSpinSpeed','secondDeltaAbsP95'),
+            'coilover_deltaAbsP95_ratios':corner_ratios('coiloverLength','deltaAbsP95'),
+            'sectorTelemetry':n['sectorTelemetry'],
+          }
+          print('NEAREST1_QUALITY_COMPARISON',json.dumps(comparison,separators=(',',':')))
+          print('NEAREST1_QUALITY_COMPARISON_OK')
+          PY
