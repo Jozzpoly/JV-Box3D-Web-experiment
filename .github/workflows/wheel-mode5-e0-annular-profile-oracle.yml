@@ -1,0 +1,29 @@
+name: Wheel mode5 E0 annular profile oracle
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-d-pathology-2026-09-03
+    paths:
+      - tools/wheel-mode5-e0-annular-profile-oracle.mjs
+      - tools/owner-vehicle/owner-m6-tire-geometry-r3.mjs
+      - .github/workflows/wheel-mode5-e0-annular-profile-oracle.yml
+
+permissions:
+  contents: read
+
+jobs:
+  oracle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+      - run: npm ci
+      - name: Compile diagnostic world source
+        run: node node_modules/typescript/bin/tsc -p tsconfig.test.json
+      - name: Compare annular profile-of-revolution with exact phased Tire mesh
+        run: node tools/wheel-mode5-e0-annular-profile-oracle.mjs
