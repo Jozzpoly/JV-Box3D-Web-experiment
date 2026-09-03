@@ -5,7 +5,12 @@ const b3 = await Box3D();
 assert.equal(typeof b3.e2a2vRunDynamicSupportTransitionRecycleControl, 'function', 'E2a2v runner missing');
 
 const recycleDistance = 0.05;
-const spins = [0, 5, 10, 15, 20, 25, 30, 35, 40];
+// The broad 0,5,...40 run found full recycling only at spin 0 and zero
+// recycling at every sampled nonzero spin. Pinned source shows the E2a2u
+// kinematic ground's 5 m maxExtent participates in the recycler arc criterion,
+// so refine only the low-spin interval rather than treating 5 rad/s as a wheel
+// property or tuning a new policy around it.
+const spins = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 4, 5];
 const directions = [
   { direction: 1, label: '2to1' },
   { direction: -1, label: '1to2' },
@@ -53,14 +58,20 @@ const fullRows = rows.filter((row) => row.recycledStepsMotion === row.motionStep
 const zeroRows = rows.filter((row) => row.recycledStepsMotion === 0);
 
 const result = {
-  scope: 'E2a2w broad wheel-spin sweep under default recycle distance 0.05 m. Exact E2a2v crossing apparatus and E2a2q solver are reused; only wheel spin changes. No dynamic outcome threshold is pre-registered.',
+  scope: 'E2a2w low-spin refinement under default recycle distance 0.05 m after broad 0..40 sweep. Exact E2a2v crossing apparatus and E2a2q solver are reused; only wheel spin changes. The purpose is to locate any intermittent recycling regime, not to define a policy threshold.',
   spins,
   recycleDistance,
   classifications: {
     fullRecycleCaseCount: fullRows.length,
     partialRecycleCaseCount: partialRows.length,
     zeroRecycleCaseCount: zeroRows.length,
+    fullCases: fullRows.map(({ label, spin, recycledStepsMotion, motionSteps, transitionCount, transitionStep }) => ({
+      label, spin, recycledStepsMotion, motionSteps, transitionCount, transitionStep,
+    })),
     partialCases: partialRows.map(({ label, spin, recycledStepsMotion, motionSteps, transitionCount, transitionStep }) => ({
+      label, spin, recycledStepsMotion, motionSteps, transitionCount, transitionStep,
+    })),
+    zeroCases: zeroRows.map(({ label, spin, recycledStepsMotion, motionSteps, transitionCount, transitionStep }) => ({
       label, spin, recycledStepsMotion, motionSteps, transitionCount, transitionStep,
     })),
   },
