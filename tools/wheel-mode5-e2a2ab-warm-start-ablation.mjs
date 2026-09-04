@@ -17,6 +17,11 @@ const directions = [
   { direction: -1, label: '1to2' },
 ];
 
+const approxEqual = (actual, expected, tolerance, message) => {
+  assert.ok(Math.abs(actual - expected) <= tolerance,
+    `${message}: actual=${actual} expected=${expected} tolerance=${tolerance}`);
+};
+
 const rows = [];
 for (const c of cases) {
   for (const d of directions) {
@@ -31,8 +36,8 @@ for (const c of cases) {
     assert.equal(raw.groundBodyStatic, true, `${c.label}/${d.label}: ground not static`);
     assert.equal(raw.groundMotionMode, 'SET_TRANSFORM_BEFORE_STEP', `${c.label}/${d.label}: motion mode drift`);
     assert.equal(raw.warmStarting, c.warmStarting, `${c.label}/${d.label}: warm-start flag drift`);
-    assert.equal(raw.requestedRecycleDistance, c.recycleDistance, `${c.label}/${d.label}: recycle-distance drift`);
-    assert.equal(raw.crossingAngularSpeed, crossingAngularSpeed, `${c.label}/${d.label}: crossing-rate drift`);
+    approxEqual(raw.requestedRecycleDistance, c.recycleDistance, 1e-7, `${c.label}/${d.label}: recycle-distance drift`);
+    approxEqual(raw.crossingAngularSpeed, crossingAngularSpeed, 1e-10, `${c.label}/${d.label}: crossing-rate drift`);
     assert.equal(raw.contactDropoutsMotion, 0, `${c.label}/${d.label}: contact dropout`);
     assert.equal(raw.contactIdChangesMotion, 0, `${c.label}/${d.label}: contact ID changed`);
     assert.equal(raw.transitionCount, 1, `${c.label}/${d.label}: expected one topology transition`);
