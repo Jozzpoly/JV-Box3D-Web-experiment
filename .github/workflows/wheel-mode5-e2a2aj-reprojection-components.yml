@@ -6,6 +6,7 @@ on:
       - work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03
     paths:
       - tools/wheel-mode5-e2a2aj-patch-reprojection-components.py
+      - tools/wheel-mode5-e2a2aj-patch-fixed-ground-component-binding.py
       - tools/wheel-mode5-e2a2aj-reprojection-components.mjs
       - .github/workflows/wheel-mode5-e2a2aj-reprojection-components.yml
 
@@ -82,9 +83,8 @@ jobs:
             tools/wheel-mode5-e2a2y-patch-static-ground-transform-binding.py \
             tools/wheel-mode5-e2a2z-patch-static-ground-rate-binding.py \
             tools/wheel-mode5-e2a2af-patch-fixed-ground-wheel-motion-binding.py \
-            tools/wheel-mode5-e2a2ah-patch-shadow-fresh-recycler-diagnostic.py \
-            tools/wheel-mode5-e2a2ah-patch-fixed-ground-shadow-fresh-binding.py \
-            tools/wheel-mode5-e2a2aj-patch-reprojection-components.py
+            tools/wheel-mode5-e2a2aj-patch-reprojection-components.py \
+            tools/wheel-mode5-e2a2aj-patch-fixed-ground-component-binding.py
           node --check tools/wheel-mode5-e2a2aj-reprojection-components.mjs
           JV_E1_ANNULAR_SEGMENTS=128 node tools/wheel-mode5-e1-write-annular-native-header.mjs box3djs/src/e1_annular_profile.h
           node tools/wheel-mode5-e2a2-write-flat-support-header.mjs box3djs/src/e2a2_flat_support.h
@@ -110,11 +110,10 @@ jobs:
           python3 tools/wheel-mode5-e2a2y-patch-static-ground-transform-binding.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2z-patch-static-ground-rate-binding.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2af-patch-fixed-ground-wheel-motion-binding.py box3djs/src/bindings.cpp
-          python3 tools/wheel-mode5-e2a2ah-patch-shadow-fresh-recycler-diagnostic.py box3djs/vendor/box3d/src/physics_world.c box3djs/src/bindings.cpp
-          python3 tools/wheel-mode5-e2a2ah-patch-fixed-ground-shadow-fresh-binding.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a2aj-patch-reprojection-components.py box3djs/vendor/box3d/src/physics_world.c box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a2aj-patch-fixed-ground-component-binding.py box3djs/src/bindings.cpp
           git -C box3djs/vendor/box3d diff --check
-          grep -F 'b3E2a2aj_GetRecomposedDot' box3djs/src/bindings.cpp
+          grep -F 'e2a2ajRunFixedGroundReprojectionComponents' box3djs/src/bindings.cpp
 
       - name: Install Box3D.js workspace
         working-directory: box3djs
