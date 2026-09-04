@@ -28,7 +28,11 @@ if clone.count(world_anchor) != 1:
 clone = clone.replace(world_anchor, world_replacement, 1)
 
 result_anchor = '    result.set( "crossingAngularSpeed", crossingAngularSpeed );\n'
-result_replacement = result_anchor + '    result.set( "warmStarting", warmStarting );\n'
+result_replacement = (
+    result_anchor
+    + '    result.set( "warmStarting", warmStarting );\n'
+    + '    result.set( "warmStartingEnabled", b3World_IsWarmStartingEnabled( worldId ) );\n'
+)
 if clone.count(result_anchor) != 1:
     raise SystemExit(f'E2a2ab expected one result anchor, found {clone.count(result_anchor)}')
 clone = clone.replace(result_anchor, result_replacement, 1)
