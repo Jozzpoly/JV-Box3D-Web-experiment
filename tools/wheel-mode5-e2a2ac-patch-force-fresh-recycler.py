@@ -36,39 +36,45 @@ if physics.count(global_anchor) != 1:
     raise SystemExit(f'E2a2ac expected one world-count anchor, found {physics.count(global_anchor)}')
 physics = physics.replace(global_anchor, global_patch, 1)
 
-start_marker = '\t\tif ( arcSq < slack * slack )\n\t\t{\n'
-cache_marker = '\n\t\t// Cache relative transform for contact recycling.\n'
-start = physics.find(start_marker)
-if start < 0:
-    raise SystemExit('E2a2ac could not locate recycler eligibility branch')
-cache = physics.find(cache_marker, start)
-if cache < 0:
-    raise SystemExit('E2a2ac could not locate recycler cache fall-through')
-block = physics[start:cache]
-if 'Keep anchors but update separation' not in block or 'continue;' not in block:
-    raise SystemExit('E2a2ac recycler block semantic anchors drifted')
-
-body_start = len(start_marker)
-closing = block.rfind('\n\t\t}')
-if closing < body_start:
-    raise SystemExit('E2a2ac could not locate recycler block closing brace')
-body = block[body_start:closing]
-if body.count('\n\t\t\tcontinue;') != 1:
-    raise SystemExit(f'E2a2ac expected one recycler continue, found {body.count(chr(10) + chr(9)*3 + "continue;")}')
-
-# Count eligibility in both arms. In force-fresh mode, skip all recycled-manifold
-# mutation and fall through to the normal b3UpdateContact narrow-phase path.
-nested_body = ''.join(('\t' + line if line else line) for line in body.splitlines(keepends=True))
-replacement = (
+# Donor-composed source nests this eligibility branch four tabs deep. Intervene
+# inside exactly this branch; do not alter the eligibility calculation itself.
+start_marker = '\t\t\t\tif ( arcSq < slack * slack )\n\t\t\t\t{\n'
+if physics.count(start_marker) != 1:
+    raise SystemExit(f'E2a2ac expected one recycler eligibility branch, found {physics.count(start_marker)}')
+physics = physics.replace(
+    start_marker,
     start_marker
-    + '\t\t\tb3_e2a2acRecycleEligibleCount += 1;\n'
-    + '\t\t\tif ( b3_e2a2acForceFreshOnRecycleEligible == false )\n'
-    + '\t\t\t{\n'
-    + nested_body
-    + '\t\t\t}\n'
-    + '\t\t}'
+    + '\t\t\t\t\tb3_e2a2acRecycleEligibleCount += 1;\n'
+    + '\t\t\t\t\tif ( b3_e2a2acForceFreshOnRecycleEligible == false )\n'
+    + '\t\t\t\t\t{\n',
+    1,
 )
-physics = physics[:start] + replacement + physics[cache:]
+
+# Close the force-fresh guard immediately after the normal recycled-manifold
+# continue. Force-fresh therefore skips every reuse mutation and falls through
+# through the existing outer braces to the normal cache + b3UpdateContact path.
+tail_anchor = (
+    '\t\t\t\t\t// Contact is recycled. This also skips updating other aspects of the contact\n'
+    '\t\t\t\t\t// such as material parameters.\n'
+    '\t\t\t\t\tcontinue;\n'
+    '\t\t\t\t}\n'
+    '\t\t\t}\n'
+    '\t\t}\n\n'
+    '\t\t// Caching for contact recycling.\n'
+)
+tail_replacement = (
+    '\t\t\t\t\t// Contact is recycled. This also skips updating other aspects of the contact\n'
+    '\t\t\t\t\t// such as material parameters.\n'
+    '\t\t\t\t\tcontinue;\n'
+    '\t\t\t\t\t}\n'
+    '\t\t\t\t}\n'
+    '\t\t\t}\n'
+    '\t\t}\n\n'
+    '\t\t// Caching for contact recycling.\n'
+)
+if physics.count(tail_anchor) != 1:
+    raise SystemExit(f'E2a2ac expected one recycler tail anchor, found {physics.count(tail_anchor)}')
+physics = physics.replace(tail_anchor, tail_replacement, 1)
 
 bindings_anchor = 'using namespace emscripten;\n\n'
 declarations = '''using namespace emscripten;
