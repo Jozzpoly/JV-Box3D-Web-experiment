@@ -26,9 +26,14 @@ for (const recycleDistance of recycleDistances) {
     assert.equal(raw.groundBodyStatic, true, `${spec.label}: ground not static`);
     assert.equal(raw.groundMotionMode, 'FIXED_IDENTITY_NO_TRANSFORM', `${spec.label}: ground moved`);
     assert.equal(raw.groundTransformSetCount, 0, `${spec.label}: ground transform was set`);
-    assert.equal(raw.wheelMotionMode, 'DYNAMIC_BODY_ANGULAR_VELOCITY_COMMAND', `${spec.label}: wheel motion mode drift`);
+    assert.equal(raw.wheelMotionMode, 'DYNAMIC_BODY_ANGULAR_VELOCITY_COMMAND_BOUNDED_UNLOCK', `${spec.label}: wheel motion mode drift`);
     assert.equal(raw.contactDropoutsMotion, 0, `${spec.label}: contact dropout`);
     assert.equal(raw.contactIdChangesMotion, 0, `${spec.label}: contact id changed`);
+    assert.equal(raw.transitionCount, 1, `${spec.label} recycle=${recycleDistance}: expected exactly one topology transition`);
+    assert.equal(raw.transitionFrom, spec.direction > 0 ? 2 : 1, `${spec.label}: transitionFrom drift`);
+    assert.equal(raw.transitionTo, spec.direction > 0 ? 1 : 2, `${spec.label}: transitionTo drift`);
+    assert.equal(raw.transitionPersistedCount, 1, `${spec.label}: expected one persisted feature`);
+    assert.ok(raw.topologyMismatchCount <= 2, `${spec.label}: topology predictor mismatch ${raw.topologyMismatchCount}`);
 
     rows.push({
       recycleDistance,
@@ -63,7 +68,7 @@ for (const recycleDistance of recycleDistances) {
 }
 
 const result = {
-  scope: 'E2a2af EXTERNAL VALIDITY. Fixed static road at identity; reproduce the E2a2y/z flat-P75 1<->2 relative support crossing by commanding angular velocity on the dynamic wheel body. Compare normal recycle 0.05 m against recycle-off 0 m at spin 5 rad/s and crossing rate 20 urad/s. No product-physics acceptance gate.',
+  scope: 'E2a2af EXTERNAL VALIDITY. Fixed static road at identity; reproduce the E2a2y/z flat-P75 1<->2 relative support crossing by a bounded unlock and commanded angular velocity on the dynamic wheel body. Compare normal recycle 0.05 m against recycle-off 0 m at spin 5 rad/s and crossing rate 20 urad/s. Exactly one predicted topology transition is required; otherwise the apparatus fails and produces no physics verdict.',
   rows,
 };
 
