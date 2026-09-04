@@ -7,8 +7,8 @@ if len(sys.argv) != 2:
 path = Path(sys.argv[1])
 text = path.read_text(encoding='utf-8')
 
-anchor = '''    wheelBodyDef.enableSleep = false;\n    wheelBodyDef.allowFastRotation = true;\n    b3BodyId wheelBody = b3CreateBody( worldId, &wheelBodyDef );\n'''
-replacement = '''    wheelBodyDef.enableSleep = false;\n    wheelBodyDef.allowFastRotation = true;\n    // RQ0 apparatus correction: emulate an ideal planar axle guide without\n    // teleporting the body or changing contact/recycler semantics. The wheel\n    // remains dynamic in longitudinal X, vertical Y and spin around axle Z.\n    wheelBodyDef.motionLocks.linearZ = true;\n    wheelBodyDef.motionLocks.angularX = true;\n    wheelBodyDef.motionLocks.angularY = true;\n    b3BodyId wheelBody = b3CreateBody( worldId, &wheelBodyDef );\n'''
+anchor = '''    wheelBodyDef.linearVelocity = e1Vec( speedMetersPerSecond, 0.0f, 0.0f );\n    wheelBodyDef.angularVelocity = e1Vec( 0.0f, 0.0f, initialOmegaZ );\n    wheelBodyDef.enableSleep = false;\n    wheelBodyDef.allowFastRotation = true;\n    b3BodyId wheelBody = b3CreateBody( worldId, &wheelBodyDef );\n'''
+replacement = '''    wheelBodyDef.linearVelocity = e1Vec( speedMetersPerSecond, 0.0f, 0.0f );\n    wheelBodyDef.angularVelocity = e1Vec( 0.0f, 0.0f, initialOmegaZ );\n    wheelBodyDef.enableSleep = false;\n    wheelBodyDef.allowFastRotation = true;\n    // RQ0 apparatus correction: emulate an ideal planar axle guide without\n    // teleporting the body or changing contact/recycler semantics. The wheel\n    // remains dynamic in longitudinal X, vertical Y and spin around axle Z.\n    wheelBodyDef.motionLocks.linearZ = true;\n    wheelBodyDef.motionLocks.angularX = true;\n    wheelBodyDef.motionLocks.angularY = true;\n    b3BodyId wheelBody = b3CreateBody( worldId, &wheelBodyDef );\n'''
 if text.count(anchor) != 1:
     raise SystemExit(f'RQ0 planar axle anchor drifted: expected 1, got {text.count(anchor)}')
 text = text.replace(anchor, replacement)
