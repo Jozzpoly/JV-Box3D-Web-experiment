@@ -17,11 +17,14 @@ if physics.count(global_anchor) != 1:
     raise SystemExit(f'E2a2aj expected one E2a2ah global anchor, found {physics.count(global_anchor)}')
 physics = physics.replace(global_anchor, global_patch, 1)
 
+# E2a2ah clears its point telemetry both in the public reset helper and before
+# recording a new recycled sample. Clear the decomposition alongside both sites.
 reset_anchor = '\t\tb3_e2a2ahShadowMatchedFreshSeparation[i] = 0.0f;\n'
 reset_patch = reset_anchor + '''\t\tb3_e2a2ajCenterDot[i] = 0.0f;\n\t\tb3_e2a2ajAnchorADot[i] = 0.0f;\n\t\tb3_e2a2ajAnchorBDot[i] = 0.0f;\n\t\tb3_e2a2ajRecomposedDot[i] = 0.0f;\n'''
-if physics.count(reset_anchor) != 1:
-    raise SystemExit(f'E2a2aj expected one reset anchor, found {physics.count(reset_anchor)}')
-physics = physics.replace(reset_anchor, reset_patch, 1)
+reset_count = physics.count(reset_anchor)
+if reset_count != 2:
+    raise SystemExit(f'E2a2aj expected two E2a2ah reset anchors, found {reset_count}')
+physics = physics.replace(reset_anchor, reset_patch)
 
 getter_anchor = 'float b3E2a2ah_GetShadowMatchedFreshSeparation( int index ) { return index >= 0 && index < 4 ? b3_e2a2ahShadowMatchedFreshSeparation[index] : 0.0f; }\n'
 getter_patch = getter_anchor + '''float b3E2a2aj_GetCenterDot( int index ) { return index >= 0 && index < 4 ? b3_e2a2ajCenterDot[index] : 0.0f; }\nfloat b3E2a2aj_GetAnchorADot( int index ) { return index >= 0 && index < 4 ? b3_e2a2ajAnchorADot[index] : 0.0f; }\nfloat b3E2a2aj_GetAnchorBDot( int index ) { return index >= 0 && index < 4 ? b3_e2a2ajAnchorBDot[index] : 0.0f; }\nfloat b3E2a2aj_GetRecomposedDot( int index ) { return index >= 0 && index < 4 ? b3_e2a2ajRecomposedDot[index] : 0.0f; }\n'''
