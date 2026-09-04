@@ -21,10 +21,16 @@ clone = runner.replace(sig, new_sig, 1)
 if clone == runner:
     raise SystemExit('E2a2ab function rename failed')
 
-world_anchor = '    b3WorldId worldId = b3CreateWorld( &worldDef );\n'
-world_replacement = world_anchor + '    b3World_EnableWarmStarting( worldId, warmStarting );\n'
+world_anchor = (
+    '    b3WorldId worldId = b3CreateWorld( &worldDef );\n'
+    '    b3World_EnableWarmStarting( worldId, true );\n'
+)
+world_replacement = (
+    '    b3WorldId worldId = b3CreateWorld( &worldDef );\n'
+    '    b3World_EnableWarmStarting( worldId, warmStarting );\n'
+)
 if clone.count(world_anchor) != 1:
-    raise SystemExit(f'E2a2ab expected one world creation anchor, found {clone.count(world_anchor)}')
+    raise SystemExit(f'E2a2ab expected one inherited warm-start world anchor, found {clone.count(world_anchor)}')
 clone = clone.replace(world_anchor, world_replacement, 1)
 
 result_anchor = '    result.set( "crossingAngularSpeed", crossingAngularSpeed );\n'
