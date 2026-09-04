@@ -1,152 +1,195 @@
 # JV-Web — current project state
 
-Updated: 2026-09-01
+Updated: 2026-09-04
 Owner: Jozz
 
 ## 1. Current routing
 
-JV-Web is in **bounded product iteration**, not strategic cold takeover.
+JV-Web remains a real browser product/R&D surface with **canonical product truth on `main`** and a separate active wheel-mode5 research lane.
 
-The read-only strategic takeover state documented on 2026-08-26 has been superseded by subsequent Owner decisions, live implementation and executed evidence. Do not restart that campaign automatically.
+Do not confuse those layers:
 
-JV-Web is treated as its own browser product/R&D surface. It is not NextGen JV Lite and is not required to converge architecturally with NextGen JV.
+- accepted product/source authority: `Jozzpoly/JV-Box3D-Web-experiment/main`;
+- active wheel-mode5 evidence branch: `work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03`;
+- research results are not product promotion.
 
-Default loop:
+The 2026-08-26 strategic cold-takeover campaign remains historical and closed. JV-Web is not NextGen JV Lite and is not required to converge architecturally with NextGen JV.
 
-`small need -> smallest sensible change -> risk-matched test -> faithful render/device evidence -> Owner judgement -> next iteration`
+Default working loop remains:
+
+`real need / uncertainty -> smallest informative research or change -> validation matched to causal blast radius -> faithful evidence -> Owner judgement when experiential -> next iteration`
 
 ## 2. Source and publication authority
 
-### Source authority
+### CURRENT ACCEPTED product source
 
-`Jozzpoly/JV-Box3D-Web-experiment/main`
+`main`
 
-An accepted slice should be consolidated to `main` only after current source, evidence and documentation agree.
+Verified during the 2026-09-04 roadmap refresh at:
+
+`5b28cc03d22264010680deb95a04abd04661bc22`
+
+That head still represents the accepted Steering I1 consolidation. No wheel-mode5 research change has been promoted to `main`.
 
 ### Owner Preview
 
-`preview/owner-control` is composition/publishing infrastructure. It points to an exact source commit and explicit static layers. It is not source authority.
+`preview/owner-control` remains composition/publishing infrastructure only. It points to exact source and pinned static layers; it is not source authority.
 
 ### Friends/public artifact authority
 
 `Jozzpoly/JV-Box3D-Web-Public/main`
 
-The accepted JSPREV2 static layer remains independently pinned during current source experiments.
+### Research branches
 
-Historical work/checkpoint/noop branches are non-authoritative evidence/history unless explicitly reactivated.
+An explicitly active research branch may own the latest executed evidence for its scoped question, but does not replace `main` as product authority.
 
-## 3. Current milestone — Steering I1
+Historical work/checkpoint/noop branches remain evidence/history unless explicitly reactivated.
 
-Detailed baseline:
+## 3. Accepted product baseline — Steering I1
+
+Detailed accepted baseline:
 
 `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`
 
-### FACT
+Accepted/scoped product truth still includes:
 
-- Direct Rotation and Relative-X remain explicit touch steering choices.
-- Pointer release defaults to semantic `RELEASE`; ordinary touch steering no longer commands automatic return to zero.
-- Hands-off graphical steering follows the live physical rack state.
-- New touch grabs re-anchor to the current physical rack position.
-- Configurable touch wheel ranges: 360/540/720/900/1080 degrees.
-- Default/current Owner-used range: 900 degrees total.
-- Wheel-range preference is session-scoped.
-- Artificial centering is not exposed as a product setting; any adapter-level artificial-centering support is retained only as a controlled test/reference path.
-- The steering slice did not change vehicle topology, wheel/contact backend, drivetrain, rig geometry, scan geometry or steering-return physics.
+- Direct Rotation and Relative-X as explicit touch steering choices;
+- semantic `RELEASE` on ordinary pointer release instead of hidden return-to-zero;
+- hands-off graphical steering following the live physical rack;
+- re-grab from the current physical rack position;
+- configurable 360/540/720/900/1080 degree wheel ranges;
+- 900 degrees as current default/current-best Owner-used range, not permanently frozen;
+- session-scoped wheel-range preference;
+- no Owner-facing artificial-centering dependency;
+- natural physical self-return/self-alignment still unresolved.
 
-### EXECUTED EVIDENCE
+The Steering I1 slice did not establish final wheel/contact physics, drivetrain, suspension, tire model, or future architecture.
 
-The exact steering candidate was validated through the canonical Owner Preview workflow:
+## 4. Active research milestone — wheel-mode5
 
-- exact source checkout;
-- canonical Node/npm;
-- dependency install;
-- typecheck;
-- portable build plus automated validation/tests;
-- build-identity verification;
-- composition with unchanged accepted JSPREV2;
-- executable-layer unchanged verification;
-- Pages deployment.
+Current research router:
 
-A post-feedback audit removed the unneeded Owner-facing artificial assist and restored two accidentally dropped explanatory F4 comment blocks; runtime behavior in those locations had not changed. The corrected source passed canonical source/build validation again before documentation consolidation.
+`docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`
 
-### OWNER-OBSERVED
+Current forensic closure boundary:
 
-On the current 900-degree preview:
+`docs/WHEEL_MODE5_E2A2AJ_REPROJECTION_COMPONENT_DECOMPOSITION_2026-09-04.md`
 
-- hands-off wheel/rack synchronization worked;
-- release -> physical steering movement -> re-grab no longer produced the previous steering UI/physics offset/jump;
-- driving feel was substantially better than before and better than expected;
-- Owner is currently learning 900-degree steering and is not comparing the other ranges yet;
-- artificial centering was not used and is not wanted as a dependency.
+Latest durable checkpoint at the roadmap refresh:
 
-### NOT VALIDATED / NOT FROZEN
+`673dd16410d1ca98c0e909bd7421e7ca409273ad`
 
-- 900 degrees is current-best/default, **not final forever**.
-- Other range presets have not received Owner feel comparison.
-- Changing range during an active gesture is not an accepted interaction contract.
-- Mobile session-persistence behavior was not separately Owner-checked in this checkpoint.
-- Owner could not perform a comprehensive whole-product regression pass during this checkpoint.
-- Natural physical steering self-return/self-alignment is still effectively absent under the tested conditions.
+### What is currently trusted in the bounded research apparatus
 
-## 4. Accepted product/reference capital
+The wheel-mode5 program has established that:
 
-Unless contradicted by newer scoped evidence, useful current product/reference capital includes:
+- the recovered native annular wheel representation can be exercised in the pinned Box3D.js research composition;
+- a difficult flat-support transition anomaly was progressively localized rather than treated as generic wheel failure;
+- crossing-rate alone, global warm start and carried normal impulse do not explain the main amplification;
+- actual recycled-manifold shortcut execution is required for the measured amplification in the studied apparatus;
+- recycled separation reprojection is a necessary amplifier in both transformed-ground and true fixed-road causal tests;
+- trusted shadow diagnostics show roughly `0.118 mm` recycled-vs-fresh separation discrepancy around the validated fixed-road `2 -> 1` transition;
+- the discrepancy is overwhelmingly associated with reprojection/reference transformation rather than stale `baseSeparation` in representative matched samples;
+- long-lived cache age is not required;
+- E2a2aj showed that the reprojection residual is produced by cancellation of much larger frame/anchor terms, so absolute subterm magnitude is not a valid causal attribution method.
 
-- working browser driving on desktop and phone;
-- Plac E2R, Offroad and accepted JSPREV2 surfaces;
-- current vehicle/rig presentation;
-- Camera Manual Rig V1 and fullscreen behavior;
-- analog absolute-position pedals, D/R lifecycle and independent multitouch ownership;
-- Direct Rotation + Relative-X steering foundations;
-- fail-closed input/lifecycle behavior;
-- accepted mobile composition and desktop capability/HUD work;
-- A53/Chrome render-1x scan boundary and exact-source Preview/static-layer provenance discipline.
+This is strong **bounded engine/wheel research evidence**, not evidence that current product wheel behavior changed and not a global indictment of Box3D contact recycling.
 
-These are product/reference capital, not a claim that every underlying implementation is final architecture.
+## 5. Research boundary after E2a2
 
-Pedal Contact + Mechanical Feedback V1/V1.1 remains rejected/deferred historical evidence and must not be resurrected as current-best without new evidence.
+The E2a2 forensic descent is closed by default.
 
-## 5. Product identity and cross-project routing
+Do **not** open another recycler micro-stage merely because the remaining reference-frame attribution is interesting.
 
-JV-Web asks roughly:
+The current decision problem has moved upward:
 
-> How good, accessible and useful can a real Jozz Vehicle browser experience be on desktop and phone?
+> Does the discovered recycler/reprojection discrepancy materially affect representative annular-wheel rolling/contact behavior?
 
-NextGen JV asks deeper construction/platform questions. JURE/JV_CORE/JES and other projects may provide research or donor ideas.
+That external-relevance question now has higher project value than another microscopic seam diagnostic.
 
-Cross-project knowledge may change hypotheses. It does not prove current JV-Web state and does not mandate architecture transfer.
+## 6. Next planned research stage
 
-## 6. Current open pressures
+### RQ0 — representative steady rolling baseline
 
-### Steering mechanics
+Status: **NEXT / PLANNED, NOT EXECUTED**.
 
-There is no useful natural physical steering-wheel self-return today. A future bounded R2 may investigate the causal mechanism: geometry, contact, constraints, damping/friction, load transfer and other physically relevant contributors.
+The first representative qualification should remain deliberately simple:
 
-That research must begin by identifying what the current physical system actually does. It must not hide the problem with an automatic center command or fake spring simply because that improves UI feel.
+- truly fixed road;
+- intended annular wheel geometry as primary contact shape;
+- dynamic wheel under controlled normal load;
+- nonzero friction;
+- bounded steady rolling/spin;
+- no deliberately forced topology seam in the first baseline;
+- recycler/contact telemetry observational only where proven non-perturbing.
 
-### Steering tuning
+Primary outcomes are material wheel behavior:
 
-900 degrees is currently good enough to learn and substantially improved the feel, but final range/sensitivity remains open to later Owner comparison.
+- energy/velocity drift;
+- jitter;
+- contact persistence/topology stability;
+- normal/tangential impulse plausibility;
+- grip discontinuity.
 
-### Broader product work
+The first representative rig should not simultaneously add camber sweep, irregular road, suspension, drivetrain and chassis coupling. Increase realism one causal layer at a time.
 
-Camera, UI, controls, world/scan experience, performance and other product surfaces remain legitimate future slices. There is no fixed roadmap requirement that steering R2 must happen next.
+### RQ1 — controlled topology challenge
 
-## 7. What not to do next by default
+Only after RQ0 is trustworthy, introduce one controlled topology-changing challenge and ask whether the known recycler discrepancy produces a material disturbance.
 
-- Do not restart the 2026-08-26 strategic takeover.
-- Do not launch a broad Native/JV_CORE archaeology campaign.
+If representative behavior remains good, stop recycler forensics and continue wheel qualification without speculative engine changes.
+
+If a material disturbance is demonstrated and causally linked to recycling/reprojection, reopen a narrowly scoped mitigation lane with representative regression requirements.
+
+## 7. Still NOT VALIDATED
+
+Important open areas include:
+
+- representative annular frictional rolling;
+- drive/brake traction;
+- free camber/steer and load transfer;
+- suspension/chassis coupling;
+- irregular-road topology;
+- side/inner/bore contact behavior;
+- fixed-road `1 -> 2` external validity;
+- material product relevance of the measured ~`0.12 mm` recycler/fresh discrepancy;
+- any production recycler mitigation;
+- wheel-mode5 product integration and Owner acceptance.
+
+## 8. Broader product pressures remain open
+
+Wheel-mode5 is an active research priority, not a declaration that every other JV-Web surface is frozen.
+
+Steering tuning, natural self-return, camera, controls, UI, world/scan experience and performance remain legitimate future product slices. However, do not opportunistically mix them into the wheel-mode5 research apparatus.
+
+## 9. What not to do next by default
+
+- Do not restart the old strategic cold takeover.
 - Do not turn JV-Web into NextGen JV Lite.
-- Do not rewrite vehicle physics merely because an input/presentation problem exists.
-- Do not promote artificial steering centering into product truth.
-- Do not delete historical branches as a cleanup ritual.
-- Do not treat 900 degrees as permanently frozen without comparative Owner evidence.
-- Do not claim broad device/product acceptance from this scoped steering checkpoint.
+- Do not promote this research branch to `main` because laboratory tests passed.
+- Do not patch Box3D recycler semantics before representative material relevance is demonstrated.
+- Do not open E2a2ak by default.
+- Do not force a symmetric `1 -> 2` laboratory matrix merely for completeness.
+- Do not bundle annular geometry, friction, camber, suspension, irregular road and drivetrain into the first representative test.
+- Do not mistake failed tooling/apparatus for physics evidence.
+- Do not ask the Owner to judge laboratory metrics with no demonstrated experiential consequence.
 
-## 8. Milestone boundary
+## 10. Fresh continuation
 
-**Steering I1 consolidation is complete.**
+For normal product work:
 
-The corrected exact source passed canonical validation, documentation was aligned with live source and scoped Owner evidence, ancestry was re-verified, and the validated candidate was promoted to `main` by non-force fast-forward.
+1. verify live `main`;
+2. read `AGENTS.md`;
+3. read this file;
+4. inspect only the relevant current product source/tests.
 
-No next implementation is selected by this closure. Stop at this milestone boundary and re-ground current product priorities before choosing the next product/research slice.
+For active wheel-mode5 research:
+
+1. verify live `main` and live research branch head separately;
+2. read `AGENTS.md` and this file for authority boundaries;
+3. read `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`;
+4. read the E2a2aj closure checkpoint;
+5. read older E2a2 evidence only when a specific claim or apparatus dependency requires it;
+6. plan RQ0 from live source rather than mechanically extending the seam-forensics sequence.
+
+Current milestone boundary: **E2a2 forensics closed; representative qualification is the next research frontier; no product promotion authorized.**
