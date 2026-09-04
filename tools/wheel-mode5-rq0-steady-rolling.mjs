@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { writeFile } from 'node:fs/promises';
 import Box3D from '../box3djs/dist/box3d.inline.mjs';
 import { loadOwnerM6TireGeometryR3 } from './owner-vehicle/owner-m6-tire-geometry-r3.mjs';
 
@@ -25,9 +26,6 @@ for (const [name, run] of [['matched', primary], ['zero-spin-control', positiveC
   assert.ok(Math.abs(run.finalX) < 9.5, `${name}: wheel left bounded road apparatus`);
 }
 
-// Apparatus-validity requirement: the frictional zero-spin arm must visibly
-// couple translation into wheel rotation. This is not a product acceptance gate;
-// it only demonstrates that RQ0 is exercising tangential contact dynamics.
 assert.ok(Math.abs(positiveControl.finalOmegaZ) > 0.25,
   `zero-spin control did not spin up under friction: ${positiveControl.finalOmegaZ}`);
 
@@ -79,5 +77,6 @@ const result = {
   provenance: tire.provenance,
 };
 
+await writeFile('rq0-steady-rolling-result.json', JSON.stringify(result, null, 2) + '\n');
 console.log('WHEEL_MODE5_RQ0_STEADY_ROLLING_RESULT', JSON.stringify(result));
 console.log('WHEEL_MODE5_RQ0_STEADY_ROLLING_EXECUTED');
