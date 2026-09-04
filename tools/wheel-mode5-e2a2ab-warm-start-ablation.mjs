@@ -35,7 +35,8 @@ for (const c of cases) {
     assert.equal(raw.valid, true, `${c.label}/${d.label}: invalid run`);
     assert.equal(raw.groundBodyStatic, true, `${c.label}/${d.label}: ground not static`);
     assert.equal(raw.groundMotionMode, 'SET_TRANSFORM_BEFORE_STEP', `${c.label}/${d.label}: motion mode drift`);
-    assert.equal(raw.warmStarting, c.warmStarting, `${c.label}/${d.label}: warm-start flag drift`);
+    assert.equal(raw.warmStarting, c.warmStarting, `${c.label}/${d.label}: requested warm-start flag drift`);
+    assert.equal(raw.warmStartingEnabled, c.warmStarting, `${c.label}/${d.label}: applied world warm-start state drift`);
     approxEqual(raw.requestedRecycleDistance, c.recycleDistance, 1e-7, `${c.label}/${d.label}: recycle-distance drift`);
     approxEqual(raw.crossingAngularSpeed, crossingAngularSpeed, 1e-10, `${c.label}/${d.label}: crossing-rate drift`);
     assert.equal(raw.contactDropoutsMotion, 0, `${c.label}/${d.label}: contact dropout`);
@@ -48,6 +49,7 @@ for (const c of cases) {
       direction: d.label,
       recycleDistance: c.recycleDistance,
       warmStarting: c.warmStarting,
+      warmStartingEnabled: raw.warmStartingEnabled,
       recycledStepsMotion: raw.recycledStepsMotion,
       motionSteps: raw.motionSteps,
       transitionStep: raw.transitionStep,
