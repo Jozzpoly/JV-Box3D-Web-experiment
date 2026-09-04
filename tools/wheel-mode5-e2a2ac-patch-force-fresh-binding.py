@@ -41,13 +41,16 @@ if clone.count(result_anchor) != 1:
     raise SystemExit(f'E2a2ac expected one result anchor, found {clone.count(result_anchor)}')
 clone = clone.replace(result_anchor, result_replacement, 1)
 
+# The inherited runner contains several nested helper returns. The function's
+# own return is the last `return result;` in the cloned slice.
 return_anchor = '    return result;\n'
-if clone.count(return_anchor) != 1:
-    raise SystemExit(f'E2a2ac expected one return anchor, found {clone.count(return_anchor)}')
-clone = clone.replace(
-    return_anchor,
-    '    b3E2a2ac_SetForceFreshOnRecycleEligible( false );\n' + return_anchor,
-    1,
+return_pos = clone.rfind(return_anchor)
+if return_pos < 0:
+    raise SystemExit('E2a2ac could not locate final function return')
+clone = (
+    clone[:return_pos]
+    + '    b3E2a2ac_SetForceFreshOnRecycleEligible( false );\n'
+    + clone[return_pos:]
 )
 
 text = text[:namespace_end] + '\n' + clone + text[namespace_end:]
