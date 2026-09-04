@@ -1,90 +1,127 @@
 # AI Project Memory — JV Web
 
-Updated: 2026-09-01
+Updated: 2026-09-04
 Owner: Jozz
 
 ## CURRENT MODE
 
-**ACTIVE BOUNDED JV-WEB PRODUCT ITERATION**
+JV-Web has two separate current layers:
 
-The 2026-08-26 strategic cold-takeover/read-only campaign is historical and closed. Do not restart it automatically.
+- **accepted product/source authority:** `Jozzpoly/JV-Box3D-Web-experiment/main`;
+- **active wheel-mode5 research evidence:** `work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03`.
 
-JV-Web is a standalone browser Jozz Vehicle product/R&D surface, not NextGen JV Lite. NextGen JV is a separate deeper construction/platform direction. Transfer discoveries deliberately; do not synchronize architectures by default.
+Do not merge these concepts. The research branch is not accepted product truth.
+
+The 2026-08-26 strategic cold-takeover campaign is historical and closed. JV-Web remains a standalone browser Jozz Vehicle product/R&D surface, not NextGen JV Lite.
 
 ## AUTHORITY
 
 `live Git/current files -> executed evidence -> direct scoped Owner/device evidence -> current docs -> history/cross-project memory`
 
-After milestone consolidation, `Jozzpoly/JV-Box3D-Web-experiment/main` is current source/product authority.
+At the 2026-09-04 roadmap refresh, accepted `main` remained:
+
+`5b28cc03d22264010680deb95a04abd04661bc22`
 
 `preview/owner-control` is exact-source Owner Preview infrastructure, not source authority.
 
 `Jozzpoly/JV-Box3D-Web-Public/main` owns Friends/public artifacts, not current private source truth.
 
-Historical work/checkpoint/noop branches are not authority and are not an automatic cleanup task.
+## ACCEPTED PRODUCT BASELINE
 
-## CURRENT-BEST STEERING — 2026-09-01
+Steering I1 remains current accepted product/reference capital. See:
 
-See `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`.
+`docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`
 
-Current product truth:
+Key truth:
 
-- Direct Rotation + Relative-X remain available;
-- pointer release defaults to semantic `RELEASE`, not hidden center command;
-- hands-off graphical steering follows the live physical rack;
-- a new grab re-anchors to the live rack, preventing steering UI/physics offset;
-- 900 degrees total wheel range is the default and current Owner-used tuning;
-- 360/540/720/1080 are configurable candidates, not final Owner-approved ratios;
-- range is stored in session storage;
-- artificial centering is not an Owner-facing product option; retained adapter support is control/test evidence only;
+- semantic `RELEASE` rather than hidden return-to-zero;
+- hands-off graphical wheel follows physical rack;
+- re-grab starts from live rack state;
+- 900 degrees is current default/current-best, not permanently frozen;
+- artificial centering is not an Owner-facing dependency;
 - natural physical self-return remains unresolved.
 
-## OWNER EVIDENCE FROM THE CURRENT STEERING SLICE
+No wheel-mode5 research change is accepted product truth yet.
 
-Scoped Owner observation on the 900-degree Owner Preview:
+## ACTIVE WHEEL-MODE5 ROUTER
 
-- hands-off wheel/rack sync: good;
-- physics movement followed by re-grab: no prior offset/jump;
-- feel: substantially better than before and better than expected;
-- Owner is currently learning/adapting to 900 degrees rather than comparing ranges;
-- artificial assist was not used and is not desired as a dependency.
+Read first:
 
-Do not generalize this into a claim that every steering range, every device or the entire product received a deep regression pass.
+`docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`
+
+Forensic closure:
+
+`docs/WHEEL_MODE5_E2A2AJ_REPROJECTION_COMPONENT_DECOMPOSITION_2026-09-04.md`
+
+E2a2 recycler forensics is **closed by default**.
+
+Current bounded evidence supports that actual recycled-manifold execution and especially separation reprojection amplify the studied flat-support/fixed-road transition anomaly. Trusted shadow diagnostics measured roughly `0.118 mm` recycled-vs-fresh separation discrepancy near the validated fixed-road `2 -> 1` transition. E2a2aj showed that the final reprojection residual is a cancellation of much larger frame/anchor terms, so absolute subterm magnitude is not a valid causal attribution strategy.
+
+Do not generalize this into a global Box3D recycler bug or a product failure.
+
+## NEXT FRONTIER
+
+**RQ0 — representative steady rolling baseline** is next/planned, not yet executed.
+
+RQ0 should increase realism by one causal layer:
+
+- true fixed road;
+- intended annular wheel geometry;
+- controlled normal load;
+- nonzero friction;
+- bounded steady rolling/spin;
+- no deliberately forced topology challenge yet;
+- non-perturbing observational diagnostics only.
+
+Primary question:
+
+> Is representative annular rolling materially well-behaved before we deliberately challenge contact topology?
+
+Primary outcomes: drift/energy injection, jitter, contact stability, impulse plausibility and grip discontinuity.
+
+If RQ0 is trustworthy, RQ1 introduces one controlled topology challenge and asks whether the known recycler discrepancy creates a material disturbance.
+
+## DECISION GATE
+
+After representative topology challenge:
+
+- no material recycler-linked problem -> stop recycler forensics and continue wheel qualification;
+- material recycler-linked problem -> reopen narrowly scoped mechanism/mitigation work with representative regression requirements;
+- ambiguous rig -> repair/simplify apparatus, do not infer engine truth.
 
 ## NOT VALIDATED / OPEN
 
-- final steering ratio/range;
-- Owner feel for 360/540/720/1080;
-- changing range during an already-active steering gesture;
-- dedicated mobile persistence check for the range setting;
-- complete whole-product regression during the 2026-08-31 checkpoint;
-- physically useful self-return/self-alignment.
+- representative frictional annular rolling;
+- drive/brake traction;
+- free camber/steer/load transfer;
+- suspension/chassis coupling;
+- irregular road;
+- side/inner/bore contacts;
+- material product significance of the ~`0.12 mm` discrepancy;
+- production recycler mitigation;
+- wheel-mode5 product/Owner Preview integration.
 
-A future steering-mechanics R2 may investigate natural self-return. It is not automatically the next task and it must not solve missing physics with fake automatic centering.
+## DO NOT BY DEFAULT
+
+- open E2a2ak;
+- patch recycler semantics;
+- complete `1 -> 2` merely for matrix symmetry;
+- combine annular geometry + friction + camber + irregular road + suspension + drivetrain in the first representative rig;
+- promote research branch to `main`;
+- ask Owner to judge laboratory metrics without demonstrated experiential consequence.
 
 ## DEFAULT WORKFLOW
 
-For a small product need:
-
-`small need -> smallest sensible change -> risk-matched test -> faithful render/device evidence -> Owner judgement -> next iteration`
-
-Use full canonical build/check/documentation when closing a meaningful accepted stage or touching foundations, not as automatic ceremony after every polish change.
-
-Before writes verify repo/ref/current source. Protect the accepted baseline. Do not broaden UI/input work into physics, drivetrain, rig or world changes without a causal reason.
-
-## RESPONSIBILITY
-
-Agent owns repo/code/technical diagnosis/tests/builds/documentation available to the environment.
-
-Owner primarily supplies product priority, look/feel judgement and real-device evidence that cannot be reproduced by the agent.
+`uncertainty / product need -> smallest informative experiment or change -> causal validation -> faithful evidence -> Owner judgement when experiential -> next iteration`
 
 ## FRESH CONTINUATION
 
-Read:
+For wheel-mode5:
 
-1. `AGENTS.md`;
-2. `docs/PROJECT_STATE.md`;
-3. live `main` source relevant to the requested slice;
-4. the steering baseline when steering is relevant.
-
-Read `docs/HANDOFF.md` for an actual handoff, not as a reason to restart a takeover campaign.
+1. verify live `main` and research branch head separately;
+2. read `AGENTS.md`;
+3. read `docs/PROJECT_STATE.md`;
+4. read `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`;
+5. read E2a2aj forensic closure;
+6. older E2a2 evidence only as specifically needed;
+7. plan RQ0 from live source, not by extending the alphabetic forensic sequence.
