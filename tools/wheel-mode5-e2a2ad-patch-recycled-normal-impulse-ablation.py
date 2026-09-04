@@ -42,15 +42,15 @@ physics = physics.replace(global_anchor, global_patch, 1)
 # and marked the existing manifold point persisted. With friction=0 in this
 # apparatus, normalImpulse is the solver-carried warm-start state under test.
 point_anchor = (
-    '\t\t\t\t\t\tmp->separation = mp->baseSeparation + b3Dot( dp, normal );\n'
-    '\t\t\t\t\t\tmp->persisted = true;\n'
+    '\t\t\t\t\t\t\tmp->separation = mp->baseSeparation + b3Dot( dp, normal );\n'
+    '\t\t\t\t\t\t\tmp->persisted = true;\n'
 )
 point_replacement = point_anchor + (
-    '\t\t\t\t\t\tif ( b3_e2a2adZeroRecycledNormalImpulse )\n'
-    '\t\t\t\t\t\t{\n'
-    '\t\t\t\t\t\t\tmp->normalImpulse = 0.0f;\n'
-    '\t\t\t\t\t\t\tb3_e2a2adZeroedPointCount += 1;\n'
-    '\t\t\t\t\t\t}\n'
+    '\t\t\t\t\t\t\tif ( b3_e2a2adZeroRecycledNormalImpulse )\n'
+    '\t\t\t\t\t\t\t{\n'
+    '\t\t\t\t\t\t\t\tmp->normalImpulse = 0.0f;\n'
+    '\t\t\t\t\t\t\t\tb3_e2a2adZeroedPointCount += 1;\n'
+    '\t\t\t\t\t\t\t}\n'
 )
 if physics.count(point_anchor) != 1:
     raise SystemExit(f'E2a2ad expected one recycled-point update anchor, found {physics.count(point_anchor)}')
