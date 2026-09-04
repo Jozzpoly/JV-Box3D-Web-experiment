@@ -1,4 +1,4 @@
-name: Wheel mode5 E2a2ah-r2 fixed-ground shadow-fresh diagnostic
+name: Wheel mode5 E2a2ah-r3 fixed-ground shadow-fresh diagnostic
 
 on:
   push:
@@ -6,13 +6,14 @@ on:
       - work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03
     paths:
       - tools/wheel-mode5-e2a2ah-r2-fix-feature-id.py
+      - tools/wheel-mode5-e2a2ah-patch-fixed-ground-shadow-fresh-binding.py
       - .github/workflows/wheel-mode5-e2a2ah-r2-fixed-ground-shadow-fresh-diagnostic.yml
 
 permissions:
   contents: read
 
 jobs:
-  fixed-ground-shadow-fresh-diagnostic-r2:
+  fixed-ground-shadow-fresh-diagnostic-r3:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
