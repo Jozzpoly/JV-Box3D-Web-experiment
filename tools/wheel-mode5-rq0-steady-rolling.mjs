@@ -24,6 +24,7 @@ for (const [name, run] of [['matched', primary], ['zero-spin-control', positiveC
   assert.ok(run.settledSamples > 600, `${name}: insufficient steady observation window`);
   assert.ok(Number.isFinite(run.finalVx) && Number.isFinite(run.finalOmegaZ), `${name}: non-finite final motion`);
   assert.ok(Math.abs(run.finalX) < 9.5, `${name}: wheel left bounded road apparatus`);
+  assert.ok(run.settledMaxAbsVz < 1e-8, `${name}: planar axle lock failed, max |Vz|=${run.settledMaxAbsVz}`);
 }
 
 assert.ok(Math.abs(positiveControl.finalOmegaZ) > 0.25,
