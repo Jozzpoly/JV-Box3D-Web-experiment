@@ -86,3 +86,11 @@ jobs:
 
       - name: Execute RQ0 steady rolling qualification
         run: node tools/wheel-mode5-rq0-steady-rolling.mjs
+
+      - name: Preserve RQ0 metrics
+        uses: actions/upload-artifact@v6
+        with:
+          name: wheel-mode5-rq0-steady-rolling-result
+          path: rq0-steady-rolling-result.json
+          if-no-files-found: error
+          retention-days: 30
