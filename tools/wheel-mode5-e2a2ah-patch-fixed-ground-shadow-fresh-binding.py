@@ -37,7 +37,11 @@ step_anchor = '        b3World_Step( worldId, dt, subStepCount );\n'
 sample_block = r'''        b3World_Step( worldId, dt, subStepCount );
 
         int shadowSequence = b3E2a2ah_GetShadowSequence();
-        if ( shadowSequence != lastShadowSequence && step >= settleSteps && step < settleSteps + motionSteps )
+        // The validated fixed-road 2->1 transition can occur in the post-motion
+        // settling tail (around step 430, while the command window ends at 420).
+        // Capture every changed shadow sample from the start of motion onward so
+        // the diagnostic spans the actual transition without changing simulation.
+        if ( shadowSequence != lastShadowSequence && step >= settleSteps )
         {
             val sample = val::object();
             sample.set( "step", step );
