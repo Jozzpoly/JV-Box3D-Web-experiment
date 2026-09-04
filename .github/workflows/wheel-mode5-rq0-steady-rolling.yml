@@ -6,6 +6,7 @@ on:
       - work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03
     paths:
       - tools/wheel-mode5-rq0-patch-bindings.py
+      - tools/wheel-mode5-rq0-planar-axle-patch.py
       - tools/wheel-mode5-rq0-steady-rolling.mjs
       - .github/workflows/wheel-mode5-rq0-steady-rolling.yml
 
@@ -65,12 +66,14 @@ jobs:
         run: |
           set -euxo pipefail
           node --check tools/wheel-mode5-rq0-steady-rolling.mjs
-          python3 -m py_compile tools/wheel-mode5-e1-patch-bindings.py tools/wheel-mode5-e2a-patch-bindings.py tools/wheel-mode5-rq0-patch-bindings.py
+          python3 -m py_compile tools/wheel-mode5-e1-patch-bindings.py tools/wheel-mode5-e2a-patch-bindings.py tools/wheel-mode5-rq0-patch-bindings.py tools/wheel-mode5-rq0-planar-axle-patch.py
           JV_E1_ANNULAR_SEGMENTS=128 node tools/wheel-mode5-e1-write-annular-native-header.mjs box3djs/src/e1_annular_profile.h
           python3 tools/wheel-mode5-e1-patch-bindings.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-e2a-patch-bindings.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5-rq0-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-rq0-planar-axle-patch.py box3djs/src/bindings.cpp
           grep -n "rq0RunOuterP75SteadyRolling" box3djs/src/bindings.cpp
+          grep -n "motionLocks.linearZ" box3djs/src/bindings.cpp
           git -C box3djs diff --check
 
       - name: Install Box3D.js workspace
