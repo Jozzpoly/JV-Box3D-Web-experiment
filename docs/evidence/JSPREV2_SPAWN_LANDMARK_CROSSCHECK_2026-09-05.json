@@ -1,0 +1,348 @@
+{
+  "schema": "JV_WEB_JSPREV2_SPAWN_LANDMARK_CROSSCHECK_V1",
+  "generatedAt": "2026-09-05T16:50:37.145Z",
+  "source": {
+    "primaryEvidence": "docs/evidence/JSPREV2_SPAWN_LANDMARK_ANALYSIS_2026-09-05.json",
+    "repository": "Jozzpoly/JV-Box3D-Web-Public",
+    "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f"
+  },
+  "method": {
+    "independentSignal": "encoded vertex normals + candidate-local occupancy; no primary global raster phase",
+    "checkRadiusM": 9,
+    "binSizeM": 1,
+    "maxVertexSlopeDegrees": 12,
+    "maxVertexHeightOffsetM": 0.75,
+    "minOccupancyFraction": 0.65,
+    "maxOccupiedHeightRangeM": 1,
+    "topCandidatesChecked": 20,
+    "limitations": [
+      "This validates geometric extent/stability only, not road semantics.",
+      "Encoded vertex normals are a different signal from primary triangle-normal rasterization but still derive from the same accepted scan geometry.",
+      "A robust flat region may still be a roof, courtyard, parking area or other non-road surface."
+    ]
+  },
+  "integrity": {
+    "verifiedTiles": 7,
+    "parsedVertices": 1409687,
+    "parsedIndices": 5327325
+  },
+  "classification": "GEOMETRIC_CANDIDATE_REGIONS_CROSSCHECK_STABLE_NOT_SEMANTIC",
+  "passedRanks": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12,
+    14,
+    15,
+    19
+  ],
+  "results": [
+    {
+      "rank": 1,
+      "local": {
+        "x": 119.25,
+        "y": 277.4201287372546,
+        "z": -9.75
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 736,
+      "expectedBins": 293,
+      "occupiedBins": 268,
+      "occupancyFraction": 0.9146757679180887,
+      "occupiedHeightRangeM": 1.03192138671875,
+      "pass": false
+    },
+    {
+      "rank": 2,
+      "local": {
+        "x": 71.25,
+        "y": 275.53537888157774,
+        "z": -60.75
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 773,
+      "expectedBins": 293,
+      "occupiedBins": 258,
+      "occupancyFraction": 0.8805460750853242,
+      "occupiedHeightRangeM": 0.630126953125,
+      "pass": true
+    },
+    {
+      "rank": 3,
+      "local": {
+        "x": 54.75,
+        "y": 275.9354071192683,
+        "z": -36.75
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 1380,
+      "expectedBins": 293,
+      "occupiedBins": 291,
+      "occupancyFraction": 0.9931740614334471,
+      "occupiedHeightRangeM": 0.781494140625,
+      "pass": true
+    },
+    {
+      "rank": 4,
+      "local": {
+        "x": 110.25,
+        "y": 277.3393551686201,
+        "z": -11.25
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 954,
+      "expectedBins": 293,
+      "occupiedBins": 283,
+      "occupancyFraction": 0.9658703071672355,
+      "occupiedHeightRangeM": 0.674713134765625,
+      "pass": true
+    },
+    {
+      "rank": 5,
+      "local": {
+        "x": 65.25,
+        "y": 275.38222959166313,
+        "z": -68.25
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 926,
+      "expectedBins": 293,
+      "occupiedBins": 272,
+      "occupancyFraction": 0.9283276450511946,
+      "occupiedHeightRangeM": 0.666595458984375,
+      "pass": true
+    },
+    {
+      "rank": 6,
+      "local": {
+        "x": 35.25,
+        "y": 275.81491144452286,
+        "z": -59.25
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 700,
+      "expectedBins": 293,
+      "occupiedBins": 265,
+      "occupancyFraction": 0.9044368600682594,
+      "occupiedHeightRangeM": 0.989959716796875,
+      "pass": true
+    },
+    {
+      "rank": 7,
+      "local": {
+        "x": 66.75,
+        "y": 276.3306896364407,
+        "z": -27.75
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 1879,
+      "expectedBins": 293,
+      "occupiedBins": 288,
+      "occupancyFraction": 0.9829351535836177,
+      "occupiedHeightRangeM": 1.178741455078125,
+      "pass": false
+    },
+    {
+      "rank": 8,
+      "local": {
+        "x": 126.75,
+        "y": 276.961604923832,
+        "z": -38.25
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 438,
+      "expectedBins": 293,
+      "occupiedBins": 224,
+      "occupancyFraction": 0.764505119453925,
+      "occupiedHeightRangeM": 0.583282470703125,
+      "pass": true
+    },
+    {
+      "rank": 9,
+      "local": {
+        "x": 90.75,
+        "y": 276.31369201797685,
+        "z": -57.75
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 854,
+      "expectedBins": 293,
+      "occupiedBins": 263,
+      "occupancyFraction": 0.8976109215017065,
+      "occupiedHeightRangeM": 0.717132568359375,
+      "pass": true
+    },
+    {
+      "rank": 10,
+      "local": {
+        "x": 87.75,
+        "y": 276.2955440702899,
+        "z": -47.25
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 742,
+      "expectedBins": 293,
+      "occupiedBins": 270,
+      "occupancyFraction": 0.9215017064846417,
+      "occupiedHeightRangeM": 0.90203857421875,
+      "pass": true
+    },
+    {
+      "rank": 11,
+      "local": {
+        "x": 68.25,
+        "y": 275.6329476098234,
+        "z": -53.25
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 684,
+      "expectedBins": 293,
+      "occupiedBins": 242,
+      "occupancyFraction": 0.825938566552901,
+      "occupiedHeightRangeM": 0.943206787109375,
+      "pass": true
+    },
+    {
+      "rank": 12,
+      "local": {
+        "x": 48.75,
+        "y": 275.9388879382293,
+        "z": -42.75
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 1276,
+      "expectedBins": 293,
+      "occupiedBins": 283,
+      "occupancyFraction": 0.9658703071672355,
+      "occupiedHeightRangeM": 0.9281005859375,
+      "pass": true
+    },
+    {
+      "rank": 13,
+      "local": {
+        "x": 78.75,
+        "y": 276.1263066103988,
+        "z": -33.75
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 1053,
+      "expectedBins": 293,
+      "occupiedBins": 278,
+      "occupancyFraction": 0.9488054607508533,
+      "occupiedHeightRangeM": 1.157073974609375,
+      "pass": false
+    },
+    {
+      "rank": 14,
+      "local": {
+        "x": 62.25,
+        "y": 275.46346342312324,
+        "z": -60.75
+      },
+      "primaryClearRadiusM": 9,
+      "acceptedVertices": 884,
+      "expectedBins": 293,
+      "occupiedBins": 257,
+      "occupancyFraction": 0.8771331058020477,
+      "occupiedHeightRangeM": 0.95611572265625,
+      "pass": true
+    },
+    {
+      "rank": 15,
+      "local": {
+        "x": 138.75,
+        "y": 277.2220274615112,
+        "z": -30.75
+      },
+      "primaryClearRadiusM": 7.5,
+      "acceptedVertices": 346,
+      "expectedBins": 293,
+      "occupiedBins": 208,
+      "occupancyFraction": 0.7098976109215017,
+      "occupiedHeightRangeM": 0.96099853515625,
+      "pass": true
+    },
+    {
+      "rank": 16,
+      "local": {
+        "x": 95.25,
+        "y": 276.23634798717035,
+        "z": -65.25
+      },
+      "primaryClearRadiusM": 7.5,
+      "acceptedVertices": 903,
+      "expectedBins": 293,
+      "occupiedBins": 265,
+      "occupancyFraction": 0.9044368600682594,
+      "occupiedHeightRangeM": 1.0247802734375,
+      "pass": false
+    },
+    {
+      "rank": 17,
+      "local": {
+        "x": 84.75,
+        "y": 276.3051208657396,
+        "z": -39.75
+      },
+      "primaryClearRadiusM": 7.5,
+      "acceptedVertices": 857,
+      "expectedBins": 293,
+      "occupiedBins": 273,
+      "occupancyFraction": 0.931740614334471,
+      "occupiedHeightRangeM": 1.155792236328125,
+      "pass": false
+    },
+    {
+      "rank": 18,
+      "local": {
+        "x": 123.75,
+        "y": 277.62695150760493,
+        "z": -18.75
+      },
+      "primaryClearRadiusM": 7.5,
+      "acceptedVertices": 817,
+      "expectedBins": 293,
+      "occupiedBins": 269,
+      "occupancyFraction": 0.9180887372013652,
+      "occupiedHeightRangeM": 1.073699951171875,
+      "pass": false
+    },
+    {
+      "rank": 19,
+      "local": {
+        "x": 116.25,
+        "y": 277.5289060200433,
+        "z": -2.25
+      },
+      "primaryClearRadiusM": 7.5,
+      "acceptedVertices": 788,
+      "expectedBins": 293,
+      "occupiedBins": 275,
+      "occupancyFraction": 0.9385665529010239,
+      "occupiedHeightRangeM": 0.89971923828125,
+      "pass": true
+    },
+    {
+      "rank": 20,
+      "local": {
+        "x": 104.25,
+        "y": 277.4287533321838,
+        "z": -20.25
+      },
+      "primaryClearRadiusM": 7.5,
+      "acceptedVertices": 1424,
+      "expectedBins": 293,
+      "occupiedBins": 287,
+      "occupancyFraction": 0.9795221843003413,
+      "occupiedHeightRangeM": 1.205047607421875,
+      "pass": false
+    }
+  ],
+  "decisionRule": "Retain only crosscheck-passing regions as preview candidates; do not call them roads or promote them without exact-preview visual/physical validation."
+}
