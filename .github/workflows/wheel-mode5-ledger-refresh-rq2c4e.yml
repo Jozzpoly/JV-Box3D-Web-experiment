@@ -1,0 +1,40 @@
+name: Wheel mode5 canonical ledger refresh through RQ2C4E
+
+on:
+  push:
+    branches:
+      - research/wheel-mode5-rq2c-orientation-2026-09-05
+    paths:
+      - tools/wheel-mode5/ledger/refresh-canonical-ledger-through-rq2c4e.mjs
+      - .github/workflows/wheel-mode5-ledger-refresh-rq2c4e.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-ledger:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+      - name: Refresh and validate canonical evidence ledger
+        run: |
+          set -euxo pipefail
+          node tools/wheel-mode5/ledger/refresh-canonical-ledger-through-rq2c4e.mjs
+          node -e "const fs=require('fs'); const p='docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json'; const x=JSON.parse(fs.readFileSync(p)); if(x.records.length!==23) throw new Error('record count drift '+x.records.length); if(x.records.at(-1).id!=='RQ2C4E_ANGULAR_CONTRIBUTION_LOCALIZATION') throw new Error('tail drift'); if(x.currentMilestone?.id!=='RQ2C_ORIENTATION') throw new Error('milestone drift');"
+          git diff --check
+          git diff -- docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json
+      - name: Commit validated ledger refresh
+        run: |
+          set -euxo pipefail
+          test -n "$(git status --porcelain -- docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json
+          git commit -m "research: refresh canonical evidence ledger through RQ2C4E"
+          git push origin HEAD:research/wheel-mode5-rq2c-orientation-2026-09-05
