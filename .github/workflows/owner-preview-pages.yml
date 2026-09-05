@@ -7,6 +7,7 @@ on:
     paths:
       - preview/owner.json
       - preview/owner-ab.json
+      - preview/owner-spawn.json
       - .github/workflows/owner-preview-pages.yml
 
 permissions:
@@ -79,6 +80,39 @@ jobs:
               out.write(f"scan_receipt={scan['receipt']}\n")
               out.write(f"wheel_sha={wheel_sha}\n")
           print(f"accepted root={root_sha}; wheel A-B-C-D={wheel_sha}")
+          PY
+
+      - name: Resolve exact spawn calibration composition
+        id: spawn
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+
+          spawn = json.loads(Path("preview/owner-spawn.json").read_text(encoding="utf-8"))
+          if spawn.get("schema") != "JV_OWNER_SPAWN_CALIBRATION_POINTER_V1" or spawn.get("experiment") != "spawn-landmark-calibration":
+              raise SystemExit("Owner spawn calibration pointer identity drifted")
+          spawn_sha = str(spawn.get("sourceCommit", "")).strip().lower()
+          if re.fullmatch(r"[0-9a-f]{40}", spawn_sha) is None:
+              raise SystemExit("Owner spawn calibration source must be an exact commit")
+          expected_layer = {
+              "role": "accepted-jsprev2",
+              "repository": "Jozzpoly/JV-Box3D-Web-Public",
+              "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f",
+              "receipt": "receipts/jv_friends_scan_receipt.json",
+          }
+          if spawn.get("staticLayer") != expected_layer:
+              raise SystemExit(f"Owner spawn calibration static layer drifted: {spawn.get('staticLayer')!r}")
+          expected_variants = [
+              {"id": "scan-cal-a", "query": "jvSpawn=scan-cal-a"},
+              {"id": "scan-cal-b", "query": "jvSpawn=scan-cal-b"},
+              {"id": "scan-cal-c", "query": "jvSpawn=scan-cal-c"},
+          ]
+          if spawn.get("variants") != expected_variants:
+              raise SystemExit(f"Owner spawn calibration variants drifted: {spawn.get('variants')!r}")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"spawn_sha={spawn_sha}\n")
+          print(f"spawn calibration={spawn_sha}")
           PY
 
       - name: Checkout exact accepted executable source
@@ -306,6 +340,122 @@ jobs:
               ],
           }, indent=2) + "\n", encoding="utf-8")
           PY
+
+      - name: Checkout exact spawn calibration candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.spawn.outputs.spawn_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          path: __spawn_candidate
+
+      - name: Qualify and build spawn calibration candidate
+        working-directory: __spawn_candidate
+        env:
+          SPAWN_SHA: ${{ steps.spawn.outputs.spawn_sha }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
+        run: |
+          set -euxo pipefail
+          test "$(git rev-parse HEAD)" = "$SPAWN_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          test "$(node --version)" = "v24.16.0"
+          npm ci
+          npm run typecheck
+          node tools/run-tests.mjs tests/product-spawn.test.mjs
+          rm -rf dist
+          npm run build:portable
+          node tools/validate-build-identity.mjs
+          SPAWN_SHA="$SPAWN_SHA" node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          if (manifest?.source?.commit !== process.env.SPAWN_SHA || manifest?.source?.workingTreeClean !== true) {
+            throw new Error(`spawn calibration manifest drift: ${JSON.stringify(manifest?.source)}`);
+          }
+          NODE
+          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
+          mkdir -p dist/receipts
+          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
+          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
+
+      - name: Compose isolated spawn calibration paths
+        env:
+          SPAWN_SHA: ${{ steps.spawn.outputs.spawn_sha }}
+          SCAN_REPOSITORY: ${{ steps.candidate.outputs.scan_repository }}
+          SCAN_SHA: ${{ steps.candidate.outputs.scan_sha }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
+        run: |
+          set -euxo pipefail
+          root="dist/__experiments__/spawn-calibration"
+          candidate="$root/candidate"
+          rm -rf "$root"
+          mkdir -p "$candidate"
+          cp -a "__spawn_candidate/dist/." "$candidate/"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path("dist/__experiments__/spawn-calibration")
+          candidate = root / "candidate"
+          variants = [
+              {"id": "scan-cal-a", "query": "jvSpawn=scan-cal-a", "href": "candidate/?jvSpawn=scan-cal-a"},
+              {"id": "scan-cal-b", "query": "jvSpawn=scan-cal-b", "href": "candidate/?jvSpawn=scan-cal-b"},
+              {"id": "scan-cal-c", "query": "jvSpawn=scan-cal-c", "href": "candidate/?jvSpawn=scan-cal-c"},
+          ]
+          marker = {
+              "schema": "JV_OWNER_SPAWN_CALIBRATION_VARIANT_V1",
+              "experiment": "spawn-landmark-calibration",
+              "sourceCommit": os.environ["SPAWN_SHA"],
+              "buildManifest": "build-manifest.json",
+              "staticLayer": {
+                  "role": "accepted-jsprev2",
+                  "repository": os.environ["SCAN_REPOSITORY"],
+                  "commit": os.environ["SCAN_SHA"],
+                  "receipt": os.environ["SCAN_RECEIPT"],
+              },
+              "variants": variants,
+              "acceptedProduct": False,
+          }
+          (candidate / "owner-spawn-calibration.json").write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
+          (root / "index.json").write_text(json.dumps({
+              "schema": "JV_OWNER_SPAWN_CALIBRATION_INDEX_V1",
+              "experiment": "spawn-landmark-calibration",
+              "sourceCommit": os.environ["SPAWN_SHA"],
+              "candidatePath": "candidate/",
+              "variants": variants,
+              "acceptedProduct": False,
+          }, indent=2) + "\n", encoding="utf-8")
+          PY
+
+      - name: Prove isolated spawn calibration composition
+        env:
+          SPAWN_SHA: ${{ steps.spawn.outputs.spawn_sha }}
+          SCAN_SHA: ${{ steps.candidate.outputs.scan_sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const root = "dist/__experiments__/spawn-calibration";
+          const expectedVariants = [
+            {id:"scan-cal-a",query:"jvSpawn=scan-cal-a",href:"candidate/?jvSpawn=scan-cal-a"},
+            {id:"scan-cal-b",query:"jvSpawn=scan-cal-b",href:"candidate/?jvSpawn=scan-cal-b"},
+            {id:"scan-cal-c",query:"jvSpawn=scan-cal-c",href:"candidate/?jvSpawn=scan-cal-c"},
+          ];
+          const index = JSON.parse(await readFile(`${root}/index.json`, "utf8"));
+          const marker = JSON.parse(await readFile(`${root}/candidate/owner-spawn-calibration.json`, "utf8"));
+          const manifest = JSON.parse(await readFile(`${root}/candidate/build-manifest.json`, "utf8"));
+          const scanIndex = JSON.parse(await readFile(`${root}/candidate/__jv_scan__/index.json`, "utf8"));
+          if (index?.schema !== "JV_OWNER_SPAWN_CALIBRATION_INDEX_V1" || index?.experiment !== "spawn-landmark-calibration" || index?.sourceCommit !== process.env.SPAWN_SHA || index?.candidatePath !== "candidate/" || index?.acceptedProduct !== false || JSON.stringify(index?.variants) !== JSON.stringify(expectedVariants)) {
+            throw new Error("spawn calibration index provenance drift");
+          }
+          if (marker?.schema !== "JV_OWNER_SPAWN_CALIBRATION_VARIANT_V1" || marker?.sourceCommit !== process.env.SPAWN_SHA || marker?.staticLayer?.commit !== process.env.SCAN_SHA || marker?.acceptedProduct !== false || JSON.stringify(marker?.variants) !== JSON.stringify(expectedVariants)) {
+            throw new Error("spawn calibration marker provenance drift");
+          }
+          if (manifest?.source?.commit !== process.env.SPAWN_SHA || manifest?.source?.workingTreeClean !== true) {
+            throw new Error("spawn calibration build source drift");
+          }
+          if (scanIndex?.schema !== "JV_WEB_JSPREV2_INDEX_V2" || scanIndex?.packId !== "scan/photogrammetry-primary" || scanIndex?.available !== true) {
+            throw new Error("spawn calibration scan layer drift");
+          }
+          console.log(`OWNER_SPAWN_CALIBRATION_COMPOSITION_OK spawn=${process.env.SPAWN_SHA} scan=${process.env.SCAN_SHA}`);
+          NODE
 
       - name: Prove accepted root stayed byte-identical outside experiments
         env:
