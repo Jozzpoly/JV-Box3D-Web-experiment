@@ -38,21 +38,22 @@
   },
   "activeApparatus": {
     "lane": "donor_outer_carrier_dynamics",
-    "status": "CANONICAL_RH0_BASE_WITH_RQ2C4D_E_DIAGNOSTIC_EXTENSION",
+    "status": "CANONICAL_RH0_BASE_WITH_RQ2C4D_E_F_DIAGNOSTIC_EXTENSION",
     "suite": "tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp",
     "adapter": "tools/wheel-mode5/rh0/patch-rq-suite-adapter.py",
     "runner": "tools/wheel-mode5/rh0/wheel-mode5-rh0-canonical-rq-replay.mjs",
     "workflow": ".github/workflows/wheel-mode5-rh0-canonical-rq-replay.yml",
     "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json",
     "qualificationRecord": "RH0_CANONICAL_SUITE_REPLAY",
-    "rule": "New donor-carrier research extends the explicit RH0 suite. Historical RQ0/RQ1/RQ2 string-patch chains remain provenance only. RQ2C4D/E are transient read-only diagnostics on exact RQ2C4 physics.",
+    "rule": "The explicit RH0 suite remains the hardened donor-carrier replay base. RQ2C4D/E/F are transient read-only diagnostics on exact RQ2C4 physics. The RQ2C orientation micro-line is closed at zero-degree HOLD; do not extend it automatically.",
     "currentExtension": {
       "rq2cSuite": "tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-suite.hpp",
       "rq2c3Suite": "tools/wheel-mode5/rq2c3/wheel-mode5-rq2c3-direct-guide-suite.hpp",
       "rq2c3Patch": "tools/wheel-mode5/rq2c3/patch-rq2c3-parallel-linear-guide.py",
       "rq2c4Patch": "tools/wheel-mode5/rq2c4/patch-rq2c4-parallel-hard-relax.py",
       "rq2c4dInstrumentPatch": "tools/wheel-mode5/rq2c4d/patch-rq2c4d-slip-instrument.py",
-      "rq2c4eLocalizationPatch": "tools/wheel-mode5/rq2c4e/patch-rq2c4e-angular-contributions.py"
+      "rq2c4eLocalizationPatch": "tools/wheel-mode5/rq2c4e/patch-rq2c4e-angular-contributions.py",
+      "rq2c4fClosurePatch": "tools/wheel-mode5/rq2c4f/patch-rq2c4f-rolling-pair-closure.py"
     }
   },
   "sentinels": [
@@ -445,12 +446,47 @@
       "outcome": "Rigid-body reconstruction passed. At peak witness 0.034093857 mm/s, rolling pair contributed +0.034570694 mm/s while non-spin contributed -0.000464480 mm/s. Maximum blocker is rolling-pair dominant.",
       "scope": "Read-only decomposition on exact RQ2C4D 0-degree physics; not contact-solver causality.",
       "routing": "Do not run a 240 Hz angular comparison now. Next localize rolling-pair closure into COM tangential velocity, axle spin rate and exact support/spin-lever evolution."
+    },
+    {
+      "id": "RQ2C4F_ROLLING_PAIR_CLOSURE_LOCALIZATION",
+      "lane": "donor_outer_carrier_dynamics",
+      "status": "TRUSTED_DIAGNOSTIC",
+      "question": "Which initialized-closure term drives the real RQ2C4 rolling-pair residual: COM tangential drift, current-axle spin-rate drift or exact support/spin-lever evolution?",
+      "dependsOn": [
+        "RQ2C4E_ANGULAR_CONTRIBUTION_LOCALIZATION"
+      ],
+      "executedSource": "a7d3389edf6c51664d5615d657e879109b161420",
+      "resultHead": "5ffe5e0f206fc4d7f345ae4f66c7c086ab392ebc",
+      "run": 33973506632,
+      "job": 101326068112,
+      "artifact": 9971633765,
+      "artifactDigest": "sha256:e0e32986831498022e0f05ae1bae039d3c6e48e136b335f90a3c4a588ff48c4a",
+      "document": "docs/WHEEL_MODE5_RQ2C4F_ROLLING_PAIR_CLOSURE_LOCALIZATION_RESULT_2026-09-05.md",
+      "physicsExecuted": true,
+      "outcome": "Initialized rolling pair is exactly closed. At peak rolling-pair residual +0.034570694 mm/s, COM tangential drift contributes +0.004529953 mm/s, axle-spin-rate evolution +0.030174406 mm/s and geometric lever evolution -0.000109348 mm/s. Spin-rate evolution supplies about 87.3% of the peak rolling-pair magnitude.",
+      "scope": "Read-only 0-degree kinematic localization on exact RQ2C4D/E physics. Actual-support max slip remains 0.034093857 mm/s, 17.0469x above the frozen 0.002 mm/s gate. This is not contact-solver causality and yaw was not executed.",
+      "routing": "Use source review only to identify plausible/direct ownership paths. Do not infer exact per-subsystem solver causality from post-step kinematics."
+    },
+    {
+      "id": "RQ2C4F_SOURCE_OWNERSHIP_CLOSURE",
+      "lane": "donor_outer_carrier_dynamics",
+      "status": "RESEARCH_DECISION",
+      "question": "Does source inspection close enough ownership of the RQ2C4F spin-rate drift to justify another solver-level diagnostic before ending routine micro-forensics?",
+      "dependsOn": [
+        "RQ2C4F_ROLLING_PAIR_CLOSURE_LOCALIZATION"
+      ],
+      "document": "docs/WHEEL_MODE5_RQ2C4F_SOURCE_OWNERSHIP_CLOSURE_2026-09-05.md",
+      "physicsExecuted": false,
+      "decision": "PARTIAL / STOP. Contact tangential friction is the unique obvious first-order direct axle-torque path in the exact aligned apparatus, but finite joint/inertia/gyroscopic numerical coupling is not proven identically zero and the exact per-substep Delta-omega budget is not closed.",
+      "scope": "Source-grounded ownership boundary only; not a causal solver PASS.",
+      "reopenTrigger": "Reopen exact solver ownership only if a later decision depends on salvaging this direct-guide qualification, or representative vehicle evidence makes the residual materially consequential for grip, energy, handling or Owner-observable behavior."
     }
   ],
   "currentMilestone": {
     "id": "RQ2C_ORIENTATION",
     "name": "Bounded orientation/mount qualification",
-    "status": "BLOCKED_AT_0DEG_ROLLING_PAIR_LOCALIZATION",
+    "status": "CLOSED_HOLD_AT_0DEG_SLIP_GATE",
+    "closed": true,
     "blocksNewPhysics": true,
     "blocksYaw": true,
     "blocksReadOnlyDiagnostics": false,
@@ -463,7 +499,9 @@
       "RQ2C3_directGuide": "APPARATUS_INVALID_SOFT_EQUALITY_CONTROL_FAIL",
       "RQ2C4_hardRelax": "HEADING_PASS_SLIP_GATE_FAIL",
       "RQ2C4D_actualWitnessAudit": "FIXED_RADIUS_ARTIFACT_NOT_PRIMARY",
-      "RQ2C4E_angularLocalization": "MAX_WITNESS_RESIDUAL_ROLLING_PAIR_DOMINANT"
+      "RQ2C4E_angularLocalization": "MAX_WITNESS_RESIDUAL_ROLLING_PAIR_DOMINANT",
+      "RQ2C4F_closureLocalization": "TRUSTED_DIAGNOSTIC_SPIN_RATE_DRIFT_DOMINANT",
+      "RQ2C4F_sourceOwnership": "PARTIAL_CONTACT_FRICTION_DIRECT_ROUTINE_FORENSICS_CLOSED"
     },
     "frozenChallenge": {
       "yawDegrees": [
@@ -479,9 +517,13 @@
       "actualWitnessMaxSlipMmPerS": 0.03409385681152344,
       "gateExceedance": 17.04692840576172,
       "peakRollingPairMmPerS": 0.03457069396972656,
-      "peakNonSpinMmPerS": -0.0004644800242203928
+      "peakComDriftMmPerS": 0.004529953,
+      "peakSpinRateContributionMmPerS": 0.030174406,
+      "peakLeverContributionMmPerS": -0.000109348,
+      "sourceOwnershipClassification": "RQ2C4F_SOURCE_OWNERSHIP_PARTIAL_CONTACT_FRICTION_DIRECT"
     },
-    "next": "Execute one predeclared read-only RQ2C4F rolling-pair closure localization on exact RQ2C4D/E 0-degree physics. Separate COM tangential-velocity drift, axle-spin-rate drift and exact geometric spin-lever drift relative to initialized rolling closure. Preserve RH0 and D/E non-drift barriers. Do not run yaw, tune stiffness, alter contact/solver physics or relax gates."
+    "next": null,
+    "routing": "Do not automatically build solver-level ownership instrumentation, run +/-3.5-degree yaw, tune stiffness/contact/solver physics, relax gates or promote wheel-mode5. Re-ground at broader JV-Web level and choose the next work from current Owner priorities."
   },
   "archivalResearchAncestor": "work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03",
   "activeResearchPointer": "docs/evidence/WHEEL_MODE5_ACTIVE_RESEARCH_POINTER_2026-09-05.json"
