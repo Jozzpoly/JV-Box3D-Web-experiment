@@ -32,11 +32,24 @@ assert.equal(pointer.ancestryResearchBranch, closingResearchBranch, 'active poin
 assert.equal(pointer.rh0ClosureHead, rh0ClosureHead, 'RH0 closure head drifted');
 assert.equal(pointer.canonicalEvidenceLedger, ledgerPath, 'active pointer ledger target drifted');
 assert.equal(pointer.activationRecord, 'docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md', 'activation record pointer drifted');
-assert.equal(pointer.nextGate, 'RQ2C0_CONTROL_TRANSLATIONALLY_FREE_0DEG', 'next RQ2C gate drifted');
+assert.equal(pointer.nextGate, 'RQ2C1_LOCAL_TRANSLATIONAL_CARRIER_0DEG', 'next RQ2C gate drifted');
 assert.equal(pointer.challengeDegrees, 3.5, 'RQ2C challenge angle drifted');
 assert.equal(pointer.mountHertz, 120, 'RQ2C mount stiffness drifted');
 assert.equal(pointer.maxAxisErrorDegrees, 0.035, 'RQ2C axis-error budget drifted');
 assert.equal(pointer.maxHeadingErrorDegrees, 0.035, 'RQ2C heading-error budget drifted');
+
+const latest = pointer.latestEvidence;
+assert.equal(latest?.id, 'RQ2C0_TRANSLATIONALLY_FREE_CONTROL', 'latest RQ2C evidence id drifted');
+assert.equal(latest?.status, 'APPARATUS_INVALID', 'latest RQ2C classification status drifted');
+assert.equal(latest?.physicsExecuted, true, 'RQ2C0 must preserve that physics executed');
+assert.equal(latest?.executedSource, '8deae32ff31ed6229b3add1837dae7f6d4ef685f', 'RQ2C0 executed source drifted');
+assert.equal(latest?.run, 33965636922, 'RQ2C0 run drifted');
+assert.equal(latest?.job, 101305157701, 'RQ2C0 job drifted');
+assert.equal(latest?.artifact, 9969338989, 'RQ2C0 artifact drifted');
+assert.equal(latest?.classification, 'APPARATUS_INVALID_TRANSLATIONALLY_FREE_CONTROL', 'RQ2C0 classification drifted');
+assert.equal(latest?.axisGuide, 'PASS_WITHIN_0.035_DEG_BUDGET', 'RQ2C0 axis-guide conclusion drifted');
+assert.equal(latest?.headingGuide, 'FAIL', 'RQ2C0 heading-guide conclusion drifted');
+assert.equal(latest?.yawPairExecuted, false, 'RQ2C yaw pair must remain unexecuted after failed control');
 
 if (process.env.GITHUB_REF_NAME) {
   assert.equal(process.env.GITHUB_REF_NAME, activeResearchBranch, 'post-RH0 validation must execute on active research branch');
@@ -62,8 +75,9 @@ assert.ok(ledger.lanes?.annular_contact_semantics, 'annular contact-semantics la
 assert.ok(ledger.lanes?.donor_outer_carrier_dynamics, 'donor outer-carrier dynamics lane missing');
 assert.equal(ledger.activeApparatus?.status, 'CANONICAL_ACTIVE_AFTER_RH0_REPLAY', 'explicit RH0 apparatus must remain canonical');
 assert.equal(ledger.activeApparatus?.suite, 'tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp', 'active suite pointer drifted');
-assert.equal(pointer.activeApparatus?.suite, ledger.activeApparatus?.suite, 'active pointer suite disagrees with closure ledger');
+assert.equal(pointer.activeApparatus?.frozenSuite, ledger.activeApparatus?.suite, 'active pointer frozen suite disagrees with closure ledger');
 assert.equal(pointer.activeApparatus?.replayContract, ledger.activeApparatus?.replayContract, 'active pointer replay contract disagrees with closure ledger');
+assert.equal(pointer.activeApparatus?.rq2cSuite, 'tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-suite.hpp', 'RQ2C suite pointer drifted');
 
 const knownLanes = new Set(Object.keys(ledger.lanes));
 const ids = new Set();
@@ -73,6 +87,7 @@ const documents = new Set([
   ledger.rh0ClosureDocument,
   ledger.lastOwnerHandsOn.document,
   pointer.activationRecord,
+  latest.document,
 ].filter(Boolean));
 
 for (const record of ledger.records) {
@@ -106,9 +121,15 @@ for (const record of ledger.records) {
     assert.equal(typeof record.invalidMeasurement, 'string', `${record.id}: invalid measurement must be explicit`);
   }
   if (record.status === 'APPARATUS_INVALID') {
-    assert.equal(record.physicsExecuted, false, `${record.id}: apparatus-invalid record must not claim physics execution`);
+    assert.equal(typeof record.physicsExecuted, 'boolean', `${record.id}: apparatus-invalid physics execution state must be explicit`);
     assert.equal(typeof record.failureStage, 'string', `${record.id}: failure stage missing`);
     assert.equal(typeof record.failure, 'string', `${record.id}: failure reason missing`);
+    if (record.physicsExecuted) {
+      assert.match(record.executedSource ?? '', /^[0-9a-f]{40}$/, `${record.id}: executed apparatus-invalid source missing/invalid`);
+      assert.ok(Number.isInteger(record.run), `${record.id}: executed apparatus-invalid run missing`);
+      assert.ok(Number.isInteger(record.job), `${record.id}: executed apparatus-invalid job missing`);
+      assert.ok(record.document, `${record.id}: executed apparatus-invalid document missing`);
+    }
   }
 }
 
@@ -155,7 +176,8 @@ for (const document of documents) {
   assert.equal(typeof document, 'string', 'document path must be a string');
   await access(document);
 }
-await access(pointer.activeApparatus.suite);
+await access(pointer.activeApparatus.frozenSuite);
+await access(pointer.activeApparatus.rq2cSuite);
 await access(pointer.activeApparatus.replayContract);
 
 console.log('WHEEL_MODE5_EVIDENCE_LEDGER_SUMMARY', JSON.stringify({
@@ -164,6 +186,10 @@ console.log('WHEEL_MODE5_EVIDENCE_LEDGER_SUMMARY', JSON.stringify({
   closureStatus: milestone.status,
   activeStage: pointer.stage,
   activeResearchBranch: pointer.activeResearchBranch,
+  nextGate: pointer.nextGate,
+  latestEvidence: latest.id,
+  latestStatus: latest.status,
+  latestPhysicsExecuted: latest.physicsExecuted,
   rh0ClosureHead: pointer.rh0ClosureHead,
   recordCount: ledger.records.length,
   canonicalProductMain: ledger.canonicalProductMain,
