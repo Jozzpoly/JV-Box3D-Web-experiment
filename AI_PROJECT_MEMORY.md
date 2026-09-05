@@ -1,90 +1,114 @@
-# AI Project Memory — JV Web
+# AI Project Memory — JV Web spawn calibration branch
 
-Updated: 2026-09-01
+Updated: 2026-09-05
 Owner: Jozz
 
-## CURRENT MODE
+## MODE
 
-**ACTIVE BOUNDED JV-WEB PRODUCT ITERATION**
+This is a bounded **spawn landmark calibration** work branch.
 
-The 2026-08-26 strategic cold-takeover/read-only campaign is historical and closed. Do not restart it automatically.
+Status:
 
-JV-Web is a standalone browser Jozz Vehicle product/R&D surface, not NextGen JV Lite. NextGen JV is a separate deeper construction/platform direction. Transfer discoveries deliberately; do not synchronize architectures by default.
+`PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE`
+
+It is not accepted product source and not a general JV-Web takeover branch.
 
 ## AUTHORITY
 
-`live Git/current files -> executed evidence -> direct scoped Owner/device evidence -> current docs -> history/cross-project memory`
+Always resolve live:
 
-After milestone consolidation, `Jozzpoly/JV-Box3D-Web-experiment/main` is current source/product authority.
+`Jozzpoly/JV-Box3D-Web-experiment/main`
 
-`preview/owner-control` is exact-source Owner Preview infrastructure, not source authority.
+This branch was forked from `main@5b28cc03d22264010680deb95a04abd04661bc22`; that SHA is fork-point provenance, not current live authority.
 
-`Jozzpoly/JV-Box3D-Web-Public/main` owns Friends/public artifacts, not current private source truth.
+Accepted executable snapshot remains `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0` unless newer live evidence says otherwise.
 
-Historical work/checkpoint/noop branches are not authority and are not an automatic cleanup task.
+Accepted JSPREV2 remains `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`.
 
-## CURRENT-BEST STEERING — 2026-09-01
+## CORE CORRECTION
 
-See `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`.
+Do not repeat the earlier claim that ordinary Owner Preview's poor start came from `scanCenterSpawn()`.
 
-Current product truth:
+Exact accepted source shows ordinary startup defaulted to `map` / `world.spawn = { x: 0, y: 1.2, z: 0 }`.
 
-- Direct Rotation + Relative-X remain available;
-- pointer release defaults to semantic `RELEASE`, not hidden center command;
-- hands-off graphical steering follows the live physical rack;
-- a new grab re-anchors to the live rack, preventing steering UI/physics offset;
-- 900 degrees total wheel range is the default and current Owner-used tuning;
-- 360/540/720/1080 are configurable candidates, not final Owner-approved ratios;
-- range is stored in session storage;
-- artificial centering is not an Owner-facing product option; retained adapter support is control/test evidence only;
-- natural physical self-return remains unresolved.
+Accepted JSPREV2 begins around world `z = 320`.
 
-## OWNER EVIDENCE FROM THE CURRENT STEERING SLICE
+Current stronger interpretation: poor spatial/semantic placement relative to the useful scan playground, not a proved scan-AABB-center collision fault.
 
-Scoped Owner observation on the 900-degree Owner Preview:
+## SEMANTIC LIMIT
 
-- hands-off wheel/rack sync: good;
-- physics movement followed by re-grab: no prior offset/jump;
-- feel: substantially better than before and better than expected;
-- Owner is currently learning/adapting to 900 degrees rather than comparing ranges;
-- artificial assist was not used and is not desired as a dependency.
+Accepted scan metadata has no semantic road/village/start landmark.
 
-Do not generalize this into a claim that every steering range, every device or the entire product received a deep regression pass.
+Geometry-only methods can suggest flat/open candidates but cannot prove road semantics.
 
-## NOT VALIDATED / OPEN
+Do not tune heuristics until they produce the location the Owner is expected to want.
 
-- final steering ratio/range;
-- Owner feel for 360/540/720/1080;
-- changing range during an already-active steering gesture;
-- dedicated mobile persistence check for the range setting;
-- complete whole-product regression during the 2026-08-31 checkpoint;
-- physically useful self-return/self-alignment.
-
-A future steering-mechanics R2 may investigate natural self-return. It is not automatically the next task and it must not solve missing physics with fake automatic centering.
-
-## DEFAULT WORKFLOW
-
-For a small product need:
-
-`small need -> smallest sensible change -> risk-matched test -> faithful render/device evidence -> Owner judgement -> next iteration`
-
-Use full canonical build/check/documentation when closing a meaningful accepted stage or touching foundations, not as automatic ceremony after every polish change.
-
-Before writes verify repo/ref/current source. Protect the accepted baseline. Do not broaden UI/input work into physics, drivetrain, rig or world changes without a causal reason.
-
-## RESPONSIBILITY
-
-Agent owns repo/code/technical diagnosis/tests/builds/documentation available to the environment.
-
-Owner primarily supplies product priority, look/feel judgement and real-device evidence that cannot be reproduced by the agent.
-
-## FRESH CONTINUATION
+## EVIDENCE
 
 Read:
 
-1. `AGENTS.md`;
-2. `docs/PROJECT_STATE.md`;
-3. live `main` source relevant to the requested slice;
-4. the steering baseline when steering is relevant.
+`docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md`
 
-Read `docs/HANDOFF.md` for an actual handoff, not as a reason to restart a takeover campaign.
+Then machine-readable detail if needed:
+
+- `docs/evidence/JSPREV2_SPAWN_LANDMARK_ANALYSIS_2026-09-05.json`;
+- `docs/evidence/JSPREV2_SPAWN_LANDMARK_CROSSCHECK_2026-09-05.json`.
+
+Exact scan re-read verified all seven tile sizes/SHA-256s and `1,409,687` vertices / `1,775,775` triangles.
+
+Primary flat-region analysis found many candidates. Independent vertex-normal/candidate-local occupancy crosscheck rejected primary rank #1 and retained several stable regions.
+
+Retain the existence of several broad stable flat regions; do not retain the primary ranking as semantic authority.
+
+## CANDIDATES
+
+Three deliberately separated crosscheck-passing regions are available only as opt-in:
+
+- `scan-cal-a`
+- `scan-cal-b`
+- `scan-cal-c`
+
+They are pack-pinned and runtime surface-height-resolved.
+
+Default `map`, `offroad` and `scan` behavior is unchanged.
+
+They are calibration labels, not road labels.
+
+## VALIDATION
+
+Candidate validation observed:
+
+- `npm ci` PASS;
+- typecheck PASS;
+- all spawn calibration tests PASS;
+- full tests `523 total / 516 pass / 7 fail`.
+
+Seven red assertions are unrelated steering/mobile-UI expectations whose relevant source/test blobs match product baseline code. Do not attribute them to spawn or change steering inside this slice to make CI green.
+
+The run stopped before portable build.
+
+Candidate build status:
+
+`UNVERIFIED`
+
+## DO NOT
+
+Do not automatically:
+
+- promote this branch;
+- publish candidate Preview/Pages before build qualification;
+- call A/B/C roads;
+- choose A/B/C algorithmically;
+- add more geometry heuristics merely to get a semantic answer;
+- weaken exact-source Preview provenance;
+- fix unrelated steering baseline debt here;
+- reopen wheel-mode5 research here.
+
+## NEXT IF RESUMED
+
+1. Resolve live main and current work head.
+2. Qualify portable build.
+3. Expose A/B/C in one bounded exact candidate preview.
+4. Owner accepts one or rejects all.
+5. If all fail, obtain explicit semantic landmark.
+6. If one is accepted, make a fresh minimal branch from live main for the actual product change rather than promoting this calibration branch wholesale.

@@ -1,109 +1,92 @@
-# JV Web
+# JV Web — spawn landmark calibration work branch
 
-JV Web is the browser product line for Jozz Vehicle: a driveable desktop/mobile product, R&D surface and accumulated evidence corpus.
+This branch is a bounded **unpromoted product calibration lane**, not accepted JV-Web product source.
 
-## Authority and publication
+Status:
 
-```text
-Jozzpoly/JV-Box3D-Web-experiment
-  current source / product authority
-  preview/owner-control -> Owner Preview operational lane
+`PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE`
 
-Jozzpoly/JV-Box3D-Web-Public
-  accepted Friends artifact / release authority
-```
+## Authority boundary
 
-Live source `main` defines the current JV-Web product state. Preview and Friends/Public are separate operational/artifact authorities.
+Accepted JV-Web product/source/documentation authority is always live:
 
-Git/current source, executed evidence and direct scoped Owner observation outrank stale documentation and historical plans.
+`Jozzpoly/JV-Box3D-Web-experiment/main`
 
-## Current strategic stage
+Resolve it before making a product claim.
 
-JV-Web is entering a **read-only strategic Codex cold takeover** before any next-generation implementation decision.
+This work branch was forked from product/code checkpoint:
 
-The current repository is a working product with substantial accepted/reference capital, but **repo continuity is now an open decision**. The next JV work may ultimately:
+`main@5b28cc03d22264010680deb95a04abd04661bc22`
 
-- continue and polish this repo;
-- radically rebuild/refactor inside it;
-- use it mainly as donor/control/reference;
-- begin a clean implementation, including a new repository if justified.
+That SHA is the branch fork point, **not current live main**. Main later advanced through documentation-only routing consolidation while the accepted Steering I1 executable snapshot remained:
 
-No option is selected yet.
+`529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`
 
-Earlier pre-Codex work produced architecture analyses and selected `FRONT-CORNER-AUTHORITY-ISOLATION-01` as the preferred first falsifier under the previous bounded-migration plan. That selection is preserved in `docs/FIRST_FALSIFIER.md` as **prior analysis, not a binding Codex task**.
+Canonical accepted JSPREV2 remains:
 
-Likewise A1/A2/M1/C0 in `docs/ARCHITECTURE_HYPOTHESES.md` are challengeable prior hypotheses, not an exhaustive architecture menu.
+`Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`
 
-The first Codex session must reconstruct the product/source/evidence independently and stop before any branch, new repo or implementation.
+No runtime change from this branch has been promoted to `main` or canonical Owner Preview.
 
-## Proven/reference product capital
+## Read first on this branch
 
-Current evidence includes real value in:
+1. `AGENTS.md`;
+2. `docs/PROJECT_STATE.md`;
+3. `docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md`;
+4. `docs/evidence/JSPREV2_SPAWN_LANDMARK_ANALYSIS_2026-09-05.json` only for primary geometry details;
+5. `docs/evidence/JSPREV2_SPAWN_LANDMARK_CROSSCHECK_2026-09-05.json` for the independent crosscheck;
+6. inspect `src/scene/product-spawn.ts` and `tests/product-spawn.test.mjs` only if implementation detail is needed.
 
-- desktop/mobile browser product shell;
-- Direct Rotation + Relative-X steering interaction foundations;
-- absolute-position pedals, multitouch ownership and D/R lifecycle;
-- camera/fullscreen;
-- accepted responsive/mobile composition and desktop capability/HUD work;
-- Plac E2R, Offroad and approved JSPREV2;
-- accepted A53/Chrome render-1x scan boundary;
-- exact-source Preview/static-layer provenance discipline.
+For broader JV-Web truth, return to live `main`.
 
-These are **proven/reference capabilities, not permanent architecture**. A future strategy may preserve, reimplement or consciously supersede them.
+## What this branch established
 
-Pedal Contact + Mechanical Feedback V1/V1.1 remains rejected/deferred evidence.
+An earlier working explanation claimed that ordinary Owner Preview's bad start came from `scanCenterSpawn()` selecting the scan AABB center. Exact accepted source falsified that claim: ordinary startup defaulted to `map` / `world.spawn`.
 
-## Program evidence sources
+Accepted default start:
 
-- **JV-Web current repo** — current browser product/source and recipient evidence corpus.
-- **JV_CORE / Native** — sealed primary donor/research record; not a mandatory architecture or quality ceiling.
-- **JURE** — optional authoring/mechanical-truth donor/tool; not mandatory and not frozen as final application/schema.
+`{ x: 0, y: 1.2, z: 0 }`
 
-## Canonical toolchain for the current repo
+Accepted JSPREV2 begins around world `z = 320`, so the stronger current interpretation is poor spatial/semantic placement relative to the scan playground rather than a proved AABB-center collision fault.
 
-```text
-Node 24.16.0
-npm >=11.13.0 <12
-packageManager npm@11.13.0
-TypeScript 7.0.2
-Vite 8.1.5
-box3d.js 0.0.2
-```
+Accepted scan metadata contains no semantic road/start landmark.
 
-Canonical install/check/build health should be established by Codex in its repo-native preflight. A successful build proves current-repo reproducibility; it does not decide that this repo must remain the future foundation.
+The exact accepted scan geometry was re-read with all seven tile sizes/SHA-256s verified. A primary flat-region analysis and an independent vertex-normal/candidate-local occupancy crosscheck support several broad stable flat regions, but neither method can label a road.
 
-## Start here — strategic takeover
+Primary rank #1 failed the independent crosscheck, which is retained as evidence that the first ranking is not authority.
 
-A fresh Codex strategic review reads:
+## Opt-in candidates
 
-1. `AGENTS.md`
-2. `docs/PROJECT_STATE.md`
-3. `docs/HANDOFF.md`
-4. current package/toolchain/source/tests
+Three spatially separated crosscheck-passing regions exist only as:
 
-Only after an initial independent reconstruction, use prior-analysis/evidence documents as needed:
+- `?jvSpawn=scan-cal-a`
+- `?jvSpawn=scan-cal-b`
+- `?jvSpawn=scan-cal-c`
 
-- `docs/OWNER_CHECKPOINTS.md` — scoped Owner evidence and negative knowledge;
-- `docs/RECIPIENT_SURFACE.md` — detailed current-repo evidence map;
-- `docs/INHERITANCE_MATRIX.md` — prior claim-level synthesis;
-- `docs/ARCHITECTURE_HYPOTHESES.md` — prior architecture comparison;
-- `docs/FIRST_FALSIFIER.md` — prior Gate 7 recommendation, now non-binding;
-- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — sealed Native donor evidence;
-- `docs/ARCHITECTURE.md` — current boundaries, not future architecture freeze;
-- `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — authored-truth/runtime constraints without mandatory-JURE commitment.
+They are pack-pinned, surface-height-resolved and opt-in. Default `map`, `offroad` and `scan` behavior remains unchanged.
 
-## Work discipline
+Do not call A/B/C roads or select one algorithmically.
 
-During the strategic takeover:
+## Validation boundary
 
-- no implementation;
-- no new branch merely for takeover;
-- no new repository before strategy selection;
-- no automatic M1/FMUI execution;
-- no Native 1:1 port;
-- no JURE/schema freeze;
-- no generic framework campaign.
+Focused spawn tests and TypeScript typecheck passed.
 
-First establish what the current product actually proves, what is accidental architecture, what remains unknown, and which next move has the best evidence-to-cost ratio.
+A broader candidate validation run exposed seven steering/mobile-UI assertions whose relevant test/source blobs match the branch fork-point product source and accepted current code. They are not evidence of a spawn regression.
 
-Third-party notices are in `THIRD_PARTY_NOTICES.md`.
+That red test step stopped before `build:portable`, therefore the candidate portable build remains:
+
+`UNVERIFIED`
+
+Do not repair unrelated steering behavior/tests inside this spawn slice merely to manufacture green status.
+
+## Natural next gate
+
+If this branch is resumed:
+
+1. qualify the candidate portable build without weakening canonical provenance;
+2. expose A/B/C only in a bounded candidate preview;
+3. ask the Owner which, if any, is visibly a sensible start / on or near the desired road;
+4. if none is right, reject all three and obtain an explicit semantic landmark instead of tuning geometry heuristics toward a desired answer;
+5. after Owner acceptance, prepare a **fresh minimal product slice from live main** rather than promoting this whole work branch wholesale.
+
+This branch is evidence/calibration apparatus, not a promotion candidate.

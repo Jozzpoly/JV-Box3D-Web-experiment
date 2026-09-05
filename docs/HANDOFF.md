@@ -1,113 +1,115 @@
-# JV-Web — handoff
+# JV-Web — spawn calibration handoff
 
-Updated: 2026-09-01
+Updated: 2026-09-05
 Owner: Jozz
 
-Use this file for an actual handoff/continuation. A new chat is **not** by itself a new takeover campaign.
+Use this handoff only when continuing the bounded spawn-location calibration. It is not a general JV-Web takeover mandate.
 
-## 1. Current mode
+## 1. Authority
 
-JV-Web is in bounded product iteration after a completed Steering I1 milestone consolidation.
+Resolve live:
 
-The 2026-08-26 read-only strategic cold-takeover campaign is historical. Do not restart it unless new evidence creates a real strategic reason.
+`Jozzpoly/JV-Box3D-Web-experiment/main`
 
-JV-Web is a standalone browser Jozz Vehicle product/R&D surface, separate from NextGen JV. It may learn from NextGen/JURE/JV_CORE/JES, but those projects do not own JV-Web live truth.
+before making product claims.
 
-## 2. Start here
+This work branch:
 
-For a fresh continuation:
+`work/spawn-landmark-calibration-2026-09-05`
 
-1. verify live `Jozzpoly/JV-Box3D-Web-experiment/main`;
-2. read `AGENTS.md`;
-3. read `docs/PROJECT_STATE.md`;
-4. inspect only the source/tests relevant to the requested slice;
-5. if steering is involved, read `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md` and `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`.
+was forked from `main@5b28cc03d22264010680deb95a04abd04661bc22`. That is historical fork-point provenance, not current live main.
 
-Do not reconstruct the entire project history unless current evidence actually conflicts.
+Accepted Steering I1 executable snapshot remains `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0` unless newer live main/Preview evidence says otherwise.
 
-## 3. Current steering truth
+Accepted JSPREV2 remains `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`.
 
-The Steering I1 baseline established:
+This branch is not accepted product source and should not be fast-forwarded wholesale to main.
 
-- touch steering pointer release defaults to semantic `RELEASE`;
-- no hidden Owner-facing automatic return-to-zero is part of the current product behavior;
-- the graphical steering wheel follows physical rack state while hands-off;
-- re-grab begins from physical rack state, preventing UI/physics offset;
-- 900 degrees total wheel range is the current default and Owner-used current-best;
-- 360/540/720/1080 are available for later comparison, not final approved ratios;
-- range preference persists in the browser session;
-- artificial centering is retained only as an internal/test control path, not product configuration;
-- natural physical self-return remains unresolved.
+## 2. Current classification
 
-Owner feedback on the current 900-degree behavior was strongly positive, but scoped. Do not convert it into a claim that all ranges/devices or all steering physics are finalized.
+`PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE`
 
-## 4. Evidence boundary
+Canonical branch-local closure:
 
-### OWNER-OBSERVED
+`docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md`
 
-Owner directly confirmed on the current steering Preview that:
+Machine-readable evidence:
 
-- hands-off UI/rack synchronization works;
-- physics movement followed by re-grab no longer creates the previous offset/jump;
-- current 900-degree driving feel is substantially better than before and better than expected.
+- `docs/evidence/JSPREV2_SPAWN_LANDMARK_ANALYSIS_2026-09-05.json`;
+- `docs/evidence/JSPREV2_SPAWN_LANDMARK_CROSSCHECK_2026-09-05.json`.
 
-Owner is currently learning 900 degrees rather than comparing range presets.
+## 3. What was falsified
 
-### EXECUTED EVIDENCE
+The earlier explanation that the ordinary Owner Preview bad start came from `scanCenterSpawn()` / AABB center is false for the relevant accepted executable startup.
 
-The source candidate passed the canonical Owner Preview build/validation/composition path with unchanged accepted JSPREV2.
+Exact accepted source defaults to:
 
-### NOT VALIDATED
+`map -> world.spawn = { x: 0, y: 1.2, z: 0 }`
 
-- final steering range;
-- Owner feel for non-900 presets;
-- changing range during an already-active gesture;
-- dedicated mobile session-persistence check;
-- comprehensive whole-product regression during the final steering feedback checkpoint;
-- useful natural physical self-return.
+Accepted JSPREV2 begins around world `z = 320`.
 
-## 5. If steering work resumes
+Retain the stronger interpretation: start placement is poor relative to the useful scan playground; this is not proven to be an AABB-center collision bug.
 
-The strongest unresolved mechanical question is why the current physical system provides essentially no useful self-return/self-alignment.
+## 4. What geometry can and cannot say
 
-A sensible future R2 would be bounded research, not an immediate physics rewrite:
+Accepted scan metadata has no semantic road/start landmark.
 
-- identify current geometry/contact/constraint/damping contributors;
-- distinguish expected caster/trail/tire/contact effects from solver or representation limitations;
-- design the smallest falsifier that can separate likely causes;
-- preserve the accepted touch RELEASE/rack-sync baseline while testing physics.
+Primary analysis plus an independent crosscheck support several broad stable flat regions.
 
-Do **not** solve this by silently reintroducing automatic centering or a fake spring merely to produce visual return.
+They **cannot** establish that any region is a road.
 
-R2 is a candidate next slice, not an obligation. Re-ground current product priorities first.
+Primary rank #1 failed the independent crosscheck; do not treat initial ranking as authority.
 
-## 6. If another product slice is chosen
+## 5. Candidate slice
 
-Use the default workflow:
+Opt-in query targets only:
 
-`small need -> smallest sensible change -> risk-matched test -> faithful render/device evidence -> Owner judgement`
+- `scan-cal-a`
+- `scan-cal-b`
+- `scan-cal-c`
 
-Do not expand camera/UI/input work into drivetrain/rig/physics changes without causal need. Do not expand a mechanics experiment into a UI redesign.
+They are spatially separated, crosscheck-passing, pack-pinned and surface-height-resolved.
 
-## 7. Git / Preview discipline
+Default `map`, `offroad` and `scan` behavior remains unchanged.
 
-- `main` is source authority after accepted consolidation.
-- `preview/owner-control` is exact-source composition infrastructure only.
-- Public/Friends artifacts remain separate authority.
-- Historical `work/*`, checkpoint and accidental/noop branches are not current authority and do not require cleanup merely because they exist.
-- Before writes, resolve repo/ref/current source again.
-- Before promotion, re-check ancestry and use non-force fast-forward when available.
+Do not rename these to road/start-final without Owner evidence.
 
-## 8. Things a new agent must not infer
+## 6. Validation boundary
 
-Do not infer that:
+Observed candidate run:
 
-- current M6/Box3D architecture is the future NextGen architecture;
-- 900 degrees is permanently frozen;
-- lack of natural self-return is accepted product behavior;
-- artificial centering is an accepted substitute;
-- old roadmap/falsifier documents are current tasks;
-- a new chat means another cold takeover;
-- historical branches should be consolidated or deleted automatically.
+- `npm ci` PASS;
+- typecheck PASS;
+- all new spawn tests PASS;
+- full tests: `523 total / 516 pass / 7 fail`.
 
-Current evidence should decide the next slice.
+The seven red assertions are in steering/mobile-UI tests and their relevant source/test blobs match the product fork point / accepted current code. They are not evidence of a spawn regression.
+
+The run stopped before `build:portable`, therefore candidate build is:
+
+**UNVERIFIED**
+
+Do not modify unrelated steering behavior/tests inside this task merely to obtain green status.
+
+## 7. Current stop boundary
+
+Do not:
+
+- add more geometry heuristics to manufacture road semantics;
+- choose A/B/C algorithmically;
+- weaken Preview provenance;
+- publish candidate Pages;
+- promote this work branch to main;
+- reopen wheel-mode5 research as part of spawn work;
+- fix unrelated steering baseline debt inside this branch.
+
+## 8. Natural next move if resumed
+
+1. Resolve live main and this branch again.
+2. Qualify portable build without altering candidate semantics.
+3. Produce one bounded exact candidate preview exposing A/B/C.
+4. Owner judges only whether one location is visibly useful / on or near the desired road.
+5. If none is right, reject all and obtain explicit semantic landmark.
+6. If one is accepted, prepare a **fresh minimal implementation branch from live main** carrying only the selected product change and appropriate tests/evidence.
+
+The current branch is calibration evidence/apparatus, not the final promotion branch.
