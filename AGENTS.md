@@ -1,6 +1,6 @@
 # JV Web — operating contract
 
-Updated: 2026-09-01
+Updated: 2026-09-05
 Owner: Jozz
 
 JV Web is the browser product line for Jozz Vehicle: a real desktop/mobile driving product and a practical R&D surface. It is **not NextGen JV Lite** and it is not automatically the implementation home of the next JV generation.
@@ -78,6 +78,8 @@ Always distinguish:
 
 A helper failure is not automatically a product failure. Repair tooling only if doing so can change the current slice decision.
 
+A red full gate is not authorization to change unrelated product behavior or tests. If a bounded slice encounters pre-existing baseline debt, first prove the failure's provenance, isolate the current slice, and preserve the red baseline truth. Do not repeatedly rerun the same full gate after an unchanged known failure; make one bounded repair when justified, then perform one consolidated validation when the blocking condition has materially changed.
+
 Quick previews are acceptable only when they faithfully represent the changed DOM/CSS/interaction semantics. Otherwise use clean source render or the normal canonical build/Preview path.
 
 ## 6. Scope protection
@@ -118,6 +120,8 @@ Routine Git/build/debugging should not be pushed onto the Owner.
 
 Owner Preview should point to an exact source commit and explicit static-layer provenance. Do not mutate accepted static layers to make an unrelated source experiment work.
 
+**Do not create or modify GitHub Actions workflows without explicit Owner approval.** Temporary, research-only and one-off validation workflows still count as new workflow infrastructure. Prefer existing approved validation paths or other available execution surfaces; if none can answer the question, preserve the validation gap rather than silently adding Actions.
+
 Before promoting an accepted work branch to `main`:
 
 1. re-fetch current `main` and candidate heads;
@@ -150,4 +154,6 @@ For a fresh continuation of normal JV-Web work:
 - an experimental/control behavior is being silently promoted to product truth;
 - a broad recovery/refactor would add more work than information;
 - Owner evidence is being generalized beyond what was actually tested;
-- a new chat is causing a closed campaign to restart without a product reason.
+- a new chat is causing a closed campaign to restart without a product reason;
+- a known unrelated baseline failure is pulling the current slice into another subsystem;
+- a proposed workflow/tooling change would bypass the requirement for explicit Owner approval.
