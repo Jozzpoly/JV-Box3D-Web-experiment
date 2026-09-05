@@ -3,6 +3,7 @@ import "./mobile-driving-controls.css";
 import "./mobile-driving-polish.css";
 import "./direct-rotation-steering.css";
 import "./utility-drawer.css";
+import "./spawn-calibration-ui.css";
 
 import {
   DEFAULT_SCENE_PACKAGE_URL,
@@ -177,7 +178,7 @@ installProductControls({
   capabilities: {
     locationChoices: [
       {
-        label: "Plac E2R",
+        label: "Plac",
         href: targetUrl("map"),
         active: spawnTarget === "map",
       },
@@ -187,30 +188,23 @@ installProductControls({
         active: spawnTarget === "offroad",
       },
       {
-        label: "Spawn A",
+        label: "A",
         href: targetUrl("scan-cal-a"),
         active: spawnTarget === "scan-cal-a",
         availabilityProbeUrl: scanAvailabilityProbeUrl,
         unavailableMessage: scanUnavailableMessage,
       },
       {
-        label: "Spawn B",
+        label: "B",
         href: targetUrl("scan-cal-b"),
         active: spawnTarget === "scan-cal-b",
         availabilityProbeUrl: scanAvailabilityProbeUrl,
         unavailableMessage: scanUnavailableMessage,
       },
       {
-        label: "Spawn C",
+        label: "C",
         href: targetUrl("scan-cal-c"),
         active: spawnTarget === "scan-cal-c",
-        availabilityProbeUrl: scanAvailabilityProbeUrl,
-        unavailableMessage: scanUnavailableMessage,
-      },
-      {
-        label: "Skan JSPREV2 (środek)",
-        href: targetUrl("scan"),
-        active: spawnTarget === "scan",
         availabilityProbeUrl: scanAvailabilityProbeUrl,
         unavailableMessage: scanUnavailableMessage,
       },
