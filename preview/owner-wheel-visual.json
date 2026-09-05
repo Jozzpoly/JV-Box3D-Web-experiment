@@ -1,0 +1,29 @@
+{
+  "schema": "JV_OWNER_WHEEL_VISUAL_PROFILE_POINTER_V1",
+  "experiment": "wheel-visual-profile",
+  "sourceCommit": "08b43ac0a40be79be5f89a58582d7107e9e5ae06",
+  "staticLayer": {
+    "role": "accepted-jsprev2",
+    "repository": "Jozzpoly/JV-Box3D-Web-Public",
+    "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f",
+    "receipt": "receipts/jv_friends_scan_receipt.json"
+  },
+  "variants": [
+    {
+      "id": "stock",
+      "query": "jvWheelVisual=stock",
+      "widthMeters": 0.4375
+    },
+    {
+      "id": "narrow",
+      "query": "jvWheelVisual=narrow",
+      "widthMeters": 0.36
+    },
+    {
+      "id": "slim",
+      "query": "jvWheelVisual=slim",
+      "widthMeters": 0.32
+    }
+  ],
+  "purpose": "Isolated Owner A/B/C calibration of visual wheel width only. Physics, wheel contact, radius, wheel centers, rig bindings, and accepted product remain unchanged."
+}
