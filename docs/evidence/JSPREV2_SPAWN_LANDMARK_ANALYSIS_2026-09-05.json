@@ -1,0 +1,487 @@
+{
+  "schema": "JV_WEB_JSPREV2_SPAWN_LANDMARK_ANALYSIS_V1",
+  "generatedAt": "2026-09-05T16:47:30.684Z",
+  "source": {
+    "repository": "Jozzpoly/JV-Box3D-Web-Public",
+    "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f",
+    "packId": "scan/photogrammetry-primary",
+    "tileEvidence": [
+      {
+        "tileId": 0,
+        "bytes": 7307412,
+        "sha256": "a7a5c7c0632cefbd60538190317329e1b05826288eceb9bc4443751b9bed107e",
+        "groupCount": 6,
+        "vertexCount": 157208,
+        "indexCount": 569172
+      },
+      {
+        "tileId": 1,
+        "bytes": 8878636,
+        "sha256": "2d01f68eadaa04a82bd2fabb92b3d87cd14cbd643f53eef658b1277cbbbc9038",
+        "groupCount": 2,
+        "vertexCount": 189686,
+        "indexCount": 702162
+      },
+      {
+        "tileId": 2,
+        "bytes": 11615388,
+        "sha256": "33a3aa6e71e9bf898c6864be4b4eaef2ed87ae42ed107824829eefb9faa5b5a2",
+        "groupCount": 5,
+        "vertexCount": 242952,
+        "indexCount": 960216
+      },
+      {
+        "tileId": 3,
+        "bytes": 12094156,
+        "sha256": "5e7acb19c2a0038532d66d6b8cd609d3fa39b9ccadbff143c972f81390a88616",
+        "groupCount": 4,
+        "vertexCount": 258909,
+        "indexCount": 952254
+      },
+      {
+        "tileId": 4,
+        "bytes": 9904340,
+        "sha256": "edb95076810d95dd97a7a9f1925efb9ec7812b05dc2aff4951879a98963723dc",
+        "groupCount": 2,
+        "vertexCount": 208792,
+        "indexCount": 805740
+      },
+      {
+        "tileId": 5,
+        "bytes": 7895780,
+        "sha256": "49d62260e5efe9aea1e481427bbb108dfaefec18799fbb2886e260bd4ef96d46",
+        "groupCount": 4,
+        "vertexCount": 167993,
+        "indexCount": 629988
+      },
+      {
+        "tileId": 6,
+        "bytes": 8723912,
+        "sha256": "024905fc0d74db64a4f44b896a4e07eca93c5d0e92f9292de7f30fc239b8a45f",
+        "groupCount": 2,
+        "vertexCount": 184147,
+        "indexCount": 707793
+      }
+    ]
+  },
+  "frozenMethod": {
+    "classificationScope": "geometry-only safe/open spawn candidate discovery; not road semantics",
+    "cellSizeM": 1.5,
+    "maxTriangleSlopeDegrees": 12,
+    "minFlatAreaPerCellM2": 0.45,
+    "maxCellHeightSpreadM": 0.35,
+    "elevationQuantile": 0.65,
+    "neighborValidFraction": 0.75,
+    "maxNeighborHeightRangeM": 0.6,
+    "clearRadiusStepsM": [
+      3,
+      4.5,
+      6,
+      7.5,
+      9
+    ],
+    "candidateSeparationM": 8,
+    "limitations": [
+      "No semantic road/village labels exist in the accepted pack metadata.",
+      "Flat roofs/courtyards can be geometrically similar to roads; low-elevation filtering reduces but does not eliminate this ambiguity.",
+      "A candidate is not product-approved until visually/physically checked in the exact Owner Preview.",
+      "No runtime/product source is modified by this analysis."
+    ]
+  },
+  "integrity": {
+    "rasterOrderIndependent": true,
+    "vertexCount": 1409687,
+    "indexCount": 5327325,
+    "triangleCount": 1775775,
+    "acceptedFlatTriangles": 243876,
+    "acceptedFlatAreaM2": 197544.76370064032
+  },
+  "localBounds": {
+    "minimum": {
+      "x": -554.7562866210938,
+      "y": 247.2415771484375,
+      "z": -609.5018920898438
+    },
+    "maximum": {
+      "x": 648.8993530273438,
+      "y": 408.3096008300781,
+      "z": 489.51751708984375
+    }
+  },
+  "runtimeOrigin": {
+    "x": -47.071533203125,
+    "y": -247.2415771484375,
+    "z": 929.5018920898438
+  },
+  "raster": {
+    "rawFlatCellCount": 31084,
+    "qualifiedFlatCellCount": 15576,
+    "lowFlatCellCount": 11096,
+    "elevationCutLocalY": 290.1272684733073,
+    "rawCandidateCount": 3075
+  },
+  "classification": "GEOMETRIC_SAFE_SPAWN_CANDIDATES_FOUND_NOT_ROAD_SEMANTICS",
+  "candidates": [
+    {
+      "rank": 1,
+      "local": {
+        "x": 119.25,
+        "y": 277.4201287372546,
+        "z": -9.75
+      },
+      "world": {
+        "x": 72.178466796875,
+        "y": 30.178551588817072,
+        "z": 919.7518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.948905109489051,
+      "neighborhoodHeightRangeM": 0.41705457319767447,
+      "meanFlatness": 0.9933576948871764,
+      "score": 922.0522895089113
+    },
+    {
+      "rank": 2,
+      "local": {
+        "x": 71.25,
+        "y": 275.53537888157774,
+        "z": -60.75
+      },
+      "world": {
+        "x": 24.178466796875,
+        "y": 28.293801733140242,
+        "z": 868.7518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.948905109489051,
+      "neighborhoodHeightRangeM": 0.4474885754629554,
+      "meanFlatness": 0.997020704018844,
+      "score": 921.6701045633624
+    },
+    {
+      "rank": 3,
+      "local": {
+        "x": 54.75,
+        "y": 275.9354071192683,
+        "z": -36.75
+      },
+      "world": {
+        "x": 7.678466796875,
+        "y": 28.69382997083079,
+        "z": 892.7518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.9635036496350365,
+      "neighborhoodHeightRangeM": 0.5283412711090136,
+      "meanFlatness": 0.9943096015019078,
+      "score": 920.714173341668
+    },
+    {
+      "rank": 4,
+      "local": {
+        "x": 110.25,
+        "y": 277.3393551686201,
+        "z": -11.25
+      },
+      "world": {
+        "x": 63.178466796875,
+        "y": 30.097778020182602,
+        "z": 918.2518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.9635036496350365,
+      "neighborhoodHeightRangeM": 0.5474062161634947,
+      "meanFlatness": 0.9934320932035438,
+      "score": 920.3913451218801
+    },
+    {
+      "rank": 5,
+      "local": {
+        "x": 65.25,
+        "y": 275.38222959166313,
+        "z": -68.25
+      },
+      "world": {
+        "x": 18.178466796875,
+        "y": 28.140652443225633,
+        "z": 861.2518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.8978102189781022,
+      "neighborhoodHeightRangeM": 0.47761308112046663,
+      "meanFlatness": 0.9953152601287004,
+      "score": 920.1823477151775
+    },
+    {
+      "rank": 6,
+      "local": {
+        "x": 35.25,
+        "y": 275.81491144452286,
+        "z": -59.25
+      },
+      "world": {
+        "x": -11.821533203125,
+        "y": 28.573334296085363,
+        "z": 870.2518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.8686131386861314,
+      "neighborhoodHeightRangeM": 0.44909072458557375,
+      "meanFlatness": 0.9980730941859604,
+      "score": 920.045166160877
+    },
+    {
+      "rank": 7,
+      "local": {
+        "x": 66.75,
+        "y": 276.3306896364407,
+        "z": -27.75
+      },
+      "world": {
+        "x": 19.678466796875,
+        "y": 29.089112488003195,
+        "z": 901.7518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.9562043795620438,
+      "neighborhoodHeightRangeM": 0.5861315466544283,
+      "meanFlatness": 0.9942668114618487,
+      "score": 919.6930002562829
+    },
+    {
+      "rank": 8,
+      "local": {
+        "x": 126.75,
+        "y": 276.961604923832,
+        "z": -38.25
+      },
+      "world": {
+        "x": 79.678466796875,
+        "y": 29.7200277753945,
+        "z": 891.2518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.8905109489051095,
+      "neighborhoodHeightRangeM": 0.5048172091651963,
+      "meanFlatness": 0.9955367537097428,
+      "score": 919.5989278222137
+    },
+    {
+      "rank": 9,
+      "local": {
+        "x": 90.75,
+        "y": 276.31369201797685,
+        "z": -57.75
+      },
+      "world": {
+        "x": 43.678466796875,
+        "y": 29.072114869539348,
+        "z": 871.7518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.9051094890510949,
+      "neighborhoodHeightRangeM": 0.5258535565443481,
+      "meanFlatness": 0.993570395923468,
+      "score": 919.5686480947006
+    },
+    {
+      "rank": 10,
+      "local": {
+        "x": 87.75,
+        "y": 276.2955440702899,
+        "z": -47.25
+      },
+      "world": {
+        "x": 40.678466796875,
+        "y": 29.053966921852407,
+        "z": 882.2518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.927007299270073,
+      "neighborhoodHeightRangeM": 0.5822405335354119,
+      "meanFlatness": 0.9934036116077116,
+      "score": 919.1594947600103
+    },
+    {
+      "rank": 11,
+      "local": {
+        "x": 68.25,
+        "y": 275.6329476098234,
+        "z": -53.25
+      },
+      "world": {
+        "x": 21.178466796875,
+        "y": 28.391370461385918,
+        "z": 876.2518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.7591240875912408,
+      "neighborhoodHeightRangeM": 0.41303025626990575,
+      "meanFlatness": 0.997490989436593,
+      "score": 918.3941103929146
+    },
+    {
+      "rank": 12,
+      "local": {
+        "x": 48.75,
+        "y": 275.9388879382293,
+        "z": -42.75
+      },
+      "world": {
+        "x": 1.678466796875,
+        "y": 28.6973107897918,
+        "z": 886.7518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.8248175182481752,
+      "neighborhoodHeightRangeM": 0.5160765798271427,
+      "meanFlatness": 0.9946045536710534,
+      "score": 918.1273009884712
+    },
+    {
+      "rank": 13,
+      "local": {
+        "x": 78.75,
+        "y": 276.1263066103988,
+        "z": -33.75
+      },
+      "world": {
+        "x": 31.678466796875,
+        "y": 28.884729461961285,
+        "z": 895.7518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.8248175182481752,
+      "neighborhoodHeightRangeM": 0.5384078888713475,
+      "meanFlatness": 0.9931659502691653,
+      "score": 917.7741969453458
+    },
+    {
+      "rank": 14,
+      "local": {
+        "x": 62.25,
+        "y": 275.46346342312324,
+        "z": -60.75
+      },
+      "world": {
+        "x": 15.178466796875,
+        "y": 28.221886274685744,
+        "z": 868.7518920898438
+      },
+      "clearRadiusM": 9,
+      "neighborhoodValidFraction": 0.8394160583941606,
+      "neighborhoodHeightRangeM": 0.5868145222598855,
+      "meanFlatness": 0.9963448284787485,
+      "score": 917.3851138932787
+    },
+    {
+      "rank": 15,
+      "local": {
+        "x": 138.75,
+        "y": 277.2220274615112,
+        "z": -30.75
+      },
+      "world": {
+        "x": 91.678466796875,
+        "y": 29.980450313073675,
+        "z": 898.7518920898438
+      },
+      "clearRadiusM": 7.5,
+      "neighborhoodValidFraction": 0.9896907216494846,
+      "neighborhoodHeightRangeM": 0.41039186774287373,
+      "meanFlatness": 0.9954099446072081,
+      "score": 772.9924268566572
+    },
+    {
+      "rank": 16,
+      "local": {
+        "x": 95.25,
+        "y": 276.23634798717035,
+        "z": -65.25
+      },
+      "world": {
+        "x": 48.178466796875,
+        "y": 28.994770838732848,
+        "z": 864.2518920898438
+      },
+      "clearRadiusM": 7.5,
+      "neighborhoodValidFraction": 0.9587628865979382,
+      "neighborhoodHeightRangeM": 0.41596233897968204,
+      "meanFlatness": 0.9926851910464034,
+      "score": 772.2827791409529
+    },
+    {
+      "rank": 17,
+      "local": {
+        "x": 84.75,
+        "y": 276.3051208657396,
+        "z": -39.75
+      },
+      "world": {
+        "x": 37.678466796875,
+        "y": 29.063543717302082,
+        "z": 889.7518920898438
+      },
+      "clearRadiusM": 7.5,
+      "neighborhoodValidFraction": 0.9072164948453608,
+      "neighborhoodHeightRangeM": 0.46202886423782275,
+      "meanFlatness": 0.9928963745805846,
+      "score": 770.5615898047997
+    },
+    {
+      "rank": 18,
+      "local": {
+        "x": 123.75,
+        "y": 277.62695150760493,
+        "z": -18.75
+      },
+      "world": {
+        "x": 76.678466796875,
+        "y": 30.38537435916743,
+        "z": 910.7518920898438
+      },
+      "clearRadiusM": 7.5,
+      "neighborhoodValidFraction": 0.8865979381443299,
+      "neighborhoodHeightRangeM": 0.4779534033921209,
+      "meanFlatness": 0.9920381032767825,
+      "score": 769.8753312575893
+    },
+    {
+      "rank": 19,
+      "local": {
+        "x": 116.25,
+        "y": 277.5289060200433,
+        "z": -2.25
+      },
+      "world": {
+        "x": 69.178466796875,
+        "y": 30.28732887160578,
+        "z": 927.2518920898438
+      },
+      "clearRadiusM": 7.5,
+      "neighborhoodValidFraction": 0.9587628865979382,
+      "neighborhoodHeightRangeM": 0.5893728422628328,
+      "meanFlatness": 0.9931830608679145,
+      "score": 769.6607491292632
+    },
+    {
+      "rank": 20,
+      "local": {
+        "x": 104.25,
+        "y": 277.4287533321838,
+        "z": -20.25
+      },
+      "world": {
+        "x": 57.178466796875,
+        "y": 30.187176183746317,
+        "z": 909.2518920898438
+      },
+      "clearRadiusM": 7.5,
+      "neighborhoodValidFraction": 0.9278350515463918,
+      "neighborhoodHeightRangeM": 0.5738027036250628,
+      "meanFlatness": 0.9922310927854043,
+      "score": 769.268227880731
+    }
+  ],
+  "decisionRule": "Treat candidates only as bounded geometric proposals; require exact-preview visual/physical validation before making one the default product spawn."
+}
