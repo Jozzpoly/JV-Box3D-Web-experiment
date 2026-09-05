@@ -8,29 +8,36 @@
   "canonicalEvidenceLedger": "docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json",
   "activationRecord": "docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md",
   "latestEvidence": {
-    "id": "RQ2C2_MAX_NATIVE_CARRIER_CONTROL",
+    "id": "RQ2C3_DIRECT_LOCAL_AXIS_GUIDE_CONTROL",
     "status": "APPARATUS_INVALID",
     "physicsExecuted": true,
-    "executedSource": "f3766ecfbaf447bbad7b13ea5014e47a40537cc5",
-    "run": 33967366019,
-    "job": 101309730438,
-    "artifact": 9969876657,
-    "document": "docs/WHEEL_MODE5_RQ2C2_MAX_NATIVE_CARRIER_RESULT_2026-09-05.md",
-    "classification": "APPARATUS_INVALID_MULTI_JOINT_CARRIER_TOPOLOGY_FALSIFIED",
+    "executedSource": "09712c613218f5b6bb40927673f714fd364f2bdf",
+    "run": 33968208611,
+    "job": 101311971290,
+    "artifact": 9970119510,
+    "artifactDigest": "sha256:f2886dd200b507b9af384f5e64e5d1c0ccdefbeff089fbb2ad9c0b998785a2c2",
+    "document": "docs/WHEEL_MODE5_RQ2C3_DIRECT_LOCAL_AXIS_GUIDE_RESULT_2026-09-05.md",
+    "classification": "RQ2C3_DIRECT_GUIDE_SOFT_EQUALITY_CONTROL_FAIL",
     "frozenRh0Replay": "PASS",
-    "contactVertical": "PASS_LIKE",
+    "contactVertical": "PASS",
     "axisGuide": "PASS_WITHIN_0.035_DEG_BUDGET",
+    "directPlaneGuidance": "SUPPORTIVE_DIAGNOSTIC",
     "headingGuide": "FAIL",
-    "carrierConstraintHertz": 240,
-    "solverMaxEffectiveConstraintHertz": 240,
-    "maxHeadingErrorDegrees": 1.8948150712890701,
-    "maxCrossHeadingSpeedMmPerS": 33.08277204632759,
-    "maxSlipMmPerS": 0.043511390686035156,
+    "rollingSlip": "FAIL",
+    "linearGuideHertz": 240,
+    "linearGuideDampingRatio": 2,
+    "maxPlaneSeparationMm": 0.003802192622970324,
+    "maxCrossTrackMm": 0.006862015652586706,
+    "maxHeadingErrorDegrees": 0.049513965619179805,
+    "maxCrossHeadingSpeedMmPerS": 0.8641756139695644,
+    "maxSlipMmPerS": 0.03457069396972656,
     "yawPairExecuted": false
   },
   "activeApparatus": {
     "frozenSuite": "tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp",
     "rq2cSuite": "tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-suite.hpp",
+    "rq2c3Suite": "tools/wheel-mode5/rq2c3/wheel-mode5-rq2c3-direct-guide-suite.hpp",
+    "rq2c3Patch": "tools/wheel-mode5/rq2c3/patch-rq2c3-parallel-linear-guide.py",
     "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json"
   },
   "closedApparatus": {
@@ -42,10 +49,10 @@
       "doNotContinue": ["generic hertz sweep", "helper mass tuning", "extra substeps as a rescue", "higher angular mount hertz", "relaxed RH0.5 gates"]
     }
   },
-  "nextGate": "RQ2C3_DIRECT_LOCAL_ONE_AXIS_CONSTRAINT_DESIGN",
+  "nextGate": "RQ2C4_ENGINE_NATIVE_HARD_RELAX_0DEG",
   "challengeDegrees": 3.5,
   "mountHertz": 120,
   "maxAxisErrorDegrees": 0.035,
   "maxHeadingErrorDegrees": 0.035,
-  "routing": "Audit pinned Box3D for a single direct local point-to-plane / one-axis translational constraint that blocks only A while leaving H, Y and rotation/spin free. If no native joint provides those DOFs, design the smallest research-only direct constraint/joint. Do not build another helper-body chain. First execution remains 0 deg behind frozen RH0 replay and unchanged RH0.5 gates; +/-3.5 deg stays blocked until 0 deg passes."
+  "routing": "Keep the RQ2C3 direct one-axis topology, geometry, 240Hz/2.0 generic tuning, 120Hz/1.0 angular mount and frozen gates unchanged. Predeclare one solver-semantic falsifier: pass the existing Box3D useBias solve/relax flag into ParallelJoint and make only the experimental scalar linear guide follow the engine-native hard equality relaxation pattern. Historical ParallelJoint angular semantics remain unchanged. Frozen RH0 replay must pass before 0deg physics. No hertz sweep, helper bodies, threshold relaxation or yaw execution before a 0deg PASS."
 }
