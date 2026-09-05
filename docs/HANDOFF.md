@@ -7,12 +7,13 @@ Use this file for an actual handoff/continuation. A new chat is not by itself a 
 
 ## 1. Current mode
 
-JV-Web has two deliberately separate truth layers:
+JV-Web has deliberately separate truth layers:
 
 - **accepted product/source authority:** `Jozzpoly/JV-Box3D-Web-experiment/main@5b28cc03d22264010680deb95a04abd04661bc22`;
-- **retained wheel-mode5 research evidence:** `research/wheel-mode5-rq2c-orientation-2026-09-05`, currently closed at `RQ2C_ORIENTATION_HOLD`.
+- **retained wheel-mode5 research evidence:** `research/wheel-mode5-rq2c-orientation-2026-09-05`, currently closed at `RQ2C_ORIENTATION_HOLD`;
+- **unpromoted post-wheel product calibration:** `work/spawn-landmark-calibration-2026-09-05`, a bounded spawn-location investigation that is not accepted product truth.
 
-Do not treat the research branch as accepted product source. Do not treat the HOLD stage as an active instruction to continue the RQ2C experiment sequence.
+Do not treat either non-main branch as accepted product source. Do not treat the wheel HOLD stage as an active instruction to continue the RQ2C experiment sequence. Do not treat the spawn calibration branch as a selected road spawn or as promotion-ready.
 
 The 2026-08-26 strategic cold-takeover campaign remains historical. JV-Web is a standalone browser product/R&D surface, separate from NextGen JV.
 
@@ -24,12 +25,13 @@ Then read:
 
 1. `AGENTS.md`;
 2. `docs/PROJECT_STATE.md`;
-3. if wheel-mode5 is relevant: `docs/evidence/WHEEL_MODE5_ACTIVE_RESEARCH_POINTER_2026-09-05.json`;
-4. if wheel-mode5 is relevant: `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`;
-5. if exact current wheel closure matters: `docs/WHEEL_MODE5_RQ2C4F_SOURCE_OWNERSHIP_CLOSURE_2026-09-05.md`;
-6. use `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json` for exact evidence/provenance;
-7. older wheel/E2a2/RQ/RH0 documents only for a specific claim or apparatus dependency;
-8. if product steering is involved: `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md` and `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`.
+3. if current spawn-location work is relevant: resolve `work/spawn-landmark-calibration-2026-09-05` live and read `docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md` there;
+4. if wheel-mode5 is relevant: `docs/evidence/WHEEL_MODE5_ACTIVE_RESEARCH_POINTER_2026-09-05.json`;
+5. if wheel-mode5 is relevant: `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`;
+6. if exact current wheel closure matters: `docs/WHEEL_MODE5_RQ2C4F_SOURCE_OWNERSHIP_CLOSURE_2026-09-05.md`;
+7. use `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json` for exact wheel evidence/provenance;
+8. older wheel/E2a2/RQ/RH0 documents only for a specific claim or apparatus dependency;
+9. if product steering is involved: `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md` and `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`.
 
 Do not reconstruct or replay the entire research sequence unless newer live evidence conflicts with the current router.
 
@@ -48,7 +50,7 @@ Steering I1 remains the accepted current-best baseline:
 - artificial centering is not an accepted Owner-facing product dependency;
 - useful natural physical self-return remains unresolved.
 
-No wheel-mode5 research change has been promoted into accepted product truth or Owner Preview.
+No wheel-mode5 research change and no spawn-calibration candidate has been promoted into accepted product truth or canonical Owner Preview.
 
 ## 4. Wheel-mode5 research progression now retained as evidence
 
@@ -121,7 +123,38 @@ Routine RQ2C orientation micro-forensics are closed at a truthful HOLD.
 
 This is a valid negative/partial research outcome. Do not execute yaw merely to complete the planned matrix.
 
-## 8. Still open / not validated
+## 8. Post-wheel spawn-location audit
+
+A broader product re-ground after closing RQ2C selected the Owner-reported poor spawn location as a bounded product problem worth investigating before reopening steering or wheel micro-forensics.
+
+The work is isolated on:
+
+`work/spawn-landmark-calibration-2026-09-05`
+
+Closure/state record at the time of this handoff:
+
+`docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md`
+
+Important retained findings:
+
+- the earlier interpretation that ordinary Owner Preview spawned via `scanCenterSpawn()` was falsified by exact source `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`; default startup used `map` / `world.spawn`;
+- accepted `world.spawn = { x: 0, y: 1.2, z: 0 }`, while the accepted JSPREV2 world transform starts around `z = 320`, so the stronger problem interpretation is spatial/semantic placement relative to the scan playground, not proven scan-center collision failure;
+- accepted JSPREV2 metadata contains no semantic road/start landmark;
+- two different geometry methods find several large stable flat regions, but neither can label one as a road;
+- three spatially separated crosscheck-passing candidates exist only as opt-in `scan-cal-a/b/c` targets on the work branch;
+- focused spawn tests and TypeScript typecheck pass;
+- the observed full-suite red gate consists of seven pre-existing steering/mobile-UI assertions whose relevant source/test blobs are identical to accepted `main`;
+- because that baseline `npm run check` stopped before `build:portable`, the candidate portable build remains **UNVERIFIED**.
+
+Current spawn classification:
+
+`PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE`
+
+Do not call A/B/C roads, choose one algorithmically, weaken the existing canonical Owner Preview pinning, or promote this branch before a qualified candidate build and a bounded Owner semantic comparison.
+
+## 9. Still open / not validated
+
+Wheel/research:
 
 - `+3.5°/-3.5°` orientation equivalence;
 - exact numerical per-subsystem ownership of the RQ2C4F spin-rate drift;
@@ -136,15 +169,23 @@ This is a valid negative/partial research outcome. Do not execute yaw merely to 
 - wheel-mode5 product integration and Owner acceptance;
 - useful natural physical steering self-return.
 
-## 9. Git / Preview discipline
+Product/spawn:
+
+- whether calibration A, B or C is visibly a useful Owner start location;
+- whether any candidate is actually on/near the desired road;
+- portable-build qualification of the spawn candidate branch;
+- any decision to promote a selected spawn into accepted product `main`.
+
+## 10. Git / Preview discipline
 
 - `main` remains accepted product source authority.
-- The RQ2C research branch owns only its executed scoped research evidence.
+- The RQ2C research branch owns only its executed scoped research evidence and routing docs.
+- The spawn work branch owns only its bounded calibration analysis/candidates; it is not accepted product truth.
 - `preview/owner-control` remains exact-source composition infrastructure, not authority.
-- Do not fast-forward the research branch into `main` without a separate product-integration decision and representative validation.
+- Do not fast-forward either non-main branch into `main` without a separate product-integration decision and representative validation.
 - Before any write, re-fetch repo/ref/head.
 
-## 10. Things a new agent must not infer
+## 11. Things a new agent must not infer
 
 Do not infer that:
 
@@ -155,9 +196,12 @@ Do not infer that:
 - `+3.5°/-3.5°` yaw should run despite the failed zero-degree gate;
 - stiffness/contact parameters or the `0.002 mm/s` gate should be tuned to obtain a PASS;
 - wheel-mode5 is accepted for product `main` or Owner Preview;
+- the spawn calibration branch has selected or proved a road start;
+- the seven full-suite steering/UI failures were caused by the spawn slice;
+- the spawn candidate portable build passed;
 - 900-degree steering or current M6 architecture is final forever;
 - a new chat requires another broad takeover campaign.
 
-## 11. Current router
+## 12. Current router
 
-> **Protect accepted `main`. Preserve the trusted wheel-mode5 evidence. Keep the RQ2C orientation line closed at zero-degree HOLD unless a later decision creates a concrete reopen trigger. Do not choose the next experiment by historical sequence inertia; re-ground at the broader JV-Web level and choose the next work from current Owner priorities.**
+> **Protect accepted `main`. Preserve the trusted wheel-mode5 evidence and keep RQ2C closed at zero-degree HOLD. Preserve the separate spawn-calibration evidence as PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE; if that product need is resumed, qualify the candidate build and use bounded Owner A/B/C semantic judgement rather than adding more heuristics. Do not choose future work by historical sequence inertia.**
