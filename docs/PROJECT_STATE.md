@@ -43,7 +43,7 @@ Machine-readable evidence ledger:
 
 `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`
 
-The ledger predates the final RQ2C4F/source-ownership closure and is explicitly marked for refresh by the active pointer. Until refreshed, the closure record + active pointer are newer authority for this final research frontier.
+The canonical ledger has now been refreshed through RQ2C4F and the source-ownership closure. Validated ledger refresh commit: `bd6c39e011c1d24f054e1b3f5994c759357c4f8e`, workflow run `33976867964`, job `101334995694`. The active pointer marks no further ledger refresh required, and the updated research-foundation validator passed run `33976990623` after the RQ2C HOLD transition.
 
 ## 3. Current wheel-mode5 verdict
 
