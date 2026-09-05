@@ -78,9 +78,22 @@ Machine-readable evidence ledger:
 
 `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`
 
-Ledger validator:
+RH0 non-drift replay contract:
 
-`tools/wheel-mode5-evidence-ledger-validate.mjs`
+`docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json`
+
+Consolidated-harness design:
+
+`docs/WHEEL_MODE5_RH0_CONSOLIDATED_RQ_HARNESS_DESIGN_2026-09-05.md`
+
+Latest migration-oracle result:
+
+`docs/WHEEL_MODE5_RH0_LEGACY_COMPOSITION_REPLAY_RESULT_2026-09-05.md`
+
+Static validators:
+
+- `tools/wheel-mode5-evidence-ledger-validate.mjs`
+- `tools/wheel-mode5-rh0-replay-contract-validate.mjs`
 
 Fresh agents should use these before descending into historical experiment documents.
 
@@ -209,44 +222,80 @@ The correct response is **consolidation before expansion**.
 
 Status: **ACTIVE / BLOCKS NEW WHEEL PHYSICS**.
 
-### RH0.1 — evidence ledger
+### RH0.1 — evidence ledger — PASS
 
-Create and maintain one canonical machine-readable ledger with exact source/run/job/artifact/status/scope/reopen provenance.
-
-Current file:
+Canonical machine-readable ledger exists with exact source/run/job/artifact/status/scope/reopen provenance:
 
 `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`
 
-### RH0.2 — evidence invariant validation
+### RH0.2 — evidence/replay invariant validation — PASS
 
-Validate the ledger automatically, including anti-overclaim invariants:
+The lightweight foundation gate validates:
 
-- RQ2c0b cannot become physics evidence without a later executed result;
-- Q1 must retain bounded-laboratory language;
-- RQ2b asymmetry must remain visible;
-- RQ2c0a original tilt instrument remains invalid;
-- historical `100 µrad` gate cannot silently become product truth.
+- evidence status/provenance invariants;
+- bounded Q1 language;
+- RQ2b sign-asymmetry retention;
+- RQ2c0 invalid/superseded classifications;
+- replay-contract structure and dependency pins.
 
-### RH0.3 — consolidate active RQ apparatus
+Latest post-oracle foundation run:
 
-Replace the pattern of one new full workflow + helper clone/string patch per tiny scenario with the smallest explicit reusable active execution path.
+`33960067816 / 101290295069` — **SUCCESS**.
 
-Do not mass-delete historical workflows yet; they remain provenance until replacement evidence is proven.
+### RH0 migration oracle — PASS
 
-### RH0.4 — frozen replay suite
+Before rewriting active apparatus, all frozen canonical legacy helpers were composed into one pinned build/process and replayed against one contract:
 
-Before the new apparatus is trusted for new science, reproduce:
+source / run / job:
+
+`f38b82195b2032cba49815f79770ecf8e8abce2a / 33959870475 / 101289762819`
+
+artifact:
+
+`9967602295`
+
+Result: **PASS**.
+
+The bridge replay preserved the defining canonical signals, including:
+
+- RQ0 stable matched rolling and friction positive control;
+- RQ1c exactly two represented top faces, one intended feature transition and `0 -> -29.997 µrad` normal shift;
+- RQ2a max pulse slip about `0.0488758 mm/s` and near-zero rolling residual;
+- RQ2b max pulse slip about `3.67820 mm/s`, end-pulse mismatch about `2.92418 mm/s`, final relaxation to near-zero slip;
+- RQ2 drive/brake max-slip asymmetry ~`75.26x`.
+
+This is a **migration/non-drift oracle**, not new physics qualification and not the desired final active architecture.
+
+### RH0.3 — consolidate active RQ apparatus — NEXT
+
+Design baseline:
+
+`docs/WHEEL_MODE5_RH0_CONSOLIDATED_RQ_HARNESS_DESIGN_2026-09-05.md`
+
+The next implementation should replace the pattern of one new full workflow + helper clone/string patch per tiny scenario with:
+
+- one readable, versioned active RQ suite module;
+- one small stable adapter into the pinned Box3D.js binding translation unit;
+- frozen named canonical scenarios first;
+- one build/run path and one result schema;
+- validation against the exact same replay contract and bridge oracle.
+
+Do not mass-delete historical workflows yet; they remain provenance until the explicit replacement reproduces the evidence.
+
+### RH0.4 — explicit-suite frozen replay — BLOCKED ON RH0.3
+
+The new explicit suite must reproduce:
 
 - RQ0 matched rolling + friction positive control;
 - RQ1c 30 µrad transition;
 - RQ2a bounded braking;
 - RQ2b bounded drive + sign-asymmetry sentinel.
 
-Use declared non-drift tolerances tied to the physical significance of each metric.
+A replay failure is first a harness non-drift failure, not a new physics discovery.
 
-### RH0.5 — next challenge / error budget
+### RH0.5 — next challenge / error budget — BLOCKED ON EXPLICIT HARNESS
 
-Only after the harness is stable:
+Only after the explicit harness is stable:
 
 - choose the next orientation question from actual JV/donor/product geometry;
 - define a challenge amplitude;
@@ -257,18 +306,18 @@ No `120 -> 240 -> ... until PASS` stiffness campaign is authorized.
 
 ### RH0.6 — continuation branch decision
 
-After canonical replay succeeds, decide whether the current branch remains an evidence archive and active work moves to a hardened continuation branch or a clean research branch based on `main` plus only minimal canonical apparatus/evidence pointers.
+After explicit canonical replay succeeds, decide whether the current long research branch remains mainly an evidence archive and active work moves to a hardened continuation branch or a clean research branch based on `main` plus only minimal canonical apparatus/evidence pointers.
 
 ## 9. RH0 exit criteria
 
 All must be true:
 
-1. ledger and validator pass;
-2. project state/router point to RH0;
-3. one explicit reusable active RQ execution path exists;
-4. frozen RQ0/RQ1c/RQ2a/RQ2b suite reproduces within declared tolerances;
-5. RQ2b sign-asymmetry sentinel survives;
-6. next orientation challenge and its error budget are physically justified.
+1. ledger and validator pass — **PASS**;
+2. project state/router point to RH0 — **PASS**;
+3. one explicit reusable active RQ execution path exists — **OPEN**;
+4. explicit consolidated harness reproduces frozen RQ0/RQ1c/RQ2a/RQ2b within declared tolerances — **OPEN**;
+5. RQ2b sign-asymmetry sentinel survives the explicit refactor — **OPEN; bridge oracle proves the reference**;
+6. next orientation challenge and its error budget are physically justified — **OPEN / deliberately deferred until harness hardening**.
 
 ## 10. Broader product pressures remain open
 
@@ -296,6 +345,7 @@ Do not opportunistically mix these into RH0 apparatus hardening. Conversely, do 
 - Do not start camber/steer/load-transfer physics before RH0.
 - Do not use donor outer-P75 evidence as full annular validation.
 - Do not delete the historical research apparatus before a canonical replacement reproduces the evidence.
+- Do not mistake the successful legacy bridge for completion of harness consolidation.
 - Do not ask the Owner to judge low-level telemetry before a faithful experiential candidate exists.
 
 ## 12. Fresh continuation
@@ -313,8 +363,9 @@ For wheel-mode5 research:
 2. read `AGENTS.md` and this file;
 3. read `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`;
 4. read `docs/WHEEL_MODE5_RESEARCH_AUDIT_AND_FOUNDATION_HARDENING_2026-09-05.md`;
-5. validate `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`;
-6. continue **RH0**, not RQ2c0 physics;
-7. open historical experiment docs only as directed by the ledger/router.
+5. validate `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json` and the replay contract;
+6. use `docs/WHEEL_MODE5_RH0_LEGACY_COMPOSITION_REPLAY_RESULT_2026-09-05.md` as the migration A-side;
+7. continue **RH0.3 explicit consolidated harness**, not RQ2c0 physics;
+8. open historical experiment docs only as directed by the ledger/router.
 
-Current milestone boundary: **Steering I1 remains the last Owner hands-on product baseline; wheel-mode5 has strong but scoped laboratory evidence through RQ2c0a; RQ2c0b has no physics result; RH0 is active and must consolidate evidence/apparatus before new physics; no product promotion authorized.**
+Current milestone boundary: **Steering I1 remains the last Owner hands-on product baseline; wheel-mode5 has strong but scoped laboratory evidence through RQ2c0a; RQ2c0b has no physics result; RH0 ledger/replay foundation and legacy migration oracle are PASS; explicit consolidated RQ harness + replay and challenge-derived orientation error budget remain before new physics; no product promotion authorized.**
