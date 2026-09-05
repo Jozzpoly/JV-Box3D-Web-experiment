@@ -386,7 +386,7 @@ jobs:
         run: |
           set -euxo pipefail
           root="dist/__experiments__/spawn-calibration"
-          candidate="$root/candidate"
+          candidate="$root/by-sha/$SPAWN_SHA"
           rm -rf "$root"
           mkdir -p "$candidate"
           cp -a "__spawn_candidate/dist/." "$candidate/"
@@ -394,16 +394,18 @@ jobs:
           import json, os
           from pathlib import Path
           root = Path("dist/__experiments__/spawn-calibration")
-          candidate = root / "candidate"
+          sha = os.environ["SPAWN_SHA"]
+          version_path = f"by-sha/{sha}/"
+          candidate = root / "by-sha" / sha
           variants = [
-              {"id": "scan-cal-a", "query": "jvSpawn=scan-cal-a", "href": "candidate/?jvSpawn=scan-cal-a"},
-              {"id": "scan-cal-b", "query": "jvSpawn=scan-cal-b", "href": "candidate/?jvSpawn=scan-cal-b"},
-              {"id": "scan-cal-c", "query": "jvSpawn=scan-cal-c", "href": "candidate/?jvSpawn=scan-cal-c"},
+              {"id": "scan-cal-a", "query": "jvSpawn=scan-cal-a", "href": f"{version_path}?jvSpawn=scan-cal-a"},
+              {"id": "scan-cal-b", "query": "jvSpawn=scan-cal-b", "href": f"{version_path}?jvSpawn=scan-cal-b"},
+              {"id": "scan-cal-c", "query": "jvSpawn=scan-cal-c", "href": f"{version_path}?jvSpawn=scan-cal-c"},
           ]
           marker = {
               "schema": "JV_OWNER_SPAWN_CALIBRATION_VARIANT_V1",
               "experiment": "spawn-landmark-calibration",
-              "sourceCommit": os.environ["SPAWN_SHA"],
+              "sourceCommit": sha,
               "buildManifest": "build-manifest.json",
               "staticLayer": {
                   "role": "accepted-jsprev2",
@@ -418,8 +420,8 @@ jobs:
           (root / "index.json").write_text(json.dumps({
               "schema": "JV_OWNER_SPAWN_CALIBRATION_INDEX_V1",
               "experiment": "spawn-landmark-calibration",
-              "sourceCommit": os.environ["SPAWN_SHA"],
-              "candidatePath": "candidate/",
+              "sourceCommit": sha,
+              "candidatePath": version_path,
               "variants": variants,
               "acceptedProduct": False,
           }, indent=2) + "\n", encoding="utf-8")
@@ -433,16 +435,18 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFile } from "node:fs/promises";
           const root = "dist/__experiments__/spawn-calibration";
+          const versionPath = `by-sha/${process.env.SPAWN_SHA}/`;
+          const candidate = `${root}/by-sha/${process.env.SPAWN_SHA}`;
           const expectedVariants = [
-            {id:"scan-cal-a",query:"jvSpawn=scan-cal-a",href:"candidate/?jvSpawn=scan-cal-a"},
-            {id:"scan-cal-b",query:"jvSpawn=scan-cal-b",href:"candidate/?jvSpawn=scan-cal-b"},
-            {id:"scan-cal-c",query:"jvSpawn=scan-cal-c",href:"candidate/?jvSpawn=scan-cal-c"},
+            {id:"scan-cal-a",query:"jvSpawn=scan-cal-a",href:`${versionPath}?jvSpawn=scan-cal-a`},
+            {id:"scan-cal-b",query:"jvSpawn=scan-cal-b",href:`${versionPath}?jvSpawn=scan-cal-b`},
+            {id:"scan-cal-c",query:"jvSpawn=scan-cal-c",href:`${versionPath}?jvSpawn=scan-cal-c`},
           ];
           const index = JSON.parse(await readFile(`${root}/index.json`, "utf8"));
-          const marker = JSON.parse(await readFile(`${root}/candidate/owner-spawn-calibration.json`, "utf8"));
-          const manifest = JSON.parse(await readFile(`${root}/candidate/build-manifest.json`, "utf8"));
-          const scanIndex = JSON.parse(await readFile(`${root}/candidate/__jv_scan__/index.json`, "utf8"));
-          if (index?.schema !== "JV_OWNER_SPAWN_CALIBRATION_INDEX_V1" || index?.experiment !== "spawn-landmark-calibration" || index?.sourceCommit !== process.env.SPAWN_SHA || index?.candidatePath !== "candidate/" || index?.acceptedProduct !== false || JSON.stringify(index?.variants) !== JSON.stringify(expectedVariants)) {
+          const marker = JSON.parse(await readFile(`${candidate}/owner-spawn-calibration.json`, "utf8"));
+          const manifest = JSON.parse(await readFile(`${candidate}/build-manifest.json`, "utf8"));
+          const scanIndex = JSON.parse(await readFile(`${candidate}/__jv_scan__/index.json`, "utf8"));
+          if (index?.schema !== "JV_OWNER_SPAWN_CALIBRATION_INDEX_V1" || index?.experiment !== "spawn-landmark-calibration" || index?.sourceCommit !== process.env.SPAWN_SHA || index?.candidatePath !== versionPath || index?.acceptedProduct !== false || JSON.stringify(index?.variants) !== JSON.stringify(expectedVariants)) {
             throw new Error("spawn calibration index provenance drift");
           }
           if (marker?.schema !== "JV_OWNER_SPAWN_CALIBRATION_VARIANT_V1" || marker?.sourceCommit !== process.env.SPAWN_SHA || marker?.staticLayer?.commit !== process.env.SCAN_SHA || marker?.acceptedProduct !== false || JSON.stringify(marker?.variants) !== JSON.stringify(expectedVariants)) {
@@ -454,7 +458,7 @@ jobs:
           if (scanIndex?.schema !== "JV_WEB_JSPREV2_INDEX_V2" || scanIndex?.packId !== "scan/photogrammetry-primary" || scanIndex?.available !== true) {
             throw new Error("spawn calibration scan layer drift");
           }
-          console.log(`OWNER_SPAWN_CALIBRATION_COMPOSITION_OK spawn=${process.env.SPAWN_SHA} scan=${process.env.SCAN_SHA}`);
+          console.log(`OWNER_SPAWN_CALIBRATION_COMPOSITION_OK spawn=${process.env.SPAWN_SHA} scan=${process.env.SCAN_SHA} path=${versionPath}`);
           NODE
 
       - name: Prove accepted root stayed byte-identical outside experiments
