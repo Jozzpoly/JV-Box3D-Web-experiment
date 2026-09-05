@@ -1,63 +1,123 @@
 # JV Web
 
-JV Web is the browser product line for Jozz Vehicle: a driveable desktop/mobile product, R&D surface and accumulated evidence corpus.
+JV Web is the browser product line for Jozz Vehicle: a driveable desktop/mobile product, practical R&D surface and accumulated evidence corpus.
 
 ## Authority and publication
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
-  current source / product authority
-  preview/owner-control -> Owner Preview operational lane
+  main -> accepted current product/source authority
+  research/* -> scoped research evidence only when current routing names it
+  preview/owner-control -> Owner Preview composition/publishing infrastructure
 
 Jozzpoly/JV-Box3D-Web-Public
-  accepted Friends artifact / release authority
+  accepted Friends/public artifact authority
 ```
 
-Live source `main` defines the current JV-Web product state. Preview and Friends/Public are separate operational/artifact authorities.
+Live Git/current source, exact executed evidence and direct scoped Owner observation outrank stale documentation and historical plans.
 
-Git/current source, executed evidence and direct scoped Owner observation outrank stale documentation and historical plans.
+The current accepted product authority remains:
 
-## Current strategic stage
+`main@5b28cc03d22264010680deb95a04abd04661bc22`
 
-JV-Web is entering a **read-only strategic Codex cold takeover** before any next-generation implementation decision.
+A research branch does not become accepted product truth merely because its laboratory CI is green.
 
-The current repository is a working product with substantial accepted/reference capital, but **repo continuity is now an open decision**. The next JV work may ultimately:
+## Current project mode
 
-- continue and polish this repo;
-- radically rebuild/refactor inside it;
-- use it mainly as donor/control/reference;
-- begin a clean implementation, including a new repository if justified.
+The strategic cold-takeover campaign from 2026-08-26 is **closed and historical**. Do not restart it because a new chat, Codex session or executor appears.
 
-No option is selected yet.
+JV-Web is in bounded product/R&D iteration:
 
-Earlier pre-Codex work produced architecture analyses and selected `FRONT-CORNER-AUTHORITY-ISOLATION-01` as the preferred first falsifier under the previous bounded-migration plan. That selection is preserved in `docs/FIRST_FALSIFIER.md` as **prior analysis, not a binding Codex task**.
+`real need or uncertainty -> smallest informative change/experiment -> risk-matched validation -> faithful evidence -> Owner judgement when experiential -> next iteration`
 
-Likewise A1/A2/M1/C0 in `docs/ARCHITECTURE_HYPOTHESES.md` are challengeable prior hypotheses, not an exhaustive architecture menu.
+JV-Web is its own browser product/R&D surface. It is not NextGen JV Lite and does not need to converge architecturally with NextGen JV.
 
-The first Codex session must reconstruct the product/source/evidence independently and stop before any branch, new repo or implementation.
+## Accepted product baseline
 
-## Proven/reference product capital
+Steering I1 remains current accepted product/reference capital:
 
-Current evidence includes real value in:
+`docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`
 
-- desktop/mobile browser product shell;
-- Direct Rotation + Relative-X steering interaction foundations;
-- absolute-position pedals, multitouch ownership and D/R lifecycle;
-- camera/fullscreen;
-- accepted responsive/mobile composition and desktop capability/HUD work;
-- Plac E2R, Offroad and approved JSPREV2;
-- accepted A53/Chrome render-1x scan boundary;
-- exact-source Preview/static-layer provenance discipline.
+Important accepted truth includes:
 
-These are **proven/reference capabilities, not permanent architecture**. A future strategy may preserve, reimplement or consciously supersede them.
+- Direct Rotation and Relative-X steering foundations;
+- semantic pointer `RELEASE` rather than hidden automatic return-to-zero;
+- hands-off graphical steering following the live physical rack;
+- re-grab anchored to current physical rack state;
+- 900-degree current default/current-best steering range, with other ranges still candidates;
+- artificial centering not exposed as an Owner-facing dependency;
+- natural physical steering self-return still unresolved;
+- established desktop/mobile controls, camera/fullscreen, accepted responsive composition and scan/render boundaries.
 
-Pedal Contact + Mechanical Feedback V1/V1.1 remains rejected/deferred evidence.
+These capabilities are valuable product/reference capital, not a permanent architecture freeze.
+
+## Current wheel-mode5 research state
+
+Retained research branch:
+
+`research/wheel-mode5-rq2c-orientation-2026-09-05`
+
+Current stage:
+
+`RQ2C_ORIENTATION_HOLD`
+
+Read the current state before any continuation:
+
+- `docs/PROJECT_STATE.md`;
+- `docs/evidence/WHEEL_MODE5_ACTIVE_RESEARCH_POINTER_2026-09-05.json`;
+- `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`;
+- `docs/WHEEL_MODE5_RQ2C4F_SOURCE_OWNERSHIP_CLOSURE_2026-09-05.md` when exact closure detail matters.
+
+The old E2a2 recycler descent is bounded historical evidence, not the current frontier. RQ0, RQ1, RQ2a/RQ2b and RH0 have already been executed/closed within their documented scopes.
+
+The first post-RH0 orientation line reached a truthful zero-degree HOLD:
+
+- actual-support max rolling slip: `0.034093857 mm/s`;
+- frozen gate: `0.002 mm/s`;
+- exceedance: `17.0469x`;
+- RQ2C4F localizes the dominant rolling-pair residual to axle-spin-rate evolution;
+- source review identifies contact tangential friction as the unique obvious first-order direct axial-torque path in the aligned apparatus;
+- exact numerical per-subsystem spin ownership remains partial and would require new solver-level instrumentation;
+- planned `+3.5°/-3.5°` yaw was **not executed** because the zero-degree gate failed;
+- wheel-mode5 product integration/Owner acceptance is **not authorized**.
+
+Routine RQ2C micro-forensics are closed. Do not continue them merely to finish the matrix or obtain a PASS.
+
+## Current next move
+
+There is no automatic next wheel-mode5 micro-experiment.
+
+Re-ground at the broader JV-Web level and choose the next work from current Owner priorities. Reopen exact spin-ownership forensics only if a later decision depends on salvaging the direct-guide qualification or representative vehicle evidence makes the residual materially consequential.
+
+Do not automatically:
+
+- run `+3.5°/-3.5°` yaw;
+- build the solver-level ownership accumulator;
+- reopen stiffness/240 Hz sweeps;
+- relax the `0.002 mm/s` gate;
+- tune solver/contact physics to force a pass;
+- reopen recycler archaeology;
+- promote the wheel research branch to `main` or Owner Preview.
+
+## Start here
+
+For a fresh normal continuation:
+
+1. verify live `main` and any branch actually under discussion;
+2. read `AGENTS.md`;
+3. read `docs/PROJECT_STATE.md`;
+4. read `docs/HANDOFF.md` only for an actual handoff/continuation;
+5. when wheel-mode5 matters, read the active research pointer and current wheel roadmap before older experiment history;
+6. inspect only the source/tests/evidence relevant to the current Owner need.
+
+Do not reconstruct a strategic cold takeover or the entire wheel experiment sequence unless live evidence contradicts the current canonical state.
 
 ## Program evidence sources
 
-- **JV-Web current repo** — current browser product/source and recipient evidence corpus.
-- **JV_CORE / Native** — sealed primary donor/research record; not a mandatory architecture or quality ceiling.
+- **JV-Web current repo** — browser product/source authority on accepted `main`, plus scoped research evidence on explicitly routed branches.
+- **JV_CORE / Native** — sealed donor/research record; not a mandatory architecture or quality ceiling.
 - **JURE** — optional authoring/mechanical-truth donor/tool; not mandatory and not frozen as final application/schema.
+- **NextGen JV** — separate deeper construction/platform direction; discoveries may transfer, architecture does not synchronize automatically.
 
 ## Canonical toolchain for the current repo
 
@@ -70,40 +130,17 @@ Vite 8.1.5
 box3d.js 0.0.2
 ```
 
-Canonical install/check/build health should be established by Codex in its repo-native preflight. A successful build proves current-repo reproducibility; it does not decide that this repo must remain the future foundation.
-
-## Start here — strategic takeover
-
-A fresh Codex strategic review reads:
-
-1. `AGENTS.md`
-2. `docs/PROJECT_STATE.md`
-3. `docs/HANDOFF.md`
-4. current package/toolchain/source/tests
-
-Only after an initial independent reconstruction, use prior-analysis/evidence documents as needed:
-
-- `docs/OWNER_CHECKPOINTS.md` — scoped Owner evidence and negative knowledge;
-- `docs/RECIPIENT_SURFACE.md` — detailed current-repo evidence map;
-- `docs/INHERITANCE_MATRIX.md` — prior claim-level synthesis;
-- `docs/ARCHITECTURE_HYPOTHESES.md` — prior architecture comparison;
-- `docs/FIRST_FALSIFIER.md` — prior Gate 7 recommendation, now non-binding;
-- `docs/donors/JV_CORE_DONOR_SEAL_2026-08-25.md` — sealed Native donor evidence;
-- `docs/ARCHITECTURE.md` — current boundaries, not future architecture freeze;
-- `docs/contracts/JURE_CONSUMER_BOUNDARY.md` — authored-truth/runtime constraints without mandatory-JURE commitment.
+Build/test success establishes reproducibility for the exact source tested; it does not by itself establish product acceptance or future architecture.
 
 ## Work discipline
 
-During the strategic takeover:
-
-- no implementation;
-- no new branch merely for takeover;
-- no new repository before strategy selection;
-- no automatic M1/FMUI execution;
-- no Native 1:1 port;
-- no JURE/schema freeze;
-- no generic framework campaign.
-
-First establish what the current product actually proves, what is accidental architecture, what remains unknown, and which next move has the best evidence-to-cost ratio.
+- verify repo/ref/head before writes;
+- protect accepted `main` from unrelated research changes;
+- match validation depth to causal blast radius;
+- distinguish accepted product truth from research evidence;
+- preserve negative/failed evidence instead of tuning it away;
+- stop microscopic research when further attribution cannot change the next decision;
+- do not create branches, wrappers, gates or schemas merely for process aesthetics;
+- do not ask the Owner to judge laboratory metrics without demonstrated experiential consequence.
 
 Third-party notices are in `THIRD_PARTY_NOTICES.md`.
