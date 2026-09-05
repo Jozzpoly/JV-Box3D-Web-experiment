@@ -98,10 +98,10 @@ jobs:
           python3 tools/wheel-mode5/rq2c/patch-rq2c-suite-adapter.py box3djs/src/bindings.cpp
           python3 tools/wheel-mode5/rq2c3/patch-rq2c3-suite-adapter.py box3djs/src/bindings.cpp
 
-          test "$(grep -Fxc '#include \"wheel-mode5-rq-suite.hpp\"' box3djs/src/bindings.cpp)" = "1"
-          test "$(grep -Fxc '#include \"wheel-mode5-rq2c-orientation-suite.hpp\"' box3djs/src/bindings.cpp)" = "1"
-          test "$(grep -Fxc '#include \"wheel-mode5-rq2c3-direct-guide-suite.hpp\"' box3djs/src/bindings.cpp)" = "1"
-          test "$(grep -Fc 'function( \"rq2c3RunOuterP75DirectGuide\", &rq2c3RunOuterP75DirectGuide );' box3djs/src/bindings.cpp)" = "1"
+          test "$(grep -Fxc '#include "wheel-mode5-rq-suite.hpp"' box3djs/src/bindings.cpp)" = "1"
+          test "$(grep -Fxc '#include "wheel-mode5-rq2c-orientation-suite.hpp"' box3djs/src/bindings.cpp)" = "1"
+          test "$(grep -Fxc '#include "wheel-mode5-rq2c3-direct-guide-suite.hpp"' box3djs/src/bindings.cpp)" = "1"
+          test "$(grep -Fc 'function( "rq2c3RunOuterP75DirectGuide", &rq2c3RunOuterP75DirectGuide );' box3djs/src/bindings.cpp)" = "1"
           git -C box3djs diff --check
 
       - name: Install Box3D.js workspace
