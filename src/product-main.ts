@@ -164,6 +164,13 @@ const unsubscribeViewPresentation = subscribeJvProductViewSettings((settings) =>
 });
 window.addEventListener("pagehide", unsubscribeViewPresentation, { once: true });
 
+const scanAvailabilityProbeUrl = new URL(
+  "__jv_scan__/index.json",
+  document.baseURI,
+).href;
+const scanUnavailableMessage =
+  "Skan JSPREV2 jest niedostępny w tej publikacji. Mapa i Offroad działają niezależnie.";
+
 installJvBuildIdentity();
 installJvPerformanceObserver();
 installProductControls({
@@ -180,15 +187,32 @@ installProductControls({
         active: spawnTarget === "offroad",
       },
       {
-        label: "Skan JSPREV2",
+        label: "Spawn A",
+        href: targetUrl("scan-cal-a"),
+        active: spawnTarget === "scan-cal-a",
+        availabilityProbeUrl: scanAvailabilityProbeUrl,
+        unavailableMessage: scanUnavailableMessage,
+      },
+      {
+        label: "Spawn B",
+        href: targetUrl("scan-cal-b"),
+        active: spawnTarget === "scan-cal-b",
+        availabilityProbeUrl: scanAvailabilityProbeUrl,
+        unavailableMessage: scanUnavailableMessage,
+      },
+      {
+        label: "Spawn C",
+        href: targetUrl("scan-cal-c"),
+        active: spawnTarget === "scan-cal-c",
+        availabilityProbeUrl: scanAvailabilityProbeUrl,
+        unavailableMessage: scanUnavailableMessage,
+      },
+      {
+        label: "Skan JSPREV2 (środek)",
         href: targetUrl("scan"),
         active: spawnTarget === "scan",
-        availabilityProbeUrl: new URL(
-          "__jv_scan__/index.json",
-          document.baseURI,
-        ).href,
-        unavailableMessage:
-          "Skan JSPREV2 jest niedostępny w tej publikacji. Mapa i Offroad działają niezależnie.",
+        availabilityProbeUrl: scanAvailabilityProbeUrl,
+        unavailableMessage: scanUnavailableMessage,
       },
     ],
     textureFilter: true,
