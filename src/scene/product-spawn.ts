@@ -4,15 +4,43 @@ import type {
   JvWorldData,
 } from "./jv-world-contract.js";
 
-export type JvProductSpawnTarget = "map" | "offroad" | "scan";
+export type JvProductSpawnTarget =
+  | "map"
+  | "offroad"
+  | "scan"
+  | "scan-cal-a"
+  | "scan-cal-b"
+  | "scan-cal-c";
 
 const TRIANGLE_EPSILON = 1e-7;
+const ACCEPTED_CALIBRATION_PACK_ID = "scan/photogrammetry-primary";
+
+// Geometry-only calibration candidates recovered from the exact accepted
+// JSPREV2 pack at public commit a325c279cfe63a0607dba33c3c635a1716e09f8f.
+// They passed both the triangle-raster discovery and the independent
+// vertex-normal occupancy crosscheck. They are deliberately NOT named roads:
+// only Owner preview validation can establish the useful semantic landmark.
+const SCAN_CALIBRATION_LOCAL_XZ = {
+  "scan-cal-a": { x: 35.25, z: -59.25 }, // crosscheck-passing discovery rank 6
+  "scan-cal-b": { x: 54.75, z: -36.75 }, // crosscheck-passing discovery rank 3
+  "scan-cal-c": { x: 110.25, z: -11.25 }, // crosscheck-passing discovery rank 4
+} as const satisfies Readonly<
+  Record<"scan-cal-a" | "scan-cal-b" | "scan-cal-c", Readonly<{ x: number; z: number }>>
+>;
+
+type JvScanCalibrationTarget = keyof typeof SCAN_CALIBRATION_LOCAL_XZ;
 
 export function parseProductSpawnTarget(
   search: string,
 ): JvProductSpawnTarget {
   const value = new URLSearchParams(search).get("jvSpawn");
-  if (value === "offroad" || value === "scan") {
+  if (
+    value === "offroad" ||
+    value === "scan" ||
+    value === "scan-cal-a" ||
+    value === "scan-cal-b" ||
+    value === "scan-cal-c"
+  ) {
     return value;
   }
   return "map";
@@ -122,16 +150,17 @@ export function scanSurfaceHeightAt(
   return localY === null ? null : localY + scan.origin.y;
 }
 
+function requirePositiveClearance(clearanceMeters: number): void {
+  if (!Number.isFinite(clearanceMeters) || clearanceMeters <= 0) {
+    throw new Error("Scan spawn clearance must be positive and finite.");
+  }
+}
+
 export function scanCenterSpawn(
   scan: JvScanWorld,
   clearanceMeters: number,
 ): JvVec3 {
-  if (
-    !Number.isFinite(clearanceMeters) ||
-    clearanceMeters <= 0
-  ) {
-    throw new Error("Scan spawn clearance must be positive and finite.");
-  }
+  requirePositiveClearance(clearanceMeters);
 
   const x =
     0.5 *
@@ -143,6 +172,29 @@ export function scanCenterSpawn(
   if (surfaceY === null) {
     throw new Error(
       "The selected JSPREV2 scan has no drivable surface at its AABB center.",
+    );
+  }
+  return { x, y: surfaceY + clearanceMeters, z };
+}
+
+export function scanCalibrationSpawn(
+  scan: JvScanWorld,
+  target: JvScanCalibrationTarget,
+  clearanceMeters: number,
+): JvVec3 {
+  requirePositiveClearance(clearanceMeters);
+  if (scan.packId !== ACCEPTED_CALIBRATION_PACK_ID) {
+    throw new Error(
+      `JSPREV2 spawn calibration is pinned to ${ACCEPTED_CALIBRATION_PACK_ID}; received ${scan.packId}.`,
+    );
+  }
+  const local = SCAN_CALIBRATION_LOCAL_XZ[target];
+  const x = scan.origin.x + local.x;
+  const z = scan.origin.z + local.z;
+  const surfaceY = scanSurfaceHeightAt(scan, x, z);
+  if (surfaceY === null) {
+    throw new Error(
+      `JSPREV2 calibration target ${target} has no drivable collision surface.`,
     );
   }
   return { x, y: surfaceY + clearanceMeters, z };
@@ -163,6 +215,13 @@ export function resolveProductSpawn(
     throw new Error(
       "Scan spawn was selected, but the exact JSPREV2 pack is unavailable.",
     );
+  }
+  if (
+    target === "scan-cal-a" ||
+    target === "scan-cal-b" ||
+    target === "scan-cal-c"
+  ) {
+    return scanCalibrationSpawn(world.scan, target, clearanceMeters);
   }
   return scanCenterSpawn(world.scan, clearanceMeters);
 }
