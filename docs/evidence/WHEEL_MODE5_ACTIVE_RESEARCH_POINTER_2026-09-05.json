@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-09-05",
+  "stage": "RQ2C_ORIENTATION",
+  "activeResearchBranch": "research/wheel-mode5-rq2c-orientation-2026-09-05",
+  "ancestryResearchBranch": "work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03",
+  "rh0ClosureHead": "c596684ea9a4b99e70d730c1b1b6f02f74cdab63",
+  "canonicalEvidenceLedger": "docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json",
+  "activationRecord": "docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md",
+  "activeApparatus": {
+    "suite": "tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp",
+    "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json"
+  },
+  "nextGate": "RQ2C0_CONTROL_TRANSLATIONALLY_FREE_0DEG",
+  "challengeDegrees": 3.5,
+  "mountHertz": 120,
+  "maxAxisErrorDegrees": 0.035,
+  "maxHeadingErrorDegrees": 0.035
+}
