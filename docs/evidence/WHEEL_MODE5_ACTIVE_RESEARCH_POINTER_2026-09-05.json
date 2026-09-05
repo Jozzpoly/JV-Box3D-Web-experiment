@@ -8,29 +8,28 @@
   "canonicalEvidenceLedger": "docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json",
   "activationRecord": "docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md",
   "latestEvidence": {
-    "id": "RQ2C3_DIRECT_LOCAL_AXIS_GUIDE_CONTROL",
-    "status": "APPARATUS_INVALID",
+    "id": "RQ2C4_ENGINE_NATIVE_HARD_RELAX_CONTROL",
+    "status": "OPEN_INSTRUMENT_AUDIT",
     "physicsExecuted": true,
-    "executedSource": "09712c613218f5b6bb40927673f714fd364f2bdf",
-    "run": 33968208611,
-    "job": 101311971290,
-    "artifact": 9970119510,
-    "artifactDigest": "sha256:f2886dd200b507b9af384f5e64e5d1c0ccdefbeff089fbb2ad9c0b998785a2c2",
-    "document": "docs/WHEEL_MODE5_RQ2C3_DIRECT_LOCAL_AXIS_GUIDE_RESULT_2026-09-05.md",
-    "classification": "RQ2C3_DIRECT_GUIDE_SOFT_EQUALITY_CONTROL_FAIL",
+    "executedSource": "13dfe885f8d949a25fa057f0cd47c7d86b95d817",
+    "run": 33968699659,
+    "job": 101313264377,
+    "artifact": 9970270283,
+    "artifactDigest": "sha256:3551d0009fee9d1da854dda31006fd279f537b8fa9160e6b3c80df39ff591a74",
+    "document": "docs/WHEEL_MODE5_RQ2C4_ENGINE_NATIVE_HARD_RELAX_RESULT_2026-09-05.md",
+    "classification": "RQ2C4_HARD_RELAX_CONTROL_SLIP_GATE_FAIL",
     "frozenRh0Replay": "PASS",
     "contactVertical": "PASS",
     "axisGuide": "PASS_WITHIN_0.035_DEG_BUDGET",
     "directPlaneGuidance": "SUPPORTIVE_DIAGNOSTIC",
-    "headingGuide": "FAIL",
-    "rollingSlip": "FAIL",
-    "linearGuideHertz": 240,
-    "linearGuideDampingRatio": 2,
-    "maxPlaneSeparationMm": 0.003802192622970324,
-    "maxCrossTrackMm": 0.006862015652586706,
-    "maxHeadingErrorDegrees": 0.049513965619179805,
-    "maxCrossHeadingSpeedMmPerS": 0.8641756139695644,
-    "maxSlipMmPerS": 0.03457069396972656,
+    "headingGuide": "PASS",
+    "legacyRollingSlipGate": "FAIL_INSTRUMENT_VALIDITY_UNDER_AUDIT",
+    "maxPlaneSeparationMm": 0.003802233550231904,
+    "maxCrossTrackMm": 0.00683569123793859,
+    "maxHeadingErrorDegrees": 1.3340299097657554e-8,
+    "maxCrossHeadingSpeedMmPerS": 2.3283064365386963e-7,
+    "legacyMeanSlipMmPerS": 0.008565518591139052,
+    "legacyMaxSlipMmPerS": 0.034689903259277344,
     "yawPairExecuted": false
   },
   "activeApparatus": {
@@ -38,6 +37,7 @@
     "rq2cSuite": "tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-suite.hpp",
     "rq2c3Suite": "tools/wheel-mode5/rq2c3/wheel-mode5-rq2c3-direct-guide-suite.hpp",
     "rq2c3Patch": "tools/wheel-mode5/rq2c3/patch-rq2c3-parallel-linear-guide.py",
+    "rq2c4Patch": "tools/wheel-mode5/rq2c4/patch-rq2c4-parallel-hard-relax.py",
     "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json"
   },
   "closedApparatus": {
@@ -49,10 +49,10 @@
       "doNotContinue": ["generic hertz sweep", "helper mass tuning", "extra substeps as a rescue", "higher angular mount hertz", "relaxed RH0.5 gates"]
     }
   },
-  "nextGate": "RQ2C4_ENGINE_NATIVE_HARD_RELAX_0DEG",
+  "nextGate": "RQ2C4D_ORIENTATION_AWARE_SLIP_INSTRUMENT_AUDIT",
   "challengeDegrees": 3.5,
   "mountHertz": 120,
   "maxAxisErrorDegrees": 0.035,
   "maxHeadingErrorDegrees": 0.035,
-  "routing": "Keep the RQ2C3 direct one-axis topology, geometry, 240Hz/2.0 generic tuning, 120Hz/1.0 angular mount and frozen gates unchanged. Predeclare one solver-semantic falsifier: pass the existing Box3D useBias solve/relax flag into ParallelJoint and make only the experimental scalar linear guide follow the engine-native hard equality relaxation pattern. Historical ParallelJoint angular semantics remain unchanged. Frozen RH0 replay must pass before 0deg physics. No hertz sweep, helper bodies, threshold relaxation or yaw execution before a 0deg PASS."
+  "routing": "Do not run yaw and do not change any physics/gate yet. Re-run exact RQ2C4 0deg physics with diagnostic-only telemetry and require primary metric non-drift. Compare frozen legacy V_H + R0*omega_A slip against orientation-aware actual support-witness longitudinal velocity using b3ComputeWheelSupport in the current wheel frame plus b3Body_GetLocalPointVelocity. Record support witness geometry. If the orientation-aware metric removes the ~0.03469 mm/s signature while legacy slip reproduces it, classify the legacy slip instrument as invalid for angularly compliant mount qualification and redesign the measurement contract before yaw."
 }
