@@ -1,0 +1,79 @@
+/* Spawn-calibration preview only.
+   Keep the three scan teleport choices visible and compact on mobile instead
+   of relying on a horizontally overflowing location row. */
+.product-control-group:first-child .product-choice-row {
+  align-items: center;
+}
+
+.product-control-group:first-child .product-choice:nth-child(3),
+.product-control-group:first-child .product-choice:nth-child(4),
+.product-control-group:first-child .product-choice:nth-child(5) {
+  background: rgba(49, 93, 153, 0.34);
+  border-color: rgba(132, 182, 255, 0.22);
+}
+
+.product-control-group:first-child .product-choice:nth-child(3) {
+  margin-left: 3px;
+  border-radius: 7px 3px 3px 7px;
+}
+
+.product-control-group:first-child .product-choice:nth-child(4) {
+  margin-left: -2px;
+  border-radius: 3px;
+}
+
+.product-control-group:first-child .product-choice:nth-child(5) {
+  margin-left: -2px;
+  border-radius: 3px 7px 7px 3px;
+}
+
+.product-control-group:first-child .product-choice:nth-child(3)::before {
+  content: "SKAN ";
+  color: #9fc5f7;
+  font-size: 0.56rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+@media (hover: none) and (pointer: coarse), (max-width: 620px) {
+  .product-toolbar {
+    overflow-x: visible;
+  }
+
+  .product-controls {
+    width: auto;
+    max-width: 100%;
+    padding: 5px;
+    gap: 4px;
+  }
+
+  .product-control-group:first-child {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .product-control-group:first-child .product-choice-row {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 3px;
+  }
+
+  .product-control-group:first-child .product-choice {
+    min-height: 28px;
+    min-width: 0;
+    padding: 5px 7px;
+    font-size: 0.58rem;
+  }
+
+  .product-control-group:first-child .product-choice:nth-child(3),
+  .product-control-group:first-child .product-choice:nth-child(4),
+  .product-control-group:first-child .product-choice:nth-child(5) {
+    flex: 0 0 auto;
+    padding-inline: 6px;
+  }
+
+  .product-control-group:first-child .product-choice:nth-child(3)::before {
+    font-size: 0.47rem;
+    letter-spacing: 0.06em;
+  }
+}
