@@ -1,4 +1,5 @@
 import type { VehicleVisualFrameV1 } from "../runtime/vehicle-visual-frame.js";
+import { resolveM6OwnerWheelVisualProfile } from "../render/m6-owner-wheel-visual-profile.js";
 import type { GlbRigidCpuAssetV1 } from "./glb-rigid-mesh-decoder.js";
 import type { LoadedVehicleVisualRuntimeV1 } from "./vehicle-visual-runtime-loader.js";
 import {
@@ -12,6 +13,43 @@ export interface RigidMeshDrawCommandV1 {
   readonly nodeName: string | null;
   readonly meshIndex: number;
   readonly worldFromNode: VehicleVisualMatrixV1;
+}
+
+const M6_OWNER_R3_VISUAL_PACKAGE_ID = "m6-owner-full-rig-r3" as const;
+
+function browserSearch(): string {
+  return typeof window === "undefined" ? "" : window.location.search;
+}
+
+function localWidthScaleMatrix(scale: number): VehicleVisualMatrixV1 {
+  if (!Number.isFinite(scale) || !(scale > 0)) {
+    throw new Error(`Owner wheel visual width scale must be finite and positive; received ${scale}.`);
+  }
+  return new Float32Array([
+    1,0,0,0,
+    0,scale,0,0,
+    0,0,1,0,
+    0,0,0,1,
+  ]);
+}
+
+function ownerWheelRootTransform(
+  runtime: LoadedVehicleVisualRuntimeV1,
+  bindingId: string,
+  worldFromNode: VehicleVisualMatrixV1,
+  widthScale: number,
+): VehicleVisualMatrixV1 {
+  if (
+    runtime.visualPackage.id !== M6_OWNER_R3_VISUAL_PACKAGE_ID ||
+    !bindingId.endsWith(".wheel") ||
+    widthScale === 1
+  ) {
+    return worldFromNode;
+  }
+  return multiplyVehicleVisualMatricesV1(
+    worldFromNode,
+    localWidthScaleMatrix(widthScale),
+  );
 }
 
 export function buildRigidMeshDrawPlanV1(
@@ -76,6 +114,7 @@ export function buildRigidMeshDrawPlanV1(
 export function buildVehicleVisualDrawPlanV1(
   runtime: LoadedVehicleVisualRuntimeV1,
   frame: VehicleVisualFrameV1,
+  ownerWheelVisualWidthScale = resolveM6OwnerWheelVisualProfile(browserSearch()).widthScale,
 ): readonly RigidMeshDrawCommandV1[] {
   const resolved = resolveVehicleVisualBindingsV1(
     runtime.visualPackage,
@@ -94,7 +133,15 @@ export function buildVehicleVisualDrawPlanV1(
         `Vehicle visual node ${binding.nodeName} has duplicate runtime ownership.`,
       );
     }
-    roots.set(nodeIndex, binding.worldFromNode);
+    roots.set(
+      nodeIndex,
+      ownerWheelRootTransform(
+        runtime,
+        binding.bindingId,
+        binding.worldFromNode,
+        ownerWheelVisualWidthScale,
+      ),
+    );
   }
   return buildRigidMeshDrawPlanV1(runtime.cpuAsset, roots);
 }
