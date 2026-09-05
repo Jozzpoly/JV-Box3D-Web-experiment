@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   parseProductSpawnTarget,
   resolveProductSpawn,
@@ -7,6 +10,8 @@ import {
   scanCenterSpawn,
   scanSurfaceHeightAt,
 } from "../.test-dist/scene/product-spawn.js";
+
+const root = fileURLToPath(new URL("../", import.meta.url));
 
 function scanFixture() {
   return {
@@ -111,6 +116,22 @@ test("map remains the default and calibration targets are opt-in only", () => {
   assert.ok(offroad.x > 198 && offroad.x < 220);
   assert.ok(Number.isFinite(offroad.y));
   assert.equal(offroad.z, 0);
+});
+
+test("scan calibration targets use the full scan world loader at startup", async () => {
+  const entry = await readFile(resolve(root, "src/product-main.ts"), "utf8");
+  assert.match(
+    entry,
+    /const scanBackedSpawnTarget =\s*spawnTarget === "scan" \|\|\s*spawnTarget === "scan-cal-a" \|\|\s*spawnTarget === "scan-cal-b" \|\|\s*spawnTarget === "scan-cal-c";/s,
+  );
+  assert.match(
+    entry,
+    /timedProductWorldLoader\(\s*scanBackedSpawnTarget\s*\? loadLocalFullProductWorld\s*:\s*loadMapOnlyProductWorld,?\s*\)/s,
+  );
+  assert.doesNotMatch(
+    entry,
+    /timedProductWorldLoader\(\s*spawnTarget === "scan"/s,
+  );
 });
 
 test("calibration candidates are pack-pinned, surface-resolved and spatially distinct", () => {
