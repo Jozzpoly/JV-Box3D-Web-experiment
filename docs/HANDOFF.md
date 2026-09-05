@@ -1,113 +1,148 @@
 # JV-Web — handoff
 
-Updated: 2026-09-01
+Updated: 2026-09-05
 Owner: Jozz
 
-Use this file for an actual handoff/continuation. A new chat is **not** by itself a new takeover campaign.
+Use this file for an actual handoff/continuation. A new chat is not by itself a new takeover campaign.
 
 ## 1. Current mode
 
-JV-Web is in bounded product iteration after a completed Steering I1 milestone consolidation.
+JV-Web is in bounded product/R&D iteration with three deliberately separate lanes:
 
-The 2026-08-26 read-only strategic cold-takeover campaign is historical. Do not restart it unless new evidence creates a real strategic reason.
+- accepted product/runtime baseline on `main` + exact executable snapshot;
+- retained wheel-mode5 research evidence on `research/wheel-mode5-rq2c-orientation-2026-09-05`;
+- unpromoted spawn-location calibration on `work/spawn-landmark-calibration-2026-09-05`.
 
-JV-Web is a standalone browser Jozz Vehicle product/R&D surface, separate from NextGen JV. It may learn from NextGen/JURE/JV_CORE/JES, but those projects do not own JV-Web live truth.
+The 2026-08-26 strategic cold takeover is historical and closed.
 
-## 2. Start here
+Do not infer that either non-main branch is accepted product truth.
 
-For a fresh continuation:
+## 2. Exact accepted product / Preview boundary
 
-1. verify live `Jozzpoly/JV-Box3D-Web-experiment/main`;
-2. read `AGENTS.md`;
-3. read `docs/PROJECT_STATE.md`;
-4. inspect only the source/tests relevant to the requested slice;
-5. if steering is involved, read `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md` and `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`.
+Always resolve live refs first.
 
-Do not reconstruct the entire project history unless current evidence actually conflicts.
+At this grounding, canonical Owner Preview remains pinned to:
 
-## 3. Current steering truth
+- executable source: `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`;
+- JSPREV2 static layer: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
+- receipt: `receipts/jv_friends_scan_receipt.json`.
 
-The Steering I1 baseline established:
+`preview/owner-control` is operational exact-source composition infrastructure, not source authority.
 
-- touch steering pointer release defaults to semantic `RELEASE`;
-- no hidden Owner-facing automatic return-to-zero is part of the current product behavior;
-- the graphical steering wheel follows physical rack state while hands-off;
-- re-grab begins from physical rack state, preventing UI/physics offset;
-- 900 degrees total wheel range is the current default and Owner-used current-best;
-- 360/540/720/1080 are available for later comparison, not final approved ratios;
-- range preference persists in the browser session;
-- artificial centering is retained only as an internal/test control path, not product configuration;
-- natural physical self-return remains unresolved.
+The current `main` documentation head may be a docs-only descendant of the accepted executable source. Do not interpret a docs-only main advance as new runtime validation.
 
-Owner feedback on the current 900-degree behavior was strongly positive, but scoped. Do not convert it into a claim that all ranges/devices or all steering physics are finalized.
+## 3. Fresh continuation order
 
-## 4. Evidence boundary
+1. Resolve live `main`, `preview/owner-control` when relevant, and every non-main branch actually under discussion.
+2. Read `AGENTS.md`.
+3. Read `docs/PROJECT_STATE.md`.
+4. Inspect only source/tests relevant to the requested product slice.
+5. If wheel-mode5 is relevant, resolve `research/wheel-mode5-rq2c-orientation-2026-09-05` live and use its branch-local `docs/HANDOFF.md`, active pointer, current wheel roadmap, RQ2C4F closure and canonical evidence ledger.
+6. If spawn calibration is relevant, resolve `work/spawn-landmark-calibration-2026-09-05` live and read its branch-local `docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md`.
+7. If steering is relevant, read `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md` and `docs/contracts/STEERING_COMMAND_CONTRACT_PL.md`.
 
-### OWNER-OBSERVED
+Do not replay the entire project/research history unless newer live evidence actually conflicts with current routing.
 
-Owner directly confirmed on the current steering Preview that:
+## 4. Accepted product truth — Steering I1
 
-- hands-off UI/rack synchronization works;
-- physics movement followed by re-grab no longer creates the previous offset/jump;
-- current 900-degree driving feel is substantially better than before and better than expected.
+Steering I1 remains accepted current-best:
 
-Owner is currently learning 900 degrees rather than comparing range presets.
+- pointer release uses semantic `RELEASE`, not hidden return-to-zero;
+- hands-off graphical steering follows the physical rack;
+- a new grab re-anchors to current rack state;
+- 900 degrees remains current default/current-best, not final forever;
+- artificial centering is not an accepted Owner-facing dependency;
+- useful natural physical self-return remains unresolved.
 
-### EXECUTED EVIDENCE
+No wheel-mode5 or spawn-calibration runtime change has been promoted into accepted product truth or canonical Owner Preview.
 
-The source candidate passed the canonical Owner Preview build/validation/composition path with unchanged accepted JSPREV2.
+## 5. Retained wheel-mode5 state
 
-### NOT VALIDATED
+Current retained branch:
 
-- final steering range;
-- Owner feel for non-900 presets;
-- changing range during an already-active gesture;
-- dedicated mobile session-persistence check;
-- comprehensive whole-product regression during the final steering feedback checkpoint;
-- useful natural physical self-return.
+`research/wheel-mode5-rq2c-orientation-2026-09-05`
 
-## 5. If steering work resumes
+Classification:
 
-The strongest unresolved mechanical question is why the current physical system provides essentially no useful self-return/self-alignment.
+`RQ2C_ORIENTATION_HOLD`
 
-A sensible future R2 would be bounded research, not an immediate physics rewrite:
+High-level retained evidence:
 
-- identify current geometry/contact/constraint/damping contributors;
-- distinguish expected caster/trail/tire/contact effects from solver or representation limitations;
-- design the smallest falsifier that can separate likely causes;
-- preserve the accepted touch RELEASE/rack-sync baseline while testing physics.
+- RQ0/RQ1/RQ2a/RQ2b qualified within their documented scopes;
+- RH0 foundation hardening is PASS/CLOSED;
+- RQ2C stopped at the zero-degree control before yaw;
+- actual-support max rolling slip `0.034093857 mm/s` fails the frozen `0.002 mm/s` gate by `17.0469x`;
+- RQ2C4D/E/F localize the dominant rolling-pair residual strongly to axle-spin-rate evolution;
+- source review identifies contact tangential friction as the unique obvious first-order direct axial-torque path in the aligned apparatus;
+- exact numerical per-subsystem ownership remains PARTIAL without new solver-level transient instrumentation;
+- `+3.5°/-3.5°` yaw is NOT EXECUTED / NOT VALIDATED;
+- wheel-mode5 product integration is NOT AUTHORIZED.
 
-Do **not** solve this by silently reintroducing automatic centering or a fake spring merely to produce visual return.
+Routine RQ2C micro-forensics are closed. Do not run yaw or deeper ownership instrumentation just to finish the matrix.
 
-R2 is a candidate next slice, not an obligation. Re-ground current product priorities first.
+## 6. Post-wheel spawn calibration
 
-## 6. If another product slice is chosen
+Separate work branch:
 
-Use the default workflow:
+`work/spawn-landmark-calibration-2026-09-05`
 
-`small need -> smallest sensible change -> risk-matched test -> faithful render/device evidence -> Owner judgement`
+Classification:
 
-Do not expand camera/UI/input work into drivetrain/rig/physics changes without causal need. Do not expand a mechanics experiment into a UI redesign.
+`PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE`
 
-## 7. Git / Preview discipline
+The branch-local closure record is:
 
-- `main` is source authority after accepted consolidation.
-- `preview/owner-control` is exact-source composition infrastructure only.
-- Public/Friends artifacts remain separate authority.
-- Historical `work/*`, checkpoint and accidental/noop branches are not current authority and do not require cleanup merely because they exist.
-- Before writes, resolve repo/ref/current source again.
-- Before promotion, re-check ancestry and use non-force fast-forward when available.
+`docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md`
 
-## 8. Things a new agent must not infer
+Important findings:
+
+- the earlier hypothesis that ordinary Owner Preview's bad start came from `scanCenterSpawn()` was falsified by exact source;
+- accepted startup default was `map` / `world.spawn = { x: 0, y: 1.2, z: 0 }`;
+- accepted JSPREV2 starts around world `z = 320`, making spatial/semantic placement relative to the scan playground the stronger interpretation;
+- accepted scan metadata contains no semantic road/start landmark;
+- exact accepted scan geometry/hashes were re-read and verified;
+- two different geometry methods support several broad stable flat regions but cannot establish road semantics;
+- three spatially separated candidates exist only as opt-in `scan-cal-a/b/c` on the work branch;
+- focused spawn tests and typecheck pass;
+- a broader test run exposed seven pre-existing steering/mobile-UI assertions whose relevant blobs match accepted `main`;
+- that red test step stopped before `build:portable`, so candidate portable build remains UNVERIFIED.
+
+Do not choose A/B/C algorithmically, call them roads, weaken canonical Preview pinning or promote the branch. If resumed: qualify the build, then perform bounded Owner A/B/C semantic judgement. If none is right, obtain an explicit landmark rather than tuning heuristics to desired output.
+
+## 7. Baseline test debt boundary
+
+The seven red assertions observed during the spawn candidate run are not evidence of a spawn regression. Relevant failing test/source blobs were confirmed byte-identical between accepted `main` and the spawn candidate branch.
+
+Treat them as pre-existing baseline debt unless a future exact-main execution contradicts that provenance.
+
+Do not repair steering behavior or rewrite unrelated tests inside the spawn slice simply to obtain a green gate.
+
+## 8. Git / Preview discipline
+
+- live `main` is canonical accepted source/documentation authority;
+- accepted executable product snapshot remains explicitly pinned until a new product slice is qualified and accepted;
+- wheel research branch owns only scoped research evidence/routing;
+- spawn work branch owns only bounded calibration evidence/candidates;
+- Preview is composition infrastructure, not authority;
+- do not fast-forward non-main runtime experiments into `main` without a separate product decision and representative validation;
+- before every write, re-fetch live ref/head.
+
+## 9. Things a new agent must not infer
 
 Do not infer that:
 
-- current M6/Box3D architecture is the future NextGen architecture;
-- 900 degrees is permanently frozen;
-- lack of natural self-return is accepted product behavior;
-- artificial centering is an accepted substitute;
-- old roadmap/falsifier documents are current tasks;
-- a new chat means another cold takeover;
-- historical branches should be consolidated or deleted automatically.
+- a new chat requires another strategic takeover;
+- RQ0 or E2a2 is still next;
+- RQ2C must resume to finish yaw;
+- solver ownership needs to be closed for completeness;
+- the RQ2C gate should be relaxed or physics tuned to force PASS;
+- wheel-mode5 is accepted product runtime;
+- spawn A/B/C are roads or a selected default;
+- spawn candidate build passed;
+- the seven steering/UI test failures were caused by spawn;
+- a docs-only `main` head means a new executable was accepted;
+- 900-degree steering or current M6 architecture is final forever.
 
-Current evidence should decide the next slice.
+## 10. Current router
+
+> **Protect the accepted executable/product baseline. Keep wheel RQ2C closed at truthful HOLD. Preserve spawn calibration as PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE. If spawn work resumes, qualify build then ask the Owner to judge A/B/C semantics; otherwise choose the next JV-Web work from current Owner priority, not historical sequence inertia.**
