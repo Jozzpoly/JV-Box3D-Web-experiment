@@ -1,7 +1,7 @@
 {
   "schema": "JV_OWNER_SPAWN_CALIBRATION_POINTER_V1",
   "experiment": "spawn-landmark-calibration",
-  "sourceCommit": "7ae1fc029e6234d698915187ea5d2238edf4b7e7",
+  "sourceCommit": "77fcd0b5aec2cb1cb1acc92a616f611d18a3b38b",
   "staticLayer": {
     "role": "accepted-jsprev2",
     "repository": "Jozzpoly/JV-Box3D-Web-Public",
@@ -22,5 +22,5 @@
       "query": "jvSpawn=scan-cal-c"
     }
   ],
-  "purpose": "Isolated Owner calibration of three geometry-supported spawn candidates; not accepted product truth and not promotable without Owner judgement."
+  "purpose": "Isolated Owner calibration of three geometry-supported scan teleport candidates with compact mobile-visible A/B/C controls; not accepted product truth and not promotable without Owner judgement."
 }
