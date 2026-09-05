@@ -8,28 +8,32 @@
   "canonicalEvidenceLedger": "docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json",
   "activationRecord": "docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md",
   "latestEvidence": {
-    "id": "RQ2C0_TRANSLATIONALLY_FREE_CONTROL",
+    "id": "RQ2C1_LOCAL_TRANSLATIONAL_CARRIER_CONTROL",
     "status": "APPARATUS_INVALID",
     "physicsExecuted": true,
-    "executedSource": "8deae32ff31ed6229b3add1837dae7f6d4ef685f",
-    "run": 33965636922,
-    "job": 101305157701,
-    "artifact": 9969338989,
-    "document": "docs/WHEEL_MODE5_RQ2C0_TRANSLATIONALLY_FREE_CONTROL_RESULT_2026-09-05.md",
-    "classification": "APPARATUS_INVALID_TRANSLATIONALLY_FREE_CONTROL",
+    "executedSource": "f7ef795bedd4a5821556fc32bf953505d681c8d5",
+    "run": 33966506853,
+    "job": 101307463007,
+    "artifact": 9969617033,
+    "document": "docs/WHEEL_MODE5_RQ2C1_LOCAL_TRANSLATIONAL_CARRIER_CONTROL_RESULT_2026-09-05.md",
+    "classification": "APPARATUS_INVALID_LOCAL_CARRIER_CONTROL",
+    "frozenRh0Replay": "PASS",
+    "contactVertical": "PASS_LIKE",
     "axisGuide": "PASS_WITHIN_0.035_DEG_BUDGET",
     "headingGuide": "FAIL",
+    "maxCenterErrorMm": 1.4836408663541079,
     "yawPairExecuted": false
   },
   "activeApparatus": {
     "frozenSuite": "tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp",
     "rq2cSuite": "tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-suite.hpp",
+    "rq2c1CarrierSuite": "tools/wheel-mode5/rq2c/wheel-mode5-rq2c1-local-carrier-suite.hpp",
     "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json"
   },
-  "nextGate": "RQ2C1_LOCAL_TRANSLATIONAL_CARRIER_0DEG",
+  "nextGate": "RQ2C1D_LOCAL_CARRIER_CONSTRAINT_LOCALIZATION_0DEG",
   "challengeDegrees": 3.5,
   "mountHertz": 120,
   "maxAxisErrorDegrees": 0.035,
   "maxHeadingErrorDegrees": 0.035,
-  "routing": "Design a mechanically local translational carrier that constrains cross-heading motion while leaving heading travel, vertical travel and wheel spin available. Re-run 0 deg before unlocking +/-3.5 deg. Do not increase angular stiffness by default."
+  "routing": "Keep the failed RQ2C1 physics unchanged. Add diagnostic-only joint separation/force and body-frame displacement telemetry at 0 deg to localize compliance. Do not retune the 1% guide mass budget, 120 Hz angular mount, challenge angle or RH0.5 gates before localization. +/-3.5 deg remains blocked."
 }
