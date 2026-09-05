@@ -83,6 +83,11 @@ function selectedSteeringPlateVisible(): boolean {
 }
 
 const spawnTarget = parseProductSpawnTarget(window.location.search);
+const scanBackedSpawnTarget =
+  spawnTarget === "scan" ||
+  spawnTarget === "scan-cal-a" ||
+  spawnTarget === "scan-cal-b" ||
+  spawnTarget === "scan-cal-c";
 
 function timedProductWorldLoader(loader: ProductWorldLoader): ProductWorldLoader {
   return async () => {
@@ -99,7 +104,7 @@ function timedProductWorldLoader(loader: ProductWorldLoader): ProductWorldLoader
 
 configureProductWorldLoader(
   timedProductWorldLoader(
-    spawnTarget === "scan"
+    scanBackedSpawnTarget
       ? loadLocalFullProductWorld
       : loadMapOnlyProductWorld,
   ),
