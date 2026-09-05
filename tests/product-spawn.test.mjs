@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   parseProductSpawnTarget,
   resolveProductSpawn,
+  scanCalibrationSpawn,
   scanCenterSpawn,
   scanSurfaceHeightAt,
 } from "../.test-dist/scene/product-spawn.js";
@@ -26,6 +27,31 @@ function scanFixture() {
         0, 4, 1,
       ]),
       indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
+      color: [0.6, 0.6, 0.6, 1],
+    },
+    groups: [],
+    textureCount: 0,
+    triangleCount: 2,
+  };
+}
+
+function calibrationScanFixture() {
+  return {
+    source: "JSPREV2",
+    packId: "scan/photogrammetry-primary",
+    origin: { x: 10, y: 2, z: 20 },
+    worldBounds: {
+      minimum: { x: -10, y: 3, z: -80 },
+      maximum: { x: 160, y: 3, z: 70 },
+    },
+    collision: {
+      positions: new Float32Array([
+        -20, 1, -100,
+        150, 1, -100,
+        150, 1, 50,
+        -20, 1, 50,
+      ]),
+      indices: new Uint32Array([0, 1, 2, 0, 2, 3]),
       color: [0.6, 0.6, 0.6, 1],
     },
     groups: [],
@@ -71,12 +97,15 @@ test("scan spawn uses the current world AABB center and highest surface", () => 
   });
 });
 
-test("map remains the default and preserves the accepted baseline spawn", () => {
+test("map remains the default and calibration targets are opt-in only", () => {
   const world = worldFixture();
   assert.equal(parseProductSpawnTarget(""), "map");
   assert.equal(parseProductSpawnTarget("?jvSpawn=unknown"), "map");
   assert.equal(parseProductSpawnTarget("?jvSpawn=scan"), "scan");
   assert.equal(parseProductSpawnTarget("?jvSpawn=offroad"), "offroad");
+  assert.equal(parseProductSpawnTarget("?jvSpawn=scan-cal-a"), "scan-cal-a");
+  assert.equal(parseProductSpawnTarget("?jvSpawn=scan-cal-b"), "scan-cal-b");
+  assert.equal(parseProductSpawnTarget("?jvSpawn=scan-cal-c"), "scan-cal-c");
   assert.equal(resolveProductSpawn(world, "map"), world.spawn);
   const offroad = resolveProductSpawn(world, "offroad");
   assert.ok(offroad.x > 198 && offroad.x < 220);
@@ -84,9 +113,36 @@ test("map remains the default and preserves the accepted baseline spawn", () => 
   assert.equal(offroad.z, 0);
 });
 
+test("calibration candidates are pack-pinned, surface-resolved and spatially distinct", () => {
+  const scan = calibrationScanFixture();
+  const a = scanCalibrationSpawn(scan, "scan-cal-a", 1.2);
+  const b = scanCalibrationSpawn(scan, "scan-cal-b", 1.2);
+  const c = scanCalibrationSpawn(scan, "scan-cal-c", 1.2);
+
+  assert.deepEqual(a, { x: 45.25, y: 4.2, z: -39.25 });
+  assert.deepEqual(b, { x: 64.75, y: 4.2, z: -16.75 });
+  assert.deepEqual(c, { x: 120.25, y: 4.2, z: 8.75 });
+  assert.ok(Math.hypot(a.x - b.x, a.z - b.z) > 25);
+  assert.ok(Math.hypot(b.x - c.x, b.z - c.z) > 55);
+
+  const world = worldFixture(scan);
+  assert.deepEqual(resolveProductSpawn(world, "scan-cal-a"), a);
+  assert.deepEqual(resolveProductSpawn(world, "scan-cal-b"), b);
+  assert.deepEqual(resolveProductSpawn(world, "scan-cal-c"), c);
+
+  assert.throws(
+    () => scanCalibrationSpawn(scanFixture(), "scan-cal-a", 1.2),
+    /pinned to scan\/photogrammetry-primary/,
+  );
+});
+
 test("scan selection fails closed when the pack or center surface is absent", () => {
   assert.throws(
     () => resolveProductSpawn(worldFixture(null), "scan"),
+    /exact JSPREV2 pack is unavailable/,
+  );
+  assert.throws(
+    () => resolveProductSpawn(worldFixture(null), "scan-cal-a"),
     /exact JSPREV2 pack is unavailable/,
   );
 
