@@ -6,10 +6,12 @@ on:
       - work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03
     paths:
       - docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json
+      - docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json
       - docs/WHEEL_MODE5_RESEARCH_AUDIT_AND_FOUNDATION_HARDENING_2026-09-05.md
       - docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md
       - docs/PROJECT_STATE.md
       - tools/wheel-mode5-evidence-ledger-validate.mjs
+      - tools/wheel-mode5-rh0-replay-contract-validate.mjs
       - .github/workflows/wheel-mode5-research-foundation.yml
 
 permissions:
@@ -28,3 +30,6 @@ jobs:
 
       - name: Validate canonical wheel-mode5 evidence ledger
         run: node tools/wheel-mode5-evidence-ledger-validate.mjs
+
+      - name: Validate RH0 canonical replay contract
+        run: node tools/wheel-mode5-rh0-replay-contract-validate.mjs
