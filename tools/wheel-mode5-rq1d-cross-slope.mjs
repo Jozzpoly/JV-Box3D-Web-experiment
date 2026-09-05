@@ -13,10 +13,16 @@ assert.equal(tire.provenance.markerContract, 'VERIFIED', 'tire provenance marker
 
 const info = b3.e2aOuterP75CarrierInfo();
 assert.equal(info.valid, true, `outer P75 dynamic profile unavailable: ${JSON.stringify(info)}`);
+assert.equal(info.effectiveProfileCount, 3,
+  `effective donor carrier profile changed; re-ground RQ1d before interpreting: ${JSON.stringify(info)}`);
 
 const flat = b3.rq1dRunOuterP75CrossSlope(0);
 const plus = b3.rq1dRunOuterP75CrossSlope(10);
 const minus = b3.rq1dRunOuterP75CrossSlope(-10);
+
+// Preserve complete executed values before any semantic assertion so a future
+// apparatus mismatch cannot hide already-computed dynamic evidence.
+console.log('WHEEL_MODE5_RQ1D_RAW', JSON.stringify({ info, flat, plus10: plus, minus10: minus }));
 
 for (const [name, run] of [['flat', flat], ['plus10', plus], ['minus10', minus]]) {
   assert.equal(run.valid, true, `${name} RQ1d run invalid: ${JSON.stringify(run)}`);
@@ -29,19 +35,21 @@ for (const [name, run] of [['flat', flat], ['plus10', plus], ['minus10', minus]]
   assert.ok(Number.isFinite(run.settledMeanNormalZ), `${name}: no settled manifold normal samples`);
 }
 
-// Source-predicted support topology is part of the apparatus contract, not a
-// desired physics outcome. Flat support should retain a real profile segment;
-// the signed 10 urad banks were chosen because they are above the previously
-// derived ~5.83 urad segment-to-vertex threshold and therefore should select a
-// single endpoint on opposite sides of the profile.
-assert.ok(flat.predictedSupportPointCount > 1,
-  `flat support did not retain a segment: ${JSON.stringify(flat)}`);
-assert.equal(plus.predictedSupportPointCount, 1,
-  `+10 urad did not select a unique support endpoint: ${JSON.stringify(plus)}`);
-assert.equal(minus.predictedSupportPointCount, 1,
-  `-10 urad did not select a unique support endpoint: ${JSON.stringify(minus)}`);
-assert.notEqual(plus.predictedSupportFirst, minus.predictedSupportFirst,
-  `signed banks selected the same support endpoint; cross-slope challenge is not signed as intended: +${plus.predictedSupportFirst} -${minus.predictedSupportFirst}`);
+// RQ1d was initially designed under the hypothesis that flat support was a
+// profile segment. The executed effective-carrier probe falsified that model:
+// b3MakeWheelProfile reduces the recovered outer carrier to a three-point,
+// crowned profile whose flat support is the central vertex (index 1). The
+// signed ±10 urad banks are therefore deliberately reclassified as a
+// SAME-SUPPORT-FEATURE relative-normal perturbation. This gate protects that
+// corrected interpretation rather than forcing an artificial topology switch.
+for (const [name, run] of [['flat', flat], ['plus10', plus], ['minus10', minus]]) {
+  assert.equal(run.predictedSupportPointCount, 1,
+    `${name}: effective donor support is not a unique vertex: ${JSON.stringify(run)}`);
+  assert.equal(run.predictedSupportFirst, 1,
+    `${name}: effective donor support left central vertex unexpectedly: ${JSON.stringify(run)}`);
+  assert.equal(run.predictedSupportLast, 1,
+    `${name}: effective donor support left central vertex unexpectedly: ${JSON.stringify(run)}`);
+}
 
 // The actual manifold normal must resolve the transverse road rotation. We do
 // not require any particular disturbance magnitude, only that the geometric
@@ -116,12 +124,39 @@ const comparison = {
   },
 };
 
+const profile = info.profile;
+const centerIndex = 1;
+const center = profile[centerIndex];
+const equalityAngles = profile
+  .map((point, index) => {
+    if (index === centerIndex) return null;
+    const dx = point.axial - center.axial;
+    const dr = point.radius - center.radius;
+    if (Math.abs(dx) < 1e-15) return null;
+    const radians = Math.atan(dr / dx);
+    return {
+      againstIndex: index,
+      radians,
+      microradians: radians * 1e6,
+      degrees: radians * 180 / Math.PI,
+    };
+  })
+  .filter(Boolean);
+
 const result = {
-  method: 'RQ1D_SIGNED_CROSS_SLOPE_RELATIVE_NORMAL',
+  method: 'RQ1D_SIGNED_CROSS_SLOPE_SAME_FEATURE_RELATIVE_NORMAL',
   scope: flat.scope,
-  rationale: 'Transverse static-road rotation preserves the qualified RQ0 wheel body, world-Z spin and planar axle locks while changing road-normal axial component without longitudinal grade acceleration.',
-  predictedSegmentToVertexThresholdMicroradians: 5.83,
+  rationale: 'Transverse static-road rotation preserves the qualified RQ0 wheel body, world-Z spin, planar axle locks and central effective support vertex while changing only the signed road-normal axial component, without longitudinal grade acceleration.',
   testedBanksMicroradians: [0, 10, -10],
+  effectiveCarrierSupportTopology: {
+    effectiveProfileCount: info.effectiveProfileCount,
+    profile,
+    flatSupportIndex: flat.predictedSupportFirst,
+    plus10SupportIndex: plus.predictedSupportFirst,
+    minus10SupportIndex: minus.predictedSupportFirst,
+    equalityAngles,
+    geometryProbeRun: 33955759171,
+  },
   noDriveTorque: true,
   noRecyclerManipulation: true,
   runs: {
