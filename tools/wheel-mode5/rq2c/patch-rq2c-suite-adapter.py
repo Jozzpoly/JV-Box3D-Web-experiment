@@ -23,10 +23,10 @@ if rq2c_binding in text:
     raise SystemExit('RQ2C suite binding already present')
 text = text.replace(rh0_binding, rh0_binding + rq2c_binding)
 
-if text.count('wheel-mode5-rq2c-orientation-suite.hpp') != 1:
-    raise SystemExit('RQ2C include composition count drifted')
-if text.count('rq2cRunOuterP75Orientation') != 1:
-    raise SystemExit('RQ2C binding composition count drifted')
+if text.count(rq2c_include) != 1:
+    raise SystemExit(f'RQ2C include composition drifted: expected exact line once, got {text.count(rq2c_include)}')
+if text.count(rq2c_binding) != 1:
+    raise SystemExit(f'RQ2C binding composition drifted: expected exact line once, got {text.count(rq2c_binding)}')
 
 path.write_text(text, encoding='utf-8')
 print('RQ2C_ORIENTATION_SUITE_ADAPTER_OK')

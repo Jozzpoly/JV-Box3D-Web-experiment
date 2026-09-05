@@ -41,7 +41,7 @@ static float rq2cLength( b3Vec3 v )
 static float rq2cAngleBetween( b3Vec3 a, b3Vec3 b )
 {
     b3Vec3 c = rq2cCross( a, b );
-    return atan2f( rq2cLength( c ), rq2cDot( a, b ) );
+    return b3Atan2( rq2cLength( c ), rq2cDot( a, b ) );
 }
 
 static float rq2cHorizontalHeadingError( b3Vec3 velocity, b3Vec3 heading )
@@ -56,7 +56,7 @@ static float rq2cHorizontalHeadingError( b3Vec3 velocity, b3Vec3 heading )
     float vz = velocity.z / horizontalSpeed;
     float crossY = heading.x * vz - heading.z * vx;
     float dot = heading.x * vx + heading.z * vz;
-    return atan2f( fabsf( crossY ), dot );
+    return b3Atan2( fabsf( crossY ), dot );
 }
 
 static bool rq2cSupportedYawDegrees( float yawDegrees )
