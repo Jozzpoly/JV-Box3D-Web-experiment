@@ -1,6 +1,6 @@
 # JV-Web — current project state
 
-Updated: 2026-09-04
+Updated: 2026-09-05
 Owner: Jozz
 
 ## 1. Current routing
@@ -25,7 +25,7 @@ Default working loop remains:
 
 `main`
 
-Verified during the 2026-09-04 roadmap refresh at:
+Live verified 2026-09-05 at:
 
 `5b28cc03d22264010680deb95a04abd04661bc22`
 
@@ -71,88 +71,85 @@ Current research router:
 
 `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`
 
-Current forensic closure boundary:
+Current material-relevance decision:
 
-`docs/WHEEL_MODE5_E2A2AJ_REPROJECTION_COMPONENT_DECOMPOSITION_2026-09-04.md`
+`docs/WHEEL_MODE5_Q1_MATERIAL_RELEVANCE_CLOSURE_2026-09-05.md`
 
-Latest durable checkpoint at the roadmap refresh:
+Live research branch was verified at the start of the 2026-09-05 Q1 closure on:
 
-`673dd16410d1ca98c0e909bd7421e7ca409273ad`
+`0f5e257089c67e516a4cf9e6ac261077293d11d1`
+
+Subsequent documentation commits advance the branch head without changing the executed RQ1 physics sources.
 
 ### What is currently trusted in the bounded research apparatus
 
 The wheel-mode5 program has established that:
 
-- the recovered native annular wheel representation can be exercised in the pinned Box3D.js research composition;
-- a difficult flat-support transition anomaly was progressively localized rather than treated as generic wheel failure;
-- crossing-rate alone, global warm start and carried normal impulse do not explain the main amplification;
-- actual recycled-manifold shortcut execution is required for the measured amplification in the studied apparatus;
-- recycled separation reprojection is a necessary amplifier in both transformed-ground and true fixed-road causal tests;
-- trusted shadow diagnostics show roughly `0.118 mm` recycled-vs-fresh separation discrepancy around the validated fixed-road `2 -> 1` transition;
-- the discrepancy is overwhelmingly associated with reprojection/reference transformation rather than stale `baseSeparation` in representative matched samples;
-- long-lived cache age is not required;
-- E2a2aj showed that the reprojection residual is produced by cancellation of much larger frame/anchor terms, so absolute subterm magnitude is not a valid causal attribution method.
+- the recovered annular tire geometry/provenance can be exercised in pinned research diagnostics;
+- E2a2 localized a laboratory recycled-manifold/reprojection discrepancy rather than treating it as generic wheel failure;
+- actual recycled-manifold shortcut execution and separation reprojection are necessary amplifiers in the studied difficult transition;
+- trusted shadow diagnostics measured about `0.118 mm` recycled-vs-fresh separation discrepancy around the validated fixed-road transition;
+- E2a2 remains bounded mechanism evidence, not a global indictment of Box3D contact recycling;
+- RQ0 qualified a representative donor outer-P75 flat-road frictional rolling baseline using a minimal planar axle guide;
+- RQ1c introduced a real road-face/contact-feature transition under normal behavior without a material increase in disturbance relative to RQ0 background;
+- RQ1d introduced a small signed relative-normal perturbation while holding the effective donor support feature fixed and likewise showed effectively neutral rolling response.
 
-This is strong **bounded engine/wheel research evidence**, not evidence that current product wheel behavior changed and not a global indictment of Box3D contact recycling.
+The effective donor dynamic carrier is a three-point crowned convex profile after `b3MakeWheelProfile` reduction. It is useful for scoped outer-ground dynamics but is not annular/bore geometry authority.
 
-## 5. Research boundary after E2a2
+## 5. E2a2 / Q1 decision boundary
 
-The E2a2 forensic descent is closed by default.
+E2a2 forensic descent remains **closed by default**.
 
-Do **not** open another recycler micro-stage merely because the remaining reference-frame attribution is interesting.
+Decision Gate Q1 is now closed as:
 
-The current decision problem has moved upward:
+**Q1-A — NOT MATERIALLY RELEVANT IN THE TESTED REPRESENTATIVE ENVELOPE.**
 
-> Does the discovered recycler/reprojection discrepancy materially affect representative annular-wheel rolling/contact behavior?
+This means the known E2a2 recycled/fresh discrepancy was not shown to create a material problem in the first representative rolling topology challenge.
 
-That external-relevance question now has higher project value than another microscopic seam diagnostic.
+It does not mean the mechanism evidence was false and does not prove global recycler correctness.
 
-## 6. Next planned research stage
+Operational consequence:
 
-### RQ0 — representative steady rolling baseline
+- do not reopen recycler micro-forensics without later representative evidence;
+- do not patch production recycler semantics;
+- do not continue RQ1 by making the same challenge more dramatic merely to provoke a failure.
 
-Status: **NEXT / PLANNED, NOT EXECUTED**.
+## 6. Current next research stage
 
-The first representative qualification should remain deliberately simple:
+### RQ2 — representative wheel envelope
 
-- truly fixed road;
-- intended annular wheel geometry as primary contact shape;
-- dynamic wheel under controlled normal load;
-- nonzero friction;
-- bounded steady rolling/spin;
-- no deliberately forced topology seam in the first baseline;
-- recycler/contact telemetry observational only where proven non-perturbing.
+Status: **NEXT**.
 
-Primary outcomes are material wheel behavior:
+RQ2 should expand one causal dimension at a time from the qualified RQ0/RQ1 envelope.
 
-- energy/velocity drift;
-- jitter;
-- contact persistence/topology stability;
-- normal/tangential impulse plausibility;
-- grip discontinuity.
+Candidate dimensions include:
 
-The first representative rig should not simultaneously add camber sweep, irregular road, suspension, drivetrain and chassis coupling. Increase realism one causal layer at a time.
+- braking traction;
+- drive traction;
+- mechanically valid free camber/steer;
+- controlled load transfer;
+- limited irregular-road contact;
+- later side/inner/bore exposure only with a dynamic representation valid for those surfaces;
+- bounded wheel/chassis coupling.
 
-### RQ1 — controlled topology challenge
+The preferred first RQ2 direction is a **flat-road braking or drive-traction probe derived directly from RQ0**, because it exercises the already-qualified tangential contact under controlled nonzero demand while preserving wheel/road geometry and axle provenance.
 
-Only after RQ0 is trustworthy, introduce one controlled topology-changing challenge and ask whether the known recycler discrepancy produces a material disturbance.
+Choose one of braking/drive from live API/source based on causal cleanliness. Do not add both, suspension or free camber simultaneously merely for symmetry.
 
-If representative behavior remains good, stop recycler forensics and continue wheel qualification without speculative engine changes.
-
-If a material disturbance is demonstrated and causally linked to recycling/reprojection, reopen a narrowly scoped mitigation lane with representative regression requirements.
+If later representative behavior exhibits a material anomaly, recycler/reprojection attribution may reopen narrowly. Otherwise continue outward through wheel qualification.
 
 ## 7. Still NOT VALIDATED
 
 Important open areas include:
 
-- representative annular frictional rolling;
-- drive/brake traction;
+- full native annular dynamic contact semantics;
+- braking/drive traction;
 - free camber/steer and load transfer;
 - suspension/chassis coupling;
-- irregular-road topology;
+- broader irregular-road topology;
+- lateral tire-force realism;
 - side/inner/bore contact behavior;
-- fixed-road `1 -> 2` external validity;
-- material product relevance of the measured ~`0.12 mm` recycler/fresh discrepancy;
+- arbitrary-orientation annular contact;
 - any production recycler mitigation;
 - wheel-mode5 product integration and Owner acceptance.
 
@@ -167,10 +164,12 @@ Steering tuning, natural self-return, camera, controls, UI, world/scan experienc
 - Do not restart the old strategic cold takeover.
 - Do not turn JV-Web into NextGen JV Lite.
 - Do not promote this research branch to `main` because laboratory tests passed.
-- Do not patch Box3D recycler semantics before representative material relevance is demonstrated.
-- Do not open E2a2ak by default.
-- Do not force a symmetric `1 -> 2` laboratory matrix merely for completeness.
-- Do not bundle annular geometry, friction, camber, suspension, irregular road and drivetrain into the first representative test.
+- Do not patch Box3D recycler semantics without later representative material relevance.
+- Do not open E2a2ak/reference-frame micro-forensics by default.
+- Do not continue RQ1 by increasing road kink or bank until something fails.
+- Do not retain world-axis angular locks in a tilted-wheel experiment if they would remove legitimate spin components.
+- Do not use the filled/convex donor carrier to claim bore/inner/side correctness.
+- Do not bundle drive/brake, camber, suspension and irregular road into one qualification.
 - Do not mistake failed tooling/apparatus for physics evidence.
 - Do not ask the Owner to judge laboratory metrics with no demonstrated experiential consequence.
 
@@ -188,8 +187,8 @@ For active wheel-mode5 research:
 1. verify live `main` and live research branch head separately;
 2. read `AGENTS.md` and this file for authority boundaries;
 3. read `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`;
-4. read the E2a2aj closure checkpoint;
-5. read older E2a2 evidence only when a specific claim or apparatus dependency requires it;
-6. plan RQ0 from live source rather than mechanically extending the seam-forensics sequence.
+4. read `docs/WHEEL_MODE5_Q1_MATERIAL_RELEVANCE_CLOSURE_2026-09-05.md`;
+5. inherit RQ0 only as needed for the selected RQ2 apparatus;
+6. reopen E2a2 evidence only if a later representative anomaly needs mechanism attribution.
 
-Current milestone boundary: **E2a2 forensics closed; representative qualification is the next research frontier; no product promotion authorized.**
+Current milestone boundary: **RQ0 qualified; RQ1/Q1-A closed; RQ2 representative wheel-envelope qualification is next; no product promotion authorized.**
