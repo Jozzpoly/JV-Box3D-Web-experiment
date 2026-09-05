@@ -134,6 +134,27 @@ test("scan calibration targets use the full scan world loader at startup", async
   );
 });
 
+test("spawn calibration preview exposes first-class A B C location choices", async () => {
+  const entry = await readFile(resolve(root, "src/product-main.ts"), "utf8");
+  for (const [label, target] of [
+    ["Spawn A", "scan-cal-a"],
+    ["Spawn B", "scan-cal-b"],
+    ["Spawn C", "scan-cal-c"],
+  ]) {
+    const escapedTarget = target.replaceAll("-", "\\-");
+    assert.match(entry, new RegExp(`label: "${label}"[\\s\\S]*?href: targetUrl\\("${escapedTarget}"\\)[\\s\\S]*?active: spawnTarget === "${escapedTarget}"`));
+  }
+  assert.match(entry, /label: "Skan JSPREV2 \(środek\)"/);
+  assert.match(
+    entry,
+    /const scanAvailabilityProbeUrl = new URL\(\s*"__jv_scan__\/index\.json",\s*document\.baseURI,?\s*\)\.href;/s,
+  );
+  assert.equal(
+    (entry.match(/availabilityProbeUrl: scanAvailabilityProbeUrl/g) ?? []).length,
+    4,
+  );
+});
+
 test("calibration candidates are pack-pinned, surface-resolved and spatially distinct", () => {
   const scan = calibrationScanFixture();
   const a = scanCalibrationSpawn(scan, "scan-cal-a", 1.2);
