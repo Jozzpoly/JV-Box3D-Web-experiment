@@ -78,6 +78,12 @@
       "yawUnlocked": false
     }
   },
+  "closureHygiene": {
+    "canonicalLedgerRefreshComplete": true,
+    "temporaryLedgerRefreshMechanismRetired": true,
+    "foundationValidatorAlignedWithHold": true,
+    "projectStateReconciled": true
+  },
   "nextGate": null,
   "challengeDegrees": 3.5,
   "mountHertz": 120,
