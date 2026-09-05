@@ -7,13 +7,29 @@
   "rh0ClosureHead": "c596684ea9a4b99e70d730c1b1b6f02f74cdab63",
   "canonicalEvidenceLedger": "docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json",
   "activationRecord": "docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md",
+  "latestEvidence": {
+    "id": "RQ2C0_TRANSLATIONALLY_FREE_CONTROL",
+    "status": "APPARATUS_INVALID",
+    "physicsExecuted": true,
+    "executedSource": "8deae32ff31ed6229b3add1837dae7f6d4ef685f",
+    "run": 33965636922,
+    "job": 101305157701,
+    "artifact": 9969338989,
+    "document": "docs/WHEEL_MODE5_RQ2C0_TRANSLATIONALLY_FREE_CONTROL_RESULT_2026-09-05.md",
+    "classification": "APPARATUS_INVALID_TRANSLATIONALLY_FREE_CONTROL",
+    "axisGuide": "PASS_WITHIN_0.035_DEG_BUDGET",
+    "headingGuide": "FAIL",
+    "yawPairExecuted": false
+  },
   "activeApparatus": {
-    "suite": "tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp",
+    "frozenSuite": "tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp",
+    "rq2cSuite": "tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-suite.hpp",
     "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json"
   },
-  "nextGate": "RQ2C0_CONTROL_TRANSLATIONALLY_FREE_0DEG",
+  "nextGate": "RQ2C1_LOCAL_TRANSLATIONAL_CARRIER_0DEG",
   "challengeDegrees": 3.5,
   "mountHertz": 120,
   "maxAxisErrorDegrees": 0.035,
-  "maxHeadingErrorDegrees": 0.035
+  "maxHeadingErrorDegrees": 0.035,
+  "routing": "Design a mechanically local translational carrier that constrains cross-heading motion while leaving heading travel, vertical travel and wheel spin available. Re-run 0 deg before unlocking +/-3.5 deg. Do not increase angular stiffness by default."
 }
