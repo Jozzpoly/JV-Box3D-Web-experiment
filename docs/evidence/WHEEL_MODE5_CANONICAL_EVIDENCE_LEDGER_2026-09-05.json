@@ -208,6 +208,22 @@
       "failure": "RQ2c0b expected function+binding occurrences=2, got 3",
       "scope": "No Box3D build or physics runtime occurred. No 240 Hz result exists.",
       "routing": "Do not repair/rerun during audit. Treat as evidence that experiment-specific string-patch composition has become brittle; resolve through RH0 harness hardening."
+    },
+    {
+      "id": "RH0_LEGACY_BRIDGE_REPLAY",
+      "lane": "donor_outer_carrier_dynamics",
+      "status": "TRUSTED_DIAGNOSTIC",
+      "question": "Can the frozen canonical RQ0/RQ1c/RQ2a/RQ2b helpers coexist in one pinned build/process and reproduce their defining signals under one replay contract before active-harness consolidation?",
+      "executedSource": "f38b82195b2032cba49815f79770ecf8e8abce2a",
+      "run": 33959870475,
+      "job": 101289762819,
+      "artifact": 9967602295,
+      "artifactDigest": "sha256:2777c3bf996056023418321edc277826e68f3e38fa4323890a1db60a901ec298",
+      "document": "docs/WHEEL_MODE5_RH0_LEGACY_COMPOSITION_REPLAY_RESULT_2026-09-05.md",
+      "physicsExecuted": true,
+      "scope": "Migration/non-drift oracle only. One pinned build/process replays frozen canonical scenarios; it does not broaden original physics qualifications or become product evidence.",
+      "outcome": "PASS. RQ0, RQ1c, RQ2a and RQ2b defining contact/topology/traction behavior reproduced within the frozen RH0 contract; the RQ2 drive/brake max-slip asymmetry remained about 75.26x.",
+      "routing": "Use as A-side oracle for the explicit consolidated RH0 RQ suite. Do not treat the legacy patch chain as the desired final active architecture."
     }
   ],
   "currentMilestone": {
@@ -215,6 +231,14 @@
     "name": "Research Foundation Hardening",
     "status": "ACTIVE",
     "blocksNewPhysics": true,
+    "progress": {
+      "evidenceLedger": "PASS",
+      "evidenceInvariantCI": "PASS",
+      "replayContract": "PASS",
+      "legacyBridgeReplayOracle": "PASS",
+      "explicitConsolidatedHarness": "NEXT",
+      "challengeDerivedOrientationErrorBudget": "BLOCKED_ON_CONSOLIDATED_HARNESS"
+    },
     "exitCriteria": [
       "Canonical evidence ledger validates and remains internally consistent.",
       "Active donor-carrier RQ apparatus is reduced to one explicit reusable execution path rather than another full workflow/patch chain per small scenario.",
