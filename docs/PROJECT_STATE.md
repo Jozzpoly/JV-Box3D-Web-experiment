@@ -1,15 +1,25 @@
-# JV-Web — current project state
+# JV-Web — wheel-mode5 research project state
 
 Updated: 2026-09-05  
 Owner: Jozz
 
-## 1. Product authority
+## 1. Product authority boundary
 
-Accepted source/product authority remains:
+Accepted product/source/documentation authority is **live**:
 
-`Jozzpoly/JV-Box3D-Web-experiment/main@5b28cc03d22264010680deb95a04abd04661bc22`
+`Jozzpoly/JV-Box3D-Web-experiment/main`
 
-Last Owner hands-on/current-best remains Steering I1:
+Always resolve live `main`; do not treat the old main SHA captured by this research campaign as current authority.
+
+Research campaign product checkpoint at branch grounding was:
+
+`main@5b28cc03d22264010680deb95a04abd04661bc22`
+
+That SHA is now historical provenance only. At the later 2026-09-05 consolidation, `main` advanced by documentation-only routing while the canonical accepted Steering I1 executable snapshot remained:
+
+`529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`
+
+Last accepted Owner hands-on/current-best remains Steering I1 unless newer live `main` evidence says otherwise:
 
 `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`
 
@@ -43,7 +53,7 @@ Machine-readable evidence ledger:
 
 `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`
 
-The canonical ledger has now been refreshed through RQ2C4F and the source-ownership closure. Validated ledger refresh commit: `bd6c39e011c1d24f054e1b3f5994c759357c4f8e`, workflow run `33976867964`, job `101334995694`. The active pointer marks no further ledger refresh required, and the updated research-foundation validator passed run `33976990623` after the RQ2C HOLD transition.
+The canonical ledger was refreshed through RQ2C4F and the source-ownership closure. Validated ledger refresh commit: `bd6c39e011c1d24f054e1b3f5994c759357c4f8e`, workflow run `33976867964`, job `101334995694`. The active pointer marks no further ledger refresh required, and the updated research-foundation validator passed run `33976990623` after the RQ2C HOLD transition.
 
 ## 3. Current wheel-mode5 verdict
 
@@ -220,7 +230,21 @@ The 0-degree control fails the slip gate, so yaw remains locked. Do not run the 
 - production axle/suspension architecture;
 - wheel-mode5 product integration and Owner acceptance.
 
-## 9. Do not automatically continue
+## 9. Separate post-wheel product calibration
+
+A later bounded product audit exists separately on:
+
+`work/spawn-landmark-calibration-2026-09-05`
+
+Its current retained classification is:
+
+`PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE`
+
+That branch falsified an earlier `scanCenterSpawn()` explanation of the Owner's bad default start, found geometry-only broad flat candidates using two methods, and exposes three opt-in A/B/C candidates only on that work branch. It has not proved a road location, passed a portable candidate build, or been promoted.
+
+Resolve that branch live and read its branch-local `docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md` if this product need is resumed. Do not import its runtime candidate into the closed wheel research branch.
+
+## 10. Do not automatically continue
 
 Do not, merely because this branch exists:
 
@@ -232,10 +256,11 @@ Do not, merely because this branch exists:
 - add torque, lateral slip demand, suspension/load transfer or camber to this closed micro-line;
 - reopen recycler forensics;
 - resurrect the helper-body carrier;
-- promote wheel-mode5 to `main` or Owner Preview.
+- promote wheel-mode5 to `main` or Owner Preview;
+- pull the separate spawn candidate into this branch.
 
 Reopen exact spin-ownership forensics only if a later decision depends on salvaging this direct-guide qualification, or representative vehicle evidence makes the residual materially consequential.
 
-## 10. Current project boundary / next move
+## 11. Current project boundary / next move
 
-> **Steering I1 remains accepted product truth. Wheel-mode5 RH0 is closed and the RQ2C orientation micro-line is now closed at a zero-degree HOLD: the real support-witness gate fails by 17.0469x, RQ2C4F localizes the dominant term to axle-spin-rate evolution, and source review identifies contact tangential friction as the first-order direct axial-torque path without claiming a closed numerical solver budget. Yaw and product promotion remain unauthorized. Do not continue microscopic wheel forensics by inertia; re-ground at the broader JV-Web level and choose the next work from current Owner priorities.**
+> **Resolve live `main` first. Steering I1 remains the accepted executable/current-best baseline unless newer live product evidence says otherwise. Wheel-mode5 RH0 is closed and RQ2C is closed at a zero-degree HOLD: the real support-witness gate fails by 17.0469x, RQ2C4F localizes the dominant term to axle-spin-rate evolution, and source review identifies contact tangential friction as the first-order direct axial-torque path without claiming a closed numerical solver budget. Yaw and product promotion remain unauthorized. A later spawn calibration is separate and unpromoted. Do not continue microscopic wheel forensics by inertia; choose future work from current Owner priorities.**
