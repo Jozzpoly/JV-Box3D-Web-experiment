@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-09-05",
+  "purpose": "Non-drift qualification for the RH0 consolidated donor outer-carrier harness. These tolerances detect material apparatus drift during refactor; they are not product acceptance thresholds and are not a new physics model.",
+  "dependencies": {
+    "box3dJs": "2617a0ff763a60c9f17cee57c6ea72aab75a5077",
+    "vendorBox3d": "8441b4a06d6d09dcfb0b0f704df4d847d1437b92",
+    "canonicalProductMain": "5b28cc03d22264010680deb95a04abd04661bc22"
+  },
+  "units": {
+    "length": "m unless field name states mm",
+    "velocity": "m/s unless field name states mm/s",
+    "angularVelocity": "rad/s",
+    "angle": "rad unless field name states microrad or degrees"
+  },
+  "comparisonPolicy": {
+    "discreteContactInvariants": "Exact. Dropout count, expected feature transitions and point-count topology are part of the frozen scenario identity.",
+    "continuousMetrics": "Use bounded physically small/non-drift envelopes rather than float-bit equality. Tolerances are deliberately wider than current deterministic noise and narrower than a material change in the scoped laboratory interpretation.",
+    "referenceValues": "Reference values document current canonical evidence. A replay may pass within the declared envelope without reproducing every float bit.",
+    "scope": "A replay PASS validates harness non-drift only. It does not broaden the original evidence scope."
+  },
+  "scenarios": [
+    {
+      "id": "RQ0_MATCHED",
+      "sourceRecord": "RQ0",
+      "reference": {
+        "settledContactDropouts": 0,
+        "settledFeatureSetChanges": 0,
+        "settledPointCount": [1, 1],
+        "settledYRangeMm": 0.674605,
+        "settledMaxAbsVyMmPerS": 48.943,
+        "settledMeanAbsSlipMmPerS": 0.0000933,
+        "settledMaxAbsSlipMmPerS": 0.0004172,
+        "measurementVxDeltaMmPerS": 0.0,
+        "measurementOmegaDeltaRadPerS": 0.0
+      },
+      "gate": {
+        "settledContactDropouts": {"eq": 0},
+        "settledFeatureSetChanges": {"eq": 0},
+        "settledMinPointCount": {"eq": 1},
+        "settledMaxPointCount": {"eq": 1},
+        "settledYRangeMm": {"min": 0.50, "max": 0.90},
+        "settledMaxAbsVyMmPerS": {"min": 35.0, "max": 65.0},
+        "settledMaxAbsSlipMmPerS": {"max": 0.002},
+        "absMeasurementVxDeltaMmPerS": {"max": 0.02},
+        "absMeasurementOmegaDeltaMilliRadPerS": {"max": 0.05}
+      }
+    },
+    {
+      "id": "RQ0_ZERO_SPIN_POSITIVE_CONTROL",
+      "sourceRecord": "RQ0",
+      "referenceMeaning": "Starts at 1 m/s with zero spin; ordinary friction must spin the wheel toward near-no-slip rolling. This proves the tangent friction path is exercised.",
+      "gate": {
+        "firstContactPresent": {"eq": true},
+        "firstNormalImpulsePresent": {"eq": true},
+        "finalNegativeSpinPresent": {"eq": true},
+        "finalAbsSlipMmPerS": {"max": 0.01},
+        "settledContactDropouts": {"eq": 0}
+      }
+    },
+    {
+      "id": "RQ1C_FLAT_CONTROL",
+      "sourceRecord": "RQ1C",
+      "reference": {
+        "settledContactDropouts": 0,
+        "settledFeatureSetChanges": 0,
+        "settledPointCount": [1, 1],
+        "settledYRangeMm": 0.9166,
+        "settledMaxAbsVyMmPerS": 48.953407,
+        "settledMaxAbsSlipMmPerS": 0.000298,
+        "nearYRangeMm": 0.63616,
+        "nearMaxAbsVyMmPerS": 48.953407,
+        "preMeanNormalXMicroRad": 0.0,
+        "postMeanNormalXMicroRad": 0.0
+      },
+      "gate": {
+        "roadTopPlaneCount": {"eq": 1},
+        "settledContactDropouts": {"eq": 0},
+        "settledFeatureSetChanges": {"eq": 0},
+        "settledMinPointCount": {"eq": 1},
+        "settledMaxPointCount": {"eq": 1},
+        "settledMaxAbsSlipMmPerS": {"max": 0.003},
+        "absPostMeanNormalXMicroRad": {"max": 1.0}
+      }
+    },
+    {
+      "id": "RQ1C_30URAD",
+      "sourceRecord": "RQ1C",
+      "reference": {
+        "roadTopPlaneCount": 2,
+        "roadTopPlaneNormalXMaxMicroRad": 29.999999,
+        "settledContactDropouts": 0,
+        "settledFeatureSetChanges": 1,
+        "nearTransitionFeatureSetChanges": 1,
+        "settledPointCount": [1, 1],
+        "settledYRangeMm": 0.88501,
+        "settledMaxAbsVyMmPerS": 48.953407,
+        "settledMaxAbsSlipMmPerS": 0.000954,
+        "nearYRangeMm": 0.63616,
+        "nearMaxAbsVyMmPerS": 48.953407,
+        "preMeanNormalXMicroRad": 0.0,
+        "postMeanNormalXMicroRad": -29.997167,
+        "finalVx": 1.000436187,
+        "finalOmegaZ": -1.833944201
+      },
+      "gate": {
+        "roadTopPlaneCount": {"eq": 2},
+        "roadTopPlaneNormalXMaxMicroRad": {"min": 29.5, "max": 30.5},
+        "settledContactDropouts": {"eq": 0},
+        "settledFeatureSetChanges": {"eq": 1},
+        "nearTransitionFeatureSetChanges": {"eq": 1},
+        "settledMinPointCount": {"eq": 1},
+        "settledMaxPointCount": {"eq": 1},
+        "settledMaxAbsSlipMmPerS": {"max": 0.005},
+        "preMeanNormalXMicroRad": {"min": -1.0, "max": 1.0},
+        "postMeanNormalXMicroRad": {"min": -30.5, "max": -29.5},
+        "nearYRangeRatioVsFlat": {"min": 0.95, "max": 1.05},
+        "nearMaxAbsVyRatioVsFlat": {"min": 0.95, "max": 1.05}
+      }
+    },
+    {
+      "id": "RQ2A_BRAKE20",
+      "sourceRecord": "RQ2A",
+      "reference": {
+        "demandFraction": 0.20,
+        "durationSeconds": 0.5,
+        "pulseContactDropouts": 0,
+        "pulseFeatureSetChanges": 0,
+        "pulsePointCount": [1, 1],
+        "pulseYRangeMm": 0.0716448,
+        "pulseMaxAbsVyMmPerS": 5.78928,
+        "pulseMeanAbsSlipMmPerS": 0.00224362,
+        "pulseMaxAbsSlipMmPerS": 0.0488758,
+        "pulseNormalImpulseMean": 0.03355952,
+        "pulseMaxNormalImpulse": 0.03974508,
+        "vxDelta": -0.588598371,
+        "omegaDelta": 1.078985691,
+        "rollingConstraintDeltaResidualMmPerS": -0.0000566,
+        "finalSlipMmPerS": 0.0000894
+      },
+      "gate": {
+        "pulseContactDropouts": {"eq": 0},
+        "pulseFeatureSetChanges": {"eq": 0},
+        "pulseMinPointCount": {"eq": 1},
+        "pulseMaxPointCount": {"eq": 1},
+        "pulseYRangeMm": {"max": 0.15},
+        "pulseMaxAbsVyMmPerS": {"max": 20.0},
+        "pulseMaxAbsSlipMmPerS": {"max": 0.10},
+        "vxDelta": {"min": -0.61, "max": -0.57},
+        "omegaDelta": {"min": 1.04, "max": 1.12},
+        "absRollingConstraintDeltaResidualMmPerS": {"max": 0.01},
+        "finalAbsSlipMmPerS": {"max": 0.01}
+      }
+    },
+    {
+      "id": "RQ2B_DRIVE20",
+      "sourceRecord": "RQ2B",
+      "reference": {
+        "demandFraction": 0.20,
+        "durationSeconds": 0.5,
+        "pulseContactDropouts": 0,
+        "pulseFeatureSetChanges": 0,
+        "pulsePointCount": [1, 1],
+        "pulseYRangeMm": 0.0708699,
+        "pulseMaxAbsVyMmPerS": 14.5586,
+        "pulseMeanAbsSlipMmPerS": 0.309276,
+        "pulseMaxAbsSlipMmPerS": 3.6782,
+        "pulseNormalImpulseMean": 0.03386563,
+        "pulseMaxNormalImpulse": 0.04697284,
+        "vxDelta": 0.587629259,
+        "omegaDelta": -1.082569718,
+        "endPulseRollingMismatchMmPerS": -2.92418,
+        "finalSlipMmPerS": 0.0002384
+      },
+      "gate": {
+        "pulseContactDropouts": {"eq": 0},
+        "pulseFeatureSetChanges": {"eq": 0},
+        "pulseMinPointCount": {"eq": 1},
+        "pulseMaxPointCount": {"eq": 1},
+        "pulseYRangeMm": {"max": 0.15},
+        "pulseMaxAbsVyMmPerS": {"max": 30.0},
+        "pulseMaxAbsSlipMmPerS": {"min": 1.0, "max": 5.0},
+        "vxDelta": {"min": 0.57, "max": 0.61},
+        "omegaDelta": {"min": -1.12, "max": -1.04},
+        "absEndPulseRollingMismatchMmPerS": {"min": 1.0, "max": 5.0},
+        "finalAbsSlipMmPerS": {"max": 0.01}
+      }
+    }
+  ],
+  "crossScenarioSentinels": [
+    {
+      "id": "RQ2_DRIVE_BRAKE_MAX_SLIP_RATIO",
+      "numerator": "RQ2B_DRIVE20.pulseMaxAbsSlipMmPerS",
+      "denominator": "RQ2A_BRAKE20.pulseMaxAbsSlipMmPerS",
+      "reference": 75.257,
+      "gate": {"min": 20.0, "max": 200.0},
+      "reason": "Preserve the already-observed sign-asymmetric transient as evidence. This gate does not claim the asymmetry is desirable or physically fundamental; it prevents a refactor from silently changing it before we understand whether that change is apparatus drift."
+    }
+  ]
+}
