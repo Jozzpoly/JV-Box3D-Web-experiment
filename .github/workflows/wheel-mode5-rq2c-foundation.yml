@@ -1,0 +1,34 @@
+name: Wheel mode5 RQ2C research foundation
+
+on:
+  push:
+    branches:
+      - research/wheel-mode5-rq2c-orientation-2026-09-05
+    paths:
+      - docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json
+      - docs/evidence/WHEEL_MODE5_ACTIVE_RESEARCH_POINTER_2026-09-05.json
+      - docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json
+      - docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md
+      - tools/wheel-mode5-evidence-ledger-validate.mjs
+      - tools/wheel-mode5-rh0-replay-contract-validate.mjs
+      - .github/workflows/wheel-mode5-rq2c-foundation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-foundation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+
+      - name: Validate closure ledger and active research pointer
+        run: node tools/wheel-mode5-evidence-ledger-validate.mjs
+
+      - name: Validate frozen RH0 replay contract
+        run: node tools/wheel-mode5-rh0-replay-contract-validate.mjs
