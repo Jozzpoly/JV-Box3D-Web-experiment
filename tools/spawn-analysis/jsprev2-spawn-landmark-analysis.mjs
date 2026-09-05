@@ -181,8 +181,10 @@ for (const [tileId, expected] of EXPECTED_TILES) {
       const x = (ax + bx + cx) / 3;
       const y = (ay + by + cy) / 3;
       const z = (az + bz + cz) / 3;
-      const ix = Math.floor((x - minimumX) / CELL_SIZE_M);
-      const iz = Math.floor((z - minimumZ) / CELL_SIZE_M);
+      // Absolute local-grid coordinates make rasterization independent of tile
+      // order and of when global bounds are discovered.
+      const ix = Math.floor(x / CELL_SIZE_M);
+      const iz = Math.floor(z / CELL_SIZE_M);
       const key = cellKey(ix, iz);
       const cell = cells.get(key) ?? {
         area: 0,
@@ -211,14 +213,7 @@ for (const [tileId, expected] of EXPECTED_TILES) {
 assert.equal(totalVertices, 1409687, 'accepted pack vertex-count drift');
 assert.equal(totalIndices, 5327325, 'accepted pack index-count drift');
 assert.equal(totalTriangles, 1775775, 'accepted pack triangle-count drift');
-
-// Re-bin cell coordinates after the true global minimum is known. The first pass
-// used a running minimum, which is unsuitable for stable keys. Rather than make
-// the result order-dependent, abort if any later tile extended min X/Z. The
-// accepted pack is expected to be spatially tiled in order; if this assertion
-// fails, the analyzer must be rewritten with a true two-pass rasterization.
-// This is an intentional fail-closed guard.
-const firstPassKeysStable = true;
+assert.ok(Number.isFinite(minimumX) && Number.isFinite(minimumY) && Number.isFinite(minimumZ), 'scan bounds missing');
 
 const qualifiedCells = new Map();
 for (const [key, cell] of cells) {
@@ -230,6 +225,7 @@ for (const [key, cell] of cells) {
     meanFlatness: cell.weightedFlatness / cell.area,
   });
 }
+assert.ok(qualifiedCells.size > 0, 'no qualified flat cells');
 
 const elevationCut = weightedQuantile(
   [...qualifiedCells.values()].map((cell) => ({ value: cell.meanY, weight: cell.area })),
@@ -239,6 +235,7 @@ const elevationCut = weightedQuantile(
 const lowFlatCells = new Map(
   [...qualifiedCells].filter(([, cell]) => cell.meanY <= elevationCut),
 );
+assert.ok(lowFlatCells.size > 0, 'no low flat cells');
 
 function neighborhood(ix, iz, radiusM) {
   const cellRadius = Math.ceil(radiusM / CELL_SIZE_M);
@@ -290,8 +287,8 @@ for (const [key, cell] of lowFlatCells) {
     }
   }
   if (clearRadiusM < CLEAR_RADIUS_STEPS_M[0]) continue;
-  const localX = minimumX + (ix + 0.5) * CELL_SIZE_M;
-  const localZ = minimumZ + (iz + 0.5) * CELL_SIZE_M;
+  const localX = (ix + 0.5) * CELL_SIZE_M;
+  const localZ = (iz + 0.5) * CELL_SIZE_M;
   const score =
     clearRadiusM * 100 +
     (bestNeighborhood?.validFraction ?? 0) * 20 +
@@ -380,7 +377,7 @@ const output = {
     ],
   },
   integrity: {
-    firstPassKeysStable,
+    rasterOrderIndependent: true,
     vertexCount: totalVertices,
     indexCount: totalIndices,
     triangleCount: totalTriangles,
