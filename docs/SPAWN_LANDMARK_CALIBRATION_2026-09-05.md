@@ -4,17 +4,24 @@ Date: 2026-09-05
 
 Status: **PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE**
 
-This document records a bounded post-wheel product investigation. It is branch-local evidence and does **not** change canonical product authority, accepted `main`, or the closed RQ2C wheel verdict.
+This document records a bounded post-wheel product investigation. It is branch-local evidence and does **not** change canonical product authority, accepted executable runtime, or the closed RQ2C wheel verdict.
 
 ## 1. Exact provenance
 
-Accepted product baseline remains:
+Live product/source/documentation authority is always:
 
-- repository: `Jozzpoly/JV-Box3D-Web-experiment`
-- branch: `main`
-- commit: `5b28cc03d22264010680deb95a04abd04661bc22`
-- tree: `b37a19380f934bd3da796a7e9989872b6617fdab`
-- accepted Owner Preview executable source used in the relevant earlier hands-on period: `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`
+`Jozzpoly/JV-Box3D-Web-experiment/main`
+
+Resolve `main` live. This work branch was forked from the exact product/code checkpoint:
+
+- fork point: `main@5b28cc03d22264010680deb95a04abd04661bc22`
+- fork-point tree: `b37a19380f934bd3da796a7e9989872b6617fdab`
+
+After this branch was created, `main` advanced by a **documentation-only** routing consolidation. That later docs advance does not change the runtime baseline used by this investigation.
+
+Canonical accepted Owner Preview executable source remains:
+
+`529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`
 
 Accepted JSPREV2 static input remains:
 
@@ -23,12 +30,11 @@ Accepted JSPREV2 static input remains:
 - receipt: `receipts/jv_friends_scan_receipt.json`
 - pack id: `scan/photogrammetry-primary`
 
-This work branch was created directly from exact accepted `main`:
+This work branch is:
 
-- branch: `work/spawn-landmark-calibration-2026-09-05`
-- branch head at this record's immediate predecessor: `90820c6d675f2a2f980f3f6ffb82e964e4994c8c`
+`work/spawn-landmark-calibration-2026-09-05`
 
-`main` has not been modified by this investigation.
+No spawn implementation from this branch has been promoted to `main` or canonical Owner Preview.
 
 ## 2. Owner problem being investigated
 
@@ -198,12 +204,14 @@ The seven failures are in pre-existing steering/mobile UI tests, not the spawn c
 6. fullscreen lifecycle expects `POSITION 0`, current behavior emits `RELEASE`;
 7. mobile UI source-regex expects an older literal `matchMedia(...)` formatting/shape.
 
-These failures were provenance-checked as pre-existing baseline debt. Relevant source/test blob SHAs are identical between accepted `main` and the spawn candidate branch, including:
+These failures were provenance-checked as pre-existing baseline debt. Relevant source/test blob SHAs are identical between the product fork point and the spawn candidate branch, including:
 
 - `tests/clean-browser-host-joystick.test.mjs`: `bb4ec97a3c4802cb0ec7fa7092b618eb33e90d9e`
 - `src/app/clean-browser-host.ts`: `5c8f4b718ebba2a0973a471ce5d7afd19b08ed9d`
 - `src/input/pointer-steering-joystick-adapter.ts`: `4c5fd42b7a6727af57a4acf8451f68dfc0b586db`
 - `src/product-controls.ts`: `dbbfda7b2ea47274b1d4ddd7b91f03a02bb91880`
+
+Because the later live `main` advance is documentation-only, those runtime/test blobs remain unaffected by that documentation consolidation.
 
 No steering/UI source or test was changed merely to make this spawn investigation green.
 
