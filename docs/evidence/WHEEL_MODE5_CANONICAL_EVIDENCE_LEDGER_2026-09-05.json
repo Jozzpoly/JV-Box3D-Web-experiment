@@ -17,8 +17,8 @@
   ],
   "lanes": {
     "annular_contact_semantics": {
-      "scope": "Recovered full tire boundary, native/analytic contact normal and witness/manifold semantics, including future side/inner/bore behavior.",
-      "warning": "Evidence in this lane is not dynamically validated by donor outer-P75 b3Wheel rolling results."
+      "scope": "Recovered full tire boundary and future native contact normal/witness/manifold semantics, including side/inner/bore behavior.",
+      "warning": "Donor outer-P75 rolling evidence does not dynamically validate this lane."
     },
     "donor_outer_carrier_dynamics": {
       "scope": "Recovered donor b3Wheel outer-P75 carrier used for bounded rolling, topology-transition, traction and mount-feasibility experiments.",
@@ -35,18 +35,30 @@
     "acceptedMain": "5b28cc03d22264010680deb95a04abd04661bc22",
     "scope": "Touch steering ownership/release/re-grab and configurable wheel-range current-best. Natural physical self-return, wheel/contact physics, drivetrain, suspension, final rig and handling remain open."
   },
+  "activeApparatus": {
+    "lane": "donor_outer_carrier_dynamics",
+    "status": "CANONICAL_ACTIVE_AFTER_RH0_REPLAY",
+    "suite": "tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp",
+    "adapter": "tools/wheel-mode5/rh0/patch-rq-suite-adapter.py",
+    "runner": "tools/wheel-mode5/rh0/wheel-mode5-rh0-canonical-rq-replay.mjs",
+    "workflow": ".github/workflows/wheel-mode5-rh0-canonical-rq-replay.yml",
+    "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json",
+    "qualificationRecord": "RH0_CANONICAL_SUITE_REPLAY",
+    "rule": "New donor-carrier research must extend this explicit execution path after RH0.5; do not extend historical scenario-specific RQ patch chains."
+  },
   "sentinels": [
     {
       "id": "RQ2_LONGITUDINAL_SIGN_ASYMMETRY",
       "sourceRecords": ["RQ2A", "RQ2B"],
-      "meaning": "At matched 0.20*mu*m*g*R pulses, drive shows materially larger transient rolling slip than braking while remaining stable and relaxing after torque removal.",
+      "meaning": "At matched 0.20*mu*m*g*R pulses, drive shows much larger transient rolling slip than braking while remaining stable and relaxing after torque removal.",
       "reference": {
         "brakingMaxSlipMmPerS": 0.0488758,
         "driveMaxSlipMmPerS": 3.6782,
+        "driveBrakeMaxSlipRatio": 75.2561,
         "driveEndPulseRollingMismatchMmPerS": 2.92418,
         "driveFinalSlipMmPerS": 0.0002384
       },
-      "reopenTrigger": "A later representative mount/orientation/load case materially amplifies the sign asymmetry or makes it consequential for grip, energy, handling or Owner-observable behavior."
+      "reopenTrigger": "A later representative mount/orientation/load case materially amplifies the asymmetry or makes it consequential for grip, energy, handling or Owner-observable behavior."
     }
   ],
   "records": [
@@ -60,20 +72,20 @@
       "job": 100671756848,
       "document": "docs/WHEEL_MODE5_E1B_RECOVERED_RESULT_2026-09-03.md",
       "physicsExecuted": false,
-      "scope": "Native contact/onset diagnostic; no solver integration. Boundary location is smooth/convergent while raw side/inner triangle-manifold normal is not a viable direct dynamic normal semantic.",
+      "scope": "Diagnostic only: boundary location converges while raw side/inner triangle-manifold normal is not a viable direct dynamic normal semantic.",
       "open": "Dynamic manifold/normal semantics and side/inner/bore solver behavior remain unvalidated."
     },
     {
       "id": "E1C",
       "lane": "annular_contact_semantics",
       "status": "TRUSTED_DIAGNOSTIC",
-      "question": "Can a profile-derived analytic normal fix the E1b side/inner normal discontinuity without becoming a universal but incorrect substitution?",
+      "question": "Can a profile-derived analytic normal fix the E1b side/inner discontinuity without becoming a universal but incorrect substitution?",
       "executedSource": "c44a6d3a76926e1861223292eb142108be155cbf",
       "run": 33763998895,
       "document": "docs/WHEEL_MODE5_E1C_ANALYTIC_NORMAL_RESULT_2026-09-03.md",
       "physicsExecuted": false,
-      "scope": "Diagnostic only. Analytic normal is strongly continuous for side/inner contact; broad flat support favors native pair normal and exposes witness ownership as a separate problem.",
-      "open": "No dynamic solver has consumed the regime-aware semantic."
+      "scope": "Analytic normal is strongly continuous for the side/inner control; broad flat support favors native pair normal and exposes witness ownership as a separate problem.",
+      "open": "No dynamic solver has consumed a regime-aware semantic."
     },
     {
       "id": "E2A2AJ",
@@ -85,22 +97,21 @@
       "job": 101093611255,
       "document": "docs/WHEEL_MODE5_E2A2AJ_REPROJECTION_COMPONENT_DECOMPOSITION_2026-09-04.md",
       "physicsExecuted": true,
-      "scope": "Bounded fixed-road 2->1 forensic apparatus. Reprojection remains a necessary amplifier, but its small residual is an ill-conditioned cancellation of much larger terms and cannot be causally assigned by absolute component magnitude.",
+      "scope": "Bounded fixed-road forensic apparatus: reprojection is a necessary amplifier, but its residual is an ill-conditioned cancellation and cannot be causally assigned by absolute component magnitude.",
       "reopenTrigger": "Later representative wheel evidence demonstrates material harm plausibly linked to recycler/reprojection behavior."
     },
     {
       "id": "RQ0",
       "lane": "donor_outer_carrier_dynamics",
       "status": "TRUSTED_EXECUTED_SCOPED",
-      "question": "Can the donor outer-P75 carrier sustain frictional steady rolling on a true flat static road with a minimal aligned planar axle guide?",
+      "question": "Can the donor outer-P75 carrier sustain frictional steady rolling on a true flat static road with an aligned planar guide?",
       "executedSource": "579bc2d2f3636f60437d98bf53f033bb69e0b020",
       "run": 33899570270,
       "job": 101110198854,
       "artifact": 9947127766,
-      "artifactDigest": "sha256:4f430a0a89e49a67859d16468d73e76e6702d9d539120040d2ecfab468ff65de",
       "document": "docs/WHEEL_MODE5_RQ0_STEADY_ROLLING_QUALIFICATION_2026-09-04.md",
       "physicsExecuted": true,
-      "scope": "Outer-P75, flat road, 1 m/s, mu=0.9, aligned world-axis planar guide. Zero dropout/churn and microscopic rolling slip; zero-spin positive control proves tangential friction coupling.",
+      "scope": "Outer-P75, flat road, 1 m/s, mu=0.9, aligned world-axis planar guide; zero dropout/churn and microscopic slip with a zero-spin friction positive control.",
       "open": "Not a representative tilted-wheel mount and not full annular/side/inner/bore validation."
     },
     {
@@ -113,32 +124,32 @@
       "job": 101275730043,
       "document": "docs/WHEEL_MODE5_RQ1C_ROAD_NORMAL_TRANSITION_RESULT_2026-09-05.md",
       "physicsExecuted": true,
-      "scope": "30 microradian longitudinal road-normal kink, one intended feature transition, zero dropout, point count 1..1, no material disturbance above matched flat control.",
-      "open": "This is a bounded laboratory topology transition, not a broad rough-road envelope."
+      "scope": "30 microradian longitudinal road-normal kink; one intended feature transition, zero dropout, point count 1..1, no material disturbance above matched flat control.",
+      "open": "Bounded laboratory topology transition only, not a broad rough-road envelope."
     },
     {
       "id": "RQ1D",
       "lane": "donor_outer_carrier_dynamics",
       "status": "TRUSTED_EXECUTED_SCOPED",
-      "question": "Does a small signed relative-normal/cross-slope perturbation matter when support-feature identity stays unchanged?",
+      "question": "Does a small signed relative-normal/cross-slope perturbation matter while support-feature identity stays unchanged?",
       "executedSource": "10bdaf41f18f6c5560f7db52437d9917108471fd",
       "run": 33955901494,
       "job": 101279082268,
       "document": "docs/WHEEL_MODE5_RQ1D_SIGNED_CROSS_SLOPE_RESULT_2026-09-05.md",
       "physicsExecuted": true,
-      "scope": "0/+10/-10 microradian transverse road rotation; same effective support feature, zero dropout/churn, effectively neutral and symmetric response.",
+      "scope": "0/+10/-10 microradian transverse road rotation; same effective support feature, zero dropout/churn and effectively neutral response.",
       "open": "Does not validate mechanically free camber/steer or profile-support transitions."
     },
     {
       "id": "Q1",
       "lane": "donor_outer_carrier_dynamics",
       "status": "RESEARCH_DECISION",
-      "question": "Does the bounded representative rolling evidence justify reopening recycler micro-forensics or a production recycler mitigation?",
+      "question": "Does bounded rolling evidence justify reopening recycler micro-forensics or a production recycler mitigation?",
       "dependsOn": ["RQ0", "RQ1C", "RQ1D"],
       "document": "docs/WHEEL_MODE5_Q1_MATERIAL_RELEVANCE_CLOSURE_2026-09-05.md",
       "physicsExecuted": false,
       "decision": "Q1-A: no material recycler/contact pathology demonstrated in the tested bounded laboratory rolling-transition envelope; recycler micro-forensics stay closed by default.",
-      "reopenTrigger": "A later physically justified representative case demonstrates material contact/energy/grip/chassis disturbance for which recycler attribution could change the project decision."
+      "reopenTrigger": "A later physically justified representative case demonstrates material contact/energy/grip/chassis disturbance for which recycler attribution can change the decision."
     },
     {
       "id": "RQ2A",
@@ -178,7 +189,7 @@
       "job": 101285865131,
       "physicsExecuted": true,
       "invalidMeasurement": "Axle tilt computed with acos(axis.z) in float precision could report false zero for small real tilt.",
-      "scope": "Tilt claim invalid. Contact/rolling dynamics from the run are not automatically invalidated because the diagnostic was observational.",
+      "scope": "Tilt claim invalid; observational telemetry failure does not automatically invalidate contact/rolling dynamics.",
       "supersededBy": "RQ2C0A_120"
     },
     {
@@ -192,7 +203,7 @@
       "document": "docs/WHEEL_MODE5_RQ2C0A_PARALLEL_MOUNT_120_RESULT_2026-09-05.md",
       "physicsExecuted": true,
       "outcome": "Contact/rolling equivalence supportive; historical predeclared <100 microradian axle-tilt gate failed at 148.785 microradians (0.008525 degrees).",
-      "scope": "Synthetic local-axis angular guide: static reference + ParallelJoint, with inherited world linear-Z lock. This is mount-feasibility apparatus, not a representative suspension/axle.",
+      "scope": "Synthetic local-axis angular guide: static reference + ParallelJoint with inherited world linear-Z guide; mount-feasibility apparatus, not representative suspension/axle.",
       "open": "The historical 100 microradian gate was not derived from product or next-challenge error budget; do not tune stiffness to it by default."
     },
     {
@@ -207,23 +218,36 @@
       "failureStage": "composition",
       "failure": "RQ2c0b expected function+binding occurrences=2, got 3",
       "scope": "No Box3D build or physics runtime occurred. No 240 Hz result exists.",
-      "routing": "Do not repair/rerun during audit. Treat as evidence that experiment-specific string-patch composition has become brittle; resolve through RH0 harness hardening."
+      "routing": "Do not repair/rerun as a stiffness campaign; the failure motivated RH0 apparatus hardening."
     },
     {
       "id": "RH0_LEGACY_BRIDGE_REPLAY",
       "lane": "donor_outer_carrier_dynamics",
       "status": "TRUSTED_DIAGNOSTIC",
-      "question": "Can the frozen canonical RQ0/RQ1c/RQ2a/RQ2b helpers coexist in one pinned build/process and reproduce their defining signals under one replay contract before active-harness consolidation?",
+      "question": "Can frozen canonical RQ helpers coexist in one pinned build/process and reproduce their defining signals before active-harness consolidation?",
+      "dependsOn": ["RQ0", "RQ1C", "RQ2A", "RQ2B"],
       "executedSource": "f38b82195b2032cba49815f79770ecf8e8abce2a",
       "run": 33959870475,
       "job": 101289762819,
       "artifact": 9967602295,
-      "artifactDigest": "sha256:2777c3bf996056023418321edc277826e68f3e38fa4323890a1db60a901ec298",
       "document": "docs/WHEEL_MODE5_RH0_LEGACY_COMPOSITION_REPLAY_RESULT_2026-09-05.md",
       "physicsExecuted": true,
-      "scope": "Migration/non-drift oracle only. One pinned build/process replays frozen canonical scenarios; it does not broaden original physics qualifications or become product evidence.",
-      "outcome": "PASS. RQ0, RQ1c, RQ2a and RQ2b defining contact/topology/traction behavior reproduced within the frozen RH0 contract; the RQ2 drive/brake max-slip asymmetry remained about 75.26x.",
-      "routing": "Use as A-side oracle for the explicit consolidated RH0 RQ suite. Do not treat the legacy patch chain as the desired final active architecture."
+      "scope": "Migration oracle only: legacy canonical helpers composed into one build and normalized under the frozen replay contract; no new physics scope."
+    },
+    {
+      "id": "RH0_CANONICAL_SUITE_REPLAY",
+      "lane": "donor_outer_carrier_dynamics",
+      "status": "TRUSTED_DIAGNOSTIC",
+      "question": "Can one explicit versioned C++ scenario suite plus a thin adapter replace the active RQ patch chain without changing canonical donor-carrier behavior?",
+      "dependsOn": ["RQ0", "RQ1C", "RQ2A", "RQ2B", "RH0_LEGACY_BRIDGE_REPLAY"],
+      "executedSource": "16cdbc5946da76ace72ce9e3d11874baca8bf2e4",
+      "run": 33963938554,
+      "job": 101300561492,
+      "artifact": 9968834538,
+      "artifactDigest": "sha256:fb532fbea237557c3871f4cbfc3dd7e2debdfa7d8167f5fbbbb10cbdddca8ab6",
+      "document": "docs/WHEEL_MODE5_RH0_CANONICAL_RQ_SUITE_REPLAY_RESULT_2026-09-05.md",
+      "physicsExecuted": true,
+      "scope": "RH0 non-drift qualification. Explicit suite reproduced frozen canonical metrics essentially bit-for-bit, including RQ1 topology and the RQ2 sign-asymmetry sentinel; this authorizes apparatus provenance cutover, not new physics or product acceptance."
     }
   ],
   "currentMilestone": {
@@ -232,19 +256,20 @@
     "status": "ACTIVE",
     "blocksNewPhysics": true,
     "progress": {
-      "evidenceLedger": "PASS",
-      "evidenceInvariantCI": "PASS",
-      "replayContract": "PASS",
-      "legacyBridgeReplayOracle": "PASS",
-      "explicitConsolidatedHarness": "NEXT",
-      "challengeDerivedOrientationErrorBudget": "BLOCKED_ON_CONSOLIDATED_HARNESS"
+      "RH0.1_evidenceLedger": "PASS",
+      "RH0.2_invariantValidation": "PASS",
+      "RH0.3_explicitHarness": "PASS",
+      "RH0.4_frozenReplayAndCutover": "PASS",
+      "RH0.5_challengeDerivedErrorBudget": "NEXT",
+      "RH0.6_continuationBranchDecision": "OPEN"
     },
+    "next": "Recover a physically defensible wheel-orientation scale from actual JV/donor/product geometry, define the expected signal and allowable guide-compliance/error budget, then decide whether the existing 120 Hz local-axis guide is adequate.",
     "exitCriteria": [
-      "Canonical evidence ledger validates and remains internally consistent.",
-      "Active donor-carrier RQ apparatus is reduced to one explicit reusable execution path rather than another full workflow/patch chain per small scenario.",
-      "Consolidated harness reproduces the frozen RQ0, RQ1C, RQ2A and RQ2B canonical suite within declared non-drift tolerances.",
-      "RQ2B longitudinal sign asymmetry is preserved as a regression sentinel.",
-      "Next orientation challenge is selected from a defensible JV/donor/product scale and has a challenge-derived mount/error budget before any new stiffness tuning."
+      "Canonical evidence ledger and replay contract validators remain green.",
+      "Explicit RH0 suite remains the active donor-carrier execution path and preserves frozen RQ0/RQ1c/RQ2a/RQ2b behavior.",
+      "RQ2B longitudinal sign asymmetry remains visible as a regression sentinel.",
+      "Next orientation challenge is selected from a defensible JV/donor/product scale and has a challenge-derived mount/error budget before any new stiffness tuning.",
+      "A deliberate continuation-branch decision prevents the long discovery branch from remaining the default execution home indefinitely."
     ]
   }
 }
