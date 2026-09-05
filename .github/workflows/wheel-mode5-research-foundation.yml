@@ -1,0 +1,30 @@
+name: Wheel mode5 RH0 research foundation
+
+on:
+  push:
+    branches:
+      - work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03
+    paths:
+      - docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json
+      - docs/WHEEL_MODE5_RESEARCH_AUDIT_AND_FOUNDATION_HARDENING_2026-09-05.md
+      - docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md
+      - docs/PROJECT_STATE.md
+      - tools/wheel-mode5-evidence-ledger-validate.mjs
+      - .github/workflows/wheel-mode5-research-foundation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-foundation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+
+      - name: Validate canonical wheel-mode5 evidence ledger
+        run: node tools/wheel-mode5-evidence-ledger-validate.mjs
