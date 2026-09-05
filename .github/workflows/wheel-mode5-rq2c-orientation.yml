@@ -1,0 +1,139 @@
+name: Wheel mode5 RQ2C orientation qualification
+
+on:
+  push:
+    branches:
+      - research/wheel-mode5-rq2c-orientation-2026-09-05
+    paths:
+      - tools/wheel-mode5/rq2c/**
+      - tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp
+      - tools/wheel-mode5/rh0/patch-rq-suite-adapter.py
+      - tools/wheel-mode5/rh0/wheel-mode5-rh0-canonical-rq-replay.mjs
+      - tools/wheel-mode5-rh0-replay-result-validate.mjs
+      - tools/wheel-mode5-e1-write-annular-native-header.mjs
+      - tools/wheel-mode5-e1-patch-bindings.py
+      - tools/wheel-mode5-e2a-patch-bindings.py
+      - docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json
+      - docs/WHEEL_MODE5_RH0_5_ORIENTATION_CHALLENGE_AND_ERROR_BUDGET_2026-09-05.md
+      - .github/workflows/wheel-mode5-rq2c-orientation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  orientation-qualification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.16.0
+          cache: npm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 6.0.2
+          actions-cache-folder: emsdk-cache
+
+      - run: npm ci
+
+      - name: Recover pinned Box3D.js and donor wheel implementation
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone https://github.com/isaac-mason/box3d.js.git box3djs
+          git -C box3djs checkout 2617a0ff763a60c9f17cee57c6ea72aab75a5077
+          git -C box3djs submodule update --init --recursive
+          test "$(git -C box3djs/vendor/box3d rev-parse HEAD)" = "8441b4a06d6d09dcfb0b0f704df4d847d1437b92"
+
+          git clone https://github.com/Jozzpoly/Box3d_FunProject.git native
+          git -C native fetch origin recovery/jv-reconstruction
+          git -C native diff --binary \
+            77a67132ffc4f003e84c6ffe4e72abfbcded4d33 \
+            241fe10a9056836332c21d9614471d32d749ce3d \
+            -- \
+            include/box3d/box3d.h include/box3d/collision.h include/box3d/types.h \
+            src/CMakeLists.txt src/contact.c src/mesh_contact.c src/physics_world.c \
+            src/shape.c src/shape.h src/wheel_shape.c > B3X-WHEEL-001.patch
+          test -s B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d apply --check ../../../B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d apply ../../../B3X-WHEEL-001.patch
+          git -C box3djs/vendor/box3d diff --check
+
+      - name: Compose frozen RH0 plus explicit RQ2C suite
+        shell: bash
+        run: |
+          set -euxo pipefail
+          node --check tools/wheel-mode5/rh0/wheel-mode5-rh0-canonical-rq-replay.mjs
+          node --check tools/wheel-mode5-rq2c-orientation-run.mjs 2>/dev/null || true
+          node --check tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-run.mjs
+          node --check tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-validate.mjs
+          python3 -m py_compile \
+            tools/wheel-mode5-e1-patch-bindings.py \
+            tools/wheel-mode5-e2a-patch-bindings.py \
+            tools/wheel-mode5/rh0/patch-rq-suite-adapter.py \
+            tools/wheel-mode5/rq2c/patch-rq2c-suite-adapter.py
+
+          JV_E1_ANNULAR_SEGMENTS=128 node tools/wheel-mode5-e1-write-annular-native-header.mjs box3djs/src/e1_annular_profile.h
+          python3 tools/wheel-mode5-e1-patch-bindings.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5-e2a-patch-bindings.py box3djs/src/bindings.cpp
+
+          cp tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp box3djs/src/wheel-mode5-rq-suite.hpp
+          cp tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-suite.hpp box3djs/src/wheel-mode5-rq2c-orientation-suite.hpp
+          python3 tools/wheel-mode5/rh0/patch-rq-suite-adapter.py box3djs/src/bindings.cpp
+          python3 tools/wheel-mode5/rq2c/patch-rq2c-suite-adapter.py box3djs/src/bindings.cpp
+
+          test "$(grep -c 'wheel-mode5-rq-suite.hpp' box3djs/src/bindings.cpp)" = "1"
+          test "$(grep -c 'wheel-mode5-rq2c-orientation-suite.hpp' box3djs/src/bindings.cpp)" = "1"
+          test "$(grep -c 'rh0RunOuterP75CanonicalScenario' box3djs/src/bindings.cpp)" = "1"
+          test "$(grep -c 'rq2cRunOuterP75Orientation' box3djs/src/bindings.cpp)" = "1"
+          git -C box3djs diff --check
+
+      - name: Install Box3D.js workspace
+        working-directory: box3djs
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and validate pinned composition
+        shell: bash
+        run: |
+          set -euxo pipefail
+          pnpm --dir box3djs build
+          pnpm --dir box3djs test
+
+      - name: Re-run frozen RH0 scenarios in RQ2C composition
+        run: node tools/wheel-mode5/rh0/wheel-mode5-rh0-canonical-rq-replay.mjs
+
+      - name: Require frozen RH0 non-drift before new physics
+        run: node tools/wheel-mode5-rh0-replay-result-validate.mjs rh0-canonical-rq-replay-result.json
+
+      - name: Execute translationally-free 0 degree control
+        run: node tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-run.mjs rq2c-control-result.json 0
+
+      - name: Gate translationally-free 0 degree control
+        run: node tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-validate.mjs rq2c-control-result.json control
+
+      - name: Execute symmetric +3.5/-3.5 degree yaw pair
+        run: node tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-run.mjs rq2c-yaw-result.json 3.5 -3.5
+
+      - name: Gate symmetric yaw pair
+        run: node tools/wheel-mode5/rq2c/wheel-mode5-rq2c-orientation-validate.mjs rq2c-yaw-result.json yaw
+
+      - name: Preserve RQ2C evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: wheel-mode5-rq2c-orientation-evidence
+          path: |
+            rh0-canonical-rq-replay-result.json
+            rq2c-control-result.json
+            rq2c-yaw-result.json
+          if-no-files-found: warn
+          retention-days: 30
