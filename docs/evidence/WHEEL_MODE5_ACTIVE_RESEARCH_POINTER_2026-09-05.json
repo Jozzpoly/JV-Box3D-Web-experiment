@@ -1,41 +1,50 @@
 {
   "schemaVersion": 1,
   "updated": "2026-09-05",
-  "stage": "RQ2C_ORIENTATION",
+  "stage": "RQ2C_ORIENTATION_HOLD",
   "activeResearchBranch": "research/wheel-mode5-rq2c-orientation-2026-09-05",
   "ancestryResearchBranch": "work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03",
   "rh0ClosureHead": "c596684ea9a4b99e70d730c1b1b6f02f74cdab63",
   "canonicalEvidenceLedger": "docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json",
-  "canonicalEvidenceLedgerRefreshRequired": false,
+  "canonicalEvidenceLedgerRefreshRequired": true,
   "canonicalEvidenceLedgerHead": "35a790fe8b4c99125f5bee10b5b314053ac2a40f",
   "canonicalEvidenceLedgerRefreshRun": 33973156972,
   "canonicalEvidenceLedgerRefreshJob": 101325133927,
   "activationRecord": "docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md",
+  "closureRecord": "docs/WHEEL_MODE5_RQ2C4F_SOURCE_OWNERSHIP_CLOSURE_2026-09-05.md",
   "latestEvidence": {
-    "id": "RQ2C4E_ANGULAR_CONTRIBUTION_LOCALIZATION",
+    "id": "RQ2C4F_ROLLING_PAIR_CLOSURE_LOCALIZATION",
     "status": "TRUSTED_DIAGNOSTIC",
     "physicsExecuted": true,
-    "executedSource": "14b500c7f174c7107316fd9b31ef92b74964f501",
-    "run": 33971215026,
-    "job": 101319952137,
-    "artifact": 9970989529,
-    "artifactDigest": "sha256:6ed6bdb6d137b575b3136364e55ec988e242a93ef404c9510c780a3863b283c4",
-    "document": "docs/WHEEL_MODE5_RQ2C4E_ANGULAR_CONTRIBUTION_LOCALIZATION_RESULT_2026-09-05.md",
-    "classification": "RQ2C4E_MAX_WITNESS_RESIDUAL_ROLLING_PAIR_DOMINANT",
+    "executedSource": "a7d3389edf6c51664d5615d657e879109b161420",
+    "resultHead": "5ffe5e0f206fc4d7f345ae4f66c7c086ab392ebc",
+    "run": 33973506632,
+    "job": 101326068112,
+    "artifact": 9971633765,
+    "artifactDigest": "sha256:e0e32986831498022e0f05ae1bae039d3c6e48e136b335f90a3c4a588ff48c4a",
+    "document": "docs/WHEEL_MODE5_RQ2C4F_ROLLING_PAIR_CLOSURE_LOCALIZATION_RESULT_2026-09-05.md",
+    "classification": "RQ2C4F_SPIN_RATE_DRIFT_DOMINANT",
     "frozenRh0Replay": "PASS",
     "primaryNonDrift": "PASS",
     "rq2c4dWitnessNonDrift": "PASS",
-    "reconstructionIntegrity": "PASS",
-    "actualWitnessMeanAbsMmPerS": 0.008013016647762721,
+    "rq2c4eReconstructionIntegrity": "PASS",
+    "rq2c4fClosureIntegrity": "PASS",
     "actualWitnessMaxAbsMmPerS": 0.03409385681152344,
-    "rollingPairMeanSignedMmPerS": 0.00844788220193651,
-    "rollingPairMeanAbsMmPerS": 0.008471061786015829,
-    "rollingPairMaxAbsMmPerS": 0.03457069396972656,
-    "nonSpinMeanAbsMmPerS": 0.0017368342384932764,
-    "nonSpinMaxAbsMmPerS": 0.010048025615105871,
-    "peakWitnessRollingPairMmPerS": 0.03457069396972656,
-    "peakWitnessNonSpinMmPerS": -0.0004644800242203928,
+    "gateExceedance": 17.04692840576172,
+    "peakRollingPairMmPerS": 0.03457069396972656,
+    "peakComDriftMmPerS": 0.004529953,
+    "peakSpinRateContributionMmPerS": 0.030174406,
+    "peakLeverContributionMmPerS": -0.000109348,
     "yawPairExecuted": false
+  },
+  "sourceOwnershipClosure": {
+    "status": "PARTIAL",
+    "classification": "RQ2C4F_SOURCE_OWNERSHIP_PARTIAL_CONTACT_FRICTION_DIRECT",
+    "directFirstOrderAxialTorquePath": "contact tangential friction",
+    "exactNumericalBudgetClosed": false,
+    "solverInstrumentationOpened": false,
+    "reasonForStop": "The remaining per-subsystem floating-point attribution cannot change the current project decision; zero-degree gate remains failed and yaw/product promotion stay unauthorized.",
+    "reopenTrigger": "A later decision depends on salvaging this direct-guide qualification, or representative vehicle evidence makes the residual materially consequential."
   },
   "activeApparatus": {
     "frozenSuite": "tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp",
@@ -45,6 +54,7 @@
     "rq2c4Patch": "tools/wheel-mode5/rq2c4/patch-rq2c4-parallel-hard-relax.py",
     "rq2c4dInstrumentPatch": "tools/wheel-mode5/rq2c4d/patch-rq2c4d-slip-instrument.py",
     "rq2c4eLocalizationPatch": "tools/wheel-mode5/rq2c4e/patch-rq2c4e-angular-contributions.py",
+    "rq2c4fClosurePatch": "tools/wheel-mode5/rq2c4f/patch-rq2c4f-rolling-pair-closure.py",
     "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json"
   },
   "closedApparatus": {
@@ -60,12 +70,18 @@
         "higher angular mount hertz",
         "relaxed RH0.5 gates"
       ]
+    },
+    "rq2c4ZeroDegreeQualification": {
+      "status": "HOLD_GATE_FAILED",
+      "actualWitnessMaxAbsMmPerS": 0.03409385681152344,
+      "frozenGateMmPerS": 0.002,
+      "yawUnlocked": false
     }
   },
-  "nextGate": "RQ2C4F_ROLLING_PAIR_CLOSURE_LOCALIZATION",
+  "nextGate": null,
   "challengeDegrees": 3.5,
   "mountHertz": 120,
   "maxAxisErrorDegrees": 0.035,
   "maxHeadingErrorDegrees": 0.035,
-  "routing": "Do not run yaw and do not change physics/gates. On exact RQ2C4D/E 0deg physics, add read-only telemetry that decomposes the rolling-pair residual relative to its initialized rolling closure into COM tangential-velocity drift, axle-spin-rate drift and exact support/spin-lever drift. Preserve RH0, RQ2C4 primary, RQ2C4D witness and RQ2C4E reconstruction non-drift before interpretation. Use the result to choose a later causal falsifier; do not infer contact-solver causality from kinematics alone."
+  "routing": "Routine RQ2C micro-forensics are closed at a truthful HOLD. Do not automatically build a solver-level ownership diagnostic, run +/-3.5 degree yaw, tune stiffness, alter contact/solver physics, relax gates or promote wheel-mode5. First re-ground at the project level and choose the next work from current Owner priorities."
 }
