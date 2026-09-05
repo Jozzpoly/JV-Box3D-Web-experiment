@@ -1,0 +1,26 @@
+{
+  "schema": "JV_OWNER_SPAWN_CALIBRATION_POINTER_V1",
+  "experiment": "spawn-landmark-calibration",
+  "sourceCommit": "5a34b53fc3ceb18694c3a261fee959d1db7ce7b7",
+  "staticLayer": {
+    "role": "accepted-jsprev2",
+    "repository": "Jozzpoly/JV-Box3D-Web-Public",
+    "commit": "a325c279cfe63a0607dba33c3c635a1716e09f8f",
+    "receipt": "receipts/jv_friends_scan_receipt.json"
+  },
+  "variants": [
+    {
+      "id": "scan-cal-a",
+      "query": "jvSpawn=scan-cal-a"
+    },
+    {
+      "id": "scan-cal-b",
+      "query": "jvSpawn=scan-cal-b"
+    },
+    {
+      "id": "scan-cal-c",
+      "query": "jvSpawn=scan-cal-c"
+    }
+  ],
+  "purpose": "Isolated Owner calibration of three geometry-supported spawn candidates; not accepted product truth and not promotable without Owner judgement."
+}
