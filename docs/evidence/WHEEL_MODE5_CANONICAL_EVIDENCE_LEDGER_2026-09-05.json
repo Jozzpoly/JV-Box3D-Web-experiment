@@ -3,8 +3,10 @@
   "updated": "2026-09-05",
   "canonicalProductMain": "5b28cc03d22264010680deb95a04abd04661bc22",
   "activeResearchBranch": "work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03",
+  "plannedContinuationBranch": "research/wheel-mode5-rq2c-orientation-2026-09-05",
   "auditReviewCutoffHead": "cdb0babf2165a7599a123079b46928dbd392c13f",
   "auditDocument": "docs/WHEEL_MODE5_RESEARCH_AUDIT_AND_FOUNDATION_HARDENING_2026-09-05.md",
+  "rh0ClosureDocument": "docs/WHEEL_MODE5_RH0_CLOSURE_2026-09-05.md",
   "statusVocabulary": [
     "OWNER_ACCEPTED_SCOPED",
     "TRUSTED_EXECUTED_SCOPED",
@@ -21,7 +23,7 @@
       "warning": "Donor outer-P75 rolling evidence does not dynamically validate this lane."
     },
     "donor_outer_carrier_dynamics": {
-      "scope": "Recovered donor b3Wheel outer-P75 carrier used for bounded rolling, topology-transition, traction and mount-feasibility experiments.",
+      "scope": "Recovered donor b3Wheel outer-P75 carrier used for bounded rolling, topology-transition, traction and mount/orientation feasibility experiments.",
       "warning": "Evidence in this lane does not validate full annular side/inner/bore semantics."
     }
   },
@@ -44,7 +46,7 @@
     "workflow": ".github/workflows/wheel-mode5-rh0-canonical-rq-replay.yml",
     "replayContract": "docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json",
     "qualificationRecord": "RH0_CANONICAL_SUITE_REPLAY",
-    "rule": "New donor-carrier research must extend this explicit execution path after RH0.5; do not extend historical scenario-specific RQ patch chains."
+    "rule": "New donor-carrier research extends the explicit suite. Historical RQ0/RQ1/RQ2 string-patch chains remain provenance only."
   },
   "sentinels": [
     {
@@ -204,7 +206,7 @@
       "physicsExecuted": true,
       "outcome": "Contact/rolling equivalence supportive; historical predeclared <100 microradian axle-tilt gate failed at 148.785 microradians (0.008525 degrees).",
       "scope": "Synthetic local-axis angular guide: static reference + ParallelJoint with inherited world linear-Z guide; mount-feasibility apparatus, not representative suspension/axle.",
-      "open": "The historical 100 microradian gate was not derived from product or next-challenge error budget; do not tune stiffness to it by default."
+      "open": "The historical 100 microradian gate was not derived from product or next-challenge error budget; RH0.5 now supplies a separate challenge-derived budget for the next experiment."
     },
     {
       "id": "RQ2C0B_240_ATTEMPT",
@@ -248,28 +250,43 @@
       "document": "docs/WHEEL_MODE5_RH0_CANONICAL_RQ_SUITE_REPLAY_RESULT_2026-09-05.md",
       "physicsExecuted": true,
       "scope": "RH0 non-drift qualification. Explicit suite reproduced frozen canonical metrics essentially bit-for-bit, including RQ1 topology and the RQ2 sign-asymmetry sentinel; this authorizes apparatus provenance cutover, not new physics or product acceptance."
+    },
+    {
+      "id": "RH0_5_ORIENTATION_DESIGN",
+      "lane": "donor_outer_carrier_dynamics",
+      "status": "RESEARCH_DECISION",
+      "question": "What is the first physically grounded non-world-aligned orientation challenge and what guide error is small enough relative to that intentional signal?",
+      "dependsOn": ["RQ2C0A_120", "RH0_CANONICAL_SUITE_REPLAY"],
+      "document": "docs/WHEEL_MODE5_RH0_5_ORIENTATION_CHALLENGE_AND_ERROR_BUDGET_2026-09-05.md",
+      "physicsExecuted": false,
+      "decision": "Use a rotated-heading 0/+3.5/-3.5 degree steering-yaw equivalence qualification. 3.5 degrees is 10% of the current JV-Web 35-degree temporary driving full-lock scale. Remove the remaining world linear-Z lock, qualify fully free translation at 0 degrees first, and carry the 120 Hz angular guide unchanged.",
+      "apparatusBudget": {
+        "challengeDegrees": 3.5,
+        "challengeRadians": 0.0610865238,
+        "maxAxisErrorDegrees": 0.035,
+        "maxAxisErrorMicroradians": 610.865,
+        "maxHeadingErrorDegrees": 0.035,
+        "prior120HzMeasuredAxisErrorDegrees": 0.008525,
+        "prior120HzMeasuredAxisErrorMicroradians": 148.785,
+        "priorErrorFractionOfChallenge": 0.002436
+      },
+      "scope": "Research-instrument budget for this specific bounded orientation qualification. It is not a product suspension tolerance and does not retroactively reclassify the historical 100-microradian gate."
     }
   ],
   "currentMilestone": {
     "id": "RH0",
     "name": "Research Foundation Hardening",
-    "status": "ACTIVE",
-    "blocksNewPhysics": true,
+    "status": "CLOSED_PENDING_BRANCH_CUTOVER",
+    "blocksNewPhysics": false,
     "progress": {
       "RH0.1_evidenceLedger": "PASS",
       "RH0.2_invariantValidation": "PASS",
       "RH0.3_explicitHarness": "PASS",
       "RH0.4_frozenReplayAndCutover": "PASS",
-      "RH0.5_challengeDerivedErrorBudget": "NEXT",
-      "RH0.6_continuationBranchDecision": "OPEN"
+      "RH0.5_challengeDerivedErrorBudget": "PASS",
+      "RH0.6_continuationBranchDecision": "PASS_CREATE_HARDENED_CONTINUATION_BRANCH"
     },
-    "next": "Recover a physically defensible wheel-orientation scale from actual JV/donor/product geometry, define the expected signal and allowable guide-compliance/error budget, then decide whether the existing 120 Hz local-axis guide is adequate.",
-    "exitCriteria": [
-      "Canonical evidence ledger and replay contract validators remain green.",
-      "Explicit RH0 suite remains the active donor-carrier execution path and preserves frozen RQ0/RQ1c/RQ2a/RQ2b behavior.",
-      "RQ2B longitudinal sign asymmetry remains visible as a regression sentinel.",
-      "Next orientation challenge is selected from a defensible JV/donor/product scale and has a challenge-derived mount/error budget before any new stiffness tuning.",
-      "A deliberate continuation-branch decision prevents the long discovery branch from remaining the default execution home indefinitely."
-    ]
+    "next": "Create research/wheel-mode5-rq2c-orientation-2026-09-05 from the exact RH0 closing head, freeze the E2a-named discovery branch, then execute only the bounded 0/+3.5/-3.5-degree rotated-heading mount qualification defined by RH0.5.",
+    "closureDocument": "docs/WHEEL_MODE5_RH0_CLOSURE_2026-09-05.md"
   }
 }
