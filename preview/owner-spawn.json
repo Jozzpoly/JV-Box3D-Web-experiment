@@ -1,7 +1,7 @@
 {
   "schema": "JV_OWNER_SPAWN_CALIBRATION_POINTER_V1",
   "experiment": "spawn-landmark-calibration",
-  "sourceCommit": "f63caa45d2bcca2df251c97cea5fd9bbf4a1aa0e",
+  "sourceCommit": "7ae1fc029e6234d698915187ea5d2238edf4b7e7",
   "staticLayer": {
     "role": "accepted-jsprev2",
     "repository": "Jozzpoly/JV-Box3D-Web-Public",
