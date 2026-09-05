@@ -6,7 +6,10 @@
   "ancestryResearchBranch": "work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03",
   "rh0ClosureHead": "c596684ea9a4b99e70d730c1b1b6f02f74cdab63",
   "canonicalEvidenceLedger": "docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json",
-  "canonicalEvidenceLedgerRefreshRequired": true,
+  "canonicalEvidenceLedgerRefreshRequired": false,
+  "canonicalEvidenceLedgerHead": "35a790fe8b4c99125f5bee10b5b314053ac2a40f",
+  "canonicalEvidenceLedgerRefreshRun": 33973156972,
+  "canonicalEvidenceLedgerRefreshJob": 101325133927,
   "activationRecord": "docs/WHEEL_MODE5_RQ2C_ORIENTATION_ACTIVATION_2026-09-05.md",
   "latestEvidence": {
     "id": "RQ2C4E_ANGULAR_CONTRIBUTION_LOCALIZATION",
