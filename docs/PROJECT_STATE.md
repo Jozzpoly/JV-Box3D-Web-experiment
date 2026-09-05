@@ -1,371 +1,240 @@
 # JV-Web — current project state
 
-Updated: 2026-09-05
+Updated: 2026-09-05  
 Owner: Jozz
 
-## 1. Current routing
+## 1. Product authority is unchanged
 
-JV-Web remains a browser product/R&D surface with a strict split between accepted product truth and active research evidence.
+Accepted JV-Web source/product authority remains:
 
-- accepted product/source authority: `Jozzpoly/JV-Box3D-Web-experiment/main`;
-- active wheel-mode5 evidence branch: `work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03`;
-- wheel-mode5 laboratory results are not product promotion.
+`Jozzpoly/JV-Box3D-Web-experiment/main`
 
-The 2026-08-26 strategic cold-takeover campaign remains historical and closed. JV-Web is not NextGen JV Lite and does not need to inherit NextGen architecture.
-
-Default loop remains:
-
-`real need / uncertainty -> smallest informative research or change -> validation matched to causal blast radius -> faithful evidence -> Owner judgement when experiential -> next iteration`
-
-The active wheel research has reached a consolidation boundary: **RH0 Research Foundation Hardening blocks new wheel physics until the evidence and apparatus foundation is hardened.**
-
-## 2. Product authority
-
-### CURRENT ACCEPTED source
-
-`main`
-
-Verified current accepted head:
+at:
 
 `5b28cc03d22264010680deb95a04abd04661bc22`
 
-### Last current-best Owner hands-on
+Owner Preview remains composition/publication infrastructure only and has not been moved by wheel-mode5 research.
+
+Last current-best Owner hands-on:
 
 `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`
 
-Owner observation: 2026-08-31; consolidation: 2026-09-01.
+Observed 2026-08-31, consolidated 2026-09-01.
 
-Accepted/scoped product truth includes:
+Accepted scoped product behavior includes touch steering ownership/release/re-grab and configurable wheel range with 900° as current-best/default. Natural physical self-return, final steering/handling geometry, wheel/contact backend, drivetrain, suspension and final rig remain open.
 
-- Direct Rotation and Relative-X as explicit touch steering choices;
-- semantic `RELEASE` instead of hidden return-to-zero;
-- hands-off graphical steering following the live physical rack;
-- re-grab from the current physical rack position;
-- configurable 360/540/720/900/1080 degree ranges;
-- 900 degrees as current-best/default Owner-used range, not permanently frozen;
-- no Owner-facing artificial-centering dependency.
+No wheel-mode5 laboratory result is Owner acceptance or product promotion.
 
-Still open from that Owner checkpoint:
+## 2. Active wheel-mode5 research lane
 
-- natural physical steering self-return/self-alignment;
-- final steering/handling geometry;
-- wheel/contact backend;
-- drivetrain;
-- suspension;
-- final rig and handling.
+Research branch:
 
-No later wheel-mode5 research has received Owner hands-on acceptance.
+`work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03`
 
-### Owner Preview
-
-`preview/owner-control` remains publication/composition infrastructure only and was verified during the current continuation at:
-
-`a6a6ed9e6d5ac62fe10be13cf81f1931b3370895`
-
-It is not source authority and has not been moved by wheel-mode5 research.
-
-## 3. Current wheel-mode5 sources of truth
-
-Human research router:
+Human router:
 
 `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`
 
-Retrospective audit / routing correction:
+Machine-readable evidence:
+
+`docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`
+
+Audit/hardening rationale:
 
 `docs/WHEEL_MODE5_RESEARCH_AUDIT_AND_FOUNDATION_HARDENING_2026-09-05.md`
 
-Machine-readable evidence ledger:
+Current milestone:
 
-`docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`
+**RH0 Research Foundation Hardening — ACTIVE; RH0.1–RH0.4 PASS; RH0.5 NEXT.**
 
-RH0 non-drift replay contract:
+New donor-carrier physics is still blocked until RH0.5 establishes a physically justified next orientation challenge and apparatus-error budget.
 
-`docs/evidence/WHEEL_MODE5_RH0_CANONICAL_REPLAY_CONTRACT_2026-09-05.json`
+## 3. Evidence model
 
-Consolidated-harness design:
+Do not conflate:
 
-`docs/WHEEL_MODE5_RH0_CONSOLIDATED_RQ_HARNESS_DESIGN_2026-09-05.md`
+### Annular Contact Semantics
 
-Latest migration-oracle result:
+Recovered full tire boundary plus future side/inner/bore contact normal, witness and manifold semantics.
 
-`docs/WHEEL_MODE5_RH0_LEGACY_COMPOSITION_REPLAY_RESULT_2026-09-05.md`
+Dynamic full-annular semantics remain unvalidated.
 
-Static validators:
+### Donor Outer-Carrier Dynamics
 
-- `tools/wheel-mode5-evidence-ledger-validate.mjs`
-- `tools/wheel-mode5-rh0-replay-contract-validate.mjs`
+Recovered donor `b3Wheel` outer-P75 carrier used for bounded rolling/contact/traction/mount-feasibility research.
 
-Fresh agents should use these before descending into historical experiment documents.
+This lane does not validate full annular side/inner/bore behavior.
 
-## 4. Wheel-mode5 research model after audit
+## 4. Current trusted bounded findings
 
-Do not treat wheel-mode5 as one homogeneous geometry implementation.
+### Recycler / E2a2
 
-### Annular Contact Semantics lane
+A bounded recycler/reprojection discrepancy is real and reprojection is a necessary amplifier in the studied difficult transition. Trusted shadow evidence measured about `0.118 mm` recycled-vs-fresh separation discrepancy.
 
-Concerns the recovered full tire boundary and future native manifold semantics, including side/inner/bore behavior.
-
-Current trusted diagnostic direction:
-
-- annular boundary location can be smooth/convergent;
-- raw triangle-selected side/inner normal is not a viable direct dynamic semantic;
-- profile-derived analytic normal strongly improves the side/inner control;
-- a universal analytic-normal replacement is also false because broad flat support favors the native pair normal and exposes witness ownership instead.
-
-Dynamic full-annular semantics remain open.
-
-### Donor Outer-Carrier Dynamics lane
-
-Uses the recovered donor `b3Wheel` outer-P75 carrier for bounded dynamic qualification.
-
-This lane has produced RQ0/RQ1/RQ2 evidence, but cannot establish full annular side/inner/bore correctness.
-
-The donor carrier reduces to a three-point crowned convex profile.
-
-## 5. Current trusted bounded evidence
-
-### E2a2 recycler forensics
-
-A real bounded recycled-manifold/reprojection discrepancy was localized. Separation reprojection is a necessary amplifier in the tested difficult transitions; trusted shadow evidence measured about `0.118 mm` recycled-vs-fresh separation discrepancy; absolute component magnitude cannot cleanly assign the residual cause because the reprojection is an ill-conditioned cancellation.
-
-Forensic descent is **closed by default**. No production recycler patch is authorized.
+Recycler micro-forensics stay closed unless later representative material evidence makes them decision-relevant.
 
 ### RQ0
 
-Qualified donor outer-P75 flat-road rolling with aligned planar guide:
+Aligned flat-road rolling qualified within scope:
 
-- zero settled dropout/churn;
+- zero dropout/churn;
 - point count `1..1`;
-- microscopic rolling slip;
-- essentially invariant Vx/spin;
-- friction positive control demonstrates real tangential coupling.
+- microscopic slip;
+- zero-spin positive control demonstrates real friction coupling.
 
-This is not a representative tilted-wheel mount.
+The planar world-axis guide is not a representative tilted-wheel mount.
 
 ### RQ1 / Q1-A
 
-RQ1c crossed one real `30 µrad` road-face/contact-feature transition without material disturbance beyond RQ0 background. RQ1d added a `0/+10/-10 µrad` signed relative-normal perturbation with the same effective support feature and likewise remained neutral.
+A real `30 µrad` road-face transition produced one expected feature switch without material disturbance above matched flat control. Small signed cross-slope remained neutral while support-feature identity stayed unchanged.
 
-Correct scope after audit:
+Q1-A applies only to the tested **bounded laboratory rolling-transition envelope**.
 
-> Q1-A closes recycler escalation only in the tested **bounded laboratory rolling-transition envelope**.
+### RQ2a / RQ2b
 
-It does not declare broad rough-road/topology risk solved.
+Bounded braking and drive both qualified in the aligned flat-road apparatus.
 
-### RQ2a braking
+Retained regression sentinel:
 
-Bounded `0.20 * mu*m*g*R`, `0.5 s` braking qualified in the aligned flat-road apparatus with zero dropout/churn and essentially exact translation-spin coordination.
+- brake max slip ≈ `0.0488758 mm/s`;
+- drive max slip ≈ `3.67820 mm/s`;
+- drive/brake ratio ≈ `75.256x`;
+- drive end-pulse mismatch ≈ `2.92418 mm/s`, then relaxes.
 
-### RQ2b drive
+Do not erase this asymmetry through refactor unless evidence explains the change.
 
-Matched bounded drive qualified with zero dropout/churn and stable post-pulse return to near-zero slip.
+## 5. RQ2c0 before RH0
 
-Important retained sentinel:
+A local-axis `b3ParallelJoint` angular guide is a useful mount-feasibility direction because world-axis angular locks become invalid once wheel orientation changes.
 
-- braking max pulse slip ~`0.0489 mm/s`;
-- drive max pulse slip ~`3.678 mm/s`;
-- drive end-pulse rolling mismatch ~`2.924 mm/s`, subsequently relaxed.
-
-This is not currently a material stability failure but must survive future harness refactors as an explicit regression sentinel.
-
-## 6. RQ2c0 status after audit
-
-World-axis angular X/Y locks are unsuitable for trustworthy tilted-wheel claims. A pinned `b3ParallelJoint` local-axis angular guide is a promising bounded laboratory replacement because it constrains relative local-Z orientation without tying translation to an anchor.
-
-Do **not** call the current construct a representative axle/suspension. It still uses:
-
-- static orientation reference;
-- world linear-Z guide.
-
-### RQ2c0a 120 Hz
-
-Corrected run:
+Corrected 120 Hz result:
 
 `3af93f9efab3ce84a51aaaf2e49265d82062d561 / 33958566941 / 101286243228`
 
-Contact/rolling equivalence was supportive. Corrected max guide-axis tilt was:
+Max measured guide-axis tilt:
 
 `148.785 µrad = 0.008525°`.
 
-The historical predeclared `<100 µrad` gate therefore failed. Preserve that historical result, but the audit determined that `100 µrad` was not derived from a product or future challenge error budget and must not become a canonical mechanical acceptance threshold.
+The historical `<100 µrad` gate failed, but that threshold was not derived from product geometry or from the next physical challenge.
 
-The earlier `acos(axis.z)` zero-tilt result is `INSTRUMENT_INVALID`.
+The attempted 240 Hz follow-up never executed physics. Its composition failure is apparatus evidence, not a 240 Hz physical result.
 
-### RQ2c0b 240 Hz attempt
-
-`cdb0babf2165a7599a123079b46928dbd392c13f / 33958792392 / 101286854234`
-
-Status:
-
-**APPARATUS_INVALID / NO PHYSICS RESULT**.
-
-Composition failed before Box3D build/runtime:
-
-`RQ2c0b expected function+binding occurrences=2, got 3`
-
-Do not repair/rerun this during RH0.
-
-## 7. Why the project is hardening now
-
-At the retrospective audit cutoff, the research branch was `417` commits ahead of accepted `main` and carried a large number of experiment-specific workflows, JS runners and text-patching scripts.
-
-The research produced real knowledge, but the apparatus itself has become a growing source of risk and Owner-attention cost:
-
-- current truth is distributed across many checkpoints;
-- helper clone/patch order is brittle;
-- fresh agents must reconstruct orchestration history before interpreting physics;
-- RQ2c0b demonstrates a real composition failure caused by this pattern.
-
-The correct response is **consolidation before expansion**.
-
-## 8. ACTIVE MILESTONE — RH0 Research Foundation Hardening
-
-Status: **ACTIVE / BLOCKS NEW WHEEL PHYSICS**.
+## 6. RH0 hardening progress
 
 ### RH0.1 — evidence ledger — PASS
 
-Canonical machine-readable ledger exists with exact source/run/job/artifact/status/scope/reopen provenance:
+Canonical status/provenance is centralized and automatically validated.
 
-`docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`
+### RH0.2 — evidence/replay invariants — PASS
 
-### RH0.2 — evidence/replay invariant validation — PASS
+Critical scope and non-drift invariants are machine-checked.
 
-The lightweight foundation gate validates:
+### RH0.3 — explicit active donor-carrier harness — PASS
 
-- evidence status/provenance invariants;
-- bounded Q1 language;
-- RQ2b sign-asymmetry retention;
-- RQ2c0 invalid/superseded classifications;
-- replay-contract structure and dependency pins.
+Active apparatus:
 
-Latest post-oracle foundation run:
+- `tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp`
+- `tools/wheel-mode5/rh0/patch-rq-suite-adapter.py`
+- `tools/wheel-mode5/rh0/wheel-mode5-rh0-canonical-rq-replay.mjs`
+- `.github/workflows/wheel-mode5-rh0-canonical-rq-replay.yml`
 
-`33960067816 / 101290295069` — **SUCCESS**.
+The active path uses pinned donor/E1/E2a composition plus one normal versioned C++ suite and one thin include/binding adapter.
 
-### RH0 migration oracle — PASS
+Historical RQ0/RQ1/RQ2 Python patch chains are now provenance only. Do not extend them for new active research.
 
-Before rewriting active apparatus, all frozen canonical legacy helpers were composed into one pinned build/process and replayed against one contract:
+### RH0.4 — frozen replay / provenance cutover — PASS
 
-source / run / job:
+Explicit-suite replay:
 
-`f38b82195b2032cba49815f79770ecf8e8abce2a / 33959870475 / 101289762819`
+`16cdbc5946da76ace72ce9e3d11874baca8bf2e4 / 33963938554 / 101300561492`
 
-artifact:
+Artifact:
 
-`9967602295`
+`9968834538`
 
-Result: **PASS**.
+Checkpoint:
 
-The bridge replay preserved the defining canonical signals, including:
+`docs/WHEEL_MODE5_RH0_CANONICAL_RQ_SUITE_REPLAY_RESULT_2026-09-05.md`
 
-- RQ0 stable matched rolling and friction positive control;
-- RQ1c exactly two represented top faces, one intended feature transition and `0 -> -29.997 µrad` normal shift;
-- RQ2a max pulse slip about `0.0488758 mm/s` and near-zero rolling residual;
-- RQ2b max pulse slip about `3.67820 mm/s`, end-pulse mismatch about `2.92418 mm/s`, final relaxation to near-zero slip;
-- RQ2 drive/brake max-slip asymmetry ~`75.26x`.
+The new suite reproduced the decision-relevant frozen metrics essentially bit-for-bit, including the RQ1 topology transition and RQ2 sign-asymmetry sentinel. No replay gate was widened.
 
-This is a **migration/non-drift oracle**, not new physics qualification and not the desired final active architecture.
+### RH0.5 — physical orientation scale / error budget — NEXT
 
-### RH0.3 — consolidate active RQ apparatus — NEXT
+Before resuming RQ2c physics:
 
-Design baseline:
+1. recover the relevant current JV/donor wheel, steering and suspension geometry;
+2. identify the smallest physically meaningful first orientation question;
+3. choose challenge amplitude from real geometry/product need rather than numerical convenience;
+4. identify the expected physical signal;
+5. set permissible guide error clearly below that signal;
+6. compare the existing `148.785 µrad` compliance with that budget;
+7. only then decide whether 120 Hz is adequate, a stiffer guide is useful, or the guide architecture should change.
 
-`docs/WHEEL_MODE5_RH0_CONSOLIDATED_RQ_HARNESS_DESIGN_2026-09-05.md`
+No automatic 240 Hz rerun is authorized.
 
-The next implementation should replace the pattern of one new full workflow + helper clone/string patch per tiny scenario with:
+### RH0.6 — continuation branch — OPEN
 
-- one readable, versioned active RQ suite module;
-- one small stable adapter into the pinned Box3D.js binding translation unit;
-- frozen named canonical scenarios first;
-- one build/run path and one result schema;
-- validation against the exact same replay contract and bridge oracle.
+The current branch contains substantial discovery history and increasingly functions as an evidence archive. After RH0.5, deliberately decide whether active execution should remain here or move to a cleaner hardened continuation branch.
 
-Do not mass-delete historical workflows yet; they remain provenance until the explicit replacement reproduces the evidence.
+## 7. Still not validated
 
-### RH0.4 — explicit-suite frozen replay — BLOCKED ON RH0.3
+Important open areas include:
 
-The new explicit suite must reproduce:
+- dynamic full-annular contact/manifold semantics;
+- side/inner/bore solver behavior;
+- representative free camber/steer;
+- lateral tire-force realism;
+- suspension/chassis load transfer;
+- near-limit braking/drive, lockup and sustained wheelspin;
+- broader irregular-road/topology envelope;
+- representative axle/suspension rig;
+- wheel-mode5 product integration;
+- Owner experiential acceptance of wheel-mode5.
 
-- RQ0 matched rolling + friction positive control;
-- RQ1c 30 µrad transition;
-- RQ2a bounded braking;
-- RQ2b bounded drive + sign-asymmetry sentinel.
+## 8. Broader JV-Web product pressures remain open
 
-A replay failure is first a harness non-drift failure, not a new physics discovery.
+Wheel-mode5 is an important research lane, not the whole product roadmap.
 
-### RH0.5 — next challenge / error budget — BLOCKED ON EXPLICIT HARNESS
-
-Only after the explicit harness is stable:
-
-- choose the next orientation question from actual JV/donor/product geometry;
-- define a challenge amplitude;
-- define permissible guide compliance relative to that amplitude/effect;
-- then judge whether 120 Hz is adequate, a stiffer guide is justified, or another constraint is needed.
-
-No `120 -> 240 -> ... until PASS` stiffness campaign is authorized.
-
-### RH0.6 — continuation branch decision
-
-After explicit canonical replay succeeds, decide whether the current long research branch remains mainly an evidence archive and active work moves to a hardened continuation branch or a clean research branch based on `main` plus only minimal canonical apparatus/evidence pointers.
-
-## 9. RH0 exit criteria
-
-All must be true:
-
-1. ledger and validator pass — **PASS**;
-2. project state/router point to RH0 — **PASS**;
-3. one explicit reusable active RQ execution path exists — **OPEN**;
-4. explicit consolidated harness reproduces frozen RQ0/RQ1c/RQ2a/RQ2b within declared tolerances — **OPEN**;
-5. RQ2b sign-asymmetry sentinel survives the explicit refactor — **OPEN; bridge oracle proves the reference**;
-6. next orientation challenge and its error budget are physically justified — **OPEN / deliberately deferred until harness hardening**.
-
-## 10. Broader product pressures remain open
-
-Wheel-mode5 is a research priority, not the whole product roadmap.
-
-Still legitimate future product slices include:
+Legitimate future product work still includes:
 
 - natural steering self-return/self-alignment;
-- steering/handling geometry;
+- steering and handling geometry;
 - camera and controls;
 - UI/presentation;
 - world/scan experience;
 - performance;
 - drivetrain/brake balance.
 
-Do not opportunistically mix these into RH0 apparatus hardening. Conversely, do not allow wheel-mode5 to become an endless lab detached from product uncertainty: a large new forensic lane should state which product decision it can change.
+Do not opportunistically mix those into RH0 laboratory hardening, but also do not let wheel-mode5 become an endless lab detached from product uncertainty.
 
-## 11. What not to do next
+## 9. Do not do next by default
 
-- Do not restart the old strategic cold takeover.
-- Do not promote wheel-mode5 to `main` or Owner Preview.
-- Do not patch Box3D recycler semantics without later representative material relevance.
-- Do not repair/rerun RQ2c0b yet.
-- Do not tune guide stiffness until an arbitrary historical threshold passes.
-- Do not start camber/steer/load-transfer physics before RH0.
-- Do not use donor outer-P75 evidence as full annular validation.
-- Do not delete the historical research apparatus before a canonical replacement reproduces the evidence.
-- Do not mistake the successful legacy bridge for completion of harness consolidation.
-- Do not ask the Owner to judge low-level telemetry before a faithful experiential candidate exists.
+- Do not rerun 240 Hz merely to satisfy the old `<100 µrad` threshold.
+- Do not tune the guide before a challenge-derived error budget exists.
+- Do not reopen recycler micro-forensics.
+- Do not extend historical RQ patch chains.
+- Do not start camber/steer/load transfer before RH0.5.
+- Do not claim donor outer-P75 results validate full annular geometry.
+- Do not promote research to `main` or Owner Preview.
+- Do not ask Owner to judge low-level laboratory metrics without an experiential consequence.
 
-## 12. Fresh continuation
+## 10. Fresh continuation
 
 For normal product work:
 
 1. verify live `main`;
-2. read `AGENTS.md`;
-3. read this file;
-4. inspect only product source/tests relevant to the requested slice.
+2. read `AGENTS.md` and this file;
+3. inspect only product source/tests relevant to the requested slice.
 
 For wheel-mode5 research:
 
 1. verify live `main` and research branch separately;
-2. read `AGENTS.md` and this file;
-3. read `docs/WHEEL_MODE5_CURRENT_STATE_AND_ROADMAP_2026-09-04.md`;
-4. read `docs/WHEEL_MODE5_RESEARCH_AUDIT_AND_FOUNDATION_HARDENING_2026-09-05.md`;
-5. validate `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json` and the replay contract;
-6. use `docs/WHEEL_MODE5_RH0_LEGACY_COMPOSITION_REPLAY_RESULT_2026-09-05.md` as the migration A-side;
-7. continue **RH0.3 explicit consolidated harness**, not RQ2c0 physics;
-8. open historical experiment docs only as directed by the ledger/router.
+2. read `AGENTS.md`, this file and the wheel-mode5 router;
+3. validate the evidence ledger if changing foundation/evidence status;
+4. use the explicit RH0 suite as active donor-carrier apparatus;
+5. continue **RH0.5 physical orientation/error-budget grounding**;
+6. open historical experiment docs only when a specific ledger dependency or anomaly requires them.
 
-Current milestone boundary: **Steering I1 remains the last Owner hands-on product baseline; wheel-mode5 has strong but scoped laboratory evidence through RQ2c0a; RQ2c0b has no physics result; RH0 ledger/replay foundation and legacy migration oracle are PASS; explicit consolidated RQ harness + replay and challenge-derived orientation error budget remain before new physics; no product promotion authorized.**
+Current boundary:
+
+> **Steering I1 remains accepted product truth. Wheel-mode5 has strong but scoped laboratory evidence. The active RQ apparatus is now replay-qualified and explicit. RH0.5 physical grounding is next; new orientation physics and product promotion remain blocked.**
