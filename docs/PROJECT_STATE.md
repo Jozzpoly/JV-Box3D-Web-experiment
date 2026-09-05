@@ -17,17 +17,15 @@ Observed 2026-08-31; consolidated 2026-09-01.
 
 No wheel-mode5 laboratory result is product acceptance or promotion. Owner Preview remains publication/composition infrastructure only.
 
-## 2. Wheel-mode5 branch transition
+## 2. Wheel-mode5 active research branch
 
-Closing discovery branch:
-
-`work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03`
-
-Chosen hardened continuation branch:
+Active hardened continuation branch:
 
 `research/wheel-mode5-rq2c-orientation-2026-09-05`
 
-The new branch must be created from the exact RH0 closing head. The old E2a-named branch then becomes an archival research ancestor and should not receive further active experiments.
+Archival research ancestor:
+
+`work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03`
 
 Canonical wheel router:
 
@@ -36,6 +34,10 @@ Canonical wheel router:
 Machine-readable evidence:
 
 `docs/evidence/WHEEL_MODE5_CANONICAL_EVIDENCE_LEDGER_2026-09-05.json`
+
+Active pointer:
+
+`docs/evidence/WHEEL_MODE5_ACTIVE_RESEARCH_POINTER_2026-09-05.json`
 
 RH0 closure:
 
@@ -50,30 +52,15 @@ Keep separate:
 
 Outer-carrier evidence does not validate full annular side/inner/bore behavior.
 
-## 4. Current bounded findings
+## 4. Retained bounded findings
 
 ### Recycler/E2a2
 
 A bounded recycler/reprojection discrepancy is real; trusted shadow evidence measured about `0.118 mm` recycled-vs-fresh separation in the studied difficult transition. Recycler micro-forensics remain closed unless later representative material evidence makes them decision-relevant.
 
-### RQ0
+### RQ0 / RQ1 / RQ2a / RQ2b
 
-Aligned flat-road rolling qualified within scope with zero dropout/churn, point count `1..1`, microscopic slip and a real friction positive control.
-
-### RQ1 / Q1-A
-
-A real `30 µrad` road-face transition produced one expected feature switch without material disturbance above matched control. Q1-A is limited to the tested **bounded laboratory rolling-transition envelope**.
-
-### RQ2a / RQ2b
-
-Bounded braking and drive qualified in the aligned flat-road apparatus.
-
-Retained sign-asymmetry sentinel:
-
-- brake max slip ≈ `0.0488758 mm/s`;
-- drive max slip ≈ `3.67820 mm/s`;
-- ratio ≈ `75.256x`;
-- drive end-pulse mismatch ≈ `2.92418 mm/s`, then relaxes.
+Aligned flat-road rolling, one bounded road-normal transition, bounded braking and bounded drive qualified within their laboratory scopes. Retain the RQ2 longitudinal sign-asymmetry sentinel rather than explaining it microscopically without later material relevance.
 
 ### RQ2c0a 120 Hz
 
@@ -83,99 +70,140 @@ Corrected local-axis mount run measured max guide-axis error:
 
 It truthfully failed its historical predeclared `<100 µrad` gate. That gate was not derived from product/challenge geometry and is no longer the routing target.
 
-The 240 Hz follow-up never executed physics and remains apparatus-invalid provenance.
+The 240 Hz follow-up never executed physics and remains apparatus-invalid provenance. Do not resurrect it as a stiffness campaign without new causal evidence.
 
 ## 5. RH0 Research Foundation Hardening
 
 **Status: CLOSED.**
 
-All gates passed:
+RH0.1–RH0.6 passed. The explicit RH0 suite is the active donor-carrier extension point; historical scenario-specific patch chains remain provenance only.
 
-- RH0.1 evidence ledger — PASS;
-- RH0.2 invariant validation — PASS;
-- RH0.3 explicit active harness — PASS;
-- RH0.4 frozen replay/provenance cutover — PASS;
-- RH0.5 physically grounded orientation/error budget — PASS;
-- RH0.6 continuation branch decision — PASS.
-
-Pre-closure foundation validation after apparatus cutover:
-
-`33964189804` — SUCCESS.
-
-Active donor-carrier apparatus:
-
-- `tools/wheel-mode5/rh0/wheel-mode5-rq-suite.hpp`
-- `tools/wheel-mode5/rh0/patch-rq-suite-adapter.py`
-- `tools/wheel-mode5/rh0/wheel-mode5-rh0-canonical-rq-replay.mjs`
-- `.github/workflows/wheel-mode5-rh0-canonical-rq-replay.yml`
-
-Explicit suite replay:
+Canonical suite replay:
 
 `16cdbc5946da76ace72ce9e3d11874baca8bf2e4 / 33963938554 / 101300561492`
 
-Artifact `9968834538` reproduced canonical RQ0/RQ1c/RQ2a/RQ2b behavior essentially bit-for-bit. Historical scenario-specific RQ patch chains remain provenance only.
+Artifact `9968834538` reproduced canonical RQ0/RQ1c/RQ2a/RQ2b behavior essentially bit-for-bit.
 
-## 6. Next research stage — bounded orientation/mount qualification
+## 6. Orientation qualification target and frozen gates
 
 Grounding:
 
 `docs/WHEEL_MODE5_RH0_5_ORIENTATION_CHALLENGE_AND_ERROR_BUDGET_2026-09-05.md`
 
-Accepted `main` provides the scale and mechanism:
-
-- current native max steering = `32°`;
-- current JV-Web driving full lock = `35°`;
-- source-registered FL steering axis = `+Y` through wheel center;
-- wheel spin axis = knuckle-local `Z`.
-
-First challenge:
+First intentional yaw challenge remains:
 
 `0° / +3.5° / -3.5°`
 
 where `3.5°` is 10% of current `35°` driving full lock.
 
-Challenge-derived research-instrument budget:
+Challenge-derived research-instrument budgets remain:
 
-- max settled axle-axis error `<= 0.035° = 610.865 µrad`;
+- max settled axle-axis error `<= 0.035°`;
 - max settled velocity-heading error `<= 0.035°`.
 
-The prior 120 Hz error (`0.008525°`) is about `0.244%` of the intentional challenge and about `4.11x` inside this budget, so **120 Hz / damping 1.0 carries forward unchanged**. There is no current reason for a pre-emptive 240 Hz run.
+Frozen rolling-slip gate remains:
 
-## 7. Exact next apparatus change
+- max valid rolling slip `<= 0.002 mm/s`.
 
-The orientation experiment is rotated-heading RQ0 equivalence, not yet a lateral tire-force test.
+The historical 120 Hz angular-mount error is inside the challenge-derived angular budget, so 120 Hz / damping 1.0 carries forward unchanged unless later trusted evidence specifically makes angular compliance causal.
 
-For yaw `theta`, rotate the wheel body, rolling heading, axle axis, linear velocity and angular velocity consistently. Compute rolling slip in that rotated frame.
+## 7. Zero-degree qualification frontier — RQ2C3 → RQ2C4 → D → E
 
-Critically:
+Yaw is **not yet unlocked**. The required 0-degree apparatus qualification exposed a smaller blocker and has been investigated without relaxing gates.
 
-- remove the remaining world `linearZ` lock;
-- do not replace it with another world-axis constraint;
-- retain only the static reference + local-axis `b3ParallelJoint` angular guide;
-- allow wheel translation to be fully free.
+### RQ2C3 — direct local-axis scalar guide
 
-Required ordering:
+Trusted source:
 
-1. fully free `0°` control;
-2. if it fails through cross-heading drift, classify apparatus-invalid and solve the local translational-mount problem;
-3. only if 0° qualifies, interpret `+3.5° / -3.5°`;
-4. stop after classification.
+`09712c613218f5b6bb40927673f714fd364f2bdf / 33968208611 / 101311971290`
 
-Initial gates per valid case:
+The direct one-axis topology removed the helper-body carrier's millimetre-scale positional wandering, but its soft relaxation left:
 
-- contact dropout `0`;
-- feature changes `0`;
-- point count `1..1`;
-- Y range `0.50..0.90 mm`;
-- max `|Vy|` `35..65 mm/s`;
-- rotated-frame max slip `<=0.002 mm/s`;
-- axle-axis error `<=0.035°`;
-- velocity-heading error `<=0.035°`.
+- max heading error `0.04951397°` > `0.035°`;
+- max cross-heading speed `0.864176 mm/s`;
+- max slip `0.03457069 mm/s` > `0.002 mm/s`.
 
-Use stable `atan2` diagnostics, not the invalidated `acos` small-angle telemetry.
+The helper-body chain remains closed.
 
-## 8. Still not validated
+### RQ2C4 — engine-native hard relax
 
+Trusted source:
+
+`13dfe885f8d949a25fa057f0cd47c7d86b95d817 / 33968699659 / 101313264377`
+
+Hard-relax semantics made the direct translational/heading guide effectively exact:
+
+- max heading error `1.33403e-8°`;
+- max cross-heading speed `2.32831e-7 mm/s`;
+- max cross-track `0.00683569 mm`;
+- max plane separation `0.00380223 mm`.
+
+But legacy max slip remained `0.03468990 mm/s`, essentially the old angular-mount signature.
+
+### RQ2C4D — actual support-witness instrument audit
+
+Trusted source:
+
+`8a65846ff4e2a41a096221e5908f3899f694461b / 33969662893 / 101315812890`
+
+Exact RQ2C4 primary metrics reproduced. The actual geometric support point measured:
+
+- mean absolute witness slip `0.008013017 mm/s`;
+- max absolute witness slip `0.034093857 mm/s`.
+
+The actual witness retains `98.2818%` of the legacy maximum. Therefore the fixed-radius approximation is not the primary cause of the blocker.
+
+### RQ2C4E — angular contribution localization
+
+Trusted source:
+
+`14b500c7f174c7107316fd9b31ef92b74964f501 / 33971215026 / 101319952137`
+
+Frozen RH0, RQ2C4 primary non-drift, RQ2C4D witness non-drift and rigid-body reconstruction all passed.
+
+At peak actual witness:
+
+- witness `+0.034093857 mm/s`;
+- rolling pair (`COM translation + pure current-axle spin`) `+0.034570694 mm/s`;
+- non-spin/nutation `-0.000464480 mm/s`.
+
+Settled rolling-pair mean signed / mean absolute is `99.726%`, so the residual is overwhelmingly one-signed rather than symmetric noise.
+
+**Current interpretation:** the maximum 0-degree blocker is primarily inside incomplete cancellation of COM translation and pure current-axle spin. Non-spin can contribute/cancel elsewhere but is not the primary maximum source. This is kinematic localization, not yet contact-solver causality.
+
+Actual-witness maximum remains **17.0469×** above the frozen `0.002 mm/s` gate.
+
+## 8. Exact next bounded move — RQ2C4F
+
+Do **not** execute `+3.5°/-3.5°` yet.
+
+Predeclare and run one read-only 0-degree **rolling-pair closure localization** on exact RQ2C4D/E physics.
+
+Use the initialized rolling state as the reference and decompose current rolling-pair residual exactly into:
+
+1. COM tangential-velocity drift;
+2. axle-spin-rate drift;
+3. change in the exact geometric spin lever from current axle and actual support witness.
+
+Require before interpretation:
+
+- frozen RH0 replay PASS;
+- exact RQ2C4 primary non-drift;
+- RQ2C4D actual-witness non-drift;
+- RQ2C4E rigid-body reconstruction integrity.
+
+RQ2C4F is diagnostic only. It must not change mount stiffness, contact parameters, solver behavior, geometry, gates or yaw.
+
+Routing after F:
+
+- spin-rate drift dominates -> design a specific causal falsifier for how contact/constraint dynamics evolve spin; do not infer solver blame from kinematics alone;
+- geometric spin-lever drift dominates -> inspect support/rolling geometry semantics before changing dynamics;
+- translation drift dominates -> revisit the remaining longitudinal control/response assumption;
+- mixed terms -> localize phase/correlation before intervention.
+
+## 9. Still not validated
+
+- `+3.5°/-3.5°` orientation equivalence;
 - dynamic full-annular contact/manifold semantics;
 - side/inner/bore solver behavior;
 - representative lateral tire-force behavior;
@@ -187,29 +215,30 @@ Use stable `atan2` diagnostics, not the invalidated `acos` small-angle telemetry
 - production axle/suspension architecture;
 - wheel-mode5 product integration and Owner acceptance.
 
-## 9. Explicitly not next
+## 10. Explicitly not next
 
 Do not:
 
-- rerun 240 Hz to satisfy the old 100 µrad gate;
-- tune angular stiffness before the new challenge fails its derived budget;
-- add torque, lateral slip demand, suspension/load transfer or camber in the same orientation qualification;
+- run yaw while 0-degree actual-witness slip fails the frozen gate;
+- rerun 240 Hz merely to satisfy the old 100 µrad gate;
+- tune angular stiffness because RQ2C4E did not identify non-spin as the primary maximum source;
+- relax or redefine the `0.002 mm/s` gate to force qualification;
+- add torque, lateral slip demand, suspension/load transfer or camber;
 - reopen recycler forensics;
-- extend historical RQ patch chains;
+- resurrect the closed helper-body carrier;
 - promote wheel-mode5 to `main` or Owner Preview.
 
-## 10. Fresh continuation
+## 11. Fresh continuation
 
 For wheel-mode5 research:
 
 1. verify accepted `main` separately;
-2. verify the hardened continuation branch;
-3. read `AGENTS.md`, this file, the wheel router and RH0 closure;
-4. validate the evidence ledger if changing evidence status;
-5. use the explicit RH0 suite as the only active donor-carrier extension point;
-6. execute exactly the bounded `0/+3.5/-3.5°` rotated-heading mount qualification;
-7. stop and classify before expanding scope.
+2. verify `research/wheel-mode5-rq2c-orientation-2026-09-05` live head;
+3. read `AGENTS.md`, this file, the active pointer and canonical ledger;
+4. preserve frozen RH0 and exact RQ2C4D/E non-drift barriers;
+5. execute only the bounded RQ2C4F 0-degree diagnostic;
+6. stop and classify before any physics intervention or yaw expansion.
 
 Current boundary:
 
-> **Steering I1 remains accepted product truth. RH0 is closed. The next work is one bounded, product-grounded, 120 Hz rotated-heading mount qualification on a hardened continuation branch; no product promotion is authorized.**
+> **Steering I1 remains accepted product truth. RH0 is closed. RQ2C4D/E established that the real 0-degree slip blocker survives orientation-aware measurement and is dominated at its maximum by the COM-translation + pure-axle-spin rolling pair. The next work is one read-only RQ2C4F closure localization; yaw, stiffness tuning, gate relaxation and product promotion remain unauthorized.**
