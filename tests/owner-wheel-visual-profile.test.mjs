@@ -7,7 +7,7 @@ import { validateVehicleVisualPackageV1 } from "../.test-dist/visual/vehicle-vis
 import {
   M6_OWNER_WHEEL_VISUAL_STOCK_WIDTH_METERS,
   resolveM6OwnerWheelVisualProfile,
-} from "../.test-dist/render/m6-owner-wheel-visual-profile.js";
+} from "../.test-dist/visual/m6-owner-wheel-visual-profile.js";
 import {
   M6_VISUAL_PART_IDS,
   M6_VISUAL_SEGMENT_IDS,
