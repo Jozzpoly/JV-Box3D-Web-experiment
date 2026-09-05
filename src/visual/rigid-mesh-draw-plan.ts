@@ -1,5 +1,5 @@
 import type { VehicleVisualFrameV1 } from "../runtime/vehicle-visual-frame.js";
-import { resolveM6OwnerWheelVisualProfile } from "../render/m6-owner-wheel-visual-profile.js";
+import { resolveM6OwnerWheelVisualProfile } from "./m6-owner-wheel-visual-profile.js";
 import type { GlbRigidCpuAssetV1 } from "./glb-rigid-mesh-decoder.js";
 import type { LoadedVehicleVisualRuntimeV1 } from "./vehicle-visual-runtime-loader.js";
 import {
