@@ -12,6 +12,8 @@ JV-Web remains the browser product line for Jozz Vehicle and a practical R&D sur
 
 The current stage is a bounded repository/baseline hardening campaign before opening another substantial R&D line. The campaign exists to restore one trustworthy execution baseline, reduce stale repository topology and make historical evidence immutable without keeping old work branches alive.
 
+A separate spawn-landmark capture line became actively edited in parallel during this cleanup. Repository maintenance must not freeze, rewrite or delete that active branch merely to achieve a smaller branch count.
+
 Do not use this maintenance stage to alter accepted vehicle behavior, reopen closed research, upgrade Box3D opportunistically or redesign the product.
 
 ## 2. Canonical product authority
@@ -60,7 +62,21 @@ It pins exact sources rather than treating experiment branches as authority:
 
 Preview is composition/publishing infrastructure, not product source authority.
 
-## 4. Closed and unpromoted evidence
+## 4. Active, closed and unpromoted evidence
+
+### Active spawn-landmark capture
+
+Live workspace:
+
+`work/spawn-landmark-capture-2026-09-06`
+
+Classification:
+
+`ACTIVE / UNPROMOTED / PRESERVE DURING CLEANUP`
+
+This branch was created from the spawn-calibration line and advanced during the repository cleanup itself. Current commits add a bounded landmark-capture helper/UI plus tests, and explicitly narrow capture to `scan-cal-a/b/c` rather than ordinary `scan` startup.
+
+Its head is intentionally **not frozen in the cleanup manifest** because another active execution lane is editing it concurrently. Cleanup may assert that the branch still exists, but must not move, delete or force-with-lease it. Re-ground its live head before any future work or promotion decision.
 
 ### Wheel mode5
 
@@ -78,7 +94,7 @@ The branch is historical evidence, not an active R&D mandate. Repository cleanup
 
 ### Spawn calibration
 
-Latest experiment head:
+Latest sealed experiment head:
 
 `77fcd0b5aec2cb1cb1acc92a616f611d18a3b38b`
 
@@ -86,7 +102,7 @@ Classification:
 
 `PARTIAL / OWNER_CALIBRATION_READY / NOT PROMOTABLE`
 
-The three candidates are geometry-supported calibration points, not proved roads or accepted start locations. The exact head is currently pinned by Owner Preview. Cleanup intends to archive the head immutably and remove the work branch ref.
+The three candidates are geometry-supported calibration points, not proved roads or accepted start locations. The exact head is currently pinned by Owner Preview and is also the base of the newer active landmark-capture workspace. Cleanup intends to archive this exact calibration head immutably and remove its older work branch refs without touching the newer active capture branch.
 
 ### Visual wheel width
 
@@ -145,10 +161,13 @@ Target rule:
 
 The repository already used this model successfully in the 2026-08-16 cleanup.
 
-After fresh validation, promotion, archive-tag creation and branch cleanup, an idle JV-Web repository should normally need only:
+After fresh validation, promotion, archive-tag creation and branch cleanup, the expected live branch set for the current concurrent state is:
 
 - `main`;
-- `preview/owner-control`.
+- `preview/owner-control`;
+- `work/spawn-landmark-capture-2026-09-06` while that bounded line remains genuinely active.
+
+Once the capture line is closed/promoted/sealed, the idle repository may return to only `main` + `preview/owner-control`.
 
 New work/research branches should be created only for real active changes and removed after promotion/closure once unique history is safely retained.
 
@@ -171,9 +190,9 @@ Use this hierarchy for fresh continuation:
 
 ## 8. Next frontier after maintenance closure
 
-Do not open the next substantial R&D branch until baseline hardening is either validated or its remaining gaps are explicitly accepted.
+Do not open another substantial R&D branch solely because baseline hardening closes. First re-ground the active spawn-landmark-capture line and current Owner priority.
 
-Current best candidate frontier remains:
+If no newer Owner need supersedes it, the next major candidate frontier remains:
 
 **Wheel Representation R0 — asset / visual / physics coherence.**
 
@@ -190,6 +209,7 @@ Native analytic wheel profile capability and `core-torus64` recovery are separat
 - do not restart the 2026-08-26 cold takeover;
 - do not reopen RQ2C/yaw/solver micro-forensics by sequence inertia;
 - do not promote spawn/visual-wheel/wheel-mode5 experiments without the missing Owner/product evidence;
+- do not alter or delete the active `work/spawn-landmark-capture-2026-09-06` branch during repository cleanup;
 - do not change runtime steering semantics while reconciling old tests;
 - do not upgrade `box3d.js` during housekeeping;
 - do not modify GitHub Actions without explicit Owner approval;
@@ -202,6 +222,6 @@ Native analytic wheel profile capability and `core-torus64` recovery are separat
 2. perform fresh local exact-head validation and deterministic nanoid lock repair;
 3. if validation is green, promote the bounded maintenance result to `main`;
 4. create and verify the archive tags from the cleanup manifest;
-5. delete obsolete branch refs with the fail-closed cleanup script;
-6. re-ground the resulting minimal repository;
-7. only then open the next real work branch, most likely Wheel Representation R0 unless new Owner judgement changes priority.
+5. delete only obsolete branch refs with the fail-closed cleanup script while preserving the active capture branch untouched;
+6. re-ground the resulting minimal repository and the live capture head;
+7. continue from current Owner priority rather than automatically opening another parallel branch.
