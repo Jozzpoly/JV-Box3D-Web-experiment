@@ -45,7 +45,6 @@ function nextAnimationFrame(): Promise<void> {
 }
 
 async function readFreshChassisPosition(): Promise<SpawnLandmarkPoint> {
-  const debugToggle = requireElement<HTMLButtonElement>("[data-debug-toggle]");
   const debugPanel = requireElement<HTMLElement>("[data-debug-panel]");
   const stepElement = requireElement<HTMLElement>("[data-step]");
   const positionElement = requireElement<HTMLElement>("[data-chassis-position]");
@@ -54,11 +53,11 @@ async function readFreshChassisPosition(): Promise<SpawnLandmarkPoint> {
   const initialStep = stepElement.textContent;
 
   if (!wasOpen) {
-    // renderTrace only refreshes the detailed pose while diagnostics are open.
-    // Keep that existing authority instead of adding a second physics observer,
-    // but hide the temporary panel so capture does not flash over mobile play.
+    // renderTrace already owns the authoritative detailed pose, but only writes
+    // it while data-open is present. Borrow that read-only telemetry condition
+    // without invoking the real Debug action or enabling renderer diagnostics.
     debugPanel.style.visibility = "hidden";
-    debugToggle.click();
+    debugPanel.setAttribute("data-open", "");
   }
 
   try {
@@ -75,7 +74,7 @@ async function readFreshChassisPosition(): Promise<SpawnLandmarkPoint> {
     throw new Error("Brak świeżej pozycji pojazdu. Spróbuj ponownie podczas aktywnej jazdy.");
   } finally {
     if (!wasOpen) {
-      debugToggle.click();
+      debugPanel.removeAttribute("data-open");
       debugPanel.style.visibility = previousVisibility;
     }
   }
@@ -129,15 +128,14 @@ export function installSpawnLandmarkCapture(enabled: boolean): void {
     event.stopPropagation();
 
     if (pendingCopyToken !== null) {
-      const copied = await tryCopy(pendingCopyToken);
+      const token = pendingCopyToken;
+      pendingCopyToken = null;
+      button.textContent = "Zapisz punkt";
+      const copied = await tryCopy(token);
       output.hidden = false;
       output.textContent = copied
-        ? `Skopiowano · ${pendingCopyToken}`
-        : `Kopiowanie niedostępne · ${pendingCopyToken}`;
-      if (copied) {
-        pendingCopyToken = null;
-        button.textContent = "Zapisz punkt";
-      }
+        ? `Skopiowano · ${token}`
+        : `Kopiowanie niedostępne · ${token}`;
       return;
     }
 
