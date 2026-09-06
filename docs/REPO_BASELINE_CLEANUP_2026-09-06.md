@@ -56,6 +56,12 @@ Use prefix:
 
 `archive/jv-web-repo-cleanup-2026-09-06/`
 
+Also create the explicit rollback tag:
+
+`rollback/main-before-repo-baseline-cleanup-2026-09-06` -> `42bc652c9051edb1581b5d539f012ac78d165a66`
+
+This mirrors the repository's earlier cleanup practice and preserves the complete pre-maintenance canonical state independently of later `main` movement.
+
 The accepted executable `529ae7d...` does not require a cleanup archive tag because it remains reachable from `main` and is explicitly pinned by `preview/owner.json`. The cleanup script must nevertheless verify that exact commit before deletion.
 
 ## 4. Branches whose heads are already retained by canonical/later history
@@ -156,7 +162,7 @@ The final local cleanup command must fail closed unless all of the following are
 2. `origin/main` and `origin/preview/owner-control` resolve and are freshly fetched;
 3. expected branch heads still equal the SHAs recorded by this manifest, or any change has been explicitly re-audited;
 4. maintenance has passed fresh `npm ci`, test/check and portable build validation before promotion;
-5. all archive tags are created locally at exact expected commits and pushed successfully;
+5. all archive/rollback tags are created locally at exact expected commits and pushed successfully;
 6. the pushed tags resolve back from `origin` to the intended commits;
 7. accepted and Preview exact source commits remain reachable;
 8. only then are obsolete remote branch refs deleted;
