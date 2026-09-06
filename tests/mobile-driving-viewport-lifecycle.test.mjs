@@ -68,7 +68,7 @@ test("orientation change releases held analog pedal without resetting D/R", () =
   adapter.dispose();
 });
 
-test("fullscreen change self-centers an active steering gesture", () => {
+test("fullscreen change relinquishes an active steering gesture without artificial centering", () => {
   let now = 0;
   const windowTarget = new EventTarget();
   const documentTarget = new EventTarget();
@@ -90,7 +90,7 @@ test("fullscreen change self-centers an active steering gesture", () => {
   documentTarget.dispatchEvent(new Event("fullscreenchange"));
 
   const sample = timeline.consumeInterval(0, 10);
-  assert.deepEqual(sample.command, { mode: "POSITION", value: 0 });
+  assert.deepEqual(sample.command, { mode: "RELEASE" });
   assert.equal(target.captures.size, 0);
   adapter.dispose();
 });
