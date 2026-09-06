@@ -204,7 +204,15 @@ test("range restores before runtime startup while artificial centering stays out
   assert.doesNotMatch(productMain, /jvSteeringRange|jvSteeringAssist/);
   assert.match(settings, /wheelRangeDegrees:\s*900/);
   assert.match(settings, /centeringAssist:\s*false/);
+  assert.match(
+    settings,
+    /JV_STEERING_WHEEL_RANGE_DEGREES\s*=\s*\[\s*360,\s*540,\s*720,\s*900,\s*1080,\s*\]\s*as const/,
+  );
   assert.doesNotMatch(productMain, /setJvSteeringCenteringAssist/);
   assert.doesNotMatch(controls, /getCenteringAssist|setCenteringAssist|Asysta/);
-  assert.match(controls, /360°[\s\S]*540°[\s\S]*720°[\s\S]*900°[\s\S]*1080°/);
+  assert.match(
+    controls,
+    /for \(const range of JV_STEERING_WHEEL_RANGE_DEGREES\)/,
+  );
+  assert.match(controls, /button\.textContent\s*=\s*`\$\{range\}°`/);
 });
