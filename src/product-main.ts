@@ -85,11 +85,12 @@ function selectedSteeringPlateVisible(): boolean {
 }
 
 const spawnTarget = parseProductSpawnTarget(window.location.search);
-const scanBackedSpawnTarget =
-  spawnTarget === "scan" ||
+const scanCalibrationTarget =
   spawnTarget === "scan-cal-a" ||
   spawnTarget === "scan-cal-b" ||
   spawnTarget === "scan-cal-c";
+const scanBackedSpawnTarget =
+  spawnTarget === "scan" || scanCalibrationTarget;
 
 function timedProductWorldLoader(loader: ProductWorldLoader): ProductWorldLoader {
   return async () => {
@@ -225,7 +226,7 @@ installProductControls({
     setRangeDegrees: setJvSteeringWheelRangeDegrees,
   },
 });
-installSpawnLandmarkCapture(scanBackedSpawnTarget);
+installSpawnLandmarkCapture(scanCalibrationTarget);
 installUtilityDrawer();
 
 const activeSettings = getJvProductViewSettings();
