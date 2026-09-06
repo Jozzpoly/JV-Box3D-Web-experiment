@@ -126,7 +126,11 @@ test("scan calibration targets use the full scan world loader at startup", async
   const entry = await readFile(resolve(root, "src/product-main.ts"), "utf8");
   assert.match(
     entry,
-    /const scanBackedSpawnTarget =\s*spawnTarget === "scan" \|\|\s*spawnTarget === "scan-cal-a" \|\|\s*spawnTarget === "scan-cal-b" \|\|\s*spawnTarget === "scan-cal-c";/s,
+    /const scanCalibrationTarget =\s*spawnTarget === "scan-cal-a" \|\|\s*spawnTarget === "scan-cal-b" \|\|\s*spawnTarget === "scan-cal-c";/s,
+  );
+  assert.match(
+    entry,
+    /const scanBackedSpawnTarget =\s*spawnTarget === "scan" \|\| scanCalibrationTarget;/s,
   );
   assert.match(
     entry,
@@ -179,7 +183,7 @@ test("scan landmark capture token preserves x/z and labels chassis y as referenc
   );
 });
 
-test("landmark capture is bounded to scan-backed calibration UI and reuses read-only telemetry", async () => {
+test("landmark capture is bounded to A B C calibration UI and reuses read-only telemetry", async () => {
   const [entry, capture, css] = await Promise.all([
     readFile(resolve(root, "src/product-main.ts"), "utf8"),
     readFile(resolve(root, "src/spawn-landmark-capture.ts"), "utf8"),
@@ -192,8 +196,9 @@ test("landmark capture is bounded to scan-backed calibration UI and reuses read-
   );
   assert.match(
     entry,
-    /installSpawnLandmarkCapture\(scanBackedSpawnTarget\);\s*installUtilityDrawer\(\);/s,
+    /installSpawnLandmarkCapture\(scanCalibrationTarget\);\s*installUtilityDrawer\(\);/s,
   );
+  assert.doesNotMatch(entry, /installSpawnLandmarkCapture\(scanBackedSpawnTarget\)/);
   assert.doesNotMatch(entry, /installSpawnLandmarkCapture\(true\)/);
 
   assert.match(capture, /if \(!enabled\) \{\s*return;\s*\}/s);
