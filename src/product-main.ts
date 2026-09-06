@@ -41,6 +41,7 @@ import { installJvPerformanceObserver } from "./runtime/performance-observer.js"
 import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
 import { installProductControls } from "./product-controls.js";
 import { installUtilityDrawer } from "./utility-drawer.js";
+import { installSpawnLandmarkCapture } from "./spawn-landmark-capture.js";
 
 function requestUrl(input: RequestInfo | URL): string {
   if (typeof input === "string") {
@@ -224,6 +225,7 @@ installProductControls({
     setRangeDegrees: setJvSteeringWheelRangeDegrees,
   },
 });
+installSpawnLandmarkCapture(scanBackedSpawnTarget);
 installUtilityDrawer();
 
 const activeSettings = getJvProductViewSettings();
