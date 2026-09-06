@@ -126,7 +126,7 @@ test("direct wheel rotation drives POSITION while digital RATE input keeps expli
   animationFrames.runNext(1000 / 60);
   assert.deepEqual(observed.at(-1), { mode: "POSITION", value: 0 });
 
-  // A quarter-turn clockwise maps one-to-one to 90 / 120 = 0.75 of lock.
+  // A quarter-turn clockwise is 90 / 450 = 0.2 of the accepted 900-degree range.
   steeringJoystick.dispatch("pointermove", {
     pointerId: 41,
     clientX: 50,
@@ -134,7 +134,7 @@ test("direct wheel rotation drives POSITION while digital RATE input keeps expli
   });
   now = 1000 / 30;
   animationFrames.runNext(1000 / 30);
-  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: -0.75 });
+  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: -0.2 });
 
   steeringJoystick.dispatch("pointerup", {
     pointerId: 41,
@@ -143,19 +143,18 @@ test("direct wheel rotation drives POSITION while digital RATE input keeps expli
   });
   now = 50;
   animationFrames.runNext(50);
-  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: 0 });
+  assert.deepEqual(observed.at(-1), { mode: "RELEASE" });
 
   pointerControls.steerRight.dispatch("pointerdown", { pointerId: 42 });
   now = 200 / 3;
   animationFrames.runNext(200 / 3);
   assert.deepEqual(observed.at(-1), { mode: "RATE", value: -1 });
 
-  assert.deepEqual(joystickStates.at(-1), { value: 0, active: false });
+  assert.deepEqual(joystickStates.at(-1), { value: -0.2, active: false });
   host.dispose();
   assert.equal(steeringJoystick.captured.size, 0);
   assert.equal(pointerControls.steerRight.captured.size, 0);
 });
-
 
 test("steering interaction provider switches on the next grab without restarting the browser host", () => {
   const windowTarget = new FakeEventTarget();
@@ -194,7 +193,7 @@ test("steering interaction provider switches on the next grab without restarting
   });
   now = 1000 / 30;
   animationFrames.runNext(1000 / 30);
-  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: -0.75 });
+  assert.deepEqual(observed.at(-1), { mode: "POSITION", value: -0.2 });
   steeringJoystick.dispatch("pointerup", { pointerId: 51, clientX: 50, clientY: 100 });
 
   interaction = "RELATIVE_X";
