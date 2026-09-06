@@ -1,235 +1,207 @@
 # JV-Web — current project state
 
-Updated: 2026-09-05
+Updated: 2026-09-06
 Owner: Jozz
+Status: `BASELINE HARDENING / REPOSITORY CONSOLIDATION IN PROGRESS`
 
-## 1. Current routing
+This is the single live current-state router for JV-Web. Git/current source, exact executed evidence and direct Owner judgement outrank this document.
 
-JV-Web is in **bounded product/R&D iteration**, not strategic cold takeover.
+## 1. Current boundary
 
-The read-only strategic takeover from 2026-08-26 is historical and superseded. Do not restart it automatically.
+JV-Web remains the browser product line for Jozz Vehicle and a practical R&D surface. It is not NextGen JV Lite.
 
-Current routing deliberately separates:
+The current stage is a bounded repository/baseline hardening campaign before opening another substantial R&D line. The campaign exists to restore one trustworthy execution baseline, reduce stale repository topology and make historical evidence immutable without keeping old work branches alive.
 
-- accepted product/runtime truth on `main` plus the exact validated executable snapshot;
-- retained wheel-mode5 research evidence on its research branch;
-- bounded, unpromoted spawn calibration work on its work branch.
+Do not use this maintenance stage to alter accepted vehicle behavior, reopen closed research, upgrade Box3D opportunistically or redesign the product.
 
-Default loop:
+## 2. Canonical product authority
 
-`real need / uncertainty -> smallest informative change or experiment -> risk-matched validation -> faithful evidence -> Owner judgement when experiential -> next iteration`
-
-## 2. Live authority and exact snapshots
-
-### Main / canonical documentation authority
+Live source/documentation authority:
 
 `Jozzpoly/JV-Box3D-Web-experiment/main`
 
-Always resolve its live head rather than trusting an embedded SHA. This 2026-09-05 consolidation is documentation-only and does not claim a new executable product validation.
+Pre-maintenance audited head:
 
-Immediately before this docs-only consolidation, `main` was:
+`42bc652c9051edb1581b5d539f012ac78d165a66`
 
-`5b28cc03d22264010680deb95a04abd04661bc22`
-
-That commit itself changed only `docs/PROJECT_STATE.md` relative to its parent.
-
-### Accepted executable product snapshot
-
-Canonical Steering I1 Owner Preview executable source remains:
+Accepted executable/current-best product snapshot remains:
 
 `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`
 
-No wheel-mode5 or spawn-calibration runtime change has been promoted into accepted product truth.
-
-### Owner Preview
-
-Live operational lane at this grounding:
-
-`preview/owner-control@a6a6ed9e6d5ac62fe10be13cf81f1931b3370895`
-
-`preview/owner.json` pins:
-
-- executable source `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`;
-- accepted JSPREV2 `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`;
-- receipt `receipts/jv_friends_scan_receipt.json`.
-
-Preview is exact-source composition infrastructure, not source authority.
-
-### Retained wheel research
-
-Branch:
-
-`research/wheel-mode5-rq2c-orientation-2026-09-05`
-
-Verified head immediately before this main docs consolidation:
-
-`0bce0eb7d96d27317597548563d193361363250b`
-
-Classification:
-
-`RQ2C_ORIENTATION_HOLD`
-
-Treat that SHA as a checkpoint only; re-fetch live branch state when relevant.
-
-### Spawn calibration
-
-Branch:
-
-`work/spawn-landmark-calibration-2026-09-05`
-
-Verified head immediately before this main docs consolidation:
-
-`c546d39670a41f54081673041e2072cf4ec7461a`
-
-Classification:
-
-`PARTIAL / OWNER_CALIBRATION_READY / NOT_PROMOTABLE`
-
-Treat that SHA as a checkpoint only; re-fetch live branch state when relevant.
-
-## 3. Accepted product baseline — Steering I1
-
-Detailed accepted baseline:
+Detailed Steering I1 baseline:
 
 `docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`
 
-### FACT / accepted current-best
+Accepted Steering I1 facts include:
 
-- Direct Rotation and Relative-X remain explicit touch steering choices.
-- Pointer release defaults to semantic `RELEASE`; ordinary touch steering does not command automatic return to zero.
-- Hands-off graphical steering follows live physical rack state.
-- New touch grabs re-anchor to current physical rack position.
-- Configurable wheel ranges remain 360/540/720/900/1080 degrees.
-- 900 degrees is current default/current-best, not final forever.
-- Wheel-range preference is session-scoped.
-- Artificial centering is not exposed as an Owner product setting.
-- Useful natural physical steering self-return remains unresolved.
+- Direct Rotation and Relative-X remain explicit touch steering choices;
+- ordinary pointer/lifecycle release uses semantic `RELEASE`, not hidden return-to-zero;
+- hands-off presentation follows physical rack state and re-grab anchors to that state;
+- supported wheel ranges are 360/540/720/900/1080 degrees;
+- 900 degrees is current default/current-best;
+- artificial centering is not an Owner-facing product setting;
+- useful natural physical self-return remains unresolved.
 
-### OWNER-OBSERVED
+No spawn, visual-wheel or wheel-mode5 experiment is accepted product truth.
 
-On the accepted 900-degree steering Preview, the Owner confirmed:
+## 3. Owner Preview composition
 
-- hands-off wheel/rack synchronization worked;
-- physical steering movement followed by re-grab no longer caused the previous UI/physics offset;
-- driving feel was substantially improved and better than expected within the tested scope.
+Operational composition lane at this audit:
 
-Do not generalize this into whole-product or all-device acceptance.
+`preview/owner-control@afcde29ae3dbc6c490390eb56fa906eab7a428eb`
 
-## 4. Wheel-mode5 research closure
+It pins exact sources rather than treating experiment branches as authority:
 
-Wheel-mode5 research is retained as evidence but is not accepted product runtime.
+- accepted root: `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`;
+- wheel-mode5 A/B/C/D: `d52aa3776e022649af21cddc6d9dcfae3bac42f9`;
+- spawn A/B/C: `77fcd0b5aec2cb1cb1acc92a616f611d18a3b38b`;
+- visual-wheel A/B/C: `08b43ac0a40be79be5f89a58582d7107e9e5ae06`;
+- accepted JSPREV2: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`.
 
-Current high-level state:
+Preview is composition/publishing infrastructure, not product source authority.
 
-- RQ0 aligned steady rolling — qualified within scope;
-- RQ1 bounded road-normal transition — qualified within scope;
-- RQ2a braking / RQ2b drive — qualified within scope;
-- RH0 research-foundation hardening — PASS / CLOSED;
-- RQ2C orientation — stopped at zero-degree HOLD before yaw.
+## 4. Closed and unpromoted evidence
 
-The frozen zero-degree actual-support rolling-slip gate failed:
+### Wheel mode5
 
-- max witness slip `0.034093857 mm/s`;
-- gate `0.002 mm/s`;
-- exceedance `17.0469x`.
+Research closure head:
 
-RQ2C4D/E/F localized the residual enough to establish useful evidence. RQ2C4F attributes about `87.3%` of the peak rolling-pair magnitude to axle-spin-rate evolution. Source review identifies contact tangential friction as the unique obvious first-order direct axial-torque path in the aligned apparatus, but exact numerical per-subsystem ownership remains partial without new solver-level instrumentation.
+`c26e6c610815a0286a0139c2ff50a0a03b040e02`
 
-Planned `+3.5°/-3.5°` yaw was **not executed** because the zero-degree gate failed.
+Classification:
 
-Do not resume this sequence merely for completeness or tune the gate/contact physics to obtain PASS.
+`RQ2C_ORIENTATION_HOLD / CLOSED`
 
-For exact research detail, resolve the research branch live and use its branch-local `docs/HANDOFF.md`, active pointer, current wheel roadmap, RQ2C4F closure and canonical evidence ledger.
+The zero-degree actual-support rolling-slip gate failed at max witness slip `0.034093857 mm/s` against `0.002 mm/s` (`17.0469x`). Planned +/-3.5 degree yaw was therefore not executed. Do not resume this sequence for completeness or tune the apparatus to force PASS.
 
-## 5. Post-wheel spawn-location calibration
+The branch is historical evidence, not an active R&D mandate. Repository cleanup intends to preserve this entire corpus through an immutable archive tag and remove the live research branch ref.
 
-A broader product re-ground selected the Owner-reported poor spawn location as a bounded product problem worth investigating before automatically reopening wheel or steering micro-forensics.
+### Spawn calibration
 
-The investigation is isolated on:
+Latest experiment head:
 
-`work/spawn-landmark-calibration-2026-09-05`
+`77fcd0b5aec2cb1cb1acc92a616f611d18a3b38b`
 
-Important retained findings:
+Classification:
 
-1. **An earlier hypothesis was falsified.** The relevant accepted executable source `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0` defaults ordinary startup to `map` / `world.spawn`, not `scanCenterSpawn()`.
-2. Accepted `world.spawn = { x: 0, y: 1.2, z: 0 }`, while accepted JSPREV2 begins around world `z = 320`. The stronger interpretation is therefore poor spatial/semantic placement relative to the scan playground, not a proved scan-center collision fault.
-3. Accepted JSPREV2 metadata contains no semantic road/start landmark.
-4. All seven accepted JSPREV2 tile sizes/hashes were verified while re-reading the exact geometry (`1,409,687` vertices / `1,775,775` triangles).
-5. A primary flat-region analysis and an independent vertex-normal/candidate-local occupancy crosscheck both support the existence of several broad stable flat regions. They do **not** establish road semantics.
-6. Primary rank #1 was rejected by the independent crosscheck, preventing the initial ranking from being treated as authority.
-7. Three spatially separated crosscheck-passing regions exist only as opt-in `scan-cal-a/b/c` on the work branch. Default `map/offroad/scan` behavior remains unchanged; candidate Y is recomputed from collision surface.
-8. Focused spawn tests and TypeScript typecheck passed.
+`PARTIAL / OWNER_CALIBRATION_READY / NOT PROMOTABLE`
 
-Branch-local state record:
+The three candidates are geometry-supported calibration points, not proved roads or accepted start locations. The exact head is currently pinned by Owner Preview. Cleanup intends to archive the head immutably and remove the work branch ref.
 
-`docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md`
+### Visual wheel width
 
-That file exists on the spawn work branch, not on `main`.
+Experiment head:
 
-## 6. Baseline test debt exposed during spawn validation
+`08b43ac0a40be79be5f89a58582d7107e9e5ae06`
 
-A candidate validation run (`33979257193`, job `101341374863`) executed Node `24.16.0`, `npm ci`, typecheck and the test suite.
+Classification:
 
-Observed:
+`READY FOR OWNER JUDGEMENT / VISUAL ONLY / UNPROMOTED`
 
-- `npm ci` — PASS;
-- typecheck — PASS;
-- tests — `523 total / 516 pass / 7 fail`;
-- all new spawn calibration tests — PASS.
+Variants change visual axial width only (`0.4375 / 0.36 / 0.32 m`); physics/contact/radius/wheel centers/rig authority remain unchanged. Cleanup intends to archive the exact Preview source and remove the work branch ref.
 
-The seven failures are steering/mobile-UI expectations unrelated to the spawn files. Relevant failing test/source blobs were verified byte-identical between accepted `main` and the candidate branch. Therefore they are provenance-grounded as pre-existing baseline debt unless a future fresh exact-main execution contradicts that conclusion; do not attribute them to spawn.
+## 5. Baseline hardening campaign
 
-The red suite stopped before `build:portable`, so the spawn candidate portable build remains **UNVERIFIED**.
+Maintenance lane:
 
-Do not “repair” steering behavior or rewrite assertions inside the spawn slice merely to manufacture a green gate. Treat the baseline test debt as a separate maintenance decision if/when it becomes worth fixing.
+`maintenance/repo-baseline-hardening-2026-09-06`
 
-## 7. Current open pressures
+Safety/audit receipt:
 
-### Product / spawn
+`docs/REPO_BASELINE_CLEANUP_2026-09-06.md`
 
-- qualify a candidate portable build if spawn calibration resumes;
-- use bounded Owner A/B/C semantic judgement to identify a useful start location;
-- if none is correct, obtain an explicit semantic landmark instead of tuning geometry heuristics to force one;
-- no spawn candidate is currently approved for `main` or canonical Preview.
+### Test reconciliation
 
-### Steering mechanics
+The last broad validation run executed `523` tests: `516` passed and `7` failed. Full logs plus current source/tests now establish all seven failures as stale or formatting-brittle assertions conflicting with already accepted Steering I1 semantics, not evidence of a new runtime regression.
 
-Useful natural physical self-return remains unresolved. A future bounded steering slice may investigate physical causes, but it is not automatically next and must not reintroduce hidden artificial centering.
+The maintenance lane changes only five test files to reconcile:
 
-### Wheel/contact research
+- accepted 900-degree range (`90/450 = 0.2`, not the old `90/120 = 0.75`);
+- semantic `RELEASE` on cancel/lost-capture/fullscreen lifecycle;
+- canonical range values sourced from `JV_STEERING_WHEEL_RANGE_DEGREES`;
+- formatting-robust media-query contract matching.
 
-Representative lateral behavior, steer-under-load, camber thrust, load transfer, near-limit traction and broader topology remain open. The closed RQ2C microline should not reopen by sequence inertia.
+No runtime `src/` file is changed by this reconciliation.
 
-### Broader product
+**Fresh exact-head execution is still required.** Do not call the maintenance baseline green until `npm ci`, full test/check and portable build validation pass on the exact candidate head.
 
-Camera, UI, controls, world/scan experience, performance and playground quality remain legitimate future slices. Current Owner priorities should select among them.
+### Dependency posture
 
-## 8. What not to do by default
+`box3d.js@0.0.2` is deliberately frozen as the accepted reproducibility baseline. Upstream 0.1.x introduces breaking binding/API changes; migration is separate compatibility research, not cleanup.
 
-- Do not restart the 2026-08-26 cold takeover.
-- Do not automatically resume RQ2C, yaw, recycler or solver micro-forensics.
-- Do not relax the RQ2C slip gate or tune physics to obtain PASS.
-- Do not promote wheel-mode5 into product runtime without a separate product decision.
-- Do not call spawn A/B/C roads or promote them without build + Owner evidence.
-- Do not weaken canonical Owner Preview provenance to expose an unqualified experiment.
-- Do not repair unrelated steering tests inside the spawn slice.
-- Do not turn JV-Web into NextGen JV Lite.
-- Do not delete historical branches merely as cleanup ritual.
+The current build-tool lock contains dev-only `nanoid@3.3.17` and the last clean install reported one HIGH advisory. Intended repair is the minimum patched 3.x (`3.3.18`) with deterministic lock regeneration under the pinned Node/npm toolchain. Do not use broad `npm audit fix --force` or opportunistic dependency upgrades.
 
-## 9. Fresh continuation order
+This dependency repair is not yet closed because package-lock integrity must be generated and tested in a real checkout.
 
-1. Resolve live `main` and the exact branch(es) relevant to the requested work.
-2. Read `AGENTS.md`.
-3. Read this `docs/PROJECT_STATE.md`.
-4. Read `docs/HANDOFF.md` for actual continuation/handoff routing.
-5. If wheel-mode5 matters, resolve `research/wheel-mode5-rq2c-orientation-2026-09-05` and read its branch-local current evidence/router docs.
-6. If spawn calibration matters, resolve `work/spawn-landmark-calibration-2026-09-05` and read its branch-local `docs/SPAWN_LANDMARK_CALIBRATION_2026-09-05.md`.
-7. Inspect only source/tests/evidence needed for the current Owner need.
+## 6. Repository topology target
 
-## 10. Current boundary
+Historical work should no longer require permanent branch refs.
 
-Steering I1 remains the accepted executable/current-best product baseline. Wheel RQ2C is a retained closed HOLD. Spawn calibration is PARTIAL and unpromoted.
+Target rule:
 
-There is no automatic next experiment.
+`branch = active workspace`
 
-Re-ground current Owner priority before opening another implementation/research line.
+`archive tag + exact SHA + evidence = history`
+
+The repository already used this model successfully in the 2026-08-16 cleanup.
+
+After fresh validation, promotion, archive-tag creation and branch cleanup, an idle JV-Web repository should normally need only:
+
+- `main`;
+- `preview/owner-control`.
+
+New work/research branches should be created only for real active changes and removed after promotion/closure once unique history is safely retained.
+
+Exact pre-cleanup branch classification and planned archive refs are recorded in `docs/REPO_BASELINE_CLEANUP_2026-09-06.md`.
+
+## 7. Documentation authority
+
+Use this hierarchy for fresh continuation:
+
+1. live Git and exact executed evidence;
+2. `AGENTS.md` — stable operating rules;
+3. this `docs/PROJECT_STATE.md` — current routing and boundaries;
+4. focused evidence/baseline documents only when the current question requires them.
+
+`README.md` is project identity/setup, not live state authority.
+
+`docs/HANDOFF.md` is a compact continuation entry point and must not maintain a competing copy of current state.
+
+`AI_PROJECT_MEMORY.md` is retained only as a compatibility pointer and must not become another mutable state ledger.
+
+## 8. Next frontier after maintenance closure
+
+Do not open the next substantial R&D branch until baseline hardening is either validated or its remaining gaps are explicitly accepted.
+
+Current best candidate frontier remains:
+
+**Wheel Representation R0 — asset / visual / physics coherence.**
+
+The first design boundary must distinguish:
+
+`AUTHORED HINT -> VALIDATED VISUAL CALIBRATION -> ACCEPTED PHYSICS REPRESENTATION`
+
+The owner wheel asset markers remain `physicsAuthority:false`; do not silently promote authored visual markers into final physics authority. Accepted mode3 terrain rolling contact remains the sphere-based legacy split backend until a separate experiment produces evidence strong enough to change it.
+
+Native analytic wheel profile capability and `core-torus64` recovery are separate hypotheses/provenance lines and must not be conflated.
+
+## 9. Do not do by default
+
+- do not restart the 2026-08-26 cold takeover;
+- do not reopen RQ2C/yaw/solver micro-forensics by sequence inertia;
+- do not promote spawn/visual-wheel/wheel-mode5 experiments without the missing Owner/product evidence;
+- do not change runtime steering semantics while reconciling old tests;
+- do not upgrade `box3d.js` during housekeeping;
+- do not modify GitHub Actions without explicit Owner approval;
+- do not delete a unique historical branch before its intended archive tag resolves to the exact audited commit;
+- do not claim a green baseline before fresh exact-head execution.
+
+## 10. Immediate continuation
+
+1. complete repository documentation consolidation on the maintenance lane;
+2. perform fresh local exact-head validation and deterministic nanoid lock repair;
+3. if validation is green, promote the bounded maintenance result to `main`;
+4. create and verify the archive tags from the cleanup manifest;
+5. delete obsolete branch refs with the fail-closed cleanup script;
+6. re-ground the resulting minimal repository;
+7. only then open the next real work branch, most likely Wheel Representation R0 unless new Owner judgement changes priority.
