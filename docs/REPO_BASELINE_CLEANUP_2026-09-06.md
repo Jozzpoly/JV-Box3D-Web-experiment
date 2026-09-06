@@ -24,14 +24,23 @@ Owner Preview control lane remains:
 
 `preview/owner-control@afcde29ae3dbc6c490390eb56fa906eab7a428eb`
 
+A new workspace became actively edited during cleanup:
+
+`work/spawn-landmark-capture-2026-09-06`
+
+Its head changed repeatedly during the fail-closed preflight. It is therefore explicitly excluded from cleanup deletion, exact-head freezing and force-with-lease assertions. The cleanup script may require this branch name to remain present, but must not move or delete it. Its live head must always be re-resolved after cleanup.
+
 No cleanup operation may reinterpret an experimental branch as accepted product truth, rewrite historical commits, modify GitHub Actions, or remove a remote branch carrying unique evidence before an immutable archive ref exists.
 
 ## 2. Target branch model
 
-After maintenance is validated, promoted and its own temporary branch removed, the idle repository should require only:
+After maintenance is validated, promoted and its own temporary branch removed, the expected live branch set for the current concurrent state is:
 
 - `main` — accepted source/documentation authority;
-- `preview/owner-control` — exact-source Owner Preview composition infrastructure.
+- `preview/owner-control` — exact-source Owner Preview composition infrastructure;
+- `work/spawn-landmark-capture-2026-09-06` — current active bounded workspace, untouched by cleanup.
+
+Once the active capture line is later closed/promoted/sealed, the idle repository may return to only `main` + `preview/owner-control`.
 
 A new `work/*` or `research/*` branch should exist only while that line is genuinely active. Historical work belongs behind exact commits, evidence documents and archive tags rather than permanent branch refs.
 
@@ -45,7 +54,7 @@ Planned immutable archive tags:
 | --- | --- | --- |
 | `research/wheel-mode5-rq2c-hold` | `c26e6c610815a0286a0139c2ff50a0a03b040e02` | complete retained wheel-mode5 research corpus; RQ2C closed at truthful HOLD |
 | `preview/wheel-mode5-abcd` | `d52aa3776e022649af21cddc6d9dcfae3bac42f9` | exact source currently pinned by Owner Preview wheel A/B/C/D |
-| `experiment/spawn-landmark-calibration-mobile-ui` | `77fcd0b5aec2cb1cb1acc92a616f611d18a3b38b` | exact latest spawn A/B/C source pinned by Owner Preview; PARTIAL / unpromoted |
+| `experiment/spawn-landmark-calibration-mobile-ui` | `77fcd0b5aec2cb1cb1acc92a616f611d18a3b38b` | exact sealed spawn A/B/C source pinned by Owner Preview and base of the newer active capture workspace |
 | `experiment/visual-wheel-profile-owner` | `08b43ac0a40be79be5f89a58582d7107e9e5ae06` | exact visual-wheel A/B/C source pinned by Owner Preview; unpromoted |
 | `donor/pedal-contact-mechanics` | `6312906d5ad3c6781605859cd1d9613d7f2e220a` | seven unique unpromoted pedal contact/mechanical commits retained as donor material |
 | `checkpoint/p1-3-1-handoff` | `e04d5d51f53350aa0df9248a3e7f123dbb94bc54` | one unique historical documentation checkpoint |
@@ -63,6 +72,8 @@ Also create the explicit rollback tag:
 This mirrors the repository's earlier cleanup practice and preserves the complete pre-maintenance canonical state independently of later `main` movement.
 
 The accepted executable `529ae7d...` does not require a cleanup archive tag because it remains reachable from `main` and is explicitly pinned by `preview/owner.json`. The cleanup script must nevertheless verify that exact commit before deletion.
+
+The active `work/spawn-landmark-capture-2026-09-06` head must **not** receive a cleanup archive tag while work is still progressing; it remains reachable through its live branch.
 
 ## 4. Branches whose heads are already retained by canonical/later history
 
@@ -102,7 +113,8 @@ The `DO_NOT_USE*` / `PLEASE_IGNORE` / `noop*` / `__tmp_noop` refs all point to `
 ### Retained by a later exact experiment head
 
 - `preview/spawn-calibration-control` — superseded by current `preview/owner-control` composition history;
-- `work/spawn-landmark-calibration-2026-09-05` — ancestor of the archived latest spawn head `77fcd0b...`;
+- `work/spawn-landmark-calibration-2026-09-05` — ancestor of the archived sealed spawn head `77fcd0b...`;
+- `work/spawn-landmark-calibration-mobile-ui-2026-09-05` — exactly the sealed spawn head `77fcd0b...` and base of the live capture workspace;
 - `work/wheel-mode5-runtime-spike-2026-09-01` — ancestor of archived research closure `c26e6c...`;
 - `work/wheel-mode5-d-pathology-2026-09-03` — ancestor of `c26e6c...`;
 - `work/wheel-mode5-e1d-recovery-2026-09-03` — ancestor of `c26e6c...`;
@@ -122,6 +134,8 @@ After the tags in section 3 have been created and verified:
 
 The exact wheel A/B/C/D Preview source `d52aa377...` is not a current branch head, so its dedicated archive tag is created solely to preserve the exact Preview checkout source independently of branch cleanup.
 
+`work/spawn-landmark-capture-2026-09-06` is explicitly **not** in the delete set.
+
 ## 6. Owner Preview reachability contract
 
 Current `preview/owner-control@afcde29...` pins:
@@ -133,6 +147,8 @@ Current `preview/owner-control@afcde29...` pins:
 - accepted JSPREV2: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`.
 
 Remote branch deletion is forbidden until all non-main experiment sources above resolve through the planned archive tags and `preview/owner-control` itself still resolves to `afcde29...` (or a later intentionally reviewed head).
+
+The active capture branch may advance concurrently because Preview does not use it as authority at this stage.
 
 ## 7. Baseline test reconciliation
 
@@ -159,13 +175,14 @@ The current lock also contains dev-only `nanoid@3.3.17` through the build toolch
 The final local cleanup command must fail closed unless all of the following are true:
 
 1. local working tree is clean;
-2. `origin/main` and `origin/preview/owner-control` resolve and are freshly fetched;
-3. expected branch heads still equal the SHAs recorded by this manifest, or any change has been explicitly re-audited;
-4. maintenance has passed fresh `npm ci`, test/check and portable build validation before promotion;
-5. all archive/rollback tags are created locally at exact expected commits and pushed successfully;
-6. the pushed tags resolve back from `origin` to the intended commits;
-7. accepted and Preview exact source commits remain reachable;
-8. only then are obsolete remote branch refs deleted;
-9. a final fetch/prune confirms the intended remote branch set and all archive tags.
+2. `origin/main`, `origin/preview/owner-control`, the maintenance branch and the active capture branch name resolve after a fresh fetch;
+3. every branch in the audited delete/frozen set still equals its recorded SHA; the active capture branch head is deliberately exempt from exact-SHA equality because it is concurrent live work;
+4. no unexpected additional branch name has appeared since the revised audit;
+5. maintenance has passed fresh `npm ci`, test/check and portable build validation before promotion;
+6. all archive/rollback tags are created locally at exact expected commits and pushed successfully;
+7. the pushed tags resolve back from `origin` to the intended commits;
+8. accepted and Preview exact source commits remain reachable;
+9. only then are obsolete remote branch refs deleted;
+10. a final fetch/prune confirms `main`, `preview/owner-control`, the untouched live capture workspace and all archive tags.
 
 If any assertion fails, stop. Do not partially improvise the remaining cleanup.
