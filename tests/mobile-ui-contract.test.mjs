@@ -36,7 +36,7 @@ test("mobile-only toolbar controls track the same responsive boundary as the mob
 
   assert.match(
     controls,
-    /window\.matchMedia\(\s*"\(hover: none\) and \(pointer: coarse\), \(max-width: 620px\)"\s*\)/,
+    /window\.matchMedia\(\s*"\(hover: none\) and \(pointer: coarse\), \(max-width: 620px\)"\s*,?\s*\)/,
   );
   assert.match(
     controls,
