@@ -1,6 +1,6 @@
 # JV Web — operating contract
 
-Updated: 2026-09-05
+Updated: 2026-09-06
 Owner: Jozz
 
 JV Web is the browser product line for Jozz Vehicle: a real desktop/mobile driving product and a practical R&D surface. It is **not NextGen JV Lite** and it is not automatically the implementation home of the next JV generation.
@@ -80,6 +80,8 @@ A helper failure is not automatically a product failure. Repair tooling only if 
 
 A red full gate is not authorization to change unrelated product behavior or tests. If a bounded slice encounters pre-existing baseline debt, first prove the failure's provenance, isolate the current slice, and preserve the red baseline truth. Do not repeatedly rerun the same full gate after an unchanged known failure; make one bounded repair when justified, then perform one consolidated validation when the blocking condition has materially changed.
 
+When an accepted semantic/contract change intentionally replaces earlier behavior, audit existing tests that encode the old contract as part of closure. Adding new GREEN coverage while leaving contradictory legacy assertions behind is not a completed test consolidation.
+
 Quick previews are acceptable only when they faithfully represent the changed DOM/CSS/interaction semantics. Otherwise use clean source render or the normal canonical build/Preview path.
 
 ## 6. Scope protection
@@ -131,6 +133,8 @@ Before promoting an accepted work branch to `main`:
 5. move `main` without force when a clean fast-forward exists.
 
 Do not create new branches, wrappers, gates, schemas or checkpoints merely for process aesthetics.
+
+Treat branches as active workspaces, not long-term archival storage. Once a branch is closed, integrated or superseded, retain genuinely unique history through exact commits/evidence and an immutable archive tag when needed, then remove the stale branch ref. Never delete unique historical work before the replacement archive ref has been verified.
 
 ## 9. Reading order
 
