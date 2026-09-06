@@ -87,7 +87,7 @@ test("second pointer cannot steal an owned direct steering gesture", () => {
   fixture.adapter.dispose();
 });
 
-test("pointercancel self-centers direct steering and releases capture", () => {
+test("pointercancel relinquishes direct steering without artificial centering", () => {
   const fixture = createFixture();
   fixture.target.dispatchEvent(pointer("pointerdown", { id: 3 }));
   fixture.setNow(1);
@@ -103,16 +103,15 @@ test("pointercancel self-centers direct steering and releases capture", () => {
     y: 80,
   }));
 
-  assert.deepEqual(fixture.states.at(-1), { value: 0, active: false });
+  assert.deepEqual(fixture.states.at(-1), { value: -0.2, active: false });
   assert.equal(fixture.target.captures.size, 0);
   assert.deepEqual(fixture.timeline.consumeInterval(0, 10).command, {
-    mode: "POSITION",
-    value: 0,
+    mode: "RELEASE",
   });
   fixture.adapter.dispose();
 });
 
-test("lostpointercapture self-centers even after browser capture is already gone", () => {
+test("lostpointercapture relinquishes direct steering after browser capture is gone", () => {
   const fixture = createFixture();
   fixture.target.dispatchEvent(pointer("pointerdown", { id: 4 }));
   fixture.setNow(1);
@@ -129,11 +128,10 @@ test("lostpointercapture self-centers even after browser capture is already gone
     y: 80,
   }));
 
-  assert.deepEqual(fixture.states.at(-1), { value: 0, active: false });
+  assert.deepEqual(fixture.states.at(-1), { value: -0.2, active: false });
   assert.equal(fixture.target.captures.size, 0);
   assert.deepEqual(fixture.timeline.consumeInterval(0, 10).command, {
-    mode: "POSITION",
-    value: 0,
+    mode: "RELEASE",
   });
   fixture.adapter.dispose();
 });
