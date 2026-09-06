@@ -10,6 +10,10 @@ import {
   scanCenterSpawn,
   scanSurfaceHeightAt,
 } from "../.test-dist/scene/product-spawn.js";
+import {
+  formatSpawnLandmarkToken,
+  parseSpawnLandmarkPosition,
+} from "../.test-dist/spawn-landmark-capture.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
@@ -161,6 +165,50 @@ test("spawn calibration preview exposes a compact mobile scan A B C cluster", as
   assert.match(css, /@media \(hover: none\) and \(pointer: coarse\), \(max-width: 620px\)/);
   assert.match(css, /\.product-toolbar\s*\{[\s\S]*overflow-x: visible;/);
   assert.match(css, /\.product-choice-row\s*\{[\s\S]*flex-wrap: nowrap;/);
+});
+
+test("scan landmark capture token preserves x/z and labels chassis y as reference", () => {
+  assert.deepEqual(
+    parseSpawnLandmarkPosition("-11.8215, 4.2000, 870.2519 m"),
+    { x: -11.8215, y: 4.2, z: 870.2519 },
+  );
+  assert.equal(parseSpawnLandmarkPosition("PENDING"), null);
+  assert.equal(
+    formatSpawnLandmarkToken({ x: -11.8215, y: 4.2, z: 870.2519 }),
+    "JV_SCAN_LANDMARK x=-11.8215 z=870.2519 chassisY=4.2000",
+  );
+});
+
+test("landmark capture is bounded to scan-backed calibration UI and reuses read-only telemetry", async () => {
+  const [entry, capture, css] = await Promise.all([
+    readFile(resolve(root, "src/product-main.ts"), "utf8"),
+    readFile(resolve(root, "src/spawn-landmark-capture.ts"), "utf8"),
+    readFile(resolve(root, "src/spawn-calibration-ui.css"), "utf8"),
+  ]);
+
+  assert.match(
+    entry,
+    /import \{ installSpawnLandmarkCapture \} from "\.\/spawn-landmark-capture\.js";/,
+  );
+  assert.match(
+    entry,
+    /installSpawnLandmarkCapture\(scanBackedSpawnTarget\);\s*installUtilityDrawer\(\);/s,
+  );
+  assert.doesNotMatch(entry, /installSpawnLandmarkCapture\(true\)/);
+
+  assert.match(capture, /if \(!enabled\) \{\s*return;\s*\}/s);
+  assert.match(capture, /\[data-step\]/);
+  assert.match(capture, /\[data-chassis-position\]/);
+  assert.match(capture, /for \(let frame = 0; frame < 12; frame \+= 1\)/);
+  assert.match(capture, /debugPanel\.style\.visibility = "hidden";/);
+  assert.match(capture, /event\.stopPropagation\(\);/);
+  assert.match(capture, /data-spawn-landmark-capture/);
+  assert.match(capture, /button\.textContent = "Zapisz punkt";/);
+  assert.match(capture, /button\.textContent = "Kopiuj punkt";/);
+  assert.match(capture, /JV_SCAN_LANDMARK x=/);
+
+  assert.match(css, /\.spawn-landmark-capture-button\s*\{/);
+  assert.match(css, /\.spawn-landmark-capture-output\s*\{/);
 });
 
 test("calibration candidates are pack-pinned, surface-resolved and spatially distinct", () => {
