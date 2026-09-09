@@ -1,149 +1,153 @@
-# JV-Web — baseline cleanup manifest
+# JV-Web — baseline cleanup execution receipt
 
 Prepared: 2026-09-06
-Re-audited: 2026-09-09
+Re-audited and executed: 2026-09-09
 Owner: Jozz
-Status: `PREPARED / GATE 1 PENDING / NO REMOTE BRANCH DELETION EXECUTED`
+Status: `CLOSED / EXECUTED / INDEPENDENTLY VERIFIED`
 
-This is a one-time maintenance receipt for the repository reset. It is not a second current-state authority; live routing belongs in `docs/PROJECT_STATE.md`.
+This is the one-time execution receipt for the 2026-09-06 repository/baseline hardening campaign. It records what was preserved, promoted, deleted and validated. It is **not** a second current-state authority; live routing belongs in `docs/PROJECT_STATE.md`.
 
-## 1. Safety boundary
+## 1. Closure summary
 
-Pre-cleanup canonical source head:
+Pre-cleanup canonical source:
 
 `main@42bc652c9051edb1581b5d539f012ac78d165a66`
 
-Maintenance lane:
+Validated technical baseline produced by Gate 1 and promoted through Gate 2:
 
-`maintenance/repo-baseline-hardening-2026-09-06`
+`02ef5d6b4f2b1b62cfc87c7f122c492b0a7dde36`
 
-Accepted executable product snapshot:
+Accepted executable/current-best product snapshot remained unchanged throughout cleanup:
 
 `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`
 
-Current Owner Preview control lane:
+Retained Owner Preview infrastructure:
 
 `preview/owner-control@a87cca7c9b933a8e7174ef1add5d3d9073294333`
 
-Current spawn Preview specimen:
+Retained unpromoted spawn Preview specimen:
 
 `work/spawn-landmark-capture-2026-09-06@c2481f911af45c73489f5b77f022206a9cf4a8cd`
 
-The spawn specimen has not advanced since 2026-09-06 11:51Z and Owner Preview now pins that exact source. It is therefore a retained, exact-SHA guarded ref during cleanup: do not move or delete it. Any head drift invalidates the current cleanup manifest and requires re-audit.
-
-No cleanup operation may reinterpret an experimental branch as accepted product truth, rewrite historical commits, modify GitHub Actions, or remove a branch carrying unique evidence before an immutable archive ref exists.
-
-## 2. Target branch model
-
-After maintenance is validated, preserved, promoted and its temporary branch removed, the expected known live branch set is:
-
-- `main` — accepted source/documentation authority;
-- `preview/owner-control` — exact-source Owner Preview composition infrastructure;
-- `work/spawn-landmark-capture-2026-09-06` — stable unpromoted Owner Preview specimen.
-
-Branch count is not itself authority. A new branch that appears after this audit must be left untouched and reported as `NEW / NOT AUDITED`, not deleted merely to reach three refs.
-
-Historical work belongs behind exact commits, evidence and archive tags rather than permanent work refs.
-
-## 3. Immutable refs required before destructive cleanup
-
-Use prefix:
-
-`archive/jv-web-repo-cleanup-2026-09-06/`
-
-Planned archive tags:
-
-| Archive tag suffix | Exact commit | Reason |
-| --- | --- | --- |
-| `research/wheel-mode5-rq2c-hold` | `c26e6c610815a0286a0139c2ff50a0a03b040e02` | complete retained wheel-mode5 research corpus; truthful RQ2C HOLD |
-| `preview/wheel-mode5-abcd` | `d52aa3776e022649af21cddc6d9dcfae3bac42f9` | exact Owner Preview wheel A/B/C/D source |
-| `preview/spawn-landmark-capture` | `c2481f911af45c73489f5b77f022206a9cf4a8cd` | exact current Owner Preview spawn + read-only landmark-capture specimen |
-| `experiment/spawn-landmark-calibration-mobile-ui` | `77fcd0b5aec2cb1cb1acc92a616f611d18a3b38b` | sealed predecessor/base of current spawn specimen |
-| `experiment/visual-wheel-profile-owner` | `08b43ac0a40be79be5f89a58582d7107e9e5ae06` | exact visual-wheel A/B/C source pinned by Preview |
-| `donor/pedal-contact-mechanics` | `6312906d5ad3c6781605859cd1d9613d7f2e220a` | seven unique unpromoted pedal commits retained as donor material |
-| `checkpoint/p1-3-1-handoff` | `e04d5d51f53350aa0df9248a3e7f123dbb94bc54` | one unique historical documentation checkpoint |
-| `historical/wheel-mode5-recovery-checkpoint` | `724f1052e1ac45ab8f0acf896431dcb4f44bcd92` | unique interrupted E1d/E1e forensic history |
-| `historical/wheel-mode5-registration-diagnostic` | `ea2ec13cd1578ba5aae2764788a8fa14ff06e7fb` | four unique historical validation/workflow commits |
-
-Rollback anchor:
-
-`rollback/main-before-repo-baseline-cleanup-2026-09-06` -> `42bc652c9051edb1581b5d539f012ac78d165a66`
-
-The accepted executable `529ae7d...` remains explicitly pinned and reachable, but must still resolve before destructive cleanup.
-
-## 4. Delete classification
-
-### A. Direct ancestors / redundant refs — delete after preservation gate
-
-These refs have no unique history that requires their own cleanup tag:
-
-- `DO_NOT_USE`
-- `DO_NOT_USE_2`
-- `DO_NOT_USE_3`
-- `DO_NOT_USE_4`
-- `PLEASE_IGNORE`
-- `noop2`
-- `noop3`
-- `__tmp_noop`
-- `work/desktop-hud-header-cleanup`
-- `work/desktop-mobile-capability-hygiene`
-- `work/direct-rotation-steering`
-- `work/dr-multitouch-acquisition`
-- `work/mobile-touch-highlight-polish`
-- `work/p1-2-hud-composition`
-- `work/p1-3-1-drawer-polish`
-- `work/p1-3-utility-drawer`
-- `work/pedal-absolute-position`
-- `work/steering-release-range`
-
-The eight obvious garbage refs all point to `2035c8cf9d7a99aef947cdcfddd4dfedd8343d39`, a direct ancestor of current `main`.
-
-### B. Exact aliases of pre-cleanup main — delete
-
-All five point exactly to `main@42bc652c...`:
-
-- `work/visual-wheel-profile-owner-2026-09-05-final`
-- `work/visual-wheel-profile-owner-2026-09-05-impl`
-- `work/visual-wheel-profile-owner-2026-09-05-real`
-- `work/visual-wheel-profile-owner-2026-09-05-scratch-do-not-use`
-- `work/visual-wheel-profile-owner-2026-09-05-use-this`
-
-### C. Superseded by retained descendants — delete
-
-- `preview/spawn-calibration-control` — direct ancestor of current `preview/owner-control`;
-- `work/spawn-landmark-calibration-2026-09-05` — predecessor of sealed/current spawn lines;
-- `work/spawn-landmark-calibration-mobile-ui-2026-09-05` — exact predecessor `77fcd0b...` and parent of current `c2481f91...`;
-- `work/wheel-mode5-runtime-spike-2026-09-01` — retained by later wheel research corpus;
-- `work/wheel-mode5-d-pathology-2026-09-03` — retained by later wheel research corpus;
-- `work/wheel-mode5-e1d-recovery-2026-09-03` — retained by later wheel research corpus;
-- `work/wheel-mode5-e2a-outer-ground-dynamic-2026-09-03` — retained by later wheel research corpus.
-
-### D. Unique history — archive exact head, verify remote tag, then delete branch
-
-- `checkpoint/p1-3-1-handoff-2026-08-18` -> `e04d5d51...`;
-- `work/pedal-contact-mechanics` -> `6312906d...`;
-- `work/visual-wheel-profile-owner-2026-09-05` -> `08b43ac0...`;
-- `research/wheel-mode5-rq2c-orientation-2026-09-05` -> `c26e6c61...`;
-- `work/wheel-mode5-recovery-checkpoint-2026-09-03` -> `724f1052...`;
-- `work/wheel-mode5-registration-diagnostic-2026-09-02` -> `ea2ec13c...`.
-
-### E. Maintenance lane — delete last
-
-`maintenance/repo-baseline-hardening-2026-09-06` is deleted only after its final validated candidate is pushed, preserved and fast-forwarded into `main`.
-
-Total intended obsolete branch refs under the currently known topology: **37**.
-
-Explicitly retained:
+Final independently verified live branch topology after Gate 3:
 
 - `main`;
 - `preview/owner-control`;
 - `work/spawn-landmark-capture-2026-09-06`.
 
-Any newly appearing branch is outside this delete set and must remain untouched.
+Gate 3 reported and independent GitHub readback confirmed:
 
-## 5. Owner Preview reachability contract
+- `37/37` audited obsolete branch refs deleted;
+- `3/3` retained branch refs unchanged;
+- no additional/unknown branch refs present at final readback.
 
-Current `preview/owner-control@a87cca7c9b933a8e7174ef1add5d3d9073294333` pins:
+No GitHub Actions workflows were created or modified by this campaign.
+
+## 2. Gate 1 — local preparation and exact validation
+
+Gate 1 was executed from a fresh temporary clone. Early runner versions exposed tooling defects and were retired; the final validated flow used a Node-based runner with self-tests rather than PowerShell as the execution engine.
+
+The final Gate 1 candidate was:
+
+`02ef5d6b4f2b1b62cfc87c7f122c492b0a7dde36`
+
+The candidate changed only:
+
+- `package-lock.json`;
+- `tests/clean-browser-host-joystick.test.mjs`;
+- `tests/mobile-ui-contract.test.mjs`;
+- `tests/toolchain-contract.test.mjs`.
+
+No `src/`, asset, Preview or GitHub Actions file was changed by the final candidate commit.
+
+Executed validation evidence:
+
+- focused regression set: `17/17 PASS`;
+- full test suite: `522/522 PASS`;
+- `npm ci`: PASS;
+- `npm audit --audit-level=high`: `0 vulnerabilities`;
+- `npm run build`: PASS;
+- typecheck: PASS;
+- docs link audit: PASS;
+- third-party/license audit: PASS;
+- portable build/static/runtime-assets/vehicle-visual/vehicle-path/privacy/network/http checks: PASS;
+- working tree clean at the exact candidate head after validation.
+
+Toolchain observed in the executed run:
+
+- Node `24.16.0`;
+- npm `11.17.0`, valid under repository contract `>=11.13.0 <12`;
+- `box3d.js@0.0.2` unchanged.
+
+The npm-owned lock reconciliation:
+
+- synchronized root lock engine metadata to current `package.json`;
+- moved dev-only `nanoid` from `3.3.17` to `3.3.18`;
+- changed no direct dependency version;
+- preserved `box3d.js@0.0.2`;
+- retained a hard SHA-256 lock identity assertion.
+
+Canonical normalized lock SHA-256 after reconciliation:
+
+`2aa86f3dac1f2c1e7582fc05e6603b12065377fab0dfdbfcf0720e12a0ed25a2`
+
+## 3. Gate 2A — remote preservation of the validated candidate
+
+Gate 2A performed exactly one remote mutation:
+
+`maintenance/repo-baseline-hardening-2026-09-06`
+
+was fast-forwarded under an exact lease from:
+
+`cd9365e82e5c67caebe280a58b7318f2420f7fcd`
+
+to:
+
+`02ef5d6b4f2b1b62cfc87c7f122c492b0a7dde36`
+
+Post-write readback verified that `main`, Preview and the retained spawn specimen remained unchanged.
+
+This step converted the fragile locally validated candidate into durable remote evidence before any archive creation, main promotion or deletion.
+
+## 4. Gate 2B — immutable preservation and main promotion
+
+Before promotion, exact archive and rollback refs were created and verified remotely.
+
+Archive prefix:
+
+`archive/jv-web-repo-cleanup-2026-09-06/`
+
+| Archive tag suffix | Peeled exact commit | Purpose |
+| --- | --- | --- |
+| `research/wheel-mode5-rq2c-hold` | `c26e6c610815a0286a0139c2ff50a0a03b040e02` | retained wheel-mode5 research corpus; truthful RQ2C HOLD |
+| `preview/wheel-mode5-abcd` | `d52aa3776e022649af21cddc6d9dcfae3bac42f9` | exact Owner Preview wheel A/B/C/D source |
+| `preview/spawn-landmark-capture` | `c2481f911af45c73489f5b77f022206a9cf4a8cd` | exact current Owner Preview spawn + read-only capture specimen |
+| `experiment/spawn-landmark-calibration-mobile-ui` | `77fcd0b5aec2cb1cb1acc92a616f611d18a3b38b` | sealed spawn predecessor/base |
+| `experiment/visual-wheel-profile-owner` | `08b43ac0a40be79be5f89a58582d7107e9e5ae06` | exact visual-wheel A/B/C source |
+| `donor/pedal-contact-mechanics` | `6312906d5ad3c6781605859cd1d9613d7f2e220a` | unique unpromoted pedal donor history |
+| `checkpoint/p1-3-1-handoff` | `e04d5d51f53350aa0df9248a3e7f123dbb94bc54` | unique historical handoff checkpoint |
+| `historical/wheel-mode5-recovery-checkpoint` | `724f1052e1ac45ab8f0acf896431dcb4f44bcd92` | interrupted/recovery wheel history |
+| `historical/wheel-mode5-registration-diagnostic` | `ea2ec13cd1578ba5aae2764788a8fa14ff06e7fb` | unique historical diagnostic/workflow history |
+
+Rollback anchor:
+
+`rollback/main-before-repo-baseline-cleanup-2026-09-06`
+
+peeled to:
+
+`42bc652c9051edb1581b5d539f012ac78d165a66`
+
+All preservation refs were created as annotated tags and independently peeled to the exact audited commits before branch deletion.
+
+After preservation verification, `main` was fast-forwarded from `42bc652c...` to validated baseline `02ef5d6...` under an exact lease.
+
+## 5. Owner Preview reachability preserved
+
+The retained Preview head stayed:
+
+`preview/owner-control@a87cca7c9b933a8e7174ef1add5d3d9073294333`
+
+Its exact consumer pins remained:
 
 - accepted root: `529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`;
 - wheel A/B/C/D: `d52aa3776e022649af21cddc6d9dcfae3bac42f9`;
@@ -151,71 +155,105 @@ Current `preview/owner-control@a87cca7c9b933a8e7174ef1add5d3d9073294333` pins:
 - visual wheel A/B/C: `08b43ac0a40be79be5f89a58582d7107e9e5ae06`;
 - accepted JSPREV2: `Jozzpoly/JV-Box3D-Web-Public@a325c279cfe63a0607dba33c3c635a1716e09f8f`.
 
-Owner Preview workflow run `34031462564` completed successfully on this exact Preview head. Branch deletion is forbidden until the non-main exact sources above resolve through the planned archive tags and Preview itself still resolves to the audited head.
+Cleanup never treated these Preview sources as accepted product truth merely because they were preserved or composed.
 
-## 6. Baseline test reconciliation
+## 6. Gate 3 — audited atomic branch prune
 
-The historical broad run executed 523 tests: 516 passed and 7 failed. Re-audit on 2026-09-09 confirmed that the five maintenance test-file patches do not weaken the behavioral contract:
+Gate 3 used a machine-readable prune plan with:
 
-- 900-degree accepted range maps 90 degrees to `0.2` lock;
-- pointer cancel/lost-capture/fullscreen still assert exact capture release and semantic `RELEASE` rather than artificial centering;
-- range UI is checked against its canonical source array rather than duplicated literal labels;
-- mobile media-query matching only becomes formatting-tolerant while retaining the same query and lifecycle requirements.
+- `3` exact `KEEP` refs;
+- `37` exact `DELETE` refs;
+- `10` required preservation/rollback tags;
+- a declared deletion class for every obsolete branch.
 
-No accepted runtime `src/` file is changed by this reconciliation.
+Deletion classes were mechanically re-proved before mutation:
 
-Fresh exact-head execution is still mandatory before promotion.
+- `ancestor_of_main`;
+- `alias_rollback`;
+- `superseded_by`;
+- `archived_exact`;
+- `alias_main`.
 
-## 7. Dependency posture and Gate 1
+The runner required:
 
-`box3d.js@0.0.2` remains frozen.
+- a fresh clone and live remote snapshot;
+- exact SHA agreement for every keep/delete ref;
+- preservation tag peel verification;
+- live Owner Preview consumer-pin verification;
+- Git ancestry/equivalence proof appropriate to each deletion class;
+- atomic dry-run;
+- an immediate last-moment read-gate;
+- explicit exact `--force-with-lease` guards for every deleted branch;
+- `main`, Preview and retained spawn as exact no-op witness refs inside the same atomic transaction.
 
-The lock contains dev-only `nanoid@3.3.17`. Re-audit also found root lock metadata older than current `package.json` engine/toolchain constraints. Therefore **manual three-line nanoid editing is prohibited**.
+The final production runner self-test passed `9/9` before execution.
 
-Gate 1 must use the pinned npm toolchain to reconcile the lock, then semantically verify:
+The real transaction then completed successfully:
 
-- `package.json` is byte-identical;
-- direct dependencies are unchanged;
-- `box3d.js` remains exactly `0.0.2`;
-- no unrelated transitive package version changes;
-- `node_modules/nanoid` moves exactly from `3.3.17` to `3.3.18`;
-- root lock metadata may change only to truthfully mirror current `package.json`;
-- tracked diff contains only the already-audited maintenance files plus `package-lock.json`;
-- fresh `npm ci`, `npm audit --audit-level=high` and `npm run build` all pass;
-- tracked tree is clean at the exact locally committed candidate head.
+- `37/37` audited delete refs removed in one atomic push;
+- `3/3` retained witness refs unchanged;
+- preservation tags still exact after deletion;
+- no unknown/new refs present.
 
-Gate 1 performs **no remote mutation**.
+Independent GitHub post-audit confirmed the final three-branch topology.
 
-## 8. Three-gate execution model
+## 7. Final retained branch model
 
-### Gate 1 — local prepare + validate
+At campaign closure:
 
-Fresh temporary clone, exact critical-ref check, npm-owned lock reconciliation, semantic diff audit, local candidate commit, full clean validation. No push, tags or deletes.
+`branch = active/reviewable workspace`
 
-### Gate 2 — preserve + promote
+`archive tag + exact SHA + evidence = historical retention`
 
-Only after independent review of Gate 1 output:
+Known retained branches:
 
-1. re-fetch and re-check critical refs;
-2. push the exact validated candidate to maintenance using an explicit lease;
-3. create/push archive and rollback tags;
-4. independently verify every remote tag target;
-5. fast-forward `main` to the validated candidate;
-6. verify live `main` and Preview.
+- `main` — source/product + canonical documentation authority;
+- `preview/owner-control` — operational exact-source Preview infrastructure;
+- `work/spawn-landmark-capture-2026-09-06` — stable unpromoted Owner specimen still useful for Owner judgement.
 
-No historical branch deletion in Gate 2.
+A future legitimate active branch is not a cleanup regression. Branch count is not itself an authority signal.
 
-### Gate 3 — cleanup refs only
+The retained spawn branch may be removed later only after an explicit closure/promotion decision and preservation of any unique remaining evidence.
 
-Only after Gate 2 is verified:
+## 8. What cleanup did not prove
 
-1. re-fetch all remote heads;
-2. every branch in the delete set must still equal its audited expected SHA;
-3. retained Preview/spawn refs must still equal their guarded SHA;
-4. new/unreviewed branches are excluded and left untouched;
-5. delete the audited obsolete refs in one `git push --atomic` transaction with explicit `--force-with-lease=<ref>:<expected-SHA>` guards;
-6. verify that every intended delete ref is absent and all retained refs/tags still resolve.
+Repository cleanliness does not imply vehicle/mechanical completeness.
 
-Final verification must **not** fail merely because an unrelated new branch was created concurrently; such a branch is reported and preserved.
+The campaign did not:
 
-If any required assertion fails, stop. Do not partially improvise the remaining cleanup.
+- finish natural physical steering self-return;
+- accept the spawn specimen;
+- accept visual wheel width variants;
+- reopen or solve RQ2C orientation;
+- prove parity of every historical backend/representation;
+- upgrade Box3D;
+- change accepted runtime steering semantics;
+- create new GitHub Actions infrastructure.
+
+Those remain separate product/R&D questions.
+
+## 9. Process lessons retained for future repository cleanups
+
+The JV-Web campaign established several reusable constraints:
+
+1. **Live Git outranks conversation state.** Every write-gate starts with a fresh read-gate.
+2. **Owner must not be the runner test harness.** Mutation tooling must self-test on throwaway repositories before Owner execution.
+3. **Preserve before promote; promote before prune.** The first remote write after local validation should increase recoverability, not reduce it.
+4. **Destructive operations need typed justification.** Every branch deletion should have a machine-checkable class/relation, not only a human label such as “old”.
+5. **Unknown refs are preserved by default.** A new branch is `NEW / NOT AUDITED`, never collateral cleanup.
+6. **Atomic deletion should guard retained authority too.** No-op exact-leased witness refs can make races on `main`/Preview block the entire prune transaction.
+7. **Failure modes should bias toward extra preservation.** A partial process should leave more recoverability, not less.
+8. **Finalization is a separate gate.** Documentation must describe the cleanup after it actually happened rather than predict success beforehand.
+9. **Revalidation should follow changed inputs.** A docs-only closure should prove docs-only identity and validate the documentation layer rather than blindly rerun expensive unrelated runtime evidence.
+
+These are lessons from this repository, not a universal delete list. Any other project must rediscover its own authority model, active refs, unique history, validation contract and preservation policy before reusing the execution pattern.
+
+## 10. Closure
+
+The repository/baseline hardening campaign is complete.
+
+For current continuation, use:
+
+`docs/PROJECT_STATE.md`
+
+Do not restart this cleanup campaign unless live repository evidence shows a new repository-maintenance problem that actually warrants it.
