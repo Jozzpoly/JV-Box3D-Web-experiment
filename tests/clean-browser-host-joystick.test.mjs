@@ -211,8 +211,8 @@ test("steering interaction provider switches on the next grab without restarting
   now = 200 / 3;
   animationFrames.runNext(200 / 3);
   assert.equal(observed.at(-1).mode, "POSITION");
-  assert.ok(observed.at(-1).value < 0);
-  assert.ok(Math.abs(observed.at(-1).value) < 0.2);
+  assert.ok(observed.at(-1).value < -0.2);
+  assert.ok(observed.at(-1).value > -1);
 
   steeringJoystick.dispatch("pointerup", { pointerId: 52, clientX: 60, clientY: 10 });
   host.dispose();

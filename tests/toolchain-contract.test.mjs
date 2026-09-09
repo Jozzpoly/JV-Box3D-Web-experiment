@@ -72,9 +72,17 @@ test("canonical pin preserves the accepted dependency lock", async () => {
   assert.equal(rootPackage.dependencies?.["box3d.js"], "0.0.2");
   assert.equal(rootPackage.devDependencies?.typescript, "7.0.2");
   assert.equal(rootPackage.devDependencies?.vite, "8.1.5");
+  assert.deepEqual(rootPackage.engines, {
+    node: "24.16.0",
+    npm: ">=11.13.0 <12",
+  });
+  assert.equal(
+    lock.packages?.["node_modules/nanoid"]?.version,
+    "3.3.18",
+  );
   assert.equal(
     createHash("sha256").update(text).digest("hex"),
-    "8d84e565e0322326824ca93c5f4ca1f8df618b9e8e2026451ac08f9cc211e446",
+    "2aa86f3dac1f2c1e7582fc05e6603b12065377fab0dfdbfcf0720e12a0ed25a2",
   );
 });
 
