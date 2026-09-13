@@ -3,6 +3,7 @@ import "./mobile-driving-controls.css";
 import "./mobile-driving-polish.css";
 import "./direct-rotation-steering.css";
 import "./utility-drawer.css";
+import "./spawn-calibration-ui.css";
 
 import {
   DEFAULT_SCENE_PACKAGE_URL,
@@ -21,6 +22,7 @@ import {
 } from "./scene/map-only-product-world.js";
 import { applyProductSpawnToScene } from "./scene/product-scene-package.js";
 import {
+  parseCustomScanSpawn,
   parseProductSpawnTarget,
   type JvProductSpawnTarget,
 } from "./scene/product-spawn.js";
@@ -40,6 +42,7 @@ import { installJvPerformanceObserver } from "./runtime/performance-observer.js"
 import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
 import { installProductControls } from "./product-controls.js";
 import { installUtilityDrawer } from "./utility-drawer.js";
+import { installSpawnLandmarkCapture } from "./spawn-landmark-capture.js";
 
 function requestUrl(input: RequestInfo | URL): string {
   if (typeof input === "string") {
@@ -64,6 +67,8 @@ function isDefaultSceneRequest(input: RequestInfo | URL): boolean {
 function targetUrl(target: JvProductSpawnTarget): string {
   const url = new URL(window.location.href);
   url.searchParams.set("jvSpawn", target);
+  url.searchParams.delete("jvSpawnX");
+  url.searchParams.delete("jvSpawnZ");
   return url.href;
 }
 
@@ -83,6 +88,15 @@ function selectedSteeringPlateVisible(): boolean {
 }
 
 const spawnTarget = parseProductSpawnTarget(window.location.search);
+const customScanSpawn = parseCustomScanSpawn(window.location.search);
+const scanCalibrationTarget =
+  spawnTarget === "scan-cal-a" ||
+  spawnTarget === "scan-cal-b" ||
+  spawnTarget === "scan-cal-c";
+const scanBackedSpawnTarget =
+  spawnTarget === "scan" ||
+  spawnTarget === "scan-custom" ||
+  scanCalibrationTarget;
 
 function timedProductWorldLoader(loader: ProductWorldLoader): ProductWorldLoader {
   return async () => {
@@ -99,7 +113,7 @@ function timedProductWorldLoader(loader: ProductWorldLoader): ProductWorldLoader
 
 configureProductWorldLoader(
   timedProductWorldLoader(
-    spawnTarget === "scan"
+    scanBackedSpawnTarget
       ? loadLocalFullProductWorld
       : loadMapOnlyProductWorld,
   ),
@@ -132,6 +146,7 @@ if (spawnTarget !== "map") {
       scene,
       world,
       spawnTarget,
+      customScanSpawn,
     );
     const headers = new Headers(response.headers);
     headers.delete("content-length");
@@ -159,13 +174,20 @@ const unsubscribeViewPresentation = subscribeJvProductViewSettings((settings) =>
 });
 window.addEventListener("pagehide", unsubscribeViewPresentation, { once: true });
 
+const scanAvailabilityProbeUrl = new URL(
+  "__jv_scan__/index.json",
+  document.baseURI,
+).href;
+const scanUnavailableMessage =
+  "Skan JSPREV2 jest niedostępny w tej publikacji. Mapa i Offroad działają niezależnie.";
+
 installJvBuildIdentity();
 installJvPerformanceObserver();
 installProductControls({
   capabilities: {
     locationChoices: [
       {
-        label: "Plac E2R",
+        label: "Plac",
         href: targetUrl("map"),
         active: spawnTarget === "map",
       },
@@ -175,15 +197,25 @@ installProductControls({
         active: spawnTarget === "offroad",
       },
       {
-        label: "Skan JSPREV2",
-        href: targetUrl("scan"),
-        active: spawnTarget === "scan",
-        availabilityProbeUrl: new URL(
-          "__jv_scan__/index.json",
-          document.baseURI,
-        ).href,
-        unavailableMessage:
-          "Skan JSPREV2 jest niedostępny w tej publikacji. Mapa i Offroad działają niezależnie.",
+        label: "A",
+        href: targetUrl("scan-cal-a"),
+        active: spawnTarget === "scan-cal-a",
+        availabilityProbeUrl: scanAvailabilityProbeUrl,
+        unavailableMessage: scanUnavailableMessage,
+      },
+      {
+        label: "B",
+        href: targetUrl("scan-cal-b"),
+        active: spawnTarget === "scan-cal-b",
+        availabilityProbeUrl: scanAvailabilityProbeUrl,
+        unavailableMessage: scanUnavailableMessage,
+      },
+      {
+        label: "C",
+        href: targetUrl("scan-cal-c"),
+        active: spawnTarget === "scan-cal-c",
+        availabilityProbeUrl: scanAvailabilityProbeUrl,
+        unavailableMessage: scanUnavailableMessage,
       },
     ],
     textureFilter: true,
@@ -201,6 +233,7 @@ installProductControls({
     setRangeDegrees: setJvSteeringWheelRangeDegrees,
   },
 });
+installSpawnLandmarkCapture(scanBackedSpawnTarget);
 installUtilityDrawer();
 
 const activeSettings = getJvProductViewSettings();
