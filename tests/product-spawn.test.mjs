@@ -152,30 +152,29 @@ test("scan-backed targets use the full world loader at startup", async () => {
   );
 });
 
-test("spawn preview exposes a compact mobile scan A B C cluster", async () => {
+test("product UI collapses accepted scan choices to one Skan entry", async () => {
   const [entry, css] = await Promise.all([
     readFile(resolve(root, "src/product-main.ts"), "utf8"),
     readFile(resolve(root, "src/spawn-calibration-ui.css"), "utf8"),
   ]);
   assert.match(entry, /import "\.\/spawn-calibration-ui\.css";/);
-  for (const [label, target] of [
-    ["A", "scan-cal-a"],
-    ["B", "scan-cal-b"],
-    ["C", "scan-cal-c"],
-  ]) {
-    const escapedTarget = target.replaceAll("-", "\\-");
-    assert.match(entry, new RegExp(`label: "${label}"[\\s\\S]*?href: targetUrl\\("${escapedTarget}"\\)[\\s\\S]*?active: spawnTarget === "${escapedTarget}"`));
-  }
+  assert.match(
+    entry,
+    /label: "Skan"[\s\S]*?href: targetUrl\("scan-cal-b"\)[\s\S]*?active: spawnTarget === "scan-cal-b" \|\| spawnTarget === "scan-custom"/s,
+  );
+  assert.doesNotMatch(entry, /label: "A"/);
+  assert.doesNotMatch(entry, /label: "B"/);
+  assert.doesNotMatch(entry, /label: "C"/);
   assert.match(
     entry,
     /const scanAvailabilityProbeUrl = new URL\(\s*"__jv_scan__\/index\.json",\s*document\.baseURI,?\s*\)\.href;/s,
   );
   assert.equal(
     (entry.match(/availabilityProbeUrl: scanAvailabilityProbeUrl/g) ?? []).length,
-    3,
+    1,
   );
-  assert.match(css, /nth-child\(3\)::before\s*\{[\s\S]*content: "SKAN ";/);
   assert.match(css, /@media \(hover: none\) and \(pointer: coarse\), \(max-width: 620px\)/);
+  assert.match(css, /\.spawn-landmark-capture-button\s*\{/);
 });
 
 test("landmark capture creates a reusable custom-start URL from x z", () => {
