@@ -1,7 +1,7 @@
 {
   "schema": "JV_OWNER_SPAWN_CALIBRATION_POINTER_V1",
   "experiment": "spawn-landmark-calibration",
-  "sourceCommit": "231023edcd1bab66bfb11fe015e9a370db0357a6",
+  "sourceCommit": "2672c634a62d85a81e57b52d71ffadf13458ee46",
   "staticLayer": {
     "role": "accepted-jsprev2",
     "repository": "Jozzpoly/JV-Box3D-Web-Public",
@@ -22,5 +22,5 @@
       "query": "jvSpawn=scan-cal-c"
     }
   ],
-  "purpose": "Isolated Owner preview of accepted A/B/C scan starts plus lightweight custom-start link capture from the live vehicle position; not accepted product truth until qualification completes."
+  "purpose": "Isolated Owner preview of one product-facing accepted scan start (B), retained A/C evidence routes, and lightweight custom-start link capture from the live vehicle position."
 }
