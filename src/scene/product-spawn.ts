@@ -4,16 +4,72 @@ import type {
   JvWorldData,
 } from "./jv-world-contract.js";
 
-export type JvProductSpawnTarget = "map" | "offroad" | "scan";
+export type JvProductSpawnTarget =
+  | "map"
+  | "offroad"
+  | "scan"
+  | "scan-cal-a"
+  | "scan-cal-b"
+  | "scan-cal-c"
+  | "scan-custom";
+
+export interface JvCustomScanSpawn {
+  readonly x: number;
+  readonly z: number;
+}
 
 const TRIANGLE_EPSILON = 1e-7;
+const ACCEPTED_CALIBRATION_PACK_ID = "scan/photogrammetry-primary";
+
+const SCAN_CALIBRATION_LOCAL_XZ = {
+  "scan-cal-a": { x: 35.25, z: -59.25 },
+  "scan-cal-b": { x: 54.75, z: -36.75 },
+  "scan-cal-c": { x: 110.25, z: -11.25 },
+} as const satisfies Readonly<
+  Record<"scan-cal-a" | "scan-cal-b" | "scan-cal-c", Readonly<{ x: number; z: number }>>
+>;
+
+type JvScanCalibrationTarget = keyof typeof SCAN_CALIBRATION_LOCAL_XZ;
+
+function finiteSearchNumber(
+  params: URLSearchParams,
+  name: string,
+): number | null {
+  const raw = params.get(name);
+  if (raw === null || raw.trim() === "") {
+    return null;
+  }
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
+export function parseCustomScanSpawn(
+  search: string,
+): JvCustomScanSpawn | null {
+  const params = new URLSearchParams(search);
+  if (params.get("jvSpawn") !== "scan-custom") {
+    return null;
+  }
+  const x = finiteSearchNumber(params, "jvSpawnX");
+  const z = finiteSearchNumber(params, "jvSpawnZ");
+  return x === null || z === null ? null : Object.freeze({ x, z });
+}
 
 export function parseProductSpawnTarget(
   search: string,
 ): JvProductSpawnTarget {
   const value = new URLSearchParams(search).get("jvSpawn");
-  if (value === "offroad" || value === "scan") {
+  if (
+    value === "offroad" ||
+    value === "scan" ||
+    value === "scan-cal-a" ||
+    value === "scan-cal-b" ||
+    value === "scan-cal-c"
+  ) {
     return value;
+  }
+  if (value === "scan-custom" && parseCustomScanSpawn(search) !== null) {
+    return "scan-custom";
   }
   return "map";
 }
@@ -122,17 +178,17 @@ export function scanSurfaceHeightAt(
   return localY === null ? null : localY + scan.origin.y;
 }
 
+function requirePositiveClearance(clearanceMeters: number): void {
+  if (!Number.isFinite(clearanceMeters) || clearanceMeters <= 0) {
+    throw new Error("Scan spawn clearance must be positive and finite.");
+  }
+}
+
 export function scanCenterSpawn(
   scan: JvScanWorld,
   clearanceMeters: number,
 ): JvVec3 {
-  if (
-    !Number.isFinite(clearanceMeters) ||
-    clearanceMeters <= 0
-  ) {
-    throw new Error("Scan spawn clearance must be positive and finite.");
-  }
-
+  requirePositiveClearance(clearanceMeters);
   const x =
     0.5 *
     (scan.worldBounds.minimum.x + scan.worldBounds.maximum.x);
@@ -148,10 +204,50 @@ export function scanCenterSpawn(
   return { x, y: surfaceY + clearanceMeters, z };
 }
 
+export function scanCalibrationSpawn(
+  scan: JvScanWorld,
+  target: JvScanCalibrationTarget,
+  clearanceMeters: number,
+): JvVec3 {
+  requirePositiveClearance(clearanceMeters);
+  if (scan.packId !== ACCEPTED_CALIBRATION_PACK_ID) {
+    throw new Error(
+      `JSPREV2 spawn calibration is pinned to ${ACCEPTED_CALIBRATION_PACK_ID}; received ${scan.packId}.`,
+    );
+  }
+  const local = SCAN_CALIBRATION_LOCAL_XZ[target];
+  const x = scan.origin.x + local.x;
+  const z = scan.origin.z + local.z;
+  const surfaceY = scanSurfaceHeightAt(scan, x, z);
+  if (surfaceY === null) {
+    throw new Error(
+      `JSPREV2 calibration target ${target} has no drivable collision surface.`,
+    );
+  }
+  return { x, y: surfaceY + clearanceMeters, z };
+}
+
+export function scanCustomSpawn(
+  scan: JvScanWorld,
+  point: JvCustomScanSpawn,
+  clearanceMeters: number,
+): JvVec3 {
+  requirePositiveClearance(clearanceMeters);
+  if (!Number.isFinite(point.x) || !Number.isFinite(point.z)) {
+    throw new Error("Custom scan spawn coordinates must be finite.");
+  }
+  const surfaceY = scanSurfaceHeightAt(scan, point.x, point.z);
+  if (surfaceY === null) {
+    throw new Error("Custom scan spawn has no drivable collision surface.");
+  }
+  return { x: point.x, y: surfaceY + clearanceMeters, z: point.z };
+}
+
 export function resolveProductSpawn(
   world: JvWorldData,
   target: JvProductSpawnTarget,
   clearanceMeters = world.spawn.y,
+  customScanSpawn: JvCustomScanSpawn | null = null,
 ): JvVec3 {
   if (target === "map") {
     return world.spawn;
@@ -163,6 +259,19 @@ export function resolveProductSpawn(
     throw new Error(
       "Scan spawn was selected, but the exact JSPREV2 pack is unavailable.",
     );
+  }
+  if (target === "scan-custom") {
+    if (customScanSpawn === null) {
+      throw new Error("Custom scan spawn coordinates are missing.");
+    }
+    return scanCustomSpawn(world.scan, customScanSpawn, clearanceMeters);
+  }
+  if (
+    target === "scan-cal-a" ||
+    target === "scan-cal-b" ||
+    target === "scan-cal-c"
+  ) {
+    return scanCalibrationSpawn(world.scan, target, clearanceMeters);
   }
   return scanCenterSpawn(world.scan, clearanceMeters);
 }
