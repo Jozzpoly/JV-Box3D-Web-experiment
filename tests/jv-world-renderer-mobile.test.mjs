@@ -198,12 +198,14 @@ test("scan rendering configures the shared textured pass once for multiple visib
 
   renderer.render(identity());
 
+  // Offroad is drawn with the textured program and its own detail texture,
+  // so it configures one textured pass; the scan adds exactly one more.
   assert.equal(calls.filter(([name]) => name === "useProgram").length, 2,
-    "one solid offroad program + one shared scan textured program");
-  assert.equal(calls.filter(([name]) => name === "uniform1i").length, 1,
-    "scan sampler binding is configured once per scan pass");
-  assert.equal(calls.filter(([name]) => name === "activeTexture").length, 1,
-    "active texture unit is configured once per scan pass");
+    "one textured offroad pass + one shared scan textured pass");
+  assert.equal(calls.filter(([name]) => name === "uniform1i").length, 2,
+    "sampler binding is configured once for offroad and once per scan pass");
+  assert.equal(calls.filter(([name]) => name === "activeTexture").length, 2,
+    "active texture unit is configured once for offroad and once per scan pass");
   assert.equal(calls.filter(([name]) => name === "drawElements").length, 3,
     "offroad plus two scan groups render exactly once each");
 

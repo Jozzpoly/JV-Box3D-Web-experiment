@@ -1,3 +1,8 @@
+import {
+  createTerrainDetailPixels,
+  createTerrainDetailUvs,
+  TERRAIN_DETAIL_SIZE,
+} from "./jv-terrain-detail.js";
 import type {
   JvBounds,
   JvColor,
@@ -648,7 +653,7 @@ export class JvWorldRendererMobile {
       for (const mesh of buildStaticBatchMeshes(world)) {
         this.#staticGroups.push(this.#uploadGroup(mesh));
       }
-      this.#offroad = this.#uploadGroup(world.offroad);
+      this.#offroad = this.#uploadTerrainDetailGroup(world.offroad);
       if (world.scan !== null) {
         for (const source of world.scan.groups) {
           this.#scanGroups.push(this.#uploadScanGroup(source));
@@ -744,6 +749,47 @@ export class JvWorldRendererMobile {
     } catch (error: unknown) {
       for (const mesh of meshes) this.#deleteMesh(mesh);
       if (texture !== null) this.#gl.deleteTexture(texture);
+      throw error;
+    }
+  }
+
+  /** Offroad terrain: procedural repeating detail texture + world UVs. */
+  #uploadTerrainDetailGroup(source: JvIndexedMesh): GpuGroup {
+    const meshes: GpuMesh[] = [];
+    let texture: WebGLTexture | null = null;
+    const gl = this.#gl;
+    try {
+      const textured: JvIndexedMesh = {
+        ...source,
+        uvs: createTerrainDetailUvs(source.positions),
+      };
+      for (const chunk of splitJvIndexedMeshForUint16(textured)) {
+        meshes.push(uploadChunk(gl, chunk));
+      }
+      texture = gl.createTexture();
+      if (texture === null) {
+        throw new Error("JV terrain detail texture allocation failed.");
+      }
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        TERRAIN_DETAIL_SIZE,
+        TERRAIN_DETAIL_SIZE,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        createTerrainDetailPixels(),
+      );
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      return { color: [1, 1, 1, 1], meshes, texture, bounds: null };
+    } catch (error: unknown) {
+      for (const mesh of meshes) this.#deleteMesh(mesh);
+      if (texture !== null) gl.deleteTexture(texture);
       throw error;
     }
   }
