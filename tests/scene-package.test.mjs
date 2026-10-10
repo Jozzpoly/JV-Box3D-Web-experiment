@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   assertLegacyM6SceneSupport,
+  configureScenePackageTransform,
   DEFAULT_SCENE_PACKAGE_URL,
   loadScenePackageV1,
   validateScenePackageV1,
@@ -168,4 +169,31 @@ test("application and portable manifest consume the scene contract explicitly", 
     runtimeAssetContract,
     /scenes\/synthetic-flat-lab\.scene\.json/,
   );
+});
+
+test("product shell composes the loaded scene through an explicit, revalidated transform", async () => {
+  const fixture = await defaultSceneJson();
+  const fetcher = async () => ({
+    ok: true,
+    status: 200,
+    async json() {
+      return fixture;
+    },
+  });
+  try {
+    configureScenePackageTransform((scene) => ({
+      ...scene,
+      spawn: { ...scene.spawn, position: [5, 2, -3] },
+    }));
+    const moved = await loadScenePackageV1(fetcher);
+    assert.deepEqual(moved.spawn.position, [5, 2, -3]);
+    assert.equal(Object.isFrozen(moved), true);
+
+    configureScenePackageTransform((scene) => ({ ...scene, id: "Not A Valid Id!" }));
+    await assert.rejects(() => loadScenePackageV1(fetcher));
+  } finally {
+    configureScenePackageTransform(null);
+  }
+  const plain = await loadScenePackageV1(fetcher);
+  assert.deepEqual(plain.spawn.position, [0, 1.2, 0]);
 });

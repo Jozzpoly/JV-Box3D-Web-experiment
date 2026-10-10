@@ -259,6 +259,23 @@ export function validateScenePackageV1(value: unknown): ScenePackageV1 {
   });
 }
 
+export type ScenePackageTransform = (
+  scene: ScenePackageV1,
+) => ScenePackageV1 | Promise<ScenePackageV1>;
+
+let configuredScenePackageTransform: ScenePackageTransform | null = null;
+
+/**
+ * Lets the product shell compose the loaded scene (e.g. apply the chosen
+ * spawn) explicitly, instead of intercepting network requests. The result is
+ * validated again before use.
+ */
+export function configureScenePackageTransform(
+  transform: ScenePackageTransform | null,
+): void {
+  configuredScenePackageTransform = transform;
+}
+
 export async function loadScenePackageV1(
   fetcher: ScenePackageFetcher = (url) => fetch(url),
   url = DEFAULT_SCENE_PACKAGE_URL,
@@ -269,7 +286,11 @@ export async function loadScenePackageV1(
       `Scene package request failed with HTTP ${response.status}.`,
     );
   }
-  return validateScenePackageV1(await response.json());
+  const scene = validateScenePackageV1(await response.json());
+  if (configuredScenePackageTransform === null) {
+    return scene;
+  }
+  return validateScenePackageV1(await configuredScenePackageTransform(scene));
 }
 
 export function assertLegacyM6SceneSupport(

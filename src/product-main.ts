@@ -5,10 +5,7 @@ import "./direct-rotation-steering.css";
 import "./utility-drawer.css";
 import "./spawn-calibration-ui.css";
 
-import {
-  DEFAULT_SCENE_PACKAGE_URL,
-  validateScenePackageV1,
-} from "./scene/scene-package.js";
+import { configureScenePackageTransform } from "./scene/scene-package.js";
 import {
   configureProductWorldLoader,
   loadProductWorld,
@@ -43,26 +40,6 @@ import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
 import { installProductControls } from "./product-controls.js";
 import { installUtilityDrawer } from "./utility-drawer.js";
 import { installSpawnLandmarkCapture } from "./spawn-landmark-capture.js";
-
-function requestUrl(input: RequestInfo | URL): string {
-  if (typeof input === "string") {
-    return input;
-  }
-  if (input instanceof URL) {
-    return input.href;
-  }
-  return input.url;
-}
-
-function isDefaultSceneRequest(input: RequestInfo | URL): boolean {
-  const requested = new URL(requestUrl(input), window.location.href);
-  const expected = new URL(
-    DEFAULT_SCENE_PACKAGE_URL,
-    window.location.href,
-  );
-  return requested.origin === expected.origin &&
-    requested.pathname === expected.pathname;
-}
 
 function targetUrl(target: JvProductSpawnTarget): string {
   const url = new URL(window.location.href);
@@ -133,31 +110,14 @@ try {
 }
 
 if (spawnTarget !== "map") {
-  const nativeFetch = globalThis.fetch.bind(globalThis);
-  const productFetch: typeof fetch = async (input, init) => {
-    const response = await nativeFetch(input, init);
-    if (!isDefaultSceneRequest(input) || !response.ok) {
-      return response;
-    }
-
-    const scene = validateScenePackageV1(await response.json());
-    const world = await loadProductWorld();
-    const rewritten = applyProductSpawnToScene(
+  configureScenePackageTransform(async (scene) =>
+    applyProductSpawnToScene(
       scene,
-      world,
+      await loadProductWorld(),
       spawnTarget,
       customScanSpawn,
-    );
-    const headers = new Headers(response.headers);
-    headers.delete("content-length");
-    headers.set("content-type", "application/json; charset=utf-8");
-    return new Response(JSON.stringify(rewritten), {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
-  };
-  globalThis.fetch = productFetch;
+    ),
+  );
 }
 
 const productRuntime = await import("./main.js");

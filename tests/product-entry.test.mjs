@@ -43,7 +43,8 @@ test("browser boots through the explicit car map scan product entry", async () =
 
   assert.match(html, /src\/product-main\.ts/);
   assert.doesNotMatch(html, /src\/main\.ts/);
-  assert.match(entry, /DEFAULT_SCENE_PACKAGE_URL/);
+  assert.match(entry, /configureScenePackageTransform/);
+  assert.doesNotMatch(entry, /globalThis\.fetch\s*=/);
   assert.match(entry, /applyProductSpawnToScene/);
   assert.match(entry, /await import\("\.\/main\.js"\)/);
   assert.match(entry, /spawnTarget === "scan"/);
