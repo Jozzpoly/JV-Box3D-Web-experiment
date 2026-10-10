@@ -38,7 +38,7 @@ async function makeCandidate() {
   await put(
     dist,
     "assets/app.js",
-    'console.log("M6 Drive", "Plac E2R", "Offroad", "Skan JSPREV2", "Debug");',
+    'console.log("Jozz Vehicle", "Plac", "Offroad", "Skan JSPREV2", "Debug");',
   );
   await put(dist, "THIRD_PARTY_NOTICES.md", "fixture\n");
   await put(dist, "receipts/jv_m6_factory_receipt.json", "{}\n");

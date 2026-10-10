@@ -26,8 +26,8 @@ const REQUIRED = Object.freeze([
 ]);
 
 const PRODUCT_MARKERS = Object.freeze([
-  "M6 Drive",
-  "Plac E2R",
+  "Jozz Vehicle",
+  "Plac",
   "Offroad",
   "Skan JSPREV2",
   "Debug",

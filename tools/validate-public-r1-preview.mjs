@@ -16,7 +16,7 @@ const REQUIRED = Object.freeze([
 ]);
 
 const EXPECTED_PRODUCT_MARKERS = Object.freeze([
-  "M6 Drive",
+  "Jozz Vehicle",
   "Offroad",
   "Skan JSPREV2",
   "C · Kamera",

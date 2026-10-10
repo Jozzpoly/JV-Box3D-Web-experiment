@@ -1,4 +1,5 @@
 import "./style.css";
+import { formatHudDrive, formatHudSteering } from "./product-hud-copy.js";
 import { F4VehicleHost } from "./app/f4-vehicle-host.js";
 import type {
   AnalogDrivePedal,
@@ -39,29 +40,29 @@ function requireRoot(): HTMLElement {
 const app = requireRoot();
 app.innerHTML = `
   <main class="product-shell">
-    <section class="scene-panel" aria-label="JV Web M6 drive">
-      <canvas data-scene aria-label="Live WebGL view of the Box3D M6 vehicle"></canvas>
+    <section class="scene-panel" aria-label="Jozz Vehicle — sandbox jazdy">
+      <canvas data-scene aria-label="Widok 3D pojazdu"></canvas>
 
       <header class="scene-header">
         <div class="brand-lockup">
-          <p class="eyebrow">JV Box3D Web · R1</p>
-          <h1>M6 Drive</h1>
+          <p class="eyebrow">JV Web</p>
+          <h1>Jozz Vehicle</h1>
         </div>
-        <p class="scene-state" data-scene-state>WAITING FOR PHYSICS</p>
+        <p class="scene-state" data-scene-state>Ładowanie fizyki…</p>
       </header>
 
       <div class="product-toolbar" data-product-controls aria-label="World and view controls"></div>
 
       <div class="scene-actions" aria-label="Drive actions">
-        <button type="button" class="scene-action" data-camera-reset title="Reset chase camera (C)">C · Kamera</button>
-        <button type="button" class="scene-action" data-restart title="Reset physical vehicle (R)">R · Reset</button>
+        <button type="button" class="scene-action" data-camera-reset title="Wyśrodkuj kamerę (C)">C · Kamera</button>
+        <button type="button" class="scene-action" data-restart title="Postaw pojazd od nowa (R)">R · Reset</button>
         <button type="button" class="scene-action" data-debug-toggle aria-expanded="false">Debug</button>
       </div>
 
       <div class="scene-readouts" aria-live="polite">
-        <div><span>Speed</span><strong data-scene-speed>0.0 km/h</strong></div>
-        <div><span>Drive</span><strong data-scene-drive>COAST</strong></div>
-        <div><span>Steering</span><strong data-scene-command>RELEASE</strong></div>
+        <div><span>Prędkość</span><strong data-scene-speed>0 km/h</strong></div>
+        <div><span>Napęd</span><strong data-scene-drive>Luz</strong></div>
+        <div><span>Kierownica</span><strong data-scene-command>Prosto</strong></div>
         <div class="diagnostic-readout"><span>Rack</span><strong data-scene-rack>0.0000 m</strong></div>
         <div class="diagnostic-readout"><span>Travel</span><strong data-scene-displacement>0.000 m</strong></div>
         <div class="diagnostic-readout"><span>Step</span><strong data-scene-step>0</strong></div>
@@ -87,7 +88,7 @@ app.innerHTML = `
               </span>
               <span class="mobile-steering-center-tick"></span>
             </span>
-            <small>STEER</small>
+            <small>KIEROWNICA</small>
           </div>
         </div>
         <div class="mobile-control-cluster mobile-drive-controls" aria-label="Analog drive controls">
@@ -97,7 +98,7 @@ app.innerHTML = `
               <span class="mobile-pedal-track"></span>
               <span class="mobile-pedal-face"></span>
             </span>
-            <small>BRAKE</small>
+            <small>HAMULEC</small>
           </button>
           <button type="button" class="mobile-control mobile-pedal mobile-pedal-throttle" data-analog-pedal="THROTTLE" role="slider" aria-label="Analog throttle. Slide thumb upward for more input." aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%">
             <span class="mobile-pedal-mechanism" aria-hidden="true">
@@ -105,7 +106,7 @@ app.innerHTML = `
               <span class="mobile-pedal-track"></span>
               <span class="mobile-pedal-face"></span>
             </span>
-            <small>THROTTLE</small>
+            <small>GAZ</small>
           </button>
           <button type="button" class="mobile-control mobile-direction-selector" data-drive-direction="D" aria-label="Drive direction D. Tap to switch D/R." aria-pressed="false">
             <span data-direction-option="D">D</span>
@@ -300,6 +301,13 @@ function clampSigned(value: number): number {
   return Math.max(-1, Math.min(1, value));
 }
 
+function setSceneState(message: string | null): void {
+  sceneStateElement.hidden = message === null;
+  if (message !== null) {
+    sceneStateElement.textContent = message;
+  }
+}
+
 const browserRuntimeReport = inspectCurrentBrowserRuntime();
 browserRuntimeElement.textContent = formatBrowserRuntimeReport(
   browserRuntimeReport,
@@ -311,8 +319,7 @@ let renderer: M6ProductRenderer | null = null;
 try {
   renderer = new M6ProductRenderer(sceneCanvas);
 } catch (error: unknown) {
-  sceneStateElement.textContent =
-    `RENDERER UNAVAILABLE · ${formatError(error)}`;
+  setSceneState(`Grafika niedostępna · ${formatError(error)}`);
   console.error(error);
 }
 
@@ -452,13 +459,13 @@ function renderTrace(trace: M6TraceFrame): void {
   const command = formatCommand(trace.command);
   const driveText = formatDrive(trace);
 
-  sceneStateElement.textContent =
-    renderer === null
-      ? `PHYSICS LIVE · RENDERER OFF · ${trace.worldContacts} CONTACTS`
-      : `LIVE · GENERATION ${trace.generation} · ${trace.worldContacts} CONTACTS`;
-  sceneCommandElement.textContent = command;
-  sceneDriveElement.textContent = driveText;
-  sceneSpeedElement.textContent = `${(drive.forwardSpeedMetersPerSecond * 3.6).toFixed(1)} km/h`;
+  setSceneState(renderer === null ? "Grafika niedostępna" : null);
+  sceneCommandElement.textContent = formatHudSteering(
+    trace.rackTranslation,
+    activeRackTravel ?? 0,
+  );
+  sceneDriveElement.textContent = formatHudDrive(drive);
+  sceneSpeedElement.textContent = `${Math.round(Math.abs(drive.forwardSpeedMetersPerSecond * 3.6))} km/h`;
   sceneRackElement.textContent = `${trace.rackTranslation.toFixed(4)} m`;
   sceneDisplacementElement.textContent = `${displacement.toFixed(3)} m`;
   sceneStepElement.textContent = String(trace.stepIndex);
@@ -535,14 +542,13 @@ function resetDisplay(): void {
   speedElement.textContent = "0.000 m/s · 0.0 km/h";
   driveTargetElement.textContent = "0.000 m/s · 0.000 rad/s · taper 1.000";
   driveTorqueElement.textContent = "0.00 Nm/wheel · 0.00 Nm current";
-  sceneCommandElement.textContent = "RELEASE";
-  sceneDriveElement.textContent = "COAST";
-  sceneSpeedElement.textContent = "0.0 km/h";
+  sceneCommandElement.textContent = "Prosto";
+  sceneDriveElement.textContent = "Luz";
+  sceneSpeedElement.textContent = "0 km/h";
   sceneRackElement.textContent = "0.0000 m";
   sceneDisplacementElement.textContent = "0.000 m";
   sceneStepElement.textContent = "0";
-  sceneStateElement.textContent =
-    renderer === null ? "RENDERER UNAVAILABLE" : "WAITING FOR PHYSICS";
+  setSceneState(renderer === null ? "Grafika niedostępna" : "Ładowanie fizyki…");
 }
 
 async function startHost(): Promise<void> {
@@ -623,7 +629,7 @@ async function startHost(): Promise<void> {
         host = null;
         statusElement.textContent =
           `Runtime fault — resources disposed: ${formatError(error)}`;
-        sceneStateElement.textContent = "PHYSICS FAULTED";
+        setSceneState("Fizyka zatrzymana — naciśnij R");
         validationElement.textContent = "FAULTED / DISPOSED";
         restartButton.disabled = false;
         profileSelect.disabled = false;
@@ -672,7 +678,7 @@ async function startHost(): Promise<void> {
       return;
     }
     statusElement.textContent = `Startup rejected: ${formatError(error)}`;
-    sceneStateElement.textContent = "PHYSICS NOT STARTED";
+    setSceneState("Nie udało się uruchomić fizyki");
     validationElement.textContent = "NOT STARTED";
     console.error(error);
   } finally {
