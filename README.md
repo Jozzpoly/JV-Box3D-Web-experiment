@@ -1,102 +1,79 @@
-# JV Web
+# Jozz Vehicle — JV Web
 
-JV Web is the browser product line for Jozz Vehicle: a driveable desktop/mobile product, practical vehicle-physics R&D surface and evidence-backed experimentation environment.
+A browser driving sandbox for **Jozz Vehicle**: a physically simulated off-road buggy (double wishbones, coilovers, steering rack, four driven wheels on Box3D) that you can drive on desktop or phone, straight from a link.
 
-It is its own product line. It is **not NextGen JV Lite**, and discoveries from other JV projects do not automatically imply shared architecture.
+**Play:** https://jozzpoly.github.io/JV-Box3D-Web-Public/
 
-## Start here
+The public link serves the last Owner-accepted Friends release. Newer source on `main` reaches it only after a separate Friends promotion and Owner device check (see `docs/PROJECT_STATE.md`).
 
-For current work, use this authority order:
+## What you can do
 
-1. live Git and exact executed evidence;
-2. `AGENTS.md` — operating rules;
-3. `docs/PROJECT_STATE.md` — the single live project-state router;
-4. focused baseline/evidence documents only when the current question requires them.
+- **Plac** — a concrete square with rubble fields and log rows to drive over (default, light: ~3 MB).
+- **Offroad** — rolling generated terrain.
+- **Skan** — a photogrammetry scan of a real place (~100 MB, loads on demand). On any scan start, **Zapisz start** turns the current spot into a shareable link.
 
-`docs/HANDOFF.md` is only a compact continuation entry point. `AI_PROJECT_MEMORY.md` is retained as a compatibility pointer, not a second state ledger.
+## Controls
 
-## Repository roles
+| | Desktop | Phone |
+|---|---|---|
+| Throttle / reverse | `W` / `S` (or arrows) | Gaz pedal, `D/R` switch |
+| Steer | `A` / `D` | Wheel (rotate or drag mode) |
+| Brake | `Space` | Hamulec pedal |
+| Reset vehicle | `R` | ↻ |
+| Camera | drag to orbit, wheel to zoom, `C` to re-centre | drag / pinch, camera button |
+
+The wheel stays where you leave it: there is no artificial self-centering (see *Known open questions*).
+
+## Known open questions
+
+- **Natural steering self-return.** The front wheels currently follow the rack kinematically, so tyre forces cannot return the steering. Physical self-alignment was shown to emerge with real tie rods, but needs deliberate steering-rig geometry first — `docs/evidence/STEERING_RETURN_PROBE_2026-10-10.md`.
+- Final handling, power/brake feel and rig visuals are Owner-judged on device; see `docs/OWNER_CHECKPOINTS.md`.
+
+---
+
+## For contributors and agents
+
+JV Web is its own product line (link → load → drive), **not NextGen JV Lite**; discoveries from other JV projects do not imply shared architecture.
+
+Authority order: live Git and executed evidence → `AGENTS.md` (operating rules) → `docs/PROJECT_STATE.md` (single live state router) → focused baseline/evidence docs. `docs/HANDOFF.md` is a compact continuation entry; `docs/archive/` is history only.
 
 ```text
 Jozzpoly/JV-Box3D-Web-experiment
   main                  accepted source + canonical documentation authority
-  preview/owner-control exact-source Owner Preview composition infrastructure
-  work/* / research/*   only genuinely active bounded work or research
+  preview/owner-control Owner Preview composition infrastructure
+  work/* / research/*   only genuinely active bounded work
 
 Jozzpoly/JV-Box3D-Web-Public
-  accepted Friends/public artifact authority
+  accepted Friends/public artifact authority (GitHub Pages)
 ```
 
-Historical work should be preserved by exact commits, evidence and archive tags rather than permanent stale branch refs.
-
-## Accepted product baseline
-
-The current accepted executable/current-best product snapshot is Steering I1:
-
-`529ae7d3e6d09faf2cfdd5bb034b01c693f8f9c0`
-
-Detailed baseline:
-
-`docs/baselines/STEERING_I1_CURRENT_BEST_2026-09-01.md`
-
-High-level accepted truth includes:
-
-- Direct Rotation and Relative-X touch steering;
-- semantic `RELEASE` instead of hidden automatic pointer return-to-zero;
-- hands-off steering presentation following the physical rack;
-- re-grab anchored to live physical rack state;
-- configurable 360/540/720/900/1080 degree ranges with 900 degrees current default/current-best;
-- artificial centering kept out of the Owner-facing product controls;
-- established desktop/mobile controls and accepted scan/render foundations.
-
-Natural physical steering self-return and many broader handling/product questions remain open.
-
-Do not infer acceptance of an experiment merely because it can be built or appears in Owner Preview.
-
-## Toolchain
-
-Canonical repository toolchain:
+### Toolchain
 
 ```text
-Node 24.16.0
-npm >=11.13.0 <12
-packageManager npm@11.13.0
-TypeScript 7.0.2
-Vite 8.1.5
-box3d.js 0.0.2
+Node 24.16.0 · npm >=11.13.0 <12 (npm@11.13.0) · TypeScript 7.0.2 · Vite 8.1.5 · box3d.js 0.0.2
 ```
 
-`box3d.js@0.0.2` is currently a deliberate reproducibility baseline. Upstream 0.1.x changes the binding/API contract and must be treated as a separate compatibility investigation rather than routine housekeeping.
+`box3d.js@0.0.2` is a deliberate reproducibility baseline; 0.1.x changes the binding contract and is a separate investigation.
 
-## Local validation
-
-From a clean checkout with the canonical Node/npm versions:
+### Build and test
 
 ```bash
 npm ci
-npm run build
+npm run dev        # local dev server
+npm run build      # typecheck + tests + docs/notice checks + portable build gates
+npm run test       # all tests (includes headless driving behavior tests)
 ```
 
-Useful narrower commands include:
+Vehicle feel is protected by `tests/vehicle-driving-behavior.test.mjs`: the exact product rig on Box3D without a renderer, with player-level thresholds (0–50 km/h time, braking deceleration, straight tracking, steering response, brake-vs-throttle, released-steering wind-up). Prefer extending it over source-text assertions.
 
-```bash
-npm run typecheck
-npm run test
-npm run check
-npm run build:portable
-```
+A green build proves reproducibility for the exact source tested; it is not Owner/product acceptance.
 
-A green build proves reproducibility for the exact source tested. It does not by itself establish Owner/product acceptance.
+### Work discipline
 
-## Work discipline
-
-- verify mutable refs before writing;
-- keep accepted product truth separate from experimental evidence;
-- prefer the smallest experiment that can change a decision;
-- preserve negative evidence instead of tuning it away;
-- reconcile existing assertions when an accepted contract changes, rather than only adding new tests;
-- do not retain branches merely as historical storage when an immutable archive ref is sufficient;
+- verify mutable refs before writing; keep accepted truth separate from experiments;
+- prefer the smallest experiment that can change a decision; preserve negative evidence;
+- reconcile existing assertions when an accepted contract changes;
 - do not create or modify GitHub Actions without explicit Owner approval;
-- do not make the Owner perform routine engineering work that can be handled by the project tooling/agent.
+- do not push routine engineering work onto the Owner.
 
-Third-party notices are in `THIRD_PARTY_NOTICES.md`.
+Third-party notices: `THIRD_PARTY_NOTICES.md`.

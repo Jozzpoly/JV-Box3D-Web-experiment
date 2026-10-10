@@ -1,8 +1,8 @@
 # JV-Web — current project state
 
-Updated: 2026-09-13
+Updated: 2026-10-11
 Owner: Jozz
-Status: `NORMAL PRODUCT ITERATION / SPAWN QOL ACCEPTED`
+Status: `POLISH CAMPAIGN 2026-10-10/11 ON work/polish-campaign-2026-10-10 / AWAITING OWNER DEVICE VERDICT`
 
 This is the single live current-state router for JV-Web. Live Git/current files, exact executed evidence and direct scoped Owner judgement outrank this document.
 
@@ -15,6 +15,44 @@ JV-Web is in bounded product iteration:
 `small need -> smallest sensible change -> causal validation -> Owner judgement when needed -> consolidate -> next need`
 
 The spawn-location uncertainty is now closed for normal product work. Do not reopen geometry heuristics or A/B/C comparison unless new Owner evidence shows an actual spawn problem.
+
+## 1a. Polish campaign 2026-10-10/11 (Claude, Owner-commissioned)
+
+Owner request: autonomously polish, repair and finish JV Web as a complete simple driving sandbox without technical debt, fit for the Medium library (the library card links/embeds the playable build).
+
+Branch: `work/polish-campaign-2026-10-10` (pushed). `main` was fast-forwarded only for the first commit (red-main repair, below). Everything else waits for Owner device judgement before promotion.
+
+### EXECUTED EVIDENCE — shipped on the campaign branch
+
+| Slice | What changed | Evidence |
+|---|---|---|
+| Red main | `main` had been red since the 2026-09-13 spawn slice (527/529): two source-shape tests still encoded the old labels/loader. Reconciled, no product change. | full `npm run build` green; FF to `main` `5c3830c` |
+| Behavior tests | New headless harness (`tests/helpers/headless-vehicle.mjs`) + `tests/vehicle-driving-behavior.test.mjs`: exact product rig on Box3D, player-level thresholds. | runs < 1 s |
+| Brake vs throttle | Brake used to cancel throttle entirely (throttle 1 + brake 0.05 → 0.0 km/h). Now brake-override blend: drive × (1 − brake) − brake torque. Resting brake trims, full brake always wins with full 650 Nm/wheel. | RED → GREEN behavior test |
+| Rack wind-up | Released rack slid to full lock in corners (5 kg rack with nothing carrying it but friction; car tightened its own turn). Frame force now supplied; no centering. | 0.045 → 0.0755 m in 0.5 s before; 0.045 → 0.048 m over 3 s after |
+| Symmetric front | FR mirrors the source FL geometry (carrier + steering revolute) instead of a generic wishbone. Vehicle was ~2 cm lower on the left at rest; now level, mirrored toe. Still the accepted kinematic bridge. Topology 20 bodies / 29 joints. | coilovers 0.577/0.606 vs 0.598/0.627 → 0.542/0.542 and 0.617/0.617 |
+| Power profile | `JV_WEB_DRIVE_TORQUE_SCALE = 1.5` over the native 320 Nm/wheel (receipt untouched). | 0–50 km/h 5.35 s → 3.48 s, no wheelspin |
+| Debt cleanup | 5 unreachable source files + their tests removed; 7 dated audits/takeover docs → `docs/archive/`; AGENTS.md prefers behavior tests. | suite green |
+| Explicit composition | `product-main.ts` no longer replaces `globalThis.fetch`; `configureScenePackageTransform()` composes the spawn, revalidated. | Plac/Offroad/Skan/custom-start verified in browser |
+| Product copy | "Jozz Vehicle" name/title/meta; Polish driving HUD ("Gaz 80%", "Hamulec 40%", "Lewo 50%"); status pill only for loading/faults; touch labels KIEROWNICA/HAMULEC/GAZ. Release validators were still expecting "M6 Drive"/"Plac E2R" (Friends export was silently broken) — reconciled. | screenshots desktop + phone |
+| World readability | Procedural detail tiles via world-contract surface tags: Offroad grass/dirt, Plac concrete slabs. Presentation only, no assets. | screenshots |
+| Embedding | Keyboard never reached the game inside an iframe (camera pointerdown preventDefault blocked focus). Canvas now takes focus on click. | cross-origin iframe: click + W → 18 km/h |
+| Loading | Centred loading/fault overlay (phones previously showed a black screen: header is hidden on mobile); scan start says "Ładowanie skanu terenu (ok. 100 MB)…". | throttled-network screenshots |
+
+### NOT VALIDATED — needs Owner device verdict (Samsung A53 / Chrome)
+
+- power 1.5× and brake-override feel; symmetric-front handling;
+- HUD wording and loading overlay on the phone;
+- Plac/Offroad detail tiles look (taste);
+- no Friends/Public promotion has been made.
+
+### Steering self-return — evidence, not shipped
+
+`docs/evidence/STEERING_RETURN_PROBE_2026-10-10.md`: explicit virtual tie rods are unstable (negative knowledge); physical tie rods in the solver *do* produce self-alignment (21 km/h: 0.045 → ~0.007 m in ~1 s) but the current steering-arm geometry gives only ~15° lock and needs rig authoring (arm length, Ackermann, zero rest toe, bump-steer). Owner/JURE decision.
+
+### Measured, not acted on
+
+Straight-line drift above ~100 km/h is chaotic with solver substeps on both baseline and candidate (baseline 4/8/16 substeps: +3.1/−7.1/−11.3 m over ~130 m) — numerical, not geometric.
 
 ## 2. Canonical product and steering baseline
 

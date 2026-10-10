@@ -1,6 +1,6 @@
 # JV-Web — compact continuation handoff
 
-Updated: 2026-09-06
+Updated: 2026-10-11
 Owner: Jozz
 
 A new chat is not a new takeover campaign. This file intentionally does **not** duplicate live project state.
@@ -12,11 +12,7 @@ A new chat is not a new takeover campaign. This file intentionally does **not** 
 3. Read `docs/PROJECT_STATE.md` — it is the single current-state/router document.
 4. Follow only the focused baseline/evidence links required by the current question.
 
-If the repository is still in the 2026-09-06 baseline-hardening campaign, also read:
-
-`docs/archive/REPO_BASELINE_CLEANUP_2026-09-06.md`
-
-That receipt records the exact pre-cleanup refs, archival plan and fail-closed branch-deletion gate.
+If work continues the 2026-10-10/11 polish campaign, start from `docs/PROJECT_STATE.md` section 1a and the branch `work/polish-campaign-2026-10-10`.
 
 ## Non-negotiable boundary
 
