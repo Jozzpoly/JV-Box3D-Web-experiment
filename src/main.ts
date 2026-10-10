@@ -41,7 +41,7 @@ const app = requireRoot();
 app.innerHTML = `
   <main class="product-shell">
     <section class="scene-panel" aria-label="Jozz Vehicle — sandbox jazdy">
-      <canvas data-scene aria-label="Widok 3D pojazdu"></canvas>
+      <canvas data-scene tabindex="-1" aria-label="Widok 3D pojazdu"></canvas>
 
       <header class="scene-header">
         <div class="brand-lockup">

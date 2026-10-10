@@ -838,6 +838,10 @@ export class M6WorldRenderer {
       "pointerdown",
       (event) => {
         event.preventDefault();
+        // preventDefault suppresses the browser's default focus move. Focus
+        // the canvas explicitly so keyboard driving works after a click,
+        // including when the product is embedded in another page's iframe.
+        this.#canvas.focus({ preventScroll: true });
         const pan =
           event.pointerType === "mouse" &&
           (event.button === 1 || (event.button === 0 && event.shiftKey));
