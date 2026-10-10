@@ -82,10 +82,33 @@ test("pinned native drive fields map into explicit wheel motor modes", () => {
       { throttle: 0.5, brake: 1 },
       90_002,
     );
+    // Brake opposes drive: net retarding cap = brake torque - drive torque.
     assert.equal(brake.drive.mode, "BRAKE");
     assert.equal(brake.drive.targetLinearSpeedMetersPerSecond, 0);
     assert.equal(brake.drive.targetWheelAngularSpeed, 0);
-    assert.equal(brake.drive.motorTorqueCapPerWheel, 650);
+    assert.equal(brake.drive.motorTorqueCapPerWheel, 650 - 160);
+
+    const pureBrake = captureWithoutPhysics(
+      vehicle,
+      { throttle: 0, brake: 1 },
+      90_004,
+    );
+    assert.equal(pureBrake.drive.mode, "BRAKE");
+    assert.equal(pureBrake.drive.motorTorqueCapPerWheel, 650);
+
+    // A lightly resting brake trims drive torque instead of cancelling it.
+    const restingBrake = captureWithoutPhysics(
+      vehicle,
+      { throttle: 0.5, brake: 0.1 },
+      90_005,
+    );
+    assert.equal(restingBrake.drive.mode, "THROTTLE");
+    close(
+      restingBrake.drive.motorTorqueCapPerWheel,
+      160 - 65,
+      1e-9,
+      "resting-brake trimmed drive cap",
+    );
 
     const coast = captureWithoutPhysics(
       vehicle,

@@ -495,19 +495,33 @@ export class M6VehicleController {
     let driveTaper = 1;
     let motorTorqueCapPerWheel: number;
 
-    if (brake > INPUT_EPSILON) {
-      mode = "BRAKE";
-      motorTorqueCapPerWheel = this.#config.brakeTorque * brake;
-    } else if (Math.abs(throttle) > INPUT_EPSILON) {
-      mode = "THROTTLE";
+    // Throttle and brake are independent driver demands that oppose each
+    // other at the wheel. Each wheel has a single velocity motor, so the two
+    // are combined into one net demand: brake torque is subtracted from drive
+    // torque. A lightly resting brake therefore only trims drive instead of
+    // cancelling it, while a firm brake still wins and stops the vehicle.
+    const brakeTorquePerWheel = this.#config.brakeTorque * brake;
+    let driveTorquePerWheel = 0;
+    if (Math.abs(throttle) > INPUT_EPSILON) {
       targetLinearSpeed = throttle * this.#config.maxDriveSpeed;
-      targetWheelAngularSpeed =
-        -targetLinearSpeed / this.#config.wheelRadius;
       driveTaper = this.#driveTaper(throttle, forwardSpeed);
-      motorTorqueCapPerWheel =
+      driveTorquePerWheel =
         this.#config.maxDriveTorque *
         Math.abs(throttle) *
         driveTaper;
+    }
+    const netDriveTorque = driveTorquePerWheel - brakeTorquePerWheel;
+
+    if (driveTorquePerWheel > INPUT_EPSILON && netDriveTorque > 0) {
+      mode = "THROTTLE";
+      targetWheelAngularSpeed =
+        -targetLinearSpeed / this.#config.wheelRadius;
+      motorTorqueCapPerWheel = netDriveTorque;
+    } else if (brake > INPUT_EPSILON) {
+      mode = "BRAKE";
+      targetLinearSpeed = 0;
+      targetWheelAngularSpeed = 0;
+      motorTorqueCapPerWheel = -netDriveTorque;
     } else {
       mode = "COAST";
       motorTorqueCapPerWheel = this.#config.coastTorque;
@@ -520,18 +534,25 @@ export class M6VehicleController {
     ) {
       const corner = this.#runtime.corners[index]!;
       const driven = this.#config.allWheelDrive || index >= 2;
-      const active = mode === "BRAKE" || driven;
+      const brakingOnly = !driven && brake > INPUT_EPSILON;
+      const active = mode === "BRAKE" || driven || brakingOnly;
+      const wheelSpeed =
+        brakingOnly && mode !== "BRAKE" ? 0 : targetWheelAngularSpeed;
+      const wheelTorque =
+        brakingOnly && mode !== "BRAKE"
+          ? brakeTorquePerWheel
+          : motorTorqueCapPerWheel;
       this.#b3.b3RevoluteJoint_EnableMotor(
         corner.spinJointId,
         active,
       );
       this.#b3.b3RevoluteJoint_SetMotorSpeed(
         corner.spinJointId,
-        active ? targetWheelAngularSpeed : 0,
+        active ? wheelSpeed : 0,
       );
       this.#b3.b3RevoluteJoint_SetMaxMotorTorque(
         corner.spinJointId,
-        active ? motorTorqueCapPerWheel : 0,
+        active ? wheelTorque : 0,
       );
       if (
         active &&
