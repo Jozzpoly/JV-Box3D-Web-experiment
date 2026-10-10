@@ -19,6 +19,7 @@ import {
   dot3,
   m6FrontLeftProvisionalSteeringAngleFromRack,
   scale3,
+  sub3,
   vec3,
 } from "./m6-geometry.js";
 import type { M6TopologyConfig } from "./m6-topology-config.js";
@@ -42,6 +43,7 @@ import { buildM6VisualFrameV1 } from "./m6-visual-frame-builder.js";
 import type { RateSteeringProfile } from "./rate-steering-profile.js";
 
 const RACK_STICTION_RATIO = 1.4;
+const RACK_FRAME_MAX_ACCELERATION = 60;
 const INPUT_EPSILON = 1e-12;
 
 interface RackLoadTelemetry {
@@ -67,6 +69,7 @@ export class M6VehicleController {
   #disposed = false;
   #lastTrace: M6TraceFrame | null = null;
   #worldContactBegins = 0;
+  #previousRackCarrierVelocity: b3Vec3 | null = null;
 
   constructor(
     b3: Box3DModule,
@@ -292,8 +295,51 @@ export class M6VehicleController {
       this.#b3.b3Joint_WakeBodies(frontRight.lowerBallId);
     }
 
+    this.#compensateRackFrameInertia(liveRack);
     this.#b3.b3Joint_WakeBodies(rackJointId);
     this.#applyDrive();
+  }
+
+  /**
+   * The front wheels follow the rack kinematically, so nothing physical
+   * carries the rack along with the chassis except its own friction. In a
+   * corner the chassis accelerates sideways and the 5 kg rack lags behind,
+   * i.e. it "slides" toward full lock and tightens the turn by itself. A real
+   * rack is held by its linkage and wheels; here the missing frame force
+   * (m_rack * a_chassis at the rack, along the rack axis) is supplied, with
+   * the equal opposite force on the chassis. This removes a spurious
+   * pseudo-force only: it never pulls the rack toward centre.
+   */
+  #compensateRackFrameInertia(liveRack: number): void {
+    const chassisRotation = this.#b3.b3Body_GetRotation(this.#runtime.chassisId);
+    const rackAxis = this.#b3.b3RotateVector(chassisRotation, vec3(0, 0, 1));
+    const rackVelocity = this.#b3.b3Body_GetLinearVelocity(this.#runtime.rackId);
+    const slideSpeed = this.#b3.b3PrismaticJoint_GetSpeed(this.#runtime.rackJointId);
+    // Velocity of the chassis-fixed carrier point the rack slides on.
+    const carrierVelocity = add3(rackVelocity, scale3(-slideSpeed, rackAxis));
+    const previous = this.#previousRackCarrierVelocity;
+    this.#previousRackCarrierVelocity = clone3(carrierVelocity);
+    if (previous === null) {
+      return;
+    }
+    const dt = this.#config.solver.fixedDt;
+    const axialAcceleration = clampNumber(
+      dot3(sub3(carrierVelocity, previous), rackAxis) / dt,
+      -RACK_FRAME_MAX_ACCELERATION,
+      RACK_FRAME_MAX_ACCELERATION,
+    );
+    if (!Number.isFinite(axialAcceleration) || Math.abs(liveRack) > this.#config.rackTravel * 1.5) {
+      return;
+    }
+    const force = scale3(this.#config.rackMass * axialAcceleration, rackAxis);
+    const rackPosition = this.#b3.b3Body_GetPosition(this.#runtime.rackId);
+    this.#b3.b3Body_ApplyForceToCenter(this.#runtime.rackId, force, false);
+    this.#b3.b3Body_ApplyForce(
+      this.#runtime.chassisId,
+      scale3(-1, force),
+      rackPosition,
+      false,
+    );
   }
 
   captureTrace(

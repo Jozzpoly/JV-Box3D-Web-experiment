@@ -47,6 +47,8 @@ const REQUIRED_EXPORTS = [
   "b3Body_GetRotation",
   "b3Body_GetLinearVelocity",
   "b3Body_GetAngularVelocity",
+  "b3Body_ApplyForce",
+  "b3Body_ApplyForceToCenter",
   "b3Body_GetMassData",
   "b3Body_SetMassData",
   "b3Shape_ComputeMassData",

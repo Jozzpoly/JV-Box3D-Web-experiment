@@ -1,0 +1,129 @@
+diff --git a/src/vehicle/m6/m6-geometry.ts b/src/vehicle/m6/m6-geometry.ts
+index 740c216..8cdb769 100644
+--- a/src/vehicle/m6/m6-geometry.ts
++++ b/src/vehicle/m6/m6-geometry.ts
+@@ -243,6 +243,39 @@ export function m6FrontLeftSourceRegisteredHardpoints(
+   };
+ }
+ 
++function mirrorZ(value: b3Vec3): b3Vec3 {
++  return vec3(value.x, value.y, -value.z);
++}
++
++/**
++ * Front-right counterpart of the source-registered front-left corner,
++ * mirrored across the vehicle's longitudinal (XY) plane so both front
++ * corners share one steering/suspension geometry.
++ */
++export function m6FrontRightMirroredHardpoints(
++  config: M6TopologyConfig,
++  restWheelCenterRight: b3Vec3,
++): M6FrontLeftSourceRegisteredHardpoints {
++  const left = m6FrontLeftSourceRegisteredHardpoints(
++    config,
++    mirrorZ(restWheelCenterRight),
++  );
++  return {
++    upperBallJoint: mirrorZ(left.upperBallJoint),
++    lowerBallJoint: mirrorZ(left.lowerBallJoint),
++    steeringArm: mirrorZ(left.steeringArm),
++    upperFrontChassis: mirrorZ(left.upperFrontChassis),
++    upperRearChassis: mirrorZ(left.upperRearChassis),
++    lowerFrontChassis: mirrorZ(left.lowerFrontChassis),
++    lowerRearChassis: mirrorZ(left.lowerRearChassis),
++    coiloverChassis: mirrorZ(left.coiloverChassis),
++    coiloverKnuckle: mirrorZ(left.coiloverKnuckle),
++    steeringCenter: mirrorZ(left.steeringCenter),
++    steeringAxisDirection: mirrorZ(left.steeringAxisDirection),
++    suspensionAxisDirection: mirrorZ(left.suspensionAxisDirection),
++  };
++}
++
+ /**
+  * Legacy S2 naming retained for compatibility with older tooling/tests.
+  * "Golden" here is a historical identifier only, not project authority.
+diff --git a/src/vehicle/m6/m6-runtime-builder.ts b/src/vehicle/m6/m6-runtime-builder.ts
+index a622917..3abeff3 100644
+--- a/src/vehicle/m6/m6-runtime-builder.ts
++++ b/src/vehicle/m6/m6-runtime-builder.ts
+@@ -17,6 +17,7 @@ import {
+   isLeftCorner,
+   m6CornerOffset,
+   m6FrontLeftSourceRegisteredHardpoints,
++  m6FrontRightMirroredHardpoints,
+   m6HingeSwingLimit,
+   m6OffsetBoxPoints,
+   m6SteeringLinkDroopLift,
+@@ -298,9 +299,13 @@ export function createM6VehicleRuntime(
+     ) {
+       const restLocal = m6CornerOffset(config, corner);
+       const restWorld = add3(spawn, restLocal);
+-      const isSourceRegisteredFrontLeft = corner === FRONT_LEFT_CORNER;
+-      const sourceRegisteredHardpoints = isSourceRegisteredFrontLeft
++      const physicalFront = (globalThis as { __JV_PHYS_TIE?: boolean }).__JV_PHYS_TIE === true;
++      const isSourceRegisteredFrontLeft =
++        corner === FRONT_LEFT_CORNER || (physicalFront && corner === 1);
++      const sourceRegisteredHardpoints = corner === FRONT_LEFT_CORNER
+         ? m6FrontLeftSourceRegisteredHardpoints(config, restLocal)
++        : physicalFront && corner === 1
++        ? m6FrontRightMirroredHardpoints(config, restLocal)
+         : null;
+       const hardpoints =
+         sourceRegisteredHardpoints ??
+@@ -365,8 +370,11 @@ export function createM6VehicleRuntime(
+         steeringJointDef.base.collideConnected = false;
+         steeringJointDef.enableSpring = false;
+         steeringJointDef.enableLimit = true;
+-        steeringJointDef.lowerAngle = 0;
+-        steeringJointDef.upperAngle = 0;
++        const steerFence = (globalThis as { __JV_PHYS_TIE?: boolean }).__JV_PHYS_TIE === true
++          ? (config.maxSteeringAngleDegrees + 10) * M6_DEGREES_TO_RADIANS
++          : 0;
++        steeringJointDef.lowerAngle = -steerFence;
++        steeringJointDef.upperAngle = steerFence;
+         steeringJointId = b3.b3CreateRevoluteJoint(
+           worldId,
+           steeringJointDef,
+@@ -486,7 +494,8 @@ export function createM6VehicleRuntime(
+       );
+       const steeringDef = b3.b3DefaultDistanceJointDef();
+       let steeringLinkJointId: b3JointId | null = null;
+-      if (isSourceRegisteredFrontLeft) {
++      const physicalTieRods = (globalThis as { __JV_PHYS_TIE?: boolean }).__JV_PHYS_TIE === true;
++      if (isSourceRegisteredFrontLeft && !physicalTieRods) {
+         // S2: the authored #7 member is a live rack-center -> knuckle visual
+         // segment, while the centered carrier->knuckle revolute owns steering
+         // physically. Making #7 a rigid distance joint here would let
+@@ -534,7 +543,7 @@ export function createM6VehicleRuntime(
+       // promote those hardpoints or that steering axis to future authority.
+       // Both front wheels are commanded kinematically below so the R1 product
+       // no longer mixes one-way FL steering with a back-drivable FR linkage.
+-      if (!isSourceRegisteredFrontLeft && corner !== 1) {
++      if (physicalTieRods || (!isSourceRegisteredFrontLeft && corner !== 1)) {
+         steeringDef.base.collideConnected = false;
+         steeringDef.enableSpring = false;
+         steeringLinkJointId =
+@@ -599,8 +608,8 @@ export function createM6VehicleRuntime(
+     }
+ 
+     if (
+-      bodyIds.length !== M6_TOPOLOGY_COUNTS.bodies ||
+-      jointIds.length !== M6_TOPOLOGY_COUNTS.joints ||
++      bodyIds.length !== M6_TOPOLOGY_COUNTS.bodies + ((globalThis as { __JV_PHYS_TIE?: boolean }).__JV_PHYS_TIE === true ? 1 : 0) ||
++      jointIds.length !== M6_TOPOLOGY_COUNTS.joints + ((globalThis as { __JV_PHYS_TIE?: boolean }).__JV_PHYS_TIE === true ? 3 : 0) ||
+       shapeIds.length !== M6_TOPOLOGY_COUNTS.shapes
+     ) {
+       throw new Error(
+diff --git a/src/vehicle/m6/m6-vehicle-controller.ts b/src/vehicle/m6/m6-vehicle-controller.ts
+index f558dc0..09229a7 100644
+--- a/src/vehicle/m6/m6-vehicle-controller.ts
++++ b/src/vehicle/m6/m6-vehicle-controller.ts
+@@ -255,7 +255,7 @@ export class M6VehicleController {
+     }
+ 
+     const frontLeftSourceRegistered = this.#runtime.corners[0]!;
+-    if (frontLeftSourceRegistered.steeringJointId !== null) {
++    if (frontLeftSourceRegistered.steeringJointId !== null && !((globalThis as { __JV_PHYS_TIE?: boolean }).__JV_PHYS_TIE === true)) {
+       const targetAngle = m6FrontLeftProvisionalSteeringAngleFromRack(
+         this.#config,
+         liveRack,

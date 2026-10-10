@@ -99,3 +99,22 @@ test("steering input turns the vehicle in the commanded direction", async () => 
     run.dispose();
   }
 });
+
+test("released steering does not wind itself to full lock in a corner", async () => {
+  const run = await createSettledVehicle();
+  try {
+    run.vehicle.setDrive({ throttle: 0.5, brake: 0 });
+    run.seconds(4);
+    run.vehicle.setSteering({ mode: "POSITION", value: 0.6 });
+    const atRelease = run.seconds(1.5).rackTranslation;
+    run.vehicle.setSteering({ mode: "RELEASE" });
+    const later = run.seconds(3).rackTranslation;
+    const travel = run.world.config.rackTravel;
+    assert.ok(
+      Math.abs(later) < atRelease + 0.25 * (travel - atRelease),
+      `rack drifted from ${atRelease.toFixed(4)} to ${later.toFixed(4)} m (full lock ${travel.toFixed(4)})`,
+    );
+  } finally {
+    run.dispose();
+  }
+});
