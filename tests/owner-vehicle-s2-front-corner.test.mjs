@@ -322,11 +322,17 @@ test("real S2 M6 keeps neutral suspension separate from steering, steers about W
     fl = trace.corners[0];
     assert.ok(degrees(fl.steeringJointAngle) < -10);
 
-    for (let corner = 1; corner < 4; corner += 1) {
+    // FR mirrors the FL source geometry and steers through its own revolute
+    // with the same commanded angle; rear corners have no steering joint.
+    assert.ok(
+      Math.abs(degrees(trace.corners[1].steeringJointAngle - fl.steeringJointAngle)) < 0.5,
+      "FR steering joint follows the same commanded angle as FL",
+    );
+    for (let corner = 2; corner < 4; corner += 1) {
       assert.equal(
         trace.corners[corner].steeringJointAngle,
         null,
-        `corner ${corner} remains outside the FL-only S2 steeringJointAngle trace contract`,
+        `rear corner ${corner} has no steering joint`,
       );
     }
 

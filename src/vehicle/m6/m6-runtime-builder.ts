@@ -17,6 +17,7 @@ import {
   isLeftCorner,
   m6CornerOffset,
   m6FrontLeftSourceRegisteredHardpoints,
+  m6FrontRightMirroredHardpoints,
   m6HingeSwingLimit,
   m6OffsetBoxPoints,
   m6SteeringLinkDroopLift,
@@ -298,9 +299,13 @@ export function createM6VehicleRuntime(
     ) {
       const restLocal = m6CornerOffset(config, corner);
       const restWorld = add3(spawn, restLocal);
-      const isSourceRegisteredFrontLeft = corner === FRONT_LEFT_CORNER;
-      const sourceRegisteredHardpoints = isSourceRegisteredFrontLeft
+      // Both front corners use the source-registered FL geometry (FR is its
+      // mirror) so the front is symmetric; rear corners stay generic.
+      const isSourceRegisteredFrontLeft = isFrontCorner(corner);
+      const sourceRegisteredHardpoints = corner === FRONT_LEFT_CORNER
         ? m6FrontLeftSourceRegisteredHardpoints(config, restLocal)
+        : isFrontCorner(corner)
+        ? m6FrontRightMirroredHardpoints(config, restLocal)
         : null;
       const hardpoints =
         sourceRegisteredHardpoints ??
@@ -534,7 +539,7 @@ export function createM6VehicleRuntime(
       // promote those hardpoints or that steering axis to future authority.
       // Both front wheels are commanded kinematically below so the R1 product
       // no longer mixes one-way FL steering with a back-drivable FR linkage.
-      if (!isSourceRegisteredFrontLeft && corner !== 1) {
+      if (!isSourceRegisteredFrontLeft) {
         steeringDef.base.collideConnected = false;
         steeringDef.enableSpring = false;
         steeringLinkJointId =

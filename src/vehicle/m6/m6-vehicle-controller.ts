@@ -13,6 +13,7 @@ import type {
 import { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";
 import {
   add3,
+  JV_WEB_DRIVE_TORQUE_SCALE,
   clampNumber,
   clone3,
   distance3,
@@ -270,29 +271,25 @@ export class M6VehicleController {
       );
       this.#b3.b3Joint_WakeBodies(frontLeftSourceRegistered.steeringJointId);
 
-      // TEMPORARY_SYMMETRIC_KINEMATIC_FRONT: FR receives the same rack
-      // command through its existing twist coordinates after its historical
-      // physical tie rod is removed. This is a product bridge only: it has no
-      // contact->rack back-drive claim and it does not bless the FR legacy
-      // steering axis/hardpoints as final JV geometry.
+      // TEMPORARY_SYMMETRIC_KINEMATIC_FRONT: FR mirrors the FL geometry and
+      // receives the same rack command through its own carrier->knuckle
+      // revolute. This is a product bridge only: there is no contact->rack
+      // back-drive (see docs/evidence/STEERING_RETURN_PROBE_2026-10-10.md).
       const frontRight = this.#runtime.corners[1]!;
-      if (frontRight.steeringLinkJointId !== null) {
+      if (
+        frontRight.steeringLinkJointId !== null ||
+        frontRight.steeringJointId === null
+      ) {
         throw new Error(
-          "Temporary symmetric front expected FR physical steering link to be absent.",
+          "Symmetric front expects FR to steer through its revolute without a physical link.",
         );
       }
-      this.#b3.b3SphericalJoint_SetTwistLimits(
-        frontRight.upperBallId,
+      this.#b3.b3RevoluteJoint_SetLimits(
+        frontRight.steeringJointId,
         targetAngle,
         targetAngle,
       );
-      this.#b3.b3SphericalJoint_SetTwistLimits(
-        frontRight.lowerBallId,
-        targetAngle,
-        targetAngle,
-      );
-      this.#b3.b3Joint_WakeBodies(frontRight.upperBallId);
-      this.#b3.b3Joint_WakeBodies(frontRight.lowerBallId);
+      this.#b3.b3Joint_WakeBodies(frontRight.steeringJointId);
     }
 
     this.#compensateRackFrameInertia(liveRack);
@@ -543,9 +540,10 @@ export class M6VehicleController {
 
     // Throttle and brake are independent driver demands that oppose each
     // other at the wheel. Each wheel has a single velocity motor, so the two
-    // are combined into one net demand: brake torque is subtracted from drive
-    // torque. A lightly resting brake therefore only trims drive instead of
-    // cancelling it, while a firm brake still wins and stops the vehicle.
+    // are combined into one net demand. Like a brake-override system, brake
+    // demand also proportionally cuts drive torque before the brake torque is
+    // subtracted: a lightly resting brake only trims drive, while full brake
+    // always wins with its full torque regardless of throttle.
     const brakeTorquePerWheel = this.#config.brakeTorque * brake;
     let driveTorquePerWheel = 0;
     if (Math.abs(throttle) > INPUT_EPSILON) {
@@ -553,8 +551,10 @@ export class M6VehicleController {
       driveTaper = this.#driveTaper(throttle, forwardSpeed);
       driveTorquePerWheel =
         this.#config.maxDriveTorque *
+        JV_WEB_DRIVE_TORQUE_SCALE *
         Math.abs(throttle) *
-        driveTaper;
+        driveTaper *
+        (1 - brake);
     }
     const netDriveTorque = driveTorquePerWheel - brakeTorquePerWheel;
 

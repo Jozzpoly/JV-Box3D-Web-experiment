@@ -63,7 +63,12 @@ test("full brake from speed stops within a short distance", async () => {
     const distance = Math.abs(trace.chassisPosition.x - startX);
     assert.ok(startSpeed > 40, `precondition speed ${startSpeed.toFixed(1)} km/h`);
     assert.ok(Math.abs(kmh(trace)) < 1, `expected stop, got ${kmh(trace).toFixed(1)} km/h`);
-    assert.ok(distance < 45, `stopping distance ${distance.toFixed(1)} m from ${startSpeed.toFixed(1)} km/h`);
+    const v = startSpeed / 3.6;
+    const deceleration = (v * v) / (2 * distance);
+    assert.ok(
+      deceleration > 5,
+      `average braking ${deceleration.toFixed(1)} m/s^2 (${distance.toFixed(1)} m from ${startSpeed.toFixed(1)} km/h)`,
+    );
   } finally {
     run.dispose();
   }
@@ -76,10 +81,11 @@ test("hands-off straight-line driving tracks straight", async () => {
     const start = run.seconds(0.1);
     const startZ = start.chassisPosition.z;
     const startYaw = yawDegrees(start);
-    const trace = run.seconds(8);
+    // ~6 s of full throttle covers ~0 -> 85 km/h and roughly 70 m.
+    const trace = run.seconds(6);
     const lateral = Math.abs(trace.chassisPosition.z - startZ);
     const yaw = Math.abs(yawDegrees(trace) - startYaw);
-    assert.ok(lateral < 4, `lateral drift ${lateral.toFixed(2)} m`);
+    assert.ok(lateral < 2, `lateral drift ${lateral.toFixed(2)} m at ${kmh(trace).toFixed(0)} km/h`);
     assert.ok(yaw < 3, `yaw drift ${yaw.toFixed(2)} deg`);
   } finally {
     run.dispose();
@@ -114,6 +120,22 @@ test("released steering does not wind itself to full lock in a corner", async ()
       Math.abs(later) < atRelease + 0.25 * (travel - atRelease),
       `rack drifted from ${atRelease.toFixed(4)} to ${later.toFixed(4)} m (full lock ${travel.toFixed(4)})`,
     );
+  } finally {
+    run.dispose();
+  }
+});
+
+test("the product vehicle reaches 50 km/h briskly from rest", async () => {
+  const run = await createSettledVehicle();
+  try {
+    run.vehicle.setDrive({ throttle: 1, brake: 0 });
+    let reached = null;
+    for (let step = 1; step <= 60 * 8 && reached === null; step += 1) {
+      if (kmh(run.seconds(1 / 60)) >= 50) {
+        reached = step / 60;
+      }
+    }
+    assert.ok(reached !== null && reached < 4.5, `0-50 km/h took ${reached} s`);
   } finally {
     run.dispose();
   }

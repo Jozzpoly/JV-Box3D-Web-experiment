@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import Box3D from "box3d.js/inline";
 import { validatePinnedNativeFactoryReceiptText } from "../.test-dist/config/native-factory-receipt.js";
 import { M6TopologyWorld } from "../.test-dist/vehicle/m6/m6-topology-world.js";
+import { JV_WEB_DRIVE_TORQUE_SCALE } from "../.test-dist/vehicle/m6/m6-geometry.js";
 
 const receiptPath = new URL(
   "../public/receipts/jv_m6_factory_receipt.json",
@@ -72,7 +73,7 @@ test("pinned native drive fields map into explicit wheel motor modes", () => {
     );
     close(
       throttle.drive.motorTorqueCapPerWheel,
-      160,
+      160 * JV_WEB_DRIVE_TORQUE_SCALE,
       1e-12,
       "half-throttle torque cap",
     );
@@ -82,11 +83,12 @@ test("pinned native drive fields map into explicit wheel motor modes", () => {
       { throttle: 0.5, brake: 1 },
       90_002,
     );
-    // Brake opposes drive: net retarding cap = brake torque - drive torque.
+    // Brake opposes drive: drive is cut by (1 - brake), then brake torque is subtracted.
     assert.equal(brake.drive.mode, "BRAKE");
     assert.equal(brake.drive.targetLinearSpeedMetersPerSecond, 0);
     assert.equal(brake.drive.targetWheelAngularSpeed, 0);
-    assert.equal(brake.drive.motorTorqueCapPerWheel, 650 - 160);
+    // Full brake cuts drive completely (brake override), so full brake torque applies.
+    assert.equal(brake.drive.motorTorqueCapPerWheel, 650);
 
     const pureBrake = captureWithoutPhysics(
       vehicle,
@@ -105,7 +107,7 @@ test("pinned native drive fields map into explicit wheel motor modes", () => {
     assert.equal(restingBrake.drive.mode, "THROTTLE");
     close(
       restingBrake.drive.motorTorqueCapPerWheel,
-      160 - 65,
+      160 * JV_WEB_DRIVE_TORQUE_SCALE * 0.9 - 65,
       1e-9,
       "resting-brake trimmed drive cap",
     );

@@ -4,6 +4,14 @@ import type { M6TopologyConfig } from "./m6-topology-config.js";
 export const M6_DEGREES_TO_RADIANS = Math.PI / 180;
 export const JV_WEB_TEMPORARY_DRIVE_FULL_LOCK_DEGREES = 35;
 
+/**
+ * JV-Web product drive profile: scales the native per-wheel drive torque cap.
+ * The native factory receipt stays untouched (it remains 320 Nm/wheel); this
+ * is the browser product's answer to the Owner-observed "broadly low power".
+ * Brake torque is not scaled, so a firm brake still beats full throttle.
+ */
+export const JV_WEB_DRIVE_TORQUE_SCALE = 1.5;
+
 export interface M6WishboneHardpoints {
   readonly upperBallJoint: b3Vec3;
   readonly lowerBallJoint: b3Vec3;
@@ -240,6 +248,40 @@ export function m6FrontLeftSourceRegisteredHardpoints(
     steeringCenter: clone3(restWheelCenter),
     steeringAxisDirection,
     suspensionAxisDirection,
+  };
+}
+
+function mirrorZ(value: b3Vec3): b3Vec3 {
+  return vec3(value.x, value.y, -value.z);
+}
+
+/**
+ * Front-right counterpart of the source-registered front-left corner,
+ * mirrored across the vehicle's longitudinal (XY) plane. Using one front
+ * geometry on both sides removes the left/right ride-height and toe
+ * asymmetry that a source-derived FL next to a generic FR produced.
+ */
+export function m6FrontRightMirroredHardpoints(
+  config: M6TopologyConfig,
+  restWheelCenterRight: b3Vec3,
+): M6FrontLeftSourceRegisteredHardpoints {
+  const left = m6FrontLeftSourceRegisteredHardpoints(
+    config,
+    mirrorZ(restWheelCenterRight),
+  );
+  return {
+    upperBallJoint: mirrorZ(left.upperBallJoint),
+    lowerBallJoint: mirrorZ(left.lowerBallJoint),
+    steeringArm: mirrorZ(left.steeringArm),
+    upperFrontChassis: mirrorZ(left.upperFrontChassis),
+    upperRearChassis: mirrorZ(left.upperRearChassis),
+    lowerFrontChassis: mirrorZ(left.lowerFrontChassis),
+    lowerRearChassis: mirrorZ(left.lowerRearChassis),
+    coiloverChassis: mirrorZ(left.coiloverChassis),
+    coiloverKnuckle: mirrorZ(left.coiloverKnuckle),
+    steeringCenter: mirrorZ(left.steeringCenter),
+    steeringAxisDirection: mirrorZ(left.steeringAxisDirection),
+    suspensionAxisDirection: mirrorZ(left.suspensionAxisDirection),
   };
 }
 

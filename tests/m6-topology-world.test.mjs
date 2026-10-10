@@ -319,7 +319,8 @@ test("destroy and rebuild releases the complete F4 world without leaked ownershi
     );
     second.step(120);
     assert.equal(rebuilt.lastTrace?.generation, 2);
-    assert.equal(second.counters.bodyCount, 20);
+    // vehicle bodies + the static ground body
+    assert.equal(second.counters.bodyCount, M6_TOPOLOGY_COUNTS.bodies + 1);
     assert.equal(second.counters.jointCount, M6_TOPOLOGY_COUNTS.joints);
   } finally {
     second.dispose();

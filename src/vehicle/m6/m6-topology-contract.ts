@@ -12,8 +12,8 @@ import type { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend
 import type { RateSteeringProfileId } from "./rate-steering-profile.js";
 
 export const M6_TOPOLOGY_COUNTS = Object.freeze({
-  bodies: 19,
-  joints: 28,
+  bodies: 20,
+  joints: 29,
   shapes: 9,
   corners: 4,
 } as const);

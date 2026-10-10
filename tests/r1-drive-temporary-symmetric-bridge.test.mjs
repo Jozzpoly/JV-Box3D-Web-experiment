@@ -57,11 +57,11 @@ function runTurn(sign) {
   }
 }
 
-test('temporary R1 bridge removes one front physical joint without adding bodies or shapes', () => {
+test('symmetric front bridge: FR mirrors FL with its own carrier and steering revolute', () => {
   const world = new M6TopologyWorld(b3, receipt, 'reference_0_21');
   try {
     const vehicle = world.createVehicle({x:0,y:1.2,z:0}, 1);
-    assert.deepEqual(vehicle.topologyCounts, { bodies:19, joints:28, shapes:9, corners:4 });
+    assert.deepEqual(vehicle.topologyCounts, { bodies:20, joints:29, shapes:9, corners:4 });
   } finally {
     world.dispose();
   }

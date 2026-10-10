@@ -40,7 +40,8 @@ export function yawDegrees(trace) {
   );
 }
 
-/** Fresh world + one settled vehicle on the flat test ground. */
+/** Fresh world + one settled vehicle on the flat test ground (a 500 m square:
+ * keep scenarios short enough that the vehicle cannot drive off its edge). */
 export async function createSettledVehicle() {
   const { b3, receipt } = await shared3d();
   const world = new M6TopologyWorld(b3, receipt);
