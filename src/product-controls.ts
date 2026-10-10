@@ -43,10 +43,20 @@ export interface ProductSteeringSettingsControls {
   readonly setRangeDegrees: (range: JvSteeringWheelRangeDegrees) => void;
 }
 
+/** A labelled row of discrete choices (e.g. vehicle power multipliers). */
+export interface ProductChoiceSetting {
+  readonly label: string;
+  readonly choices: readonly number[];
+  readonly format: (value: number) => string;
+  readonly get: () => number;
+  readonly set: (value: number) => void;
+}
+
 export interface InstallProductControlsOptions {
   readonly capabilities: ProductControlCapabilities;
   readonly steeringInteraction?: ProductSteeringInteractionControls;
   readonly steeringSettings?: ProductSteeringSettingsControls;
+  readonly vehicleSettings?: readonly ProductChoiceSetting[];
 }
 
 function rememberTextureFilter(mode: JvTextureFilterMode): void {
@@ -331,6 +341,35 @@ export function installProductControls(
 
     controls.append(steeringGroup);
     syncSteeringButtons();
+  }
+
+  for (const setting of options.vehicleSettings ?? []) {
+    const group = controlGroup(setting.label);
+    group.setAttribute("data-vehicle-setting", setting.label);
+    const row = document.createElement("div");
+    row.className = "product-choice-row";
+    const buttons = new Map<number, HTMLButtonElement>();
+    const sync = (): void => {
+      const active = setting.get();
+      for (const [value, button] of buttons) {
+        setChoiceActive(button, value === active);
+      }
+    };
+    for (const value of setting.choices) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "product-choice";
+      button.textContent = setting.format(value);
+      button.addEventListener("click", () => {
+        setting.set(value);
+        sync();
+      });
+      buttons.set(value, button);
+      row.append(button);
+    }
+    group.append(row);
+    controls.append(group);
+    sync();
   }
 
   let fullscreenButton: HTMLButtonElement | null = null;

@@ -195,6 +195,12 @@
     display: none;
   }
 
+  /* Vehicle tuning rows are all bare multipliers; keep their names visible. */
+  [data-vehicle-setting] > .product-control-label {
+    display: block;
+    margin-block-end: 5px;
+  }
+
   .product-choice-row {
     flex-wrap: nowrap;
     gap: 6px;

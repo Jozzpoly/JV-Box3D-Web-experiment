@@ -13,7 +13,6 @@ import type {
 import { LEGACY_SPLIT_WHEEL_BACKEND_ID } from "./legacy-split-wheel-backend.js";
 import {
   add3,
-  JV_WEB_DRIVE_TORQUE_SCALE,
   clampNumber,
   clone3,
   distance3,
@@ -41,6 +40,7 @@ import {
   type M6VehicleRuntime,
 } from "./m6-topology-contract.js";
 import { buildM6VisualFrameV1 } from "./m6-visual-frame-builder.js";
+import { getM6DriveTuning } from "./m6-drive-tuning.js";
 import type { RateSteeringProfile } from "./rate-steering-profile.js";
 
 const RACK_STICTION_RATIO = 1.4;
@@ -544,14 +544,16 @@ export class M6VehicleController {
     // demand also proportionally cuts drive torque before the brake torque is
     // subtracted: a lightly resting brake only trims drive, while full brake
     // always wins with its full torque regardless of throttle.
-    const brakeTorquePerWheel = this.#config.brakeTorque * brake;
+    const tuning = getM6DriveTuning();
+    const brakeTorquePerWheel =
+      this.#config.brakeTorque * tuning.brakeScale * brake;
     let driveTorquePerWheel = 0;
     if (Math.abs(throttle) > INPUT_EPSILON) {
       targetLinearSpeed = throttle * this.#config.maxDriveSpeed;
       driveTaper = this.#driveTaper(throttle, forwardSpeed);
       driveTorquePerWheel =
         this.#config.maxDriveTorque *
-        JV_WEB_DRIVE_TORQUE_SCALE *
+        tuning.torqueScale *
         Math.abs(throttle) *
         driveTaper *
         (1 - brake);

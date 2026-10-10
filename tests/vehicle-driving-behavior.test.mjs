@@ -140,3 +140,41 @@ test("the product vehicle reaches 50 km/h briskly from rest", async () => {
     run.dispose();
   }
 });
+
+test("live drive tuning changes acceleration and braking", async () => {
+  const { setM6DriveTuning, resetM6DriveTuning } = await import("../.test-dist/vehicle/m6/m6-drive-tuning.js");
+  const speedAfter = async (torqueScale, seconds = 2) => {
+    setM6DriveTuning({ torqueScale, brakeScale: 1 });
+    const run = await createSettledVehicle();
+    try {
+      run.vehicle.setDrive({ throttle: 1, brake: 0 });
+      return kmh(run.seconds(seconds));
+    } finally {
+      run.dispose();
+    }
+  };
+  const stopDistance = async (brakeScale) => {
+    setM6DriveTuning({ torqueScale: 1.5, brakeScale });
+    const run = await createSettledVehicle();
+    try {
+      run.vehicle.setDrive({ throttle: 1, brake: 0 });
+      let trace = run.seconds(3);
+      const x0 = trace.chassisPosition.x;
+      run.vehicle.setDrive({ throttle: 0, brake: 1 });
+      trace = run.seconds(4);
+      return Math.abs(trace.chassisPosition.x - x0);
+    } finally {
+      run.dispose();
+    }
+  };
+  try {
+    const gentle = await speedAfter(1);
+    const strong = await speedAfter(2);
+    assert.ok(strong > gentle * 1.6, `2x power ${strong.toFixed(1)} vs 1x ${gentle.toFixed(1)} km/h after 2 s`);
+    const soft = await stopDistance(0.7);
+    const firm = await stopDistance(1.3);
+    assert.ok(firm < soft * 0.85, `brake 1.3x stops in ${firm.toFixed(1)} m vs 0.7x ${soft.toFixed(1)} m`);
+  } finally {
+    resetM6DriveTuning();
+  }
+});

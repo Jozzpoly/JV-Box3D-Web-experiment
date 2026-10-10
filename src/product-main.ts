@@ -38,6 +38,17 @@ import { installJvBuildIdentity } from "./runtime/build-identity.js";
 import { installJvPerformanceObserver } from "./runtime/performance-observer.js";
 import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
 import { installProductControls } from "./product-controls.js";
+import {
+  formatJvMultiplier,
+  getJvProductVehicleSettings,
+  initializeJvProductVehicleSettings,
+  JV_BRAKE_CHOICES,
+  JV_POWER_CHOICES,
+  setJvVehicleBrake,
+  setJvVehiclePower,
+  type JvBrakeChoice,
+  type JvPowerChoice,
+} from "./product-vehicle-settings.js";
 import { installUtilityDrawer } from "./utility-drawer.js";
 import { installSpawnLandmarkCapture } from "./spawn-landmark-capture.js";
 
@@ -107,6 +118,11 @@ try {
   initializeJvProductSteeringSettings(window.sessionStorage);
 } catch {
   initializeJvProductSteeringSettings(null);
+}
+try {
+  initializeJvProductVehicleSettings(window.sessionStorage);
+} catch {
+  initializeJvProductVehicleSettings(null);
 }
 
 if (spawnTarget !== "map") {
@@ -188,6 +204,22 @@ installProductControls({
       getJvProductSteeringSettings().wheelRangeDegrees,
     setRangeDegrees: setJvSteeringWheelRangeDegrees,
   },
+  vehicleSettings: [
+    {
+      label: "Moc",
+      choices: JV_POWER_CHOICES,
+      format: formatJvMultiplier,
+      get: () => getJvProductVehicleSettings().power,
+      set: (value) => setJvVehiclePower(value as JvPowerChoice),
+    },
+    {
+      label: "Hamulec",
+      choices: JV_BRAKE_CHOICES,
+      format: formatJvMultiplier,
+      get: () => getJvProductVehicleSettings().brake,
+      set: (value) => setJvVehicleBrake(value as JvBrakeChoice),
+    },
+  ],
 });
 installSpawnLandmarkCapture(scanBackedSpawnTarget);
 installUtilityDrawer();
