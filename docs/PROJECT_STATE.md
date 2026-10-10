@@ -50,6 +50,17 @@ Branch: `work/polish-campaign-2026-10-10` (pushed). `main` was fast-forwarded on
 
 `docs/evidence/STEERING_RETURN_PROBE_2026-10-10.md`: explicit virtual tie rods are unstable (negative knowledge); physical tie rods in the solver *do* produce self-alignment (21 km/h: 0.045 → ~0.007 m in ~1 s) but the current steering-arm geometry gives only ~15° lock and needs rig authoring (arm length, Ackermann, zero rest toe, bump-steer). Owner/JURE decision.
 
+### Owner: delete manually on GitHub
+
+```text
+JV-Box3D-Web-experiment  work/stale-spawn-assertions        (merged into main)
+JV-Box3D-Web-experiment  work/spawn-qol-2026-09-13          (merged into main)
+JV-Box3D-Web-experiment  work/spawn-landmark-capture-2026-09-06  (archived: tag archive/jv-web-repo-cleanup-2026-09-06/preview/spawn-landmark-capture = same commit c2481f9)
+JV-Box3D-Web-Public      preview/p1-2-owner                 (README already calls it redundant)
+```
+
+The agent proxy refuses ref deletion and tag creation, so these stay for the Owner.
+
 ### Measured, not acted on
 
 Straight-line drift above ~100 km/h is chaotic with solver substeps on both baseline and candidate (baseline 4/8/16 substeps: +3.1/−7.1/−11.3 m over ~130 m) — numerical, not geometric.
