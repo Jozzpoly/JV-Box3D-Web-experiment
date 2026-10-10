@@ -42,6 +42,7 @@ app.innerHTML = `
   <main class="product-shell">
     <section class="scene-panel" aria-label="Jozz Vehicle — sandbox jazdy">
       <canvas data-scene tabindex="-1" aria-label="Widok 3D pojazdu"></canvas>
+      <div class="scene-loading" data-scene-loading role="status" aria-live="polite"><span class="scene-loading-spinner" aria-hidden="true"></span><span data-scene-loading-text>Ładowanie fizyki…</span></div>
 
       <header class="scene-header">
         <div class="brand-lockup">
@@ -301,10 +302,21 @@ function clampSigned(value: number): number {
   return Math.max(-1, Math.min(1, value));
 }
 
-function setSceneState(message: string | null): void {
+const sceneLoadingElement = requireElement<HTMLElement>("[data-scene-loading]");
+const sceneLoadingTextElement = requireElement<HTMLElement>("[data-scene-loading-text]");
+
+/**
+ * `blocking` messages (loading, faults) are also shown as a centred overlay,
+ * which stays visible on phones where the header pill is hidden.
+ */
+function setSceneState(message: string | null, blocking = false): void {
   sceneStateElement.hidden = message === null;
   if (message !== null) {
     sceneStateElement.textContent = message;
+  }
+  sceneLoadingElement.hidden = message === null || !blocking;
+  if (message !== null && blocking) {
+    sceneLoadingTextElement.textContent = message;
   }
 }
 
@@ -319,7 +331,7 @@ let renderer: M6ProductRenderer | null = null;
 try {
   renderer = new M6ProductRenderer(sceneCanvas);
 } catch (error: unknown) {
-  setSceneState(`Grafika niedostępna · ${formatError(error)}`);
+  setSceneState(`Grafika niedostępna · ${formatError(error)}`, true);
   console.error(error);
 }
 
@@ -548,7 +560,7 @@ function resetDisplay(): void {
   sceneRackElement.textContent = "0.0000 m";
   sceneDisplacementElement.textContent = "0.000 m";
   sceneStepElement.textContent = "0";
-  setSceneState(renderer === null ? "Grafika niedostępna" : "Ładowanie fizyki…");
+  setSceneState(renderer === null ? "Grafika niedostępna" : "Ładowanie fizyki…", true);
 }
 
 async function startHost(): Promise<void> {
@@ -629,7 +641,7 @@ async function startHost(): Promise<void> {
         host = null;
         statusElement.textContent =
           `Runtime fault — resources disposed: ${formatError(error)}`;
-        setSceneState("Fizyka zatrzymana — naciśnij R");
+        setSceneState("Fizyka zatrzymana — naciśnij R", true);
         validationElement.textContent = "FAULTED / DISPOSED";
         restartButton.disabled = false;
         profileSelect.disabled = false;
@@ -678,7 +690,7 @@ async function startHost(): Promise<void> {
       return;
     }
     statusElement.textContent = `Startup rejected: ${formatError(error)}`;
-    setSceneState("Nie udało się uruchomić fizyki");
+    setSceneState("Nie udało się uruchomić fizyki", true);
     validationElement.textContent = "NOT STARTED";
     console.error(error);
   } finally {

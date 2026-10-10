@@ -164,3 +164,8 @@ summary { padding: 12px 0; cursor: pointer; color: #c7d0dc; font-size: .74rem; f
 
 /* The 3D view takes focus on click so keyboard driving works (also when embedded). */
 [data-scene]:focus { outline: none; }
+.scene-loading { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; pointer-events: none; color: #d8eadb; font-size: .95rem; font-weight: 700; letter-spacing: .02em; text-align: center; padding: 0 24px; background: radial-gradient(ellipse at center, rgba(17,19,24,.55), rgba(17,19,24,0) 70%); }
+.scene-loading[hidden] { display: none; }
+.scene-loading-spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(162,222,176,.22); border-top-color: #a2deb0; animation: scene-loading-spin .9s linear infinite; }
+@keyframes scene-loading-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .scene-loading-spinner { animation-duration: 3s; } }

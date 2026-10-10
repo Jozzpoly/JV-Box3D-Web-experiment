@@ -122,6 +122,16 @@ if (spawnTarget !== "map") {
 
 const productRuntime = await import("./main.js");
 
+// The scan world is large; say what the wait is for while it loads.
+const sceneLoading = document.querySelector<HTMLElement>("[data-scene-loading]");
+if (scanBackedSpawnTarget && sceneLoading !== null && !sceneLoading.hidden) {
+  const scanLoadingMessage = "Ładowanie skanu terenu (ok. 100 MB)…";
+  const loadingText = sceneLoading.querySelector<HTMLElement>("[data-scene-loading-text]");
+  if (loadingText !== null) loadingText.textContent = scanLoadingMessage;
+  const pill = document.querySelector<HTMLElement>("[data-scene-state]");
+  if (pill !== null) pill.textContent = scanLoadingMessage;
+}
+
 const scenePanel = document.querySelector<HTMLElement>(".scene-panel");
 if (scenePanel === null) {
   throw new Error("JV product requires .scene-panel after runtime startup.");
