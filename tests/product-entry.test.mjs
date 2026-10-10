@@ -50,10 +50,10 @@ test("browser boots through the explicit car map scan product entry", async () =
   assert.match(entry, /loadMapOnlyProductWorld/);
   assert.match(entry, /textureFilter: true/);
   assert.match(entry, /grid: true/);
-  assert.match(entry, /Plac E2R/);
+  assert.match(entry, /label: "Plac"/);
   assert.match(entry, /Offroad/);
   assert.match(entry, /Skan JSPREV2/);
-  assert.match(entry, /targetUrl\("scan"\)/);
+  assert.match(entry, /targetUrl\("scan-cal-b"\)/);
   assert.match(entry, /new URL\(\s*"__jv_scan__\/index\.json",\s*document\.baseURI,?\s*\)\.href/s);
   assert.doesNotMatch(entry, /"\/__jv_scan__\/index\.json"/);
   assert.match(controls, /Pixel/);

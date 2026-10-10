@@ -127,7 +127,7 @@ test("scan dependency is owned only by the LOCAL_FULL provider while host and re
   assert.match(productMain, /publishJvStartupPerformance/);
   assert.match(
     productMain,
-    /configureProductWorldLoader\(\s*timedProductWorldLoader\(\s*spawnTarget === "scan"\s*\? loadLocalFullProductWorld\s*:\s*loadMapOnlyProductWorld,?\s*\),?\s*\);/s,
+    /configureProductWorldLoader\(\s*timedProductWorldLoader\(\s*scanBackedSpawnTarget\s*\? loadLocalFullProductWorld\s*:\s*loadMapOnlyProductWorld,?\s*\),?\s*\);/s,
   );
   assert.match(productMain, /spawnTarget !== "map"/);
   assert.match(productMain, /await import\("\.\/main\.js"\)/);
