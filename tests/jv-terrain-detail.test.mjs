@@ -24,3 +24,13 @@ test("terrain detail UVs are planar world x/z over the tile size", () => {
   const uvs = createTerrainDetailUvs(new Float32Array([24, 5, -48, 0, 0, 12]), 24);
   assert.deepEqual([...uvs], [1, -2, 0, 0.5]);
 });
+
+test("plate detail tile has darker seams on slab borders", async () => {
+  const { createPlateDetailPixels } = await import("../.test-dist/render/jv-terrain-detail.js");
+  const size = TERRAIN_DETAIL_SIZE;
+  const pixels = createPlateDetailPixels();
+  const lum = (x, y) => pixels[(y * size + x) * 4 + 1];
+  assert.ok(lum(0, 5) < lum(5, 5) - 20, "seam column is darker than slab");
+  assert.ok(lum(5, size / 2) < lum(5, 5) - 20, "seam row is darker than slab");
+  assert.throws(() => createPlateDetailPixels(6), /power of two/);
+});

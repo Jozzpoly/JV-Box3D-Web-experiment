@@ -89,3 +89,40 @@ export function createTerrainDetailUvs(
   }
   return uvs;
 }
+
+const SLAB_BASE = [124, 127, 128] as const;
+const SLAB_SEAM = [78, 82, 86] as const;
+
+/**
+ * Concrete slab tile for the Plac: four slabs per tile with darker seams and
+ * gentle per-slab tone variation. Same low-frequency constraint as terrain.
+ */
+export function createPlateDetailPixels(
+  size = TERRAIN_DETAIL_SIZE,
+  seed = 3,
+): Uint8Array {
+  if (!Number.isInteger(size) || size < 8 || (size & (size - 1)) !== 0) {
+    throw new RangeError("Plate detail size must be a power of two >= 8.");
+  }
+  const pixels = new Uint8Array(size * size * 4);
+  const slab = size / 2;
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const seam = x % slab === 0 || y % slab === 0;
+      const slabTone = (hash(Math.floor(x / slab), Math.floor(y / slab), seed) - 0.5) * 18;
+      const stain = (tileNoise(x / size, y / size, 4, seed + 5) - 0.5) * 16;
+      const jitter = (hash(x, y, seed + 9) - 0.5) * 6;
+      const base = seam ? SLAB_SEAM : SLAB_BASE;
+      const shade = seam ? jitter : slabTone + stain + jitter;
+      const offset = (y * size + x) * 4;
+      for (let channel = 0; channel < 3; channel += 1) {
+        pixels[offset + channel] = Math.max(0, Math.min(255, Math.round(base[channel]! + shade)));
+      }
+      pixels[offset + 3] = 255;
+    }
+  }
+  return pixels;
+}
+
+/** Plac slabs: 2 slabs of 4 m per 8 m tile. */
+export const PLATE_DETAIL_METERS_PER_TILE = 8;

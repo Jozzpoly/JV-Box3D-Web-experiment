@@ -43,6 +43,7 @@ function fakeGl({ uint32 = false } = {}) {
     TEXTURE_WRAP_T: 0x2803,
     LINEAR: 0x2601,
     CLAMP_TO_EDGE: 0x812f,
+    REPEAT: 0x2901,
     TEXTURE0: 0x84c0,
     UNPACK_FLIP_Y_WEBGL: 0x9240,
     createShader() { return { id: ++objectId, kind: "shader" }; },
@@ -68,8 +69,8 @@ function fakeGl({ uint32 = false } = {}) {
     createTexture() { return { id: ++objectId, kind: "texture" }; },
     deleteTexture() {},
     bindTexture(target, texture) { calls.push(["bindTexture", target, texture]); },
-    texImage2D() {},
-    texParameteri() {},
+    texImage2D(target, level, internal, width, height) { calls.push(["texImage2D", target, level, internal, width, height]); },
+    texParameteri(target, pname, value) { calls.push(["texParameteri", target, pname, value]); },
     pixelStorei() {},
     getExtension(name) {
       return name === "OES_element_index_uint" && uint32 ? {} : null;
@@ -198,14 +199,12 @@ test("scan rendering configures the shared textured pass once for multiple visib
 
   renderer.render(identity());
 
-  // Offroad is drawn with the textured program and its own detail texture,
-  // so it configures one textured pass; the scan adds exactly one more.
   assert.equal(calls.filter(([name]) => name === "useProgram").length, 2,
-    "one textured offroad pass + one shared scan textured pass");
-  assert.equal(calls.filter(([name]) => name === "uniform1i").length, 2,
-    "sampler binding is configured once for offroad and once per scan pass");
-  assert.equal(calls.filter(([name]) => name === "activeTexture").length, 2,
-    "active texture unit is configured once for offroad and once per scan pass");
+    "one solid offroad program + one shared scan textured program");
+  assert.equal(calls.filter(([name]) => name === "uniform1i").length, 1,
+    "scan sampler binding is configured once per scan pass");
+  assert.equal(calls.filter(([name]) => name === "activeTexture").length, 1,
+    "active texture unit is configured once per scan pass");
   assert.equal(calls.filter(([name]) => name === "drawElements").length, 3,
     "offroad plus two scan groups render exactly once each");
 
@@ -272,4 +271,23 @@ test("large scan indices fall back to Uint16 chunking without the extension", ()
     false,
     "fallback path must never issue an UNSIGNED_INT draw",
   );
+});
+
+test("surfaces tagged with a detail kind get a procedural repeating texture", () => {
+  const { gl, calls } = fakeGl({ uint32: true });
+  const base = world([]);
+  const tagged = { ...base, offroad: { ...base.offroad, detail: "terrain" } };
+  const renderer = new JvWorldRendererMobile(gl, tagged);
+  const detailUploads = calls.filter(
+    ([name, , , , width, height]) => name === "texImage2D" && width === 64 && height === 64,
+  );
+  assert.equal(detailUploads.length, 1, "one 64x64 detail tile for the tagged offroad");
+  assert.ok(
+    calls.some(([name, , pname, value]) => name === "texParameteri" && pname === gl.TEXTURE_WRAP_S && value === gl.REPEAT),
+    "detail tile repeats across the surface",
+  );
+  calls.length = 0;
+  renderer.render(identity());
+  assert.equal(calls.filter(([name]) => name === "uniform1i").length, 1, "tagged offroad draws through the textured pass");
+  renderer.dispose();
 });

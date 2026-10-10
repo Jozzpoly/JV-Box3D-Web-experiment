@@ -1,12 +1,16 @@
 import {
+  createPlateDetailPixels,
   createTerrainDetailPixels,
   createTerrainDetailUvs,
+  PLATE_DETAIL_METERS_PER_TILE,
+  TERRAIN_DETAIL_METERS_PER_TILE,
   TERRAIN_DETAIL_SIZE,
 } from "./jv-terrain-detail.js";
 import type {
   JvBounds,
   JvColor,
   JvIndexedMesh,
+  JvSurfaceDetail,
   JvQuat,
   JvScanRenderGroup,
   JvStaticCapsule,
@@ -38,6 +42,7 @@ type CpuPrimitive = Readonly<{
 
 type BatchBuilder = {
   readonly color: JvColor;
+  readonly detail: JvSurfaceDetail | undefined;
   readonly positions: number[];
   readonly normals: number[];
   readonly indices: number[];
@@ -382,14 +387,16 @@ function colorKey(color: JvColor): string {
 function getBatch(
   batches: Map<string, BatchBuilder>,
   color: JvColor,
+  detail?: JvSurfaceDetail,
 ): BatchBuilder {
-  const key = colorKey(color);
+  const key = `${colorKey(color)}|${detail ?? ""}`;
   const existing = batches.get(key);
   if (existing !== undefined) {
     return existing;
   }
   const created: BatchBuilder = {
     color,
+    detail,
     positions: [],
     normals: [],
     indices: [],
@@ -449,7 +456,7 @@ function buildStaticBatchMeshes(world: JvWorldData): readonly JvIndexedMesh[] {
 
   for (const item of world.boxes) {
     appendPrimitive(
-      getBatch(batches, item.color),
+      getBatch(batches, item.color, item.surface),
       box,
       item.center,
       item.rotation,
@@ -506,6 +513,7 @@ function buildStaticBatchMeshes(world: JvWorldData): readonly JvIndexedMesh[] {
     normals: new Float32Array(batch.normals),
     indices: new Uint32Array(batch.indices),
     color: batch.color,
+    ...(batch.detail === undefined ? {} : { detail: batch.detail }),
   }));
 }
 
@@ -651,9 +659,16 @@ export class JvWorldRendererMobile {
         true,
       );
       for (const mesh of buildStaticBatchMeshes(world)) {
-        this.#staticGroups.push(this.#uploadGroup(mesh));
+        this.#staticGroups.push(
+          mesh.detail === undefined
+            ? this.#uploadGroup(mesh)
+            : this.#uploadSurfaceDetailGroup(mesh, mesh.detail),
+        );
       }
-      this.#offroad = this.#uploadTerrainDetailGroup(world.offroad);
+      this.#offroad =
+        world.offroad.detail === undefined
+          ? this.#uploadGroup(world.offroad)
+          : this.#uploadSurfaceDetailGroup(world.offroad, world.offroad.detail);
       if (world.scan !== null) {
         for (const source of world.scan.groups) {
           this.#scanGroups.push(this.#uploadScanGroup(source));
@@ -753,15 +768,20 @@ export class JvWorldRendererMobile {
     }
   }
 
-  /** Offroad terrain: procedural repeating detail texture + world UVs. */
-  #uploadTerrainDetailGroup(source: JvIndexedMesh): GpuGroup {
+  /** Surfaces tagged with a detail kind: procedural repeating texture + world UVs. */
+  #uploadSurfaceDetailGroup(source: JvIndexedMesh, detail: JvSurfaceDetail): GpuGroup {
     const meshes: GpuMesh[] = [];
     let texture: WebGLTexture | null = null;
     const gl = this.#gl;
     try {
       const textured: JvIndexedMesh = {
         ...source,
-        uvs: createTerrainDetailUvs(source.positions),
+        uvs: createTerrainDetailUvs(
+          source.positions,
+          detail === "plate"
+            ? PLATE_DETAIL_METERS_PER_TILE
+            : TERRAIN_DETAIL_METERS_PER_TILE,
+        ),
       };
       for (const chunk of splitJvIndexedMeshForUint16(textured)) {
         meshes.push(uploadChunk(gl, chunk));
@@ -780,7 +800,9 @@ export class JvWorldRendererMobile {
         0,
         gl.RGBA,
         gl.UNSIGNED_BYTE,
-        createTerrainDetailPixels(),
+        detail === "plate"
+          ? createPlateDetailPixels()
+          : createTerrainDetailPixels(),
       );
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);

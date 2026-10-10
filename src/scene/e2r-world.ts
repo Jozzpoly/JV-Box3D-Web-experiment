@@ -513,6 +513,7 @@ function createOffroadMesh(seed = OFFROAD_SEED): JvIndexedMesh {
     indices,
     normals: calculateNormals(positions, indices),
     color: OFFROAD_COLOR,
+    detail: "terrain",
     doubleSided: false,
   };
 }
@@ -802,6 +803,7 @@ function createPlateBoxes(): JvStaticBox[] {
         },
         friction: 0.9,
         color: PLATE_COLOR,
+        surface: "plate",
       });
     }
   }

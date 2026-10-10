@@ -7,12 +7,16 @@ export interface JvBounds {
   readonly maximum: JvVec3;
 }
 
+/** Presentation-only surface detail; never affects physics. */
+export type JvSurfaceDetail = "terrain" | "plate";
+
 export interface JvStaticBox {
   readonly center: JvVec3;
   readonly rotation: JvQuat;
   readonly halfExtents: JvVec3;
   readonly friction: number;
   readonly color: JvColor;
+  readonly surface?: JvSurfaceDetail;
 }
 
 export interface JvStaticCapsule {
@@ -33,6 +37,7 @@ export interface JvIndexedMesh {
   readonly textureUrl?: string;
   readonly color: JvColor;
   readonly doubleSided?: boolean;
+  readonly detail?: JvSurfaceDetail;
 }
 
 /**
