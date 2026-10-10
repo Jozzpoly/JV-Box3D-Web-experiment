@@ -14,7 +14,7 @@ A new chat is not a new takeover campaign. This file intentionally does **not** 
 
 If the repository is still in the 2026-09-06 baseline-hardening campaign, also read:
 
-`docs/REPO_BASELINE_CLEANUP_2026-09-06.md`
+`docs/archive/REPO_BASELINE_CLEANUP_2026-09-06.md`
 
 That receipt records the exact pre-cleanup refs, archival plan and fail-closed branch-deletion gate.
 

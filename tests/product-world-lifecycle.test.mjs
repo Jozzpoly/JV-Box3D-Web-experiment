@@ -101,7 +101,6 @@ test("scan dependency is owned only by the LOCAL_FULL provider while host and re
     main,
     host,
     renderer,
-    debugRenderer,
     productWorld,
     localFullProvider,
   ] = await Promise.all([
@@ -109,7 +108,6 @@ test("scan dependency is owned only by the LOCAL_FULL provider while host and re
     readFile(resolve(root, "src/main.ts"), "utf8"),
     readFile(resolve(root, "src/app/f4-vehicle-host.ts"), "utf8"),
     readFile(resolve(root, "src/render/m6-product-renderer.ts"), "utf8"),
-    readFile(resolve(root, "src/render/m6-debug-renderer.ts"), "utf8"),
     readFile(resolve(root, "src/scene/product-world.ts"), "utf8"),
     readFile(resolve(root, "src/scene/local-full-product-world.ts"), "utf8"),
   ]);
@@ -141,5 +139,4 @@ test("scan dependency is owned only by the LOCAL_FULL provider while host and re
   assert.match(renderer, /subscribeProductWorld/);
   assert.match(renderer, /worldGpuSetupMs/);
   assert.doesNotMatch(renderer, /jsprev2-scan|loadLocalJsprev2Scan/);
-  assert.match(debugRenderer, /M6ProductRenderer as M6DebugRenderer/);
 });

@@ -110,7 +110,7 @@ High-confidence prior evidence includes:
 - exact outboard physical mating remains Owner-open;
 - visual convenience ownership/calibration is not mechanical authority.
 
-The earlier `FRONT-CORNER-AUTHORITY-ISOLATION-01` selection is preserved in `docs/FIRST_FALSIFIER.md` as **prior orchestrator analysis**. Under the current strategic reset it is not a binding first implementation stage.
+The earlier `FRONT-CORNER-AUTHORITY-ISOLATION-01` selection is preserved in `docs/archive/FIRST_FALSIFIER.md` as **prior orchestrator analysis**. Under the current strategic reset it is not a binding first implementation stage.
 
 ## 8. JURE / authoring boundary
 

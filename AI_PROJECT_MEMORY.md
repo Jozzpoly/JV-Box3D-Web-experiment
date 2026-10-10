@@ -15,6 +15,6 @@ For fresh work:
 
 For the 2026-09-06 repository/baseline consolidation specifically, see:
 
-`docs/REPO_BASELINE_CLEANUP_2026-09-06.md`
+`docs/archive/REPO_BASELINE_CLEANUP_2026-09-06.md`
 
 A new chat or executor is not a reason to replay historical takeover/research sequences. Accepted product truth, active work, closed evidence and the next frontier are defined in `docs/PROJECT_STATE.md` and must be re-grounded against live refs.

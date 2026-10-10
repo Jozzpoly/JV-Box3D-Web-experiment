@@ -12,7 +12,7 @@ Authority order remains:
 
 `live Git/current files -> executed evidence -> direct scoped Owner feedback/device evidence -> current docs -> historical plans/conversation memory`
 
-Use `docs/INHERITANCE_MATRIX.md` for the Gate 5 claim-level synthesis and `docs/PROJECT_STATE.md` for current routing.
+Use `docs/archive/INHERITANCE_MATRIX.md` for the Gate 5 claim-level synthesis and `docs/PROJECT_STATE.md` for current routing.
 
 ## 1. Gate 5 hardening carried into this comparison
 

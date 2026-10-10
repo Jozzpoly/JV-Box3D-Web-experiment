@@ -9,7 +9,7 @@ This is a second-order audit of the mobile-driving polish grounding and technica
 It does not repeat the full findings of:
 
 - `docs/contracts/MOBILE_DRIVING_POLISH_GROUNDING.md` — owner intent;
-- `docs/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md` — source/layout/input technical audit.
+- `docs/archive/MOBILE_DRIVING_POLISH_TECHNICAL_AUDIT_2026-08-16.md` — source/layout/input technical audit.
 
 Only newly discovered readiness issues, corrected evidence semantics and the exact pre-roadmap closure are recorded here.
 

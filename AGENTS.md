@@ -1,6 +1,6 @@
 # JV Web — operating contract
 
-Updated: 2026-09-06
+Updated: 2026-10-11
 Owner: Jozz
 
 JV Web is the browser product line for Jozz Vehicle: a real desktop/mobile driving product and a practical R&D surface. It is **not NextGen JV Lite** and it is not automatically the implementation home of the next JV generation.
@@ -82,6 +82,8 @@ A red full gate is not authorization to change unrelated product behavior or tes
 
 When an accepted semantic/contract change intentionally replaces earlier behavior, audit existing tests that encode the old contract as part of closure. Adding new GREEN coverage while leaving contradictory legacy assertions behind is not a completed test consolidation.
 
+Prefer behavior tests over source-shape tests. Vehicle feel belongs in `tests/vehicle-driving-behavior.test.mjs` (headless exact-product harness, player-level thresholds in km/h, metres and degrees). Do not add new `assert.match`-on-source-text assertions; when touching a test that greps source text, replace it with a behavior check where practical.
+
 Quick previews are acceptable only when they faithfully represent the changed DOM/CSS/interaction semantics. Otherwise use clean source render or the normal canonical build/Preview path.
 
 ## 6. Scope protection
@@ -147,7 +149,7 @@ For a fresh continuation of normal JV-Web work:
 5. `docs/HANDOFF.md` only when a handoff/takeover is actually needed;
 6. older evidence/prior-analysis documents only as required.
 
-`docs/FIRST_FALSIFIER.md`, architecture hypotheses and old takeover material remain historical/prior analysis unless current routing explicitly reactivates them.
+`docs/archive/FIRST_FALSIFIER.md`, architecture hypotheses and old takeover material remain historical/prior analysis unless current routing explicitly reactivates them.
 
 ## 10. Stop and re-ground when
 

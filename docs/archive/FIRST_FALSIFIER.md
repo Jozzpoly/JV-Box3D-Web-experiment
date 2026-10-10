@@ -13,7 +13,7 @@ Authority order remains:
 
 `live Git/current files -> executed evidence -> direct scoped Owner/device evidence -> current docs -> historical plans/conversation memory`
 
-Use `docs/ARCHITECTURE_HYPOTHESES.md` for the Gate 6 architecture/migration comparison and `docs/PROJECT_STATE.md` for current routing.
+Use `docs/archive/ARCHITECTURE_HYPOTHESES.md` for the Gate 6 architecture/migration comparison and `docs/PROJECT_STATE.md` for current routing.
 
 ## 1. Selection verdict
 
