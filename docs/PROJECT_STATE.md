@@ -2,7 +2,7 @@
 
 Updated: 2026-10-11
 Owner: Jozz
-Status: `POLISH CAMPAIGN 2026-10-10/11 ON work/polish-campaign-2026-10-10 / AWAITING OWNER DEVICE VERDICT`
+Status: `POLISH CAMPAIGN 2026-10-10/11 ON work/polish-campaign-2026-10-10 / AWAITING OWNER DEVICE VERDICT` + `JASKINIA WINDOW LANE ON work/jaskinia-okno-2026-11-21 (on top of the campaign)`
 
 This is the single live current-state router for JV-Web. Live Git/current files, exact executed evidence and direct scoped Owner judgement outrank this document.
 
@@ -64,6 +64,19 @@ The agent proxy refuses ref deletion and tag creation, so these stay for the Own
 ### Measured, not acted on
 
 Straight-line drift above ~100 km/h is chaotic with solver substeps on both baseline and candidate (baseline 4/8/16 substeps: +3.1/−7.1/−11.3 m over ~130 m) — numerical, not geometric.
+
+## 1b. Jaskinia window lane 2026-11-21 (Opus Code, Owner-commissioned)
+
+Owner, 2026-11-21, about JV and Jaskinia (his own repository of agent work): JV may be changed boldly and adapted to what Jaskinia needs; Jaskinia should be able to take JV into many windows and show separate windows with sliders for it.
+
+Branch: `work/jaskinia-okno-2026-11-21`, on top of `work/polish-campaign-2026-10-10` (the campaign above was never deployed to any preview: the Owner Preview workflow accepts only its pinned source commit, so the campaign still waits for a build the Owner can open).
+
+| Slice | What changed | Evidence |
+|---|---|---|
+| JV speaks the Jaskinia window contract | `src/product-jaskinia.ts`: silent unless the framing page says `{jaskinia: 1, type: "hi"}`. Then `hello`, `state` (place, speed, Moc, Hamulec, build), `signals` (speed, frames per second), `event`, `flag` on Ctrl+. Generation 1 is the old Jaskinia Studio instrument contract; with generation 2 (`okno/2`) JV also reads its knobs `jv.moc` and `jv.hamulec` from the Jaskinia settings and applies them live as the nearest allowed Moc / Hamulec choice, re-reading on `changed`. | `tests/jaskinia-okno.test.mjs` (8 tests, each with a control); suite 544/544; 10 of 10 mutations of the module killed |
+| Speed for the host | `main.ts` exposes the forward speed the HUD already shows (`getProductForwardSpeedKmh`). | typecheck, suite |
+
+Known limit: knobs flow from Jaskinia to JV only; a change made in the JV tab is reported in `state.data`, not written back. Standalone JV is unchanged (no message leaves the page when it is not framed and greeted). Not accepted; nothing here touches the Owner Preview or the public build.
 
 ## 2. Canonical product and steering baseline
 

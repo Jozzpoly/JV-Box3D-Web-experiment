@@ -349,6 +349,13 @@ export type ProductSteeringInteraction = Extract<
 let selectedSteeringInteraction: ProductSteeringInteraction =
   "DIRECT_ROTATION";
 
+// Forward speed as the HUD shows it, for a host page that opened JV in a window (product-jaskinia.ts).
+let productForwardSpeedKmh = 0;
+
+export function getProductForwardSpeedKmh(): number {
+  return productForwardSpeedKmh;
+}
+
 export function getProductSteeringInteraction(): ProductSteeringInteraction {
   return selectedSteeringInteraction;
 }
@@ -477,7 +484,8 @@ function renderTrace(trace: M6TraceFrame): void {
     activeRackTravel ?? 0,
   );
   sceneDriveElement.textContent = formatHudDrive(drive);
-  sceneSpeedElement.textContent = `${Math.round(Math.abs(drive.forwardSpeedMetersPerSecond * 3.6))} km/h`;
+  productForwardSpeedKmh = drive.forwardSpeedMetersPerSecond * 3.6;
+  sceneSpeedElement.textContent = `${Math.round(Math.abs(productForwardSpeedKmh))} km/h`;
   sceneRackElement.textContent = `${trace.rackTranslation.toFixed(4)} m`;
   sceneDisplacementElement.textContent = `${displacement.toFixed(3)} m`;
   sceneStepElement.textContent = String(trace.stepIndex);
@@ -556,6 +564,7 @@ function resetDisplay(): void {
   driveTorqueElement.textContent = "0.00 Nm/wheel · 0.00 Nm current";
   sceneCommandElement.textContent = "Prosto";
   sceneDriveElement.textContent = "Luz";
+  productForwardSpeedKmh = 0;
   sceneSpeedElement.textContent = "0 km/h";
   sceneRackElement.textContent = "0.0000 m";
   sceneDisplacementElement.textContent = "0.000 m";

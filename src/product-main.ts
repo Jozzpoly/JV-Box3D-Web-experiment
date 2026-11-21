@@ -34,7 +34,10 @@ import {
   initializeJvProductSteeringSettings,
   setJvSteeringWheelRangeDegrees,
 } from "./product-steering-settings.js";
-import { installJvBuildIdentity } from "./runtime/build-identity.js";
+import {
+  installJvBuildIdentity,
+  JV_BUILD_SOURCE_LABEL,
+} from "./runtime/build-identity.js";
 import { installJvPerformanceObserver } from "./runtime/performance-observer.js";
 import { publishJvStartupPerformance } from "./runtime/startup-performance.js";
 import { installProductControls } from "./product-controls.js";
@@ -50,6 +53,7 @@ import {
   type JvPowerChoice,
 } from "./product-vehicle-settings.js";
 import { installUtilityDrawer } from "./utility-drawer.js";
+import { installJaskiniaWindow } from "./product-jaskinia.js";
 import { installSpawnLandmarkCapture } from "./spawn-landmark-capture.js";
 
 function targetUrl(target: JvProductSpawnTarget): string {
@@ -223,6 +227,22 @@ installProductControls({
 });
 installSpawnLandmarkCapture(scanBackedSpawnTarget);
 installUtilityDrawer();
+// Optional: speaks only when a Jaskinia page opened JV in a window and said hi (product-jaskinia.ts).
+installJaskiniaWindow({
+  name: "JV Web",
+  version: JV_BUILD_SOURCE_LABEL,
+  location: () =>
+    spawnTarget === "map" ? "Plac" : spawnTarget === "offroad" ? "Offroad" : "Skan",
+  speedKmh: productRuntime.getProductForwardSpeedKmh,
+  vehicle: {
+    get: getJvProductVehicleSettings,
+    setPower: (value) => setJvVehiclePower(value as JvPowerChoice),
+    setBrake: (value) => setJvVehicleBrake(value as JvBrakeChoice),
+    powerChoices: JV_POWER_CHOICES,
+    brakeChoices: JV_BRAKE_CHOICES,
+  },
+  format: formatJvMultiplier,
+});
 
 const activeSettings = getJvProductViewSettings();
 if (
