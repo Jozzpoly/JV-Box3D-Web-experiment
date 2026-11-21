@@ -129,6 +129,26 @@ try {
   initializeJvProductVehicleSettings(null);
 }
 
+// Optional: speaks only when a Jaskinia page opened JV in a window and said hi (product-jaskinia.ts). Installed
+// before the first await on purpose: the host says hi once, when the frame has loaded, and the runtime import below
+// can take longer than that (measured 2026-11-21: installed after it, JV never answered a single hi).
+let productSpeedKmh: () => number = () => 0;
+installJaskiniaWindow({
+  name: "JV Web",
+  version: JV_BUILD_SOURCE_LABEL,
+  location: () =>
+    spawnTarget === "map" ? "Plac" : spawnTarget === "offroad" ? "Offroad" : "Skan",
+  speedKmh: () => productSpeedKmh(),
+  vehicle: {
+    get: getJvProductVehicleSettings,
+    setPower: (value) => setJvVehiclePower(value as JvPowerChoice),
+    setBrake: (value) => setJvVehicleBrake(value as JvBrakeChoice),
+    powerChoices: JV_POWER_CHOICES,
+    brakeChoices: JV_BRAKE_CHOICES,
+  },
+  format: formatJvMultiplier,
+});
+
 if (spawnTarget !== "map") {
   configureScenePackageTransform(async (scene) =>
     applyProductSpawnToScene(
@@ -141,6 +161,7 @@ if (spawnTarget !== "map") {
 }
 
 const productRuntime = await import("./main.js");
+productSpeedKmh = productRuntime.getProductForwardSpeedKmh;
 
 // The scan world is large; say what the wait is for while it loads.
 const sceneLoading = document.querySelector<HTMLElement>("[data-scene-loading]");
@@ -227,22 +248,6 @@ installProductControls({
 });
 installSpawnLandmarkCapture(scanBackedSpawnTarget);
 installUtilityDrawer();
-// Optional: speaks only when a Jaskinia page opened JV in a window and said hi (product-jaskinia.ts).
-installJaskiniaWindow({
-  name: "JV Web",
-  version: JV_BUILD_SOURCE_LABEL,
-  location: () =>
-    spawnTarget === "map" ? "Plac" : spawnTarget === "offroad" ? "Offroad" : "Skan",
-  speedKmh: productRuntime.getProductForwardSpeedKmh,
-  vehicle: {
-    get: getJvProductVehicleSettings,
-    setPower: (value) => setJvVehiclePower(value as JvPowerChoice),
-    setBrake: (value) => setJvVehicleBrake(value as JvBrakeChoice),
-    powerChoices: JV_POWER_CHOICES,
-    brakeChoices: JV_BRAKE_CHOICES,
-  },
-  format: formatJvMultiplier,
-});
 
 const activeSettings = getJvProductViewSettings();
 if (
