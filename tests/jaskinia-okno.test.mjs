@@ -122,6 +122,20 @@ test("TJ7 the owner's flag (Ctrl+.) goes with the state of the moment", () => {
   assert.equal(out[1].data.predkosc_kmh, 12);
 });
 
+test("TJ9 every vehicle-settings change reaches its listeners, so the in-game tab never shows a stale choice", async () => {
+  const settings = await import("../.test-dist/product-vehicle-settings.js");
+  settings.initializeJvProductVehicleSettings(null);
+  const seen = [];
+  const off = settings.subscribeJvProductVehicleSettings(() => seen.push(settings.getJvProductVehicleSettings().power));
+  settings.setJvVehiclePower(2);
+  settings.setJvVehicleBrake(1.3);
+  assert.deepEqual(seen, [2, 2], "both changes reached the listener with the new state");
+  off();
+  settings.setJvVehiclePower(1);
+  assert.deepEqual(seen, [2, 2], "control: after unsubscribing nothing more arrives");
+  settings.initializeJvProductVehicleSettings(null);
+});
+
 test("TJ8 nearestChoice: closest allowed value, nothing for what is not a finite number", () => {
   assert.equal(nearestChoice(1.4, [1, 1.25, 1.5, 2]), 1.5);
   assert.equal(nearestChoice(9, [1, 1.25, 1.5, 2]), 2);

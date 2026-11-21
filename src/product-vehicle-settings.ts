@@ -42,8 +42,23 @@ function isBrake(value: unknown): value is JvBrakeChoice {
   return JV_BRAKE_CHOICES.includes(value as JvBrakeChoice);
 }
 
+const listeners = new Set<() => void>();
+
+/**
+ * Runs the listener after every change, whoever made it: the in-game tab or a Jaskinia knob (product-jaskinia.ts).
+ * Without it the tab kept highlighting the old choice while the vehicle already drove with the new one (seen on a
+ * screenshot of JV in a Jaskinia window, 2026-11-21). Returns an unsubscribe.
+ */
+export function subscribeJvProductVehicleSettings(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
 function apply(): void {
   setM6DriveTuning({ torqueScale: current.power, brakeScale: current.brake });
+  for (const listener of listeners) listener();
 }
 
 function persist(): void {

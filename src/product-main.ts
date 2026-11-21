@@ -49,6 +49,7 @@ import {
   JV_POWER_CHOICES,
   setJvVehicleBrake,
   setJvVehiclePower,
+  subscribeJvProductVehicleSettings,
   type JvBrakeChoice,
   type JvPowerChoice,
 } from "./product-vehicle-settings.js";
@@ -236,6 +237,7 @@ installProductControls({
       format: formatJvMultiplier,
       get: () => getJvProductVehicleSettings().power,
       set: (value) => setJvVehiclePower(value as JvPowerChoice),
+      subscribe: subscribeJvProductVehicleSettings,
     },
     {
       label: "Hamulec",
@@ -243,6 +245,7 @@ installProductControls({
       format: formatJvMultiplier,
       get: () => getJvProductVehicleSettings().brake,
       set: (value) => setJvVehicleBrake(value as JvBrakeChoice),
+      subscribe: subscribeJvProductVehicleSettings,
     },
   ],
 });

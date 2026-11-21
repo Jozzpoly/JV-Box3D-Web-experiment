@@ -50,6 +50,8 @@ export interface ProductChoiceSetting {
   readonly format: (value: number) => string;
   readonly get: () => number;
   readonly set: (value: number) => void;
+  /** Re-sync when the value changes from outside the row (e.g. a Jaskinia knob); returns an unsubscribe. */
+  readonly subscribe?: (listener: () => void) => () => void;
 }
 
 export interface InstallProductControlsOptions {
@@ -367,6 +369,7 @@ export function installProductControls(
       buttons.set(value, button);
       row.append(button);
     }
+    setting.subscribe?.(sync);
     group.append(row);
     controls.append(group);
     sync();
