@@ -9,6 +9,7 @@ on:
       - preview/owner-ab.json
       - preview/owner-spawn.json
       - preview/owner-wheel-visual.json
+      - preview/owner-jaskinia-okno.json
       - .github/workflows/owner-preview-pages.yml
 
 permissions:
@@ -147,6 +148,27 @@ jobs:
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
               out.write(f"wheel_visual_sha={source_sha}\n")
           print(f"visual wheel profile={source_sha}")
+          PY
+
+      # Jaskinia window experiment (2026-11-21, Opus Code; the Owner asked for JV adapted boldly to Jaskinia).
+      # Not accepted product: an exact commit, isolated under __experiments__/jaskinia-okno/, and the final step below
+      # still proves the accepted root byte-identical. The pointer names the commit; nothing else is pinned here.
+      - name: Resolve Jaskinia window experiment
+        id: jaskinia
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+
+          pointer = json.loads(Path("preview/owner-jaskinia-okno.json").read_text(encoding="utf-8"))
+          if pointer.get("schema") != "JV_OWNER_JASKINIA_WINDOW_POINTER_V1" or pointer.get("experiment") != "jaskinia-okno":
+              raise SystemExit("Jaskinia window pointer identity drifted")
+          source_sha = str(pointer.get("sourceCommit", "")).strip().lower()
+          if re.fullmatch(r"[0-9a-f]{40}", source_sha) is None:
+              raise SystemExit("Jaskinia window source must be an exact commit")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"jaskinia_sha={source_sha}\n")
+          print(f"jaskinia window={source_sha}")
           PY
 
       - name: Checkout exact accepted executable source
@@ -615,6 +637,79 @@ jobs:
             throw new Error("visual wheel profile scan layer drift");
           }
           console.log(`OWNER_WHEEL_VISUAL_PROFILE_COMPOSITION_OK source=${process.env.WHEEL_VISUAL_SHA} scan=${process.env.SCAN_SHA} path=${versionPath}`);
+          NODE
+
+      - name: Checkout exact Jaskinia window candidate
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.jaskinia.outputs.jaskinia_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          path: __jaskinia_okno_candidate
+
+      - name: Qualify and build Jaskinia window candidate
+        working-directory: __jaskinia_okno_candidate
+        env:
+          JASKINIA_SHA: ${{ steps.jaskinia.outputs.jaskinia_sha }}
+          SCAN_RECEIPT: ${{ steps.candidate.outputs.scan_receipt }}
+        run: |
+          set -euxo pipefail
+          test "$(git rev-parse HEAD)" = "$JASKINIA_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          test "$(node --version)" = "v24.16.0"
+          npm ci
+          npm run typecheck
+          node tools/run-tests.mjs tests/jaskinia-okno.test.mjs
+          rm -rf dist
+          npm run build:portable
+          node tools/validate-build-identity.mjs
+          JASKINIA_SHA="$JASKINIA_SHA" node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const manifest = JSON.parse(await readFile("dist/build-manifest.json", "utf8"));
+          if (manifest?.source?.commit !== process.env.JASKINIA_SHA || manifest?.source?.workingTreeClean !== true) {
+            throw new Error(`Jaskinia window manifest drift: ${JSON.stringify(manifest?.source)}`);
+          }
+          NODE
+          scan_checkout="$RUNNER_TEMP/jv-owner-preview-scan"
+          mkdir -p dist/receipts
+          cp -a "$scan_checkout/__jv_scan__" dist/__jv_scan__
+          cp "$scan_checkout/$SCAN_RECEIPT" "dist/$SCAN_RECEIPT"
+
+      - name: Compose isolated Jaskinia window path
+        env:
+          JASKINIA_SHA: ${{ steps.jaskinia.outputs.jaskinia_sha }}
+        run: |
+          set -euxo pipefail
+          root="dist/__experiments__/jaskinia-okno"
+          candidate="$root/by-sha/$JASKINIA_SHA"
+          rm -rf "$root"
+          mkdir -p "$candidate"
+          cp -a "__jaskinia_okno_candidate/dist/." "$candidate/"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root = Path("dist/__experiments__/jaskinia-okno")
+          sha = os.environ["JASKINIA_SHA"]
+          marker = {
+              "schema": "JV_OWNER_JASKINIA_WINDOW_VARIANT_V1",
+              "experiment": "jaskinia-okno",
+              "sourceCommit": sha,
+              "buildManifest": "build-manifest.json",
+              "contract": "Jaskinia window contract, generations 1 and 2 (hello, state, signals, event, flag; knobs jv.moc and jv.hamulec)",
+              "acceptedProduct": False,
+          }
+          (root / "by-sha" / sha / "owner-jaskinia-okno.json").write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
+          (root / "index.json").write_text(json.dumps({**marker, "schema": "JV_OWNER_JASKINIA_WINDOW_INDEX_V1", "candidatePath": f"by-sha/{sha}/"}, indent=2) + "\n", encoding="utf-8")
+          PY
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+          const candidate = `dist/__experiments__/jaskinia-okno/by-sha/${process.env.JASKINIA_SHA}`;
+          const manifest = JSON.parse(await readFile(`${candidate}/build-manifest.json`, "utf8"));
+          const marker = JSON.parse(await readFile(`${candidate}/owner-jaskinia-okno.json`, "utf8"));
+          if (manifest?.source?.commit !== process.env.JASKINIA_SHA || marker?.sourceCommit !== process.env.JASKINIA_SHA || marker?.acceptedProduct !== false) {
+            throw new Error("Jaskinia window composition drift");
+          }
+          console.log(`OWNER_JASKINIA_WINDOW_COMPOSITION_OK source=${process.env.JASKINIA_SHA}`);
           NODE
 
       - name: Prove accepted root stayed byte-identical outside experiments
