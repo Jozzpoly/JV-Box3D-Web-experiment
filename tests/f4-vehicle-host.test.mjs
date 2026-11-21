@@ -568,3 +568,65 @@ test("F4 timing separates physics, final trace capture and render/UI with one pr
   });
   host.dispose();
 });
+
+test("F4 host gives the vehicle what its drive director says before every step, and tells the director after it (input programs, 2026-11-21)", async () => {
+  const calls = [];
+  let browserOptions = null;
+  const trace = traceStub();
+  const live = { steering: { mode: "RATE", value: 1 }, longitudinal: { throttle: 1, brake: 0 } };
+  const programmed = { steering: { mode: "POSITION", value: -0.5 }, longitudinal: { throttle: 0, brake: 1 } };
+  const dependencies = {
+    loadReceipt: async () => nativeReceiptStub(),
+    loadBoundary: async () => ({
+      receipt: box3dReceiptStub(),
+      createM6TopologyWorld() {
+        return {
+          rateProfile: RATE_PROFILE,
+          counters: { bodyCount: 19, shapeCount: 10, contactCount: 0, jointCount: 29 },
+          createVehicle() {
+            return {
+              lastTrace: trace,
+              setSteering(command) { calls.push(["steering", command]); },
+              setDrive(command) { calls.push(["drive", command]); },
+            };
+          },
+          step() { throw new Error("product host must use deferred trace path"); },
+          stepPhysics() { calls.push(["physics"]); },
+          captureLatestTrace() { calls.push(["capture"]); return [trace]; },
+          dispose() { return { disposed: true, worldValidAfterDestroy: false }; },
+        };
+      },
+    }),
+    startBrowserHost(options) {
+      browserOptions = options;
+      return { dispose() {} };
+    },
+  };
+  const stepOnce = () => browserOptions.onStep(
+    { index: 1, startTimeMs: 0, endTimeMs: 1000 / 60, durationMs: 1000 / 60 },
+    { command: live.steering, integratedDirectionMs: 1000 / 60 },
+    { command: live.longitudinal, integratedThrottleMs: 1000 / 60, integratedBrakeMs: 0 },
+  );
+
+  const director = {
+    commands(given, stepMs) { calls.push(["ask", given, stepMs]); return programmed; },
+    afterStep(capture) { calls.push(["told"]); assert.equal(capture(), trace); },
+  };
+  const host = await F4VehicleHost.start({ ...hostOptions(), driveDirector: director }, dependencies);
+  stepOnce();
+  assert.deepEqual(calls, [
+    ["ask", live, 1000 / 60],
+    ["steering", programmed.steering],
+    ["drive", programmed.longitudinal],
+    ["physics"],
+    ["told"],
+    ["capture"],
+  ]);
+  host.dispose();
+
+  calls.length = 0;
+  const plain = await F4VehicleHost.start(hostOptions(), dependencies);
+  stepOnce();
+  assert.deepEqual(calls, [["steering", live.steering], ["drive", live.longitudinal], ["physics"]], "control: without a director the live input drives and nothing is captured per step");
+  plain.dispose();
+});

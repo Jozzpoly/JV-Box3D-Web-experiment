@@ -95,6 +95,22 @@ export interface F4VehicleHostOptions {
   ) => void;
   readonly onFrame?: (report: FrameAdvanceReport) => void;
   readonly onFatalError?: (error: unknown) => void;
+  /** Asked before every physics step which commands the vehicle gets, and told after it (drive-director.ts). */
+  readonly driveDirector?: F4DriveDirector;
+}
+
+export interface F4DriveDirector {
+  commands(
+    live: Readonly<{
+      steering: SteeringTimelineSample["command"];
+      longitudinal: LongitudinalTimelineSample["command"];
+    }>,
+    stepMs: number,
+  ): Readonly<{
+    steering: SteeringTimelineSample["command"];
+    longitudinal: LongitudinalTimelineSample["command"];
+  }>;
+  afterStep(capture: () => M6TraceFrame): void;
 }
 
 interface F4VehicleControllerRuntime {
@@ -296,11 +312,21 @@ export class F4VehicleHost {
                 options.onSteeringJoystickStateChange,
             }),
         onStep: (step, steering, longitudinal) => {
-          vehicle.setSteering(steering.command);
-          vehicle.setDrive(longitudinal.command);
+          const director = options.driveDirector;
+          const live = { steering: steering.command, longitudinal: longitudinal.command };
+          const applied = director === undefined ? live : director.commands(live, step.durationMs);
+          vehicle.setSteering(applied.steering);
+          vehicle.setDrive(applied.longitudinal);
           const stepStartedAt = options.now();
           world.stepPhysics(1);
           physicsStepMs += Math.max(0, options.now() - stepStartedAt);
+          director?.afterStep(() => {
+            const trace = world.captureLatestTrace()[0];
+            if (trace === undefined) {
+              throw new Error("M6 world produced no trace for its owned vehicle.");
+            }
+            return trace;
+          });
           pendingPresentation = {
             step,
             steering,

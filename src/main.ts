@@ -1,6 +1,7 @@
 import "./style.css";
 import { formatHudDrive, formatHudSteering } from "./product-hud-copy.js";
 import { F4VehicleHost } from "./app/f4-vehicle-host.js";
+import { productDriveDirector } from "./app/drive-director.js";
 import type {
   AnalogDrivePedal,
   PointerAnalogDriveControls,
@@ -356,6 +357,11 @@ export function getProductForwardSpeedKmh(): number {
   return productForwardSpeedKmh;
 }
 
+/** Puts the vehicle at its start again in a fresh world, like R; an armed input program begins with it. */
+export function restartProductHost(): Promise<void> {
+  return startHost();
+}
+
 export function getProductSteeringInteraction(): ProductSteeringInteraction {
   return selectedSteeringInteraction;
 }
@@ -634,6 +640,7 @@ async function startHost(): Promise<void> {
       generation,
       spawn: { x: spawnX, y: spawnY, z: spawnZ },
       rateProfileId,
+      driveDirector: productDriveDirector,
       onVehicleStep: (_step, _steering, _longitudinal, trace) => {
         renderTrace(trace);
       },
@@ -647,6 +654,7 @@ async function startHost(): Promise<void> {
         if (generation !== startupGeneration) {
           return;
         }
+        productDriveDirector.hostFailed("fizyka stanęła");
         host = null;
         statusElement.textContent =
           `Runtime fault — resources disposed: ${formatError(error)}`;
@@ -664,6 +672,8 @@ async function startHost(): Promise<void> {
     }
 
     host = nextHost;
+    // before the first animation frame, so an armed program gets the very first physics step of this start
+    productDriveDirector.hostStarted();
     const backend = nextHost.backend;
     const nativeReceipt = nextHost.nativeReceipt;
     const box3dReceipt = nextHost.box3dReceipt;
@@ -698,6 +708,7 @@ async function startHost(): Promise<void> {
     if (generation !== startupGeneration) {
       return;
     }
+    productDriveDirector.hostFailed("pojazd nie wystartował");
     statusElement.textContent = `Startup rejected: ${formatError(error)}`;
     setSceneState("Nie udało się uruchomić fizyki", true);
     validationElement.textContent = "NOT STARTED";
