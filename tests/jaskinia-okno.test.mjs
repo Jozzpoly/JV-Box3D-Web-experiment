@@ -44,6 +44,13 @@ function world({ power = 1.5, brake = 1 } = {}) {
 const HI_NEW = { jaskinia: 1, type: "hi", v: 2, umowy: ["okno/2", "okno/3"], umie: ["look"] };
 const HI_OLD = { jaskinia: 1, type: "hi", v: 1 };
 const types = (list) => list.map((m) => m.type);
+const GOSC = "jvweb0000000000000000000ab";
+// A generation-2 host is asked "who am I" first; the answer names JV's guest thing, the scope of its knobs.
+function greet(bridge, gosc = GOSC) {
+  const ja = bridge.receive(HI_NEW)[2];
+  assert.equal(ja.what, "ja");
+  return bridge.receive({ jaskinia: 1, type: "result", id: ja.id, ok: true, data: { uczestnik: null, gosc: gosc === null ? null : { rzecz: gosc }, pisze: false } })[0];
+}
 const knobs = (power, brake) => ({
   ...(power === undefined ? {} : { [JASKINIA_KNOB_POWER]: { wartosc: power, skad: "wartosc" } }),
   ...(brake === undefined ? {} : { [JASKINIA_KNOB_BRAKE]: { wartosc: brake, skad: "wartosc" } }),
@@ -69,18 +76,24 @@ test("TJ2 the old Jaskinia Studio (generation 1): hello and state, no settings r
   assert.deepEqual(bridge.receive({ jaskinia: 1, type: "changed", akt: 3 }), [], "generation 1 never reads settings");
 });
 
-test("TJ3 the new Jaskinia (generation 2): hello asks for changes and JV reads its two knobs", () => {
+test("TJ3 the new Jaskinia (generation 2): hello asks for changes, JV asks who it is and reads its knobs for its own guest thing", () => {
   const { bridge } = world();
   const out = bridge.receive(HI_NEW);
   assert.deepEqual(types(out), ["hello", "state", "read"]);
   assert.ok(out[0].wants.includes("rzeczy"), "without wants: rzeczy the host never sends changed");
-  assert.equal(out[2].what, "ustawienia");
-  assert.deepEqual(out[2].nazwy, [JASKINIA_KNOB_POWER, JASKINIA_KNOB_BRAKE, "jv.opony.tarcie", "jv.swiat.grawitacja"], "Moc, Hamulec and the native core knobs");
+  assert.equal(out[2].what, "ja");
+  const read = bridge.receive({ jaskinia: 1, type: "result", id: out[2].id, ok: true, data: { gosc: { rzecz: GOSC } } })[0];
+  assert.equal(read.what, "ustawienia");
+  assert.deepEqual(read.nazwy, [JASKINIA_KNOB_POWER, JASKINIA_KNOB_BRAKE, "jv.opony.tarcie", "jv.swiat.grawitacja"], "Moc, Hamulec and the native core knobs");
+  assert.equal(read.dla, GOSC, "the knobs are read for JV's own guest thing, not Place-wide");
+  const bare = world().bridge;
+  const bareRead = greet(bare, null);
+  assert.equal("dla" in bareRead, false, "control: opened by bare address (no guest thing), JV reads the Place-wide values");
 });
 
 test("TJ4 Moc and Hamulec from Jaskinia apply as given (no snapping to the tab presets); only a negative is clamped, and visibly", () => {
   const { bridge, car } = world();
-  const read = bridge.receive(HI_NEW)[2];
+  const read = greet(bridge);
   assert.deepEqual(bridge.receive({ jaskinia: 1, type: "result", id: "inne-czytanie", ok: true, data: { wartosci: knobs(2, 1.3) } }), [], "control: an answer to someone else's read");
   assert.deepEqual(car.sets, []);
   // 5x and 0.6x are not tab presets: the Owner's rule from the native JV is that sliders allow absurd values
@@ -107,7 +120,7 @@ test("TJ4 Moc and Hamulec from Jaskinia apply as given (no snapping to the tab p
 
 test("TJ5 one read at a time: a burst of changes waits for the answer", () => {
   const { bridge } = world();
-  const read = bridge.receive(HI_NEW)[2];
+  const read = greet(bridge);
   assert.deepEqual(bridge.receive({ jaskinia: 1, type: "changed", akt: 2 }), [], "control: the first read is still pending");
   bridge.receive({ jaskinia: 1, type: "result", id: read.id, ok: true, data: { wartosci: {} } });
   const next = bridge.receive({ jaskinia: 1, type: "changed", akt: 3 });
@@ -158,7 +171,7 @@ test("TJ9 every vehicle-settings change reaches its listeners, so the in-game ta
 
 test("TJ8 native core knobs: taken as given (absurd too), a refused or clamped one is reported, an unchanged one is silent", () => {
   const { bridge, live, knobSets } = world();
-  const read = bridge.receive(HI_NEW)[2];
+  const read = greet(bridge);
   const wartosci = { "jv.opony.tarcie": { wartosc: 40 }, "jv.swiat.grawitacja": { wartosc: -3 } };
   const out = bridge.receive({ jaskinia: 1, type: "result", id: read.id, ok: true, data: { wartosci } });
   assert.deepEqual([...live], [["jv.opony.tarcie", 40], ["jv.swiat.grawitacja", -3]], "40x the native friction and upward gravity are both taken");

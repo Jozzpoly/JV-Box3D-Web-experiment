@@ -77,6 +77,11 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
   let visible = true;
   let pendingRead: string | null = null;
   let readSequence = 0;
+  // Knobs belong to the world: JV first asks the host who it is (read ja) and then reads the settings for its own
+  // guest thing (dla), so a value set for JV does not change the whole Place. Opened by bare address (no guest
+  // thing), it reads the Place-wide values.
+  let pendingWhoAmI: string | null = null;
+  let scope: string | null = null;
   let lastSignalsAt = Number.NEGATIVE_INFINITY;
   let lastStateAt = Number.NEGATIVE_INFINITY;
   let lastStateText = "";
@@ -108,10 +113,21 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
     };
   };
   const readKnobs = (): JaskiniaOutgoing[] => {
-    if (!readsSettings || pendingRead !== null) return [];
+    if (!readsSettings || pendingRead !== null || pendingWhoAmI !== null) return [];
     readSequence += 1;
     pendingRead = `jv-pokretla-${String(readSequence)}`;
-    return [{ type: "read", id: pendingRead, what: "ustawienia", nazwy: [JASKINIA_KNOB_POWER, JASKINIA_KNOB_BRAKE, ...deps.knobs.names] }];
+    return [{
+      type: "read",
+      id: pendingRead,
+      what: "ustawienia",
+      nazwy: [JASKINIA_KNOB_POWER, JASKINIA_KNOB_BRAKE, ...deps.knobs.names],
+      ...(scope === null ? {} : { dla: scope }),
+    }];
+  };
+  const askWhoAmI = (): JaskiniaOutgoing[] => {
+    readSequence += 1;
+    pendingWhoAmI = `jv-ja-${String(readSequence)}`;
+    return [{ type: "read", id: pendingWhoAmI, what: "ja" }];
   };
   const apply = (values: unknown): JaskiniaOutgoing[] => {
     const changed: string[] = [];
@@ -168,11 +184,13 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
         const generation = m["v"];
         readsSettings = typeof generation === "number" && generation >= 2 && contracts.includes("okno/2");
         pendingRead = null;
+        pendingWhoAmI = null;
+        scope = null;
         return [
           // "rzeczy": a generation-2 host sends "changed" only to guests that ask for it; "remark": owner notes (gen 1)
           { type: "hello", name: deps.name, version: deps.version, wants: ["remark", "rzeczy"] },
           state(),
-          ...readKnobs(),
+          ...(readsSettings ? askWhoAmI() : []),
         ];
       }
       if (!active) return [];
@@ -182,6 +200,13 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
       }
       if (type === "changed") return readKnobs();
       if (type === "state?") return [state()];
+      if (type === "result" && pendingWhoAmI !== null && m["id"] === pendingWhoAmI) {
+        pendingWhoAmI = null;
+        const data = m["ok"] === true && typeof m["data"] === "object" && m["data"] !== null ? (m["data"] as Record<string, unknown>) : null;
+        const guest = data !== null && typeof data["gosc"] === "object" && data["gosc"] !== null ? (data["gosc"] as Record<string, unknown>)["rzecz"] : null;
+        scope = typeof guest === "string" && /^[0-9a-z]{26}$/.test(guest) ? guest : null;
+        return readKnobs();
+      }
       if (type === "result" && pendingRead !== null && m["id"] === pendingRead) {
         pendingRead = null;
         if (m["ok"] !== true) {
