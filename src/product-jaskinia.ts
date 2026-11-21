@@ -4,8 +4,10 @@
 // Optional and silent by default. Nothing happens unless the page that framed JV says hi with the Jaskinia window
 // contract ({jaskinia: 1, type: "hi"}). Then JV says who it is (hello), what is happening (state), live numbers
 // (signals), events and owner flags (Ctrl+.). When the host speaks generation 2 (okno/2), JV also reads its two knobs
-// from the Jaskinia settings (jv.moc, jv.hamulec) and applies them live through the same functions as the in-game
-// Moc / Hamulec tab, re-reading them whenever the host says something changed.
+// from the Jaskinia settings (jv.moc, jv.hamulec and the native JV core knobs of m6-live-parameters.ts) and applies
+// them live, re-reading them whenever the host says something changed. Values are taken as given: any finite number,
+// only a negative one of a quantity the solver cannot take negative is clamped, and every clamp or refusal is reported
+// back as an event (the Owner's rule from the native JV, 2026-07-09: sliders allow absurd values on purpose).
 //
 // Generation 1 is the old Jaskinia Studio instrument contract (hello, state, signals, event, flag), so the same page
 // talks to both hosts. Opened directly (not in a frame), JV is unchanged: no listener reacts and no message leaves.
@@ -19,10 +21,20 @@ export const JASKINIA_STATE_EVERY_MS = 1000;
 
 export interface JaskiniaVehicleAccess {
   readonly get: () => { readonly power: number; readonly brake: number };
-  readonly setPower: (value: number) => void;
-  readonly setBrake: (value: number) => void;
-  readonly powerChoices: readonly number[];
-  readonly brakeChoices: readonly number[];
+  /** Any finite multiplier >= 0 (a negative one becomes 0); returns the value in force, or null when refused. */
+  readonly setPower: (value: number) => number | null;
+  readonly setBrake: (value: number) => number | null;
+}
+
+export interface JaskiniaKnobAccess {
+  /** The world's own knobs, read from the Jaskinia settings next to jv.moc and jv.hamulec. */
+  readonly names: readonly string[];
+  readonly label: (name: string) => string;
+  readonly current: (name: string) => number | undefined;
+  readonly set: (
+    name: string,
+    value: unknown,
+  ) => { readonly applied: number | null; readonly clamped: boolean; readonly reason: string | null };
 }
 
 export interface JaskiniaBridgeDeps {
@@ -32,6 +44,7 @@ export interface JaskiniaBridgeDeps {
   readonly speedKmh: () => number;
   readonly fps: () => number | null;
   readonly vehicle: JaskiniaVehicleAccess;
+  readonly knobs: JaskiniaKnobAccess;
   readonly format: (value: number) => string;
 }
 
@@ -47,23 +60,15 @@ export interface JaskiniaBridge {
   readonly isActive: () => boolean;
 }
 
-/** The allowed choice closest to a value coming from a Jaskinia knob; null for anything that is not a number. */
-export function nearestChoice(value: number, choices: readonly number[]): number | null {
-  if (!Number.isFinite(value)) return null;
-  let best: number | null = null;
-  for (const choice of choices) {
-    if (best === null || Math.abs(choice - value) < Math.abs(best - value)) best = choice;
-  }
-  return best;
+/** The value of one knob in a Jaskinia answer: undefined when the answer does not carry it. */
+function knobValue(values: unknown, name: string): unknown {
+  if (typeof values !== "object" || values === null) return undefined;
+  const entry = (values as Record<string, unknown>)[name];
+  if (typeof entry !== "object" || entry === null) return undefined;
+  return (entry as Record<string, unknown>)["wartosc"];
 }
 
-function knobValue(values: unknown, name: string): number | null {
-  if (typeof values !== "object" || values === null) return null;
-  const entry = (values as Record<string, unknown>)[name];
-  if (typeof entry !== "object" || entry === null) return null;
-  const value = (entry as Record<string, unknown>)["wartosc"];
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
+const decimal = (value: number): string => String(Math.round(value * 1000) / 1000).replace(".", ",");
 
 /** Pure core: a message from the host in, messages for the host out. No DOM, so it is tested in Node. */
 export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
@@ -92,6 +97,12 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
         predkosc_kmh: speed(),
         moc: vehicle.power,
         hamulec: vehicle.brake,
+        pokretla: Object.fromEntries(
+          deps.knobs.names.flatMap((name) => {
+            const value = deps.knobs.current(name);
+            return value === undefined ? [] : [[name, value]];
+          }),
+        ),
         wersja: deps.version,
       },
     };
@@ -100,24 +111,47 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
     if (!readsSettings || pendingRead !== null) return [];
     readSequence += 1;
     pendingRead = `jv-pokretla-${String(readSequence)}`;
-    return [{ type: "read", id: pendingRead, what: "ustawienia", nazwy: [JASKINIA_KNOB_POWER, JASKINIA_KNOB_BRAKE] }];
+    return [{ type: "read", id: pendingRead, what: "ustawienia", nazwy: [JASKINIA_KNOB_POWER, JASKINIA_KNOB_BRAKE, ...deps.knobs.names] }];
   };
   const apply = (values: unknown): JaskiniaOutgoing[] => {
+    const changed: string[] = [];
+    const warnings: string[] = [];
+    const vehicle = deps.vehicle.get();
+    const multipliers: Array<[string, string, number, (value: number) => number | null]> = [
+      [JASKINIA_KNOB_POWER, "Moc", vehicle.power, deps.vehicle.setPower],
+      [JASKINIA_KNOB_BRAKE, "Hamulec", vehicle.brake, deps.vehicle.setBrake],
+    ];
+    for (const [name, label, before, set] of multipliers) {
+      const requested = knobValue(values, name);
+      if (requested === undefined || requested === before) continue;
+      if (typeof requested !== "number" || !Number.isFinite(requested)) {
+        warnings.push(`${label}: to nie jest skończona liczba`);
+        continue;
+      }
+      const applied = set(requested);
+      if (applied === null) {
+        warnings.push(`${label}: odmowa`);
+        continue;
+      }
+      if (applied !== requested) warnings.push(`${label}: ${decimal(requested)} przycięte do ${decimal(applied)}, bo ujemne rozbiłoby solver`);
+      if (applied !== before) changed.push(`${label} ${deps.format(applied)}`);
+    }
+    for (const name of deps.knobs.names) {
+      const requested = knobValue(values, name);
+      const before = deps.knobs.current(name);
+      if (requested === undefined || requested === before) continue;
+      const result = deps.knobs.set(name, requested);
+      if (result.applied === null) {
+        warnings.push(`${deps.knobs.label(name)}: ${result.reason ?? "odmowa"}`);
+        continue;
+      }
+      if (result.clamped) warnings.push(`${deps.knobs.label(name)}: ${result.reason ?? "przycięte"}`);
+      if (result.applied !== before) changed.push(`${deps.knobs.label(name)} ${decimal(result.applied)}`);
+    }
     const out: JaskiniaOutgoing[] = [];
-    const before = deps.vehicle.get();
-    const requestedPower = knobValue(values, JASKINIA_KNOB_POWER);
-    const requestedBrake = knobValue(values, JASKINIA_KNOB_BRAKE);
-    const power = requestedPower === null ? null : nearestChoice(requestedPower, deps.vehicle.powerChoices);
-    const brake = requestedBrake === null ? null : nearestChoice(requestedBrake, deps.vehicle.brakeChoices);
-    if (power !== null && power !== before.power) {
-      deps.vehicle.setPower(power);
-      out.push({ type: "event", text: `Moc z ustawień Jaskini: ${deps.format(power)}`, level: "info" });
-    }
-    if (brake !== null && brake !== before.brake) {
-      deps.vehicle.setBrake(brake);
-      out.push({ type: "event", text: `Hamulec z ustawień Jaskini: ${deps.format(brake)}`, level: "info" });
-    }
-    if (out.length > 0) out.push(state());
+    if (changed.length > 0) out.push({ type: "event", text: `Z ustawień Jaskini: ${changed.join(", ")}`.slice(0, 200), level: "info" });
+    if (warnings.length > 0) out.push({ type: "event", text: warnings.join("; ").slice(0, 200), level: "uwaga" });
+    if (changed.length > 0) out.push(state());
     return out;
   };
 

@@ -13,9 +13,11 @@ export const JV_BRAKE_CHOICES = [0.7, 1, 1.3] as const;
 export type JvPowerChoice = (typeof JV_POWER_CHOICES)[number];
 export type JvBrakeChoice = (typeof JV_BRAKE_CHOICES)[number];
 
+// The choices above are the tab's quick presets. A Jaskinia knob may set any finite multiplier >= 0 (the Owner's rule
+// from the native JV: sliders allow absurd values; limits only protect the solver), so the values are plain numbers.
 export interface JvProductVehicleSettings {
-  readonly power: JvPowerChoice;
-  readonly brake: JvBrakeChoice;
+  readonly power: number;
+  readonly brake: number;
 }
 
 export interface JvVehicleSessionStorage {
@@ -111,6 +113,27 @@ export function setJvVehicleBrake(brake: JvBrakeChoice): void {
   current = Object.freeze({ ...current, brake });
   apply();
   persist();
+}
+
+/**
+ * A value from a Jaskinia knob: any finite multiplier >= 0, applied live (a negative one becomes 0). Not stored in
+ * the session, because Jaskinia sends it again whenever it greets JV. Returns the value in force, or null when the
+ * value is not a finite number (nothing changes then).
+ */
+export function setJvVehiclePowerValue(value: number): number | null {
+  if (!Number.isFinite(value)) return null;
+  const power = Math.max(0, value);
+  current = Object.freeze({ ...current, power });
+  apply();
+  return power;
+}
+
+export function setJvVehicleBrakeValue(value: number): number | null {
+  if (!Number.isFinite(value)) return null;
+  const brake = Math.max(0, value);
+  current = Object.freeze({ ...current, brake });
+  apply();
+  return brake;
 }
 
 /** "1,5×" — Polish decimal comma, as shown in the product. */

@@ -4,13 +4,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   createJaskiniaBridge,
-  nearestChoice,
   JASKINIA_KNOB_BRAKE,
   JASKINIA_KNOB_POWER,
 } from "../.test-dist/product-jaskinia.js";
 
 function world({ power = 1.5, brake = 1 } = {}) {
   const car = { power, brake, sets: [] };
+  const live = new Map();
+  const knobSets = [];
   let speed = 0;
   const bridge = createJaskiniaBridge({
     name: "JV Web",
@@ -20,14 +21,25 @@ function world({ power = 1.5, brake = 1 } = {}) {
     fps: () => 60,
     vehicle: {
       get: () => ({ power: car.power, brake: car.brake }),
-      setPower: (v) => { car.power = v; car.sets.push(["moc", v]); },
-      setBrake: (v) => { car.brake = v; car.sets.push(["hamulec", v]); },
-      powerChoices: [1, 1.25, 1.5, 2],
-      brakeChoices: [0.7, 1, 1.3],
+      // like the product: any finite value >= 0, a negative one becomes 0
+      setPower: (v) => { const a = Math.max(0, v); car.power = a; car.sets.push(["moc", a]); return a; },
+      setBrake: (v) => { const a = Math.max(0, v); car.brake = a; car.sets.push(["hamulec", a]); return a; },
+    },
+    knobs: {
+      names: ["jv.opony.tarcie", "jv.swiat.grawitacja"],
+      label: (n) => ({ "jv.opony.tarcie": "Tarcie opon", "jv.swiat.grawitacja": "Grawitacja" })[n] ?? n,
+      current: (n) => live.get(n),
+      set: (n, v) => {
+        knobSets.push([n, v]);
+        if (typeof v !== "number" || !Number.isFinite(v)) return { applied: null, clamped: false, reason: "to nie jest skończona liczba" };
+        const a = n === "jv.opony.tarcie" && v < 0 ? 0 : v;
+        live.set(n, a);
+        return { applied: a, clamped: a !== v, reason: a !== v ? "ujemna wartość rozbiłaby solver, przyjęte 0" : null };
+      },
     },
     format: (v) => `${String(v).replace(".", ",")}×`,
   });
-  return { bridge, car, setSpeed: (v) => { speed = v; } };
+  return { bridge, car, live, knobSets, setSpeed: (v) => { speed = v; } };
 }
 const HI_NEW = { jaskinia: 1, type: "hi", v: 2, umowy: ["okno/2", "okno/3"], umie: ["look"] };
 const HI_OLD = { jaskinia: 1, type: "hi", v: 1 };
@@ -63,26 +75,34 @@ test("TJ3 the new Jaskinia (generation 2): hello asks for changes and JV reads i
   assert.deepEqual(types(out), ["hello", "state", "read"]);
   assert.ok(out[0].wants.includes("rzeczy"), "without wants: rzeczy the host never sends changed");
   assert.equal(out[2].what, "ustawienia");
-  assert.deepEqual(out[2].nazwy, [JASKINIA_KNOB_POWER, JASKINIA_KNOB_BRAKE]);
+  assert.deepEqual(out[2].nazwy, [JASKINIA_KNOB_POWER, JASKINIA_KNOB_BRAKE, "jv.opony.tarcie", "jv.swiat.grawitacja"], "Moc, Hamulec and the native core knobs");
 });
 
-test("TJ4 knob values apply live as the nearest allowed choice; foreign, failed or empty answers change nothing", () => {
+test("TJ4 Moc and Hamulec from Jaskinia apply as given (no snapping to the tab presets); only a negative is clamped, and visibly", () => {
   const { bridge, car } = world();
   const read = bridge.receive(HI_NEW)[2];
   assert.deepEqual(bridge.receive({ jaskinia: 1, type: "result", id: "inne-czytanie", ok: true, data: { wartosci: knobs(2, 1.3) } }), [], "control: an answer to someone else's read");
   assert.deepEqual(car.sets, []);
-  const out = bridge.receive({ jaskinia: 1, type: "result", id: read.id, ok: true, data: { wartosci: knobs(2.2, 0.6) } });
-  assert.deepEqual(car.sets, [["moc", 2], ["hamulec", 0.7]]);
-  assert.deepEqual(types(out), ["event", "event", "state"]);
-  assert.match(out[2].text, /Moc 2× · Hamulec 0,7×/);
+  // 5x and 0.6x are not tab presets: the Owner's rule from the native JV is that sliders allow absurd values
+  const out = bridge.receive({ jaskinia: 1, type: "result", id: read.id, ok: true, data: { wartosci: knobs(5, 0.6) } });
+  assert.deepEqual(car.sets, [["moc", 5], ["hamulec", 0.6]]);
+  assert.deepEqual(types(out), ["event", "state"]);
+  assert.match(out[0].text, /^Z ustawień Jaskini: Moc 5×, Hamulec 0,6×$/);
+  assert.match(out[1].text, /Moc 5× · Hamulec 0,6×/);
   const again = bridge.receive({ jaskinia: 1, type: "changed", akt: 9 })[0];
-  const none = bridge.receive({ jaskinia: 1, type: "result", id: again.id, ok: true, data: { wartosci: knobs("dużo", undefined) } });
-  assert.deepEqual(none, [], "a value that is not a number changes nothing");
+  const clamped = bridge.receive({ jaskinia: 1, type: "result", id: again.id, ok: true, data: { wartosci: knobs(-2, undefined) } });
+  assert.deepEqual(types(clamped), ["event", "event", "state"]);
+  assert.equal(clamped[1].level, "uwaga");
+  assert.match(clamped[1].text, /Moc: -2 przycięte do 0, bo ujemne rozbiłoby solver/);
   const third = bridge.receive({ jaskinia: 1, type: "changed", akt: 10 })[0];
-  const failed = bridge.receive({ jaskinia: 1, type: "result", id: third.id, ok: false, error: "drzwi odpowiedziały: 401" });
+  const notNumber = bridge.receive({ jaskinia: 1, type: "result", id: third.id, ok: true, data: { wartosci: knobs("dużo", undefined) } });
+  assert.deepEqual(types(notNumber), ["event"]);
+  assert.match(notNumber[0].text, /Moc: to nie jest skończona liczba/);
+  const fourth = bridge.receive({ jaskinia: 1, type: "changed", akt: 11 })[0];
+  const failed = bridge.receive({ jaskinia: 1, type: "result", id: fourth.id, ok: false, error: "drzwi odpowiedziały: 401" });
   assert.deepEqual(types(failed), ["event"]);
   assert.equal(failed[0].level, "uwaga");
-  assert.deepEqual(car.sets, [["moc", 2], ["hamulec", 0.7]], "only the one good answer moved the car");
+  assert.deepEqual(car.sets, [["moc", 5], ["hamulec", 0.6], ["moc", 0]], "only the good and the clamped value moved the car");
 });
 
 test("TJ5 one read at a time: a burst of changes waits for the answer", () => {
@@ -136,9 +156,23 @@ test("TJ9 every vehicle-settings change reaches its listeners, so the in-game ta
   settings.initializeJvProductVehicleSettings(null);
 });
 
-test("TJ8 nearestChoice: closest allowed value, nothing for what is not a finite number", () => {
-  assert.equal(nearestChoice(1.4, [1, 1.25, 1.5, 2]), 1.5);
-  assert.equal(nearestChoice(9, [1, 1.25, 1.5, 2]), 2);
-  assert.equal(nearestChoice(Number.NaN, [1, 2]), null);
-  assert.equal(nearestChoice(Number.POSITIVE_INFINITY, [1, 2]), null);
+test("TJ8 native core knobs: taken as given (absurd too), a refused or clamped one is reported, an unchanged one is silent", () => {
+  const { bridge, live, knobSets } = world();
+  const read = bridge.receive(HI_NEW)[2];
+  const wartosci = { "jv.opony.tarcie": { wartosc: 40 }, "jv.swiat.grawitacja": { wartosc: -3 } };
+  const out = bridge.receive({ jaskinia: 1, type: "result", id: read.id, ok: true, data: { wartosci } });
+  assert.deepEqual([...live], [["jv.opony.tarcie", 40], ["jv.swiat.grawitacja", -3]], "40x the native friction and upward gravity are both taken");
+  assert.deepEqual(types(out), ["event", "state"]);
+  assert.match(out[0].text, /Tarcie opon 40, Grawitacja -3/);
+  assert.deepEqual(out[1].data.pokretla, { "jv.opony.tarcie": 40, "jv.swiat.grawitacja": -3 }, "the host sees the values in force");
+  const second = bridge.receive({ jaskinia: 1, type: "changed", akt: 2 })[0];
+  const before = knobSets.length;
+  assert.deepEqual(bridge.receive({ jaskinia: 1, type: "result", id: second.id, ok: true, data: { wartosci } }), [], "control: the same values again change nothing and say nothing");
+  assert.equal(knobSets.length, before, "and are not even set again");
+  const third = bridge.receive({ jaskinia: 1, type: "changed", akt: 3 })[0];
+  const bad = bridge.receive({ jaskinia: 1, type: "result", id: third.id, ok: true, data: { wartosci: { "jv.opony.tarcie": { wartosc: -1 }, "jv.swiat.grawitacja": { wartosc: "?" } } } });
+  assert.deepEqual(types(bad), ["event", "event", "state"]);
+  assert.match(bad[1].text, /Tarcie opon: ujemna wartość rozbiłaby solver, przyjęte 0; Grawitacja: to nie jest skończona liczba/);
+  assert.equal(live.get("jv.opony.tarcie"), 0);
+  assert.equal(live.get("jv.swiat.grawitacja"), -3, "the refused value left the old one in force");
 });

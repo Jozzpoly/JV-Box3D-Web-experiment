@@ -16,6 +16,7 @@ import {
   type LegacyTsM6BackendContract,
 } from "./legacy-ts-m6-backend.js";
 import { vec3 } from "./m6-geometry.js";
+import { liveWorldValues, m6LiveVersion } from "./m6-live-parameters.js";
 import {
   m6TopologyConfigFromReceipt,
   type M6TopologyConfig,
@@ -84,6 +85,10 @@ export class M6TopologyWorld {
   #stepIndex = 0;
   #pendingContactBegins = 0;
   #disposed = false;
+  // Live parameters (m6-live-parameters.ts): the version this world last applied, and the vehicles that already
+  // carry it. A vehicle created after a change (reset, respawn) gets the values in force, not the defaults.
+  #liveVersionApplied = 0;
+  #liveAppliedTo = new WeakSet<M6VehicleController>();
 
   constructor(
     b3: Box3DModule,
@@ -235,6 +240,7 @@ export class M6TopologyWorld {
       );
     }
 
+    this.#applyLiveIfChanged();
     for (let index = 0; index < stepCount; index += 1) {
       const activeVehicles = this.#vehicles.filter(
         (vehicle) => !vehicle.disposed,
@@ -249,6 +255,27 @@ export class M6TopologyWorld {
       this.#b3.getEvents(this.#events, this.#worldId);
       this.#pendingContactBegins +=
         this.#b3.getNumContactBeginEvents(this.#events);
+    }
+  }
+
+  // With nothing ever set (version 0) nothing is touched: the accepted vehicle stays exactly as built.
+  #applyLiveIfChanged(): void {
+    const version = m6LiveVersion();
+    if (version === 0) return;
+    if (version !== this.#liveVersionApplied) {
+      const live = liveWorldValues(this.#config);
+      this.#b3.b3World_SetContactTuning(this.#worldId, live.contactHertz, live.contactDampingRatio, live.contactSpeed);
+      this.#b3.b3World_SetGravity(
+        this.#worldId,
+        vec3(this.#config.solver.gravity[0], -live.gravityDown, this.#config.solver.gravity[2]),
+      );
+      this.#liveAppliedTo = new WeakSet();
+      this.#liveVersionApplied = version;
+    }
+    for (const vehicle of this.#vehicles) {
+      if (vehicle.disposed || this.#liveAppliedTo.has(vehicle)) continue;
+      vehicle.applyLiveSuspensionAndTires();
+      this.#liveAppliedTo.add(vehicle);
     }
   }
 

@@ -48,13 +48,21 @@ import {
   JV_BRAKE_CHOICES,
   JV_POWER_CHOICES,
   setJvVehicleBrake,
+  setJvVehicleBrakeValue,
   setJvVehiclePower,
+  setJvVehiclePowerValue,
   subscribeJvProductVehicleSettings,
   type JvBrakeChoice,
   type JvPowerChoice,
 } from "./product-vehicle-settings.js";
 import { installUtilityDrawer } from "./utility-drawer.js";
 import { installJaskiniaWindow } from "./product-jaskinia.js";
+import {
+  getM6LiveOverride,
+  M6_LIVE_PARAMETERS,
+  m6LiveParameter,
+  setM6LiveParameter,
+} from "./vehicle/m6/m6-live-parameters.js";
 import { installSpawnLandmarkCapture } from "./spawn-landmark-capture.js";
 
 function targetUrl(target: JvProductSpawnTarget): string {
@@ -142,10 +150,15 @@ installJaskiniaWindow({
   speedKmh: () => productSpeedKmh(),
   vehicle: {
     get: getJvProductVehicleSettings,
-    setPower: (value) => setJvVehiclePower(value as JvPowerChoice),
-    setBrake: (value) => setJvVehicleBrake(value as JvBrakeChoice),
-    powerChoices: JV_POWER_CHOICES,
-    brakeChoices: JV_BRAKE_CHOICES,
+    setPower: setJvVehiclePowerValue,
+    setBrake: setJvVehicleBrakeValue,
+  },
+  // the native JV core sliders (m6-live-parameters.ts), as Jaskinia knobs
+  knobs: {
+    names: M6_LIVE_PARAMETERS.map((p) => p.id),
+    label: (name) => m6LiveParameter(name)?.label ?? name,
+    current: getM6LiveOverride,
+    set: setM6LiveParameter,
   },
   format: formatJvMultiplier,
 });

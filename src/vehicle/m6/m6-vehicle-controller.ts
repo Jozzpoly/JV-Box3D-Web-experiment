@@ -41,6 +41,7 @@ import {
 } from "./m6-topology-contract.js";
 import { buildM6VisualFrameV1 } from "./m6-visual-frame-builder.js";
 import { getM6DriveTuning } from "./m6-drive-tuning.js";
+import { liveVehicleValue } from "./m6-live-parameters.js";
 import type { RateSteeringProfile } from "./rate-steering-profile.js";
 
 const RACK_STICTION_RATIO = 1.4;
@@ -138,6 +139,27 @@ export class M6VehicleController {
 
   get disposed(): boolean {
     return this.#disposed;
+  }
+
+  /**
+   * Live suspension springs and tire friction (m6-live-parameters.ts): the values set at build time are re-applied
+   * on the running joints and shapes, front corners (0, 1) and rear corners (2, 3) with their own axle scale.
+   */
+  applyLiveSuspensionAndTires(): void {
+    this.#assertActive();
+    const hertz = liveVehicleValue(this.#config, "suspensionHertz");
+    const damping = liveVehicleValue(this.#config, "suspensionDampingRatio");
+    const front = liveVehicleValue(this.#config, "frontSuspensionScale");
+    const rear = liveVehicleValue(this.#config, "rearSuspensionScale");
+    const friction = liveVehicleValue(this.#config, "wheelFriction");
+    this.#runtime.corners.forEach((corner, index) => {
+      const scale = index < 2 ? front : rear;
+      this.#b3.b3DistanceJoint_SetSpringHertz(corner.coiloverJointId, hertz * scale);
+      this.#b3.b3DistanceJoint_SetSpringDampingRatio(corner.coiloverJointId, damping * scale);
+      this.#b3.b3Shape_SetFriction(corner.wheel.rollingShapeId, friction);
+      this.#b3.b3Shape_SetFriction(corner.wheel.sidewallShapeId, friction);
+      this.#b3.b3Joint_WakeBodies(corner.coiloverJointId);
+    });
   }
 
   setSteering(command: SteeringCommand): void {
@@ -546,13 +568,13 @@ export class M6VehicleController {
     // always wins with its full torque regardless of throttle.
     const tuning = getM6DriveTuning();
     const brakeTorquePerWheel =
-      this.#config.brakeTorque * tuning.brakeScale * brake;
+      liveVehicleValue(this.#config, "brakeTorque") * tuning.brakeScale * brake;
     let driveTorquePerWheel = 0;
     if (Math.abs(throttle) > INPUT_EPSILON) {
-      targetLinearSpeed = throttle * this.#config.maxDriveSpeed;
+      targetLinearSpeed = throttle * liveVehicleValue(this.#config, "maxDriveSpeed");
       driveTaper = this.#driveTaper(throttle, forwardSpeed);
       driveTorquePerWheel =
-        this.#config.maxDriveTorque *
+        liveVehicleValue(this.#config, "maxDriveTorque") *
         tuning.torqueScale *
         Math.abs(throttle) *
         driveTaper *
@@ -630,7 +652,7 @@ export class M6VehicleController {
       return 1;
     }
     const speedFraction = clampNumber(
-      alignedSpeed / this.#config.maxDriveSpeed,
+      alignedSpeed / liveVehicleValue(this.#config, "maxDriveSpeed"),
       0,
       1,
     );
@@ -668,11 +690,11 @@ export class M6VehicleController {
     this.#b3.b3PrismaticJoint_EnableSpring(rackJointId, true);
     this.#b3.b3PrismaticJoint_SetSpringHertz(
       rackJointId,
-      this.#config.steeringHertz,
+      liveVehicleValue(this.#config, "steeringHertz"),
     );
     this.#b3.b3PrismaticJoint_SetSpringDampingRatio(
       rackJointId,
-      this.#config.steeringDampingRatio,
+      liveVehicleValue(this.#config, "steeringDampingRatio"),
     );
     this.#b3.b3PrismaticJoint_SetTargetTranslation(
       rackJointId,
