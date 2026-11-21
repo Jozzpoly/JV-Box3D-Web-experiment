@@ -1,9 +1,10 @@
 {
   "schema": "JV_OWNER_JASKINIA_WINDOW_POINTER_V1",
   "experiment": "jaskinia-okno",
-  "sourceCommit": "1d1b5925bae67460cea443f209900bccd1f21890",
+  "sourceCommit": "1683c6c96fa9238ee1d265eeecfc477ead6ae144",
   "purpose": "JV speaks the Jaskinia window contract (hello, state, signals, event, flag), takes the native JV core sliders as live Jaskinia knobs, and replays input programs from the same start (play/played, record/recorded) so two windows can get the same drive. On top of the 2026-10-10/11 polish campaign. Not accepted product; isolated under __experiments__/jaskinia-okno/.",
   "history": [
+    "1d1b5925bae67460cea443f209900bccd1f21890",
     "3394e269f0b74e7ee9eebb3e83aff32d37af7533",
     "7a4ea8eacee5c298583c1ef5a1372649b1a59e58",
     "0379ac43155775a41a2d58395ebb8fced195b728",
