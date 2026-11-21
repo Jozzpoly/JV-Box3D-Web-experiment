@@ -2,5 +2,9 @@
   "schema": "JV_OWNER_JASKINIA_WINDOW_POINTER_V1",
   "experiment": "jaskinia-okno",
   "sourceCommit": "0379ac43155775a41a2d58395ebb8fced195b728",
-  "purpose": "JV speaks the Jaskinia window contract (hello, state, signals, event, flag) and the native JV core sliders as live Jaskinia knobs, on top of the 2026-10-10/11 polish campaign. Not accepted product; isolated under __experiments__/jaskinia-okno/."
+  "purpose": "JV speaks the Jaskinia window contract (hello, state, signals, event, flag) and the native JV core sliders as live Jaskinia knobs, on top of the 2026-10-10/11 polish campaign. Not accepted product; isolated under __experiments__/jaskinia-okno/.",
+  "history": [
+    "3431bc6d05e0df50a510519f9b2e7cc85f4de2e0",
+    "952debab7a7cd604c66a1d39cda93558d41ca656"
+  ]
 }

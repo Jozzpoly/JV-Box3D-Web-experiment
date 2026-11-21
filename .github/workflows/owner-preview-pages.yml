@@ -166,9 +166,14 @@ jobs:
           source_sha = str(pointer.get("sourceCommit", "")).strip().lower()
           if re.fullmatch(r"[0-9a-f]{40}", source_sha) is None:
               raise SystemExit("Jaskinia window source must be an exact commit")
+          # Earlier versions stay playable at their own path (Fable, 2026-11-21: the first released path went 404).
+          history = [str(s).strip().lower() for s in pointer.get("history", [])]
+          if len(history) > 8 or any(re.fullmatch(r"[0-9a-f]{40}", s) is None or s == source_sha for s in history):
+              raise SystemExit("Jaskinia window history must be at most 8 exact commits other than the current one")
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
               out.write(f"jaskinia_sha={source_sha}\n")
-          print(f"jaskinia window={source_sha}")
+              out.write(f"jaskinia_history={' '.join(history)}\n")
+          print(f"jaskinia window={source_sha} history={history}")
           PY
 
       - name: Checkout exact accepted executable source
@@ -713,6 +718,29 @@ jobs:
           }
           console.log(`OWNER_JASKINIA_WINDOW_COMPOSITION_OK source=${process.env.JASKINIA_SHA}`);
           NODE
+
+      # Earlier versions of the experiment keep their own path, so a version once given out stays playable and two
+      # versions can be compared side by side. Built from their exact commits, without the 100 MB scan layer (Plac and
+      # Offroad play; Skan says it is not in this publication).
+      - name: Build earlier Jaskinia window versions
+        env:
+          JASKINIA_HISTORY: ${{ steps.jaskinia.outputs.jaskinia_history }}
+        run: |
+          set -euxo pipefail
+          root="dist/__experiments__/jaskinia-okno"
+          for sha in $JASKINIA_HISTORY; do
+            dir="$RUNNER_TEMP/jaskinia-okno-$sha"
+            rm -rf "$dir"
+            git init -q "$dir"
+            git -C "$dir" fetch -q --depth 1 "https://github.com/${GITHUB_REPOSITORY}.git" "$sha"
+            git -C "$dir" checkout -q --detach FETCH_HEAD
+            test "$(git -C "$dir" rev-parse HEAD)" = "$sha"
+            (cd "$dir" && npm ci && npm run build:portable && node tools/validate-build-identity.mjs)
+            test ! -e "$root/by-sha/$sha"
+            mkdir -p "$root/by-sha/$sha"
+            cp -a "$dir/dist/." "$root/by-sha/$sha/"
+            echo "OWNER_JASKINIA_WINDOW_EARLIER_VERSION_OK source=$sha"
+          done
 
       - name: Prove accepted root stayed byte-identical outside experiments
         env:
