@@ -700,6 +700,8 @@ jobs:
           }
           (root / "by-sha" / sha / "owner-jaskinia-okno.json").write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
           (root / "index.json").write_text(json.dumps({**marker, "schema": "JV_OWNER_JASKINIA_WINDOW_INDEX_V1", "candidatePath": f"by-sha/{sha}/"}, indent=2) + "\n", encoding="utf-8")
+          # one stable address for Jaskinia's guest: it always leads to the current version; each version keeps its own path
+          (root / "index.html").write_text(f'<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=by-sha/{sha}/"><title>JV Web: eksperyment Jaskini</title><a href="by-sha/{sha}/">JV Web, wersja {sha[:12]}</a>\n', encoding="utf-8")
           PY
           node --input-type=module <<'NODE'
           import { readFile } from "node:fs/promises";
