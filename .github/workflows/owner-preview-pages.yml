@@ -700,7 +700,7 @@ jobs:
               "experiment": "jaskinia-okno",
               "sourceCommit": sha,
               "buildManifest": "build-manifest.json",
-              "contract": "Jaskinia window contract, generations 1 and 2 (hello, state, signals, event, flag; knobs jv.moc and jv.hamulec)",
+              "contract": "Jaskinia window contract, generations 1 and 2 (hello, state, signals, event, flag; knobs jv.moc, jv.hamulec and the native JV core knobs; input programs play/played and record/recorded)",
               "acceptedProduct": False,
           }
           (root / "by-sha" / sha / "owner-jaskinia-okno.json").write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
