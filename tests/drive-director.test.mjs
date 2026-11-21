@@ -234,3 +234,26 @@ test("DD9 the run's digest sees a difference the rounded samples hide: equal dig
   assert.notEqual(a.skrot, b.skrot);
   assert.equal(runWith(0).skrot, a.skrot, "control: the same numbers, the same digest");
 });
+
+test("DD10 the run says how far the chassis tilted: upright 0, on its side 90, on its roof 180 (a fast run on its side is not simply faster)", () => {
+  const s = Math.SQRT1_2;
+  const poses = [
+    { x: 0, y: 0, z: 0, w: 1 }, // upright
+    { x: 0, y: s, z: 0, w: s }, // turned 90 degrees about the vertical: still upright
+    { x: s, y: 0, z: 0, w: s }, // rolled 90 degrees about x: on its side
+    { x: 0, y: 0, z: 1, w: 0 }, // 180 degrees about z: on its roof
+  ];
+  const director = new DriveDirector();
+  let run = null;
+  director.arm(parse([{ kroki: 24 }]), (o) => { run = o.run; });
+  director.hostStarted();
+  for (let i = 0; i < 24; i += 1) {
+    director.commands(RELEASE, STEP_MS);
+    director.afterStep(() => ({ ...fakeTrace(i + 1), chassisRotation: poses[Math.floor(i / 6)] }));
+  }
+  assert.equal(run.kolumny.at(-1), "przechyl_st");
+  assert.deepEqual(run.probki.map((row) => row.at(-1)), [0, 0, 90, 180]);
+  assert.equal(run.przechyl_max_st, 180);
+  assert.equal(run.t_przechyl_max, 0.4);
+  assert.equal(run.probki[1][5], 90, "control: the turn about the vertical shows in yaw, not in tilt");
+});

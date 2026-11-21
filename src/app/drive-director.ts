@@ -20,7 +20,7 @@ import {
 
 export const RUN_SCHEMA = "przebieg/1";
 export const SAMPLE_EVERY_STEPS = 6;
-export const RUN_COLUMNS = ["t", "v_kmh", "x", "y", "z", "odchylenie_st"] as const;
+export const RUN_COLUMNS = ["t", "v_kmh", "x", "y", "z", "odchylenie_st", "przechyl_st"] as const;
 
 /** What a sample needs from a vehicle trace (M6TraceFrame has it). */
 export interface DriveSampleSource {
@@ -33,7 +33,10 @@ export interface ProgramRun {
   readonly schemat: typeof RUN_SCHEMA;
   readonly program: { readonly nazwa: string; readonly skrot: string; readonly kroki: number; readonly krok_s: number };
   readonly kolumny: typeof RUN_COLUMNS;
-  /** One row per sample: t (s from the program start), forward speed (km/h), chassis position (m), yaw (degrees). */
+  /**
+   * One row per sample: t (s from the program start), forward speed (km/h), chassis position (m), yaw (degrees) and
+   * tilt (degrees between the chassis' up axis and the vertical: 0 upright, 90 on its side, 180 on its roof).
+   */
   readonly probki: readonly (readonly number[])[];
   readonly koniec: {
     readonly t: number;
@@ -46,6 +49,9 @@ export interface ProgramRun {
   };
   readonly vmax_kmh: number;
   readonly t_vmax: number;
+  /** The largest tilt in the samples: a fast run that ended on its side is not simply faster (seen 2026-11-21). */
+  readonly przechyl_max_st: number;
+  readonly t_przechyl_max: number;
   /** Identity of the sampled run, from the unrounded numbers: equal digests mean the windows drove bit for bit alike. */
   readonly skrot: string;
 }
@@ -67,6 +73,8 @@ interface Playing {
   start: { readonly x: number; readonly z: number } | null;
   vmax: number;
   tVmax: number;
+  tiltMax: number;
+  tTiltMax: number;
 }
 
 const round = (value: number, digits: number): number => {
@@ -76,6 +84,12 @@ const round = (value: number, digits: number): number => {
 
 function yawDegrees(q: DriveSampleSource["chassisRotation"]): number {
   return (Math.atan2(2 * (q.w * q.y + q.x * q.z), 1 - 2 * (q.y * q.y + q.z * q.z)) * 180) / Math.PI;
+}
+
+/** Angle between the chassis' up axis (the unit quaternion applied to +y) and the world vertical. */
+function tiltDegrees(q: DriveSampleSource["chassisRotation"]): number {
+  const upY = 1 - 2 * (q.x * q.x + q.z * q.z);
+  return (Math.acos(Math.max(-1, Math.min(1, upY))) * 180) / Math.PI;
 }
 
 export class DriveDirector {
@@ -123,6 +137,8 @@ export class DriveDirector {
       start: null,
       vmax: 0,
       tVmax: 0,
+      tiltMax: 0,
+      tTiltMax: 0,
     };
   }
 
@@ -176,11 +192,16 @@ export class DriveDirector {
         const t = playing.executed / PROGRAM_STEPS_PER_SECOND;
         const kmh = trace.drive.forwardSpeedMetersPerSecond * 3.6;
         const yaw = yawDegrees(trace.chassisRotation);
-        playing.raw.push(t, kmh, p.x, p.y, p.z, yaw);
-        playing.rows.push([round(t, 4), round(kmh, 3), round(p.x, 4), round(p.y, 4), round(p.z, 4), round(yaw, 3)]);
+        const tilt = tiltDegrees(trace.chassisRotation);
+        playing.raw.push(t, kmh, p.x, p.y, p.z, yaw, tilt);
+        playing.rows.push([round(t, 4), round(kmh, 3), round(p.x, 4), round(p.y, 4), round(p.z, 4), round(yaw, 3), round(tilt, 2)]);
         if (Math.abs(kmh) > Math.abs(playing.vmax)) {
           playing.vmax = kmh;
           playing.tVmax = t;
+        }
+        if (tilt > playing.tiltMax) {
+          playing.tiltMax = tilt;
+          playing.tTiltMax = t;
         }
       }
     }
@@ -194,10 +215,10 @@ export class DriveDirector {
   }
 
   #run(playing: Playing): ProgramRun {
-    const end = playing.rows[playing.rows.length - 1] ?? [0, 0, 0, 0, 0, 0];
+    const end = playing.rows[playing.rows.length - 1] ?? [0, 0, 0, 0, 0, 0, 0];
     const start = playing.start ?? { x: 0, z: 0 };
     const [t = 0, v = 0, x = 0, y = 0, z = 0] = end;
-    const rawEnd = playing.raw.slice(-6);
+    const rawEnd = playing.raw.slice(-RUN_COLUMNS.length);
     return {
       schemat: RUN_SCHEMA,
       program: {
@@ -218,6 +239,8 @@ export class DriveDirector {
       },
       vmax_kmh: round(playing.vmax, 3),
       t_vmax: round(playing.tVmax, 4),
+      przechyl_max_st: round(playing.tiltMax, 2),
+      t_przechyl_max: round(playing.tTiltMax, 4),
       skrot: identityHash(playing.raw.map(String).join(",")),
     };
   }
