@@ -13,6 +13,22 @@
 // talks to both hosts. Opened directly (not in a frame), JV is unchanged: no listener reacts and no message leaves.
 // Known limit of this first version: knobs flow from Jaskinia to JV only; a change made in the JV tab is reported in
 // state.data, not written back as a Jaskinia setting.
+//
+// Input programs (2026-11-21, for the owner's "the same input on two windows"): JV says in hello that it can play and
+// record (umie: ["play", "record"]). The host sends play {id, program: "wejscie/1"}; JV puts the vehicle at its start
+// in a fresh world and drives the program on the fixed physics step, live input ignored, then answers
+// played {id, ok: true, przebieg: "przebieg/1"} (or ok: false with the reason). record {id} answers
+// recorded {id, ok, program, obciete}: what was driven since the last start, as a program that replays it exactly.
+// Two windows given one program differ only by their knobs (src/input/input-program.ts, src/app/drive-director.ts).
+
+import {
+  InputProgramError,
+  parseInputProgram,
+  PROGRAM_STEPS_PER_SECOND,
+  type InputProgram,
+  type ParsedInputProgram,
+} from "./input/input-program.js";
+import type { ProgramOutcome } from "./app/drive-director.js";
 
 export const JASKINIA_KNOB_POWER = "jv.moc";
 export const JASKINIA_KNOB_BRAKE = "jv.hamulec";
@@ -37,6 +53,13 @@ export interface JaskiniaKnobAccess {
   ) => { readonly applied: number | null; readonly clamped: boolean; readonly reason: string | null };
 }
 
+export interface JaskiniaProgramAccess {
+  /** Puts the vehicle at its start again and drives this program; `done` hears once how it went. */
+  readonly play: (program: ParsedInputProgram, done: (outcome: ProgramOutcome) => void) => void;
+  /** What was driven since the last start, as a program that replays it; null when nothing was. */
+  readonly recording: (name: string) => { readonly program: InputProgram; readonly truncated: boolean } | null;
+}
+
 export interface JaskiniaBridgeDeps {
   readonly name: string;
   readonly version: string;
@@ -46,6 +69,8 @@ export interface JaskiniaBridgeDeps {
   readonly vehicle: JaskiniaVehicleAccess;
   readonly knobs: JaskiniaKnobAccess;
   readonly format: (value: number) => string;
+  /** Optional: a world without it says nothing about programs and refuses play and record with a reason. */
+  readonly program?: JaskiniaProgramAccess;
 }
 
 export interface JaskiniaOutgoing {
@@ -76,6 +101,10 @@ function knobSource(values: unknown, name: string): unknown {
 }
 
 const decimal = (value: number): string => String(Math.round(value * 1000) / 1000).replace(".", ",");
+const seconds = (steps: number): string => (steps / PROGRAM_STEPS_PER_SECOND).toFixed(1).replace(".", ",");
+/** The host's request id, echoed back as it came: a string or a number, anything else is null. */
+const requestId = (value: unknown): string | number | null =>
+  typeof value === "string" || (typeof value === "number" && Number.isFinite(value)) ? value : null;
 
 /** Pure core: a message from the host in, messages for the host out. No DOM, so it is tested in Node. */
 export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
@@ -92,6 +121,8 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
   let lastSignalsAt = Number.NEGATIVE_INFINITY;
   let lastStateAt = Number.NEGATIVE_INFINITY;
   let lastStateText = "";
+  // A program ends later than the message that started it: its answer waits here for the next tick.
+  const outbox: JaskiniaOutgoing[] = [];
 
   const speed = (): number => Math.round(Math.abs(deps.speedKmh()));
   const stateText = (): string => {
@@ -181,6 +212,52 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
     if (changed.length > 0) out.push(state());
     return out;
   };
+  const play = (id: string | number | null, raw: unknown): JaskiniaOutgoing[] => {
+    if (deps.program === undefined) {
+      return [{ type: "played", id, ok: false, error: "ten świat nie odtwarza programów" }];
+    }
+    let program: ParsedInputProgram;
+    try {
+      program = parseInputProgram(raw);
+    } catch (error: unknown) {
+      const reason = error instanceof InputProgramError ? error.message : "program nieczytelny";
+      return [
+        { type: "played", id, ok: false, error: reason },
+        { type: "event", text: `Program odrzucony: ${reason}`.slice(0, 200), level: "uwaga" },
+      ];
+    }
+    const title = program.name === "" ? "Program" : `Program „${program.name}”`;
+    deps.program.play(program, (outcome) => {
+      if (outcome.ok) {
+        const end = outcome.run.koniec;
+        outbox.push(
+          { type: "played", id, ok: true, przebieg: outcome.run },
+          {
+            type: "event",
+            text: `${title} przejechany: ${seconds(program.totalSteps)} s, na końcu ${String(Math.round(Math.abs(end.v_kmh)))} km/h, ${decimal(Math.round(end.odleglosc_m * 10) / 10)} m od startu`.slice(0, 200),
+            level: "info",
+          },
+          state(),
+        );
+      } else {
+        outbox.push(
+          { type: "played", id, ok: false, error: outcome.error },
+          { type: "event", text: `${title}: ${outcome.error}`.slice(0, 200), level: "uwaga" },
+        );
+      }
+    });
+    return [{ type: "event", text: `${title}: od startu, ${seconds(program.totalSteps)} s`.slice(0, 200), level: "info" }];
+  };
+  const record = (id: string | number | null): JaskiniaOutgoing[] => {
+    if (deps.program === undefined) {
+      return [{ type: "recorded", id, ok: false, error: "ten świat nie nagrywa przejazdów" }];
+    }
+    const recording = deps.program.recording(`Przejazd w ${deps.name}`);
+    if (recording === null) {
+      return [{ type: "recorded", id, ok: false, error: "od ostatniego startu nic jeszcze nie przejechano" }];
+    }
+    return [{ type: "recorded", id, ok: true, program: recording.program, obciete: recording.truncated }];
+  };
 
   return {
     isActive: () => active,
@@ -198,8 +275,15 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
         pendingWhoAmI = null;
         scope = null;
         return [
-          // "rzeczy": a generation-2 host sends "changed" only to guests that ask for it; "remark": owner notes (gen 1)
-          { type: "hello", name: deps.name, version: deps.version, wants: ["remark", "rzeczy"] },
+          // "rzeczy": a generation-2 host sends "changed" only to guests that ask for it; "remark": owner notes (gen 1);
+          // umie: what this world can do on the host's request (a host that does not know the field skips it)
+          {
+            type: "hello",
+            name: deps.name,
+            version: deps.version,
+            wants: ["remark", "rzeczy"],
+            ...(deps.program === undefined ? {} : { umie: ["play", "record"] }),
+          },
           state(),
           ...(readsSettings ? askWhoAmI() : []),
         ];
@@ -211,6 +295,8 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
       }
       if (type === "changed") return readKnobs();
       if (type === "state?") return [state()];
+      if (type === "play") return play(requestId(m["id"]), m["program"]);
+      if (type === "record") return record(requestId(m["id"]));
       if (type === "result" && pendingWhoAmI !== null && m["id"] === pendingWhoAmI) {
         pendingWhoAmI = null;
         const data = m["ok"] === true && typeof m["data"] === "object" && m["data"] !== null ? (m["data"] as Record<string, unknown>) : null;
@@ -229,8 +315,9 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
       return [];
     },
     tick(nowMs) {
-      if (!active || !visible) return [];
-      const out: JaskiniaOutgoing[] = [];
+      // a program's answer goes out even from a hidden window: the host is waiting for it
+      const out: JaskiniaOutgoing[] = outbox.splice(0);
+      if (!active || !visible) return out;
       if (nowMs - lastSignalsAt >= JASKINIA_SIGNALS_EVERY_MS) {
         lastSignalsAt = nowMs;
         const values: Record<string, number> = { predkosc_kmh: Math.round(Math.abs(deps.speedKmh()) * 10) / 10 };

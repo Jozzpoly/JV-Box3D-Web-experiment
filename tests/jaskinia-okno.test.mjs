@@ -8,7 +8,7 @@ import {
   JASKINIA_KNOB_POWER,
 } from "../.test-dist/product-jaskinia.js";
 
-function world({ power = 1.5, brake = 1 } = {}) {
+function world({ power = 1.5, brake = 1, program } = {}) {
   const car = { power, brake, sets: [] };
   const live = new Map();
   const knobSets = [];
@@ -38,6 +38,7 @@ function world({ power = 1.5, brake = 1 } = {}) {
       },
     },
     format: (v) => `${String(v).replace(".", ",")}×`,
+    ...(program === undefined ? {} : { program }),
   });
   return { bridge, car, live, knobSets, setSpeed: (v) => { speed = v; } };
 }
@@ -205,4 +206,88 @@ test("TJ10 first read: knobs Jaskinia still holds at their declared default are 
     "jv.opony.tarcie": { wartosc: 0.4, skad: "wartosc" },
   } } });
   assert.match(later[0].text, /Tarcie opon 0,4/, "control: a later change of the same knob is announced");
+});
+
+// ---- input programs: the same drive on two windows (src/input/input-program.ts, src/app/drive-director.ts) ----
+
+const PROGRAM = { schemat: "wejscie/1", nazwa: "Ruszanie", odcinki: [{ s: 1 }, { s: 2, gaz: 1 }] };
+function programStub() {
+  const plays = [];
+  let recording = null;
+  return {
+    plays,
+    setRecording: (value) => { recording = value; },
+    access: {
+      play: (program, done) => plays.push({ program, done }),
+      recording: (name) => (recording === null ? null : { ...recording, name }),
+    },
+  };
+}
+const RUN = { schemat: "przebieg/1", koniec: { t: 3, v_kmh: 28.84, x: 0, y: 0, z: 21.5, odleglosc_m: 21.46 } };
+
+test("TJ11 a world that plays programs says so in hello; one that does not, says nothing about it", () => {
+  const stub = programStub();
+  const withProgram = world({ program: stub.access }).bridge.receive(HI_OLD)[0];
+  assert.deepEqual(withProgram.umie, ["play", "record"]);
+  const without = world().bridge.receive(HI_OLD)[0];
+  assert.equal("umie" in without, false, "control: no program access, no promise");
+  assert.deepEqual(world({ program: stub.access }).bridge.receive({ jaskinia: 1, type: "play", id: 1, program: PROGRAM }), [], "before hi nothing is played");
+  assert.equal(stub.plays.length, 0);
+});
+
+test("TJ12 play: the program goes to the vehicle at once, its run goes back to the host on the next tick, also from a hidden window", () => {
+  const stub = programStub();
+  const { bridge } = world({ program: stub.access });
+  bridge.receive(HI_OLD);
+  const started = bridge.receive({ jaskinia: 1, type: "play", id: "ab-1", program: PROGRAM });
+  assert.deepEqual(types(started), ["event"]);
+  assert.match(started[0].text, /^Program „Ruszanie”: od startu, 3,0 s$/);
+  assert.equal(stub.plays.length, 1);
+  assert.equal(stub.plays[0].program.totalSteps, 180);
+  assert.equal(stub.plays[0].program.name, "Ruszanie");
+  assert.equal(types(bridge.tick(1_000)).includes("played"), false, "control: no answer before the run ends");
+  bridge.receive({ jaskinia: 1, type: "visible", visible: false });
+  stub.plays[0].done({ ok: true, run: RUN });
+  const answer = bridge.tick(2_000);
+  assert.deepEqual(types(answer), ["played", "event", "state"]);
+  assert.deepEqual(answer[0], { type: "played", id: "ab-1", ok: true, przebieg: RUN });
+  assert.match(answer[1].text, /przejechany: 3,0 s, na końcu 29 km\/h, 21,5 m od startu/);
+  assert.deepEqual(bridge.tick(3_000), [], "sent once; the hidden window rests again");
+});
+
+test("TJ13 play that cannot be played is answered at once with the reason, and nothing moves", () => {
+  const stub = programStub();
+  const { bridge } = world({ program: stub.access });
+  bridge.receive(HI_OLD);
+  const bad = bridge.receive({ jaskinia: 1, type: "play", id: 7, program: { ...PROGRAM, odcinki: [{ s: 1, gaz: 2 }] } });
+  assert.deepEqual(types(bad), ["played", "event"]);
+  assert.equal(bad[0].ok, false);
+  assert.equal(bad[0].id, 7);
+  assert.match(bad[0].error, /gaz musi być liczbą w \[-1, 1\]/);
+  assert.equal(bad[1].level, "uwaga");
+  assert.equal(stub.plays.length, 0, "the vehicle was not touched");
+  const cutOff = bridge.receive({ jaskinia: 1, type: "play", id: 8, program: PROGRAM });
+  assert.equal(cutOff.length, 1);
+  stub.plays[0].done({ ok: false, error: "przerwane: pojazd postawiony od nowa" });
+  const answer = bridge.tick(1_000);
+  assert.deepEqual(answer.slice(0, 2).map((m) => [m.type, m.id ?? null, m.ok ?? null]), [["played", 8, false], ["event", null, null]]);
+  assert.match(answer[1].text, /pojazd postawiony od nowa/);
+  const { bridge: plain } = world();
+  plain.receive(HI_OLD);
+  assert.deepEqual(plain.receive({ jaskinia: 1, type: "play", id: { x: 1 }, program: PROGRAM }), [
+    { type: "played", id: null, ok: false, error: "ten świat nie odtwarza programów" },
+  ], "a world without program access says so; an id that is not a string or a number comes back as null");
+});
+
+test("TJ14 record: what was driven since the last start comes back as a program, or the reason why not", () => {
+  const stub = programStub();
+  const { bridge } = world({ program: stub.access });
+  bridge.receive(HI_OLD);
+  assert.deepEqual(bridge.receive({ jaskinia: 1, type: "record", id: "r1" }), [
+    { type: "recorded", id: "r1", ok: false, error: "od ostatniego startu nic jeszcze nie przejechano" },
+  ]);
+  const program = { schemat: "wejscie/1", nazwa: "x", odcinki: [{ kroki: 60, gaz: 1 }] };
+  stub.setRecording({ program, truncated: true });
+  const out = bridge.receive({ jaskinia: 1, type: "record", id: "r2" });
+  assert.deepEqual(out, [{ type: "recorded", id: "r2", ok: true, program, obciete: true }]);
 });

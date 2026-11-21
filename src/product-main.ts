@@ -57,6 +57,7 @@ import {
 } from "./product-vehicle-settings.js";
 import { installUtilityDrawer } from "./utility-drawer.js";
 import { installJaskiniaWindow } from "./product-jaskinia.js";
+import { productDriveDirector } from "./app/drive-director.js";
 import {
   getM6LiveOverride,
   M6_LIVE_PARAMETERS,
@@ -142,6 +143,7 @@ try {
 // before the first await on purpose: the host says hi once, when the frame has loaded, and the runtime import below
 // can take longer than that (measured 2026-11-21: installed after it, JV never answered a single hi).
 let productSpeedKmh: () => number = () => 0;
+let productRestart: (() => Promise<void>) | null = null;
 installJaskiniaWindow({
   name: "JV Web",
   version: JV_BUILD_SOURCE_LABEL,
@@ -161,6 +163,15 @@ installJaskiniaWindow({
     set: setM6LiveParameter,
   },
   format: formatJvMultiplier,
+  // input programs from the host: the vehicle goes back to its start and drives the program (drive-director.ts)
+  program: {
+    play: (program, done) => {
+      productDriveDirector.arm(program, done);
+      // before the runtime has loaded, its first start picks the armed program up by itself
+      if (productRestart !== null) void productRestart();
+    },
+    recording: (name) => productDriveDirector.recording(name),
+  },
 });
 
 if (spawnTarget !== "map") {
@@ -176,6 +187,7 @@ if (spawnTarget !== "map") {
 
 const productRuntime = await import("./main.js");
 productSpeedKmh = productRuntime.getProductForwardSpeedKmh;
+productRestart = productRuntime.restartProductHost;
 
 // The scan world is large; say what the wait is for while it loads.
 const sceneLoading = document.querySelector<HTMLElement>("[data-scene-loading]");
