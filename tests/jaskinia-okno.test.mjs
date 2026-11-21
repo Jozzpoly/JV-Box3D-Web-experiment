@@ -135,7 +135,7 @@ test("TJ6 live numbers: signals at most every 250 ms, state at most every second
   setSpeed(-36.04);
   const first = bridge.tick(1_000);
   assert.deepEqual(types(first), ["signals", "state"]);
-  assert.deepEqual(first[0].values, { predkosc_kmh: 36, klatki_na_s: 60 });
+  assert.deepEqual(first[0].values, { "prędkość km/h": 36, "klatki/s": 60 }, "names for a person: the host shows them as they come");
   assert.deepEqual(bridge.tick(1_100), [], "control: 100 ms later there is nothing new to say");
   assert.deepEqual(types(bridge.tick(1_260)), ["signals"]);
   setSpeed(50);

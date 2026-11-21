@@ -33,6 +33,8 @@ import type { ProgramOutcome } from "./app/drive-director.js";
 export const JASKINIA_KNOB_POWER = "jv.moc";
 export const JASKINIA_KNOB_BRAKE = "jv.hamulec";
 export const JASKINIA_SIGNALS_EVERY_MS = 250;
+export const JASKINIA_SIGNAL_SPEED = "prędkość km/h";
+export const JASKINIA_SIGNAL_FPS = "klatki/s";
 export const JASKINIA_STATE_EVERY_MS = 1000;
 
 export interface JaskiniaVehicleAccess {
@@ -320,9 +322,11 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
       if (!active || !visible) return out;
       if (nowMs - lastSignalsAt >= JASKINIA_SIGNALS_EVERY_MS) {
         lastSignalsAt = nowMs;
-        const values: Record<string, number> = { predkosc_kmh: Math.round(Math.abs(deps.speedKmh()) * 10) / 10 };
+        // The host shows a signal's name as it comes, under the window: names for a person, not for code (the first
+        // two-window screenshot, 21 XI, showed "predkosc_kmh" and "klatki_na_s"). state.data keeps its machine keys.
+        const values: Record<string, number> = { [JASKINIA_SIGNAL_SPEED]: Math.round(Math.abs(deps.speedKmh()) * 10) / 10 };
         const fps = deps.fps();
-        if (fps !== null && Number.isFinite(fps)) values["klatki_na_s"] = Math.round(fps);
+        if (fps !== null && Number.isFinite(fps)) values[JASKINIA_SIGNAL_FPS] = Math.round(fps);
         out.push({ type: "signals", values });
       }
       if (nowMs - lastStateAt >= JASKINIA_STATE_EVERY_MS && stateText() !== lastStateText) {
