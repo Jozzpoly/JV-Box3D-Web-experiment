@@ -68,6 +68,13 @@ function knobValue(values: unknown, name: string): unknown {
   return (entry as Record<string, unknown>)["wartosc"];
 }
 
+/** Where Jaskinia says the value comes from ("domyslna" = the knob's declared default, "wartosc", "zestaw", ...). */
+function knobSource(values: unknown, name: string): unknown {
+  if (typeof values !== "object" || values === null) return undefined;
+  const entry = (values as Record<string, unknown>)[name];
+  return typeof entry === "object" && entry !== null ? (entry as Record<string, unknown>)["skad"] : undefined;
+}
+
 const decimal = (value: number): string => String(Math.round(value * 1000) / 1000).replace(".", ",");
 
 /** Pure core: a message from the host in, messages for the host out. No DOM, so it is tested in Node. */
@@ -162,7 +169,11 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
         continue;
       }
       if (result.clamped) warnings.push(`${deps.knobs.label(name)}: ${result.reason ?? "przycięte"}`);
-      if (result.applied !== before) changed.push(`${deps.knobs.label(name)} ${decimal(result.applied)}`);
+      // The first time JV hears a knob that Jaskinia still holds at its declared default, that is setting up, not a
+      // change: applied quietly (the default was computed from the same native receipt), so the speech band is not
+      // flooded with numbers nobody touched (seen in the window under a live address, 21 XI).
+      const settingUp = before === undefined && knobSource(values, name) === "domyslna";
+      if (result.applied !== before && !settingUp) changed.push(`${deps.knobs.label(name)} ${decimal(result.applied)}`);
     }
     const out: JaskiniaOutgoing[] = [];
     if (changed.length > 0) out.push({ type: "event", text: `Z ustawień Jaskini: ${changed.join(", ")}`.slice(0, 200), level: "info" });

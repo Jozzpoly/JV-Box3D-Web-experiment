@@ -189,3 +189,20 @@ test("TJ8 native core knobs: taken as given (absurd too), a refused or clamped o
   assert.equal(live.get("jv.opony.tarcie"), 0);
   assert.equal(live.get("jv.swiat.grawitacja"), -3, "the refused value left the old one in force");
 });
+
+test("TJ10 first read: knobs Jaskinia still holds at their declared default are set up quietly; a value someone set is announced", () => {
+  const { bridge, live } = world();
+  const read = greet(bridge);
+  const out = bridge.receive({ jaskinia: 1, type: "result", id: read.id, ok: true, data: { wartosci: {
+    "jv.opony.tarcie": { wartosc: 1.25, skad: "domyslna" },
+    "jv.swiat.grawitacja": { wartosc: 3, skad: "wartosc" },
+  } } });
+  assert.equal(live.get("jv.opony.tarcie"), 1.25, "the default is applied all the same");
+  assert.deepEqual(types(out), ["event", "state"]);
+  assert.match(out[0].text, /^Z ustawień Jaskini: Grawitacja 3$/, "only the value someone set is announced");
+  const next = bridge.receive({ jaskinia: 1, type: "changed", akt: 2 })[0];
+  const later = bridge.receive({ jaskinia: 1, type: "result", id: next.id, ok: true, data: { wartosci: {
+    "jv.opony.tarcie": { wartosc: 0.4, skad: "wartosc" },
+  } } });
+  assert.match(later[0].text, /Tarcie opon 0,4/, "control: a later change of the same knob is announced");
+});
