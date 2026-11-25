@@ -230,11 +230,25 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
       ];
     }
     const title = program.name === "" ? "Program" : `Program „${program.name}”`;
+    // warunki: na czym ten przejazd naprawdę jedzie (miejsce startu, Moc i Hamulec z zakładki gry, pokrętła JV core,
+    // wersja), z chwili startu programu. Gospodarz porówna je w oknach A i B bez względu na to, skąd przyszły, także z guzika
+    // w samej grze, którego suwaki Jaskini nie widzą (prośba Opusa czatu z 21 XI, sonda „B szybsze o 35%” przy „tych samych”).
+    const vehicle = deps.vehicle.get();
+    const warunki = {
+      lokacja: deps.location(),
+      moc: vehicle.power,
+      hamulec: vehicle.brake,
+      pokretla: Object.fromEntries(deps.knobs.names.flatMap((name) => {
+        const value = deps.knobs.current(name);
+        return value === undefined ? [] : [[name, value]];
+      })),
+      wersja: deps.version,
+    };
     deps.program.play(program, (outcome) => {
       if (outcome.ok) {
         const end = outcome.run.koniec;
         outbox.push(
-          { type: "played", id, ok: true, przebieg: outcome.run },
+          { type: "played", id, ok: true, przebieg: { ...outcome.run, warunki } },
           {
             type: "event",
             text: `${title} przejechany: ${seconds(program.totalSteps)} s, na końcu ${String(Math.round(Math.abs(end.v_kmh)))} km/h, ${decimal(Math.round(end.odleglosc_m * 10) / 10)} m od startu`.slice(0, 200),

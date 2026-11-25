@@ -239,9 +239,10 @@ test("TJ11 a world that plays programs says so in hello; one that does not, says
 
 test("TJ12 play: the program goes to the vehicle at once, its run goes back to the host on the next tick, also from a hidden window", () => {
   const stub = programStub();
-  const { bridge } = world({ program: stub.access });
+  const { bridge, car } = world({ program: stub.access });
   bridge.receive(HI_OLD);
   const started = bridge.receive({ jaskinia: 1, type: "play", id: "ab-1", program: PROGRAM });
+  car.power = 3; // the game tab's Moc changed while the program drives: the run's conditions stay those of its start
   assert.deepEqual(types(started), ["event"]);
   assert.match(started[0].text, /^Program „Ruszanie”: od startu, 3,0 s$/);
   assert.equal(stub.plays.length, 1);
@@ -252,7 +253,9 @@ test("TJ12 play: the program goes to the vehicle at once, its run goes back to t
   stub.plays[0].done({ ok: true, run: RUN });
   const answer = bridge.tick(2_000);
   assert.deepEqual(types(answer), ["played", "event", "state"]);
-  assert.deepEqual(answer[0], { type: "played", id: "ab-1", ok: true, przebieg: RUN });
+  // the run carries the conditions it actually ran with, taken when the program started (place, the game tab's Moc and
+  // Hamulec, JV core knobs, version): a host compares them in A and B wherever they came from
+  assert.deepEqual(answer[0], { type: "played", id: "ab-1", ok: true, przebieg: { ...RUN, warunki: { lokacja: "Plac", moc: 1.5, hamulec: 1, pokretla: {}, wersja: "abc123def456" } } });
   assert.match(answer[1].text, /przejechany: 3,0 s, na końcu 29 km\/h, 21,5 m od startu/);
   assert.deepEqual(bridge.tick(3_000), [], "sent once; the hidden window rests again");
 });
