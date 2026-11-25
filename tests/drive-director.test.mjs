@@ -68,6 +68,10 @@ test("DD2 an armed program waits for the next start, then drives every step itse
   assert.equal(outcomes[0].ok, true);
   const run = outcomes[0].run;
   assert.equal(run.schemat, "przebieg/1");
+  // the world names its own series: every column has a key, a name for a person and a unit (the host compares only those)
+  assert.deepEqual(run.serie.map((s) => s.klucz), [...run.kolumny], "every column is a series named by the world, in the same order");
+  assert.ok(run.serie.every((s) => typeof s.nazwa === "string" && s.nazwa && typeof s.jednostka === "string" && s.jednostka));
+  assert.equal(run.serie.find((s) => s.klucz === "v_kmh").jednostka, "km/h");
   assert.deepEqual(run.program, { nazwa: "Krótki", skrot: p.digest, kroki: 15, krok_s: 1 / 60 });
   assert.deepEqual(run.probki.map((r) => r[0]), [6 / 60, 12 / 60, 15 / 60].map((t) => Math.round(t * 1e4) / 1e4), `every ${SAMPLE_EVERY_STEPS} steps and the last`);
   assert.equal(run.koniec.v_kmh, 36);

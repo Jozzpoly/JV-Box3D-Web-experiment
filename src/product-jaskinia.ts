@@ -22,6 +22,7 @@
 // Two windows given one program differ only by their knobs (src/input/input-program.ts, src/app/drive-director.ts).
 
 import {
+  INPUT_PROGRAM_SCHEMA,
   InputProgramError,
   parseInputProgram,
   PROGRAM_STEPS_PER_SECOND,
@@ -284,7 +285,9 @@ export function createJaskiniaBridge(deps: JaskiniaBridgeDeps): JaskiniaBridge {
             name: deps.name,
             version: deps.version,
             wants: ["remark", "rzeczy"],
-            ...(deps.program === undefined ? {} : { umie: ["play", "record"] }),
+            // programy: schematy programu, które ten świat gra; gospodarz wysyła play tylko z takim schematem, a świat
+            // sterowany kierowcą (JV) i świat autonomiczny mówią każdy swoje (świat mówi sam za siebie, 25 XI 2026)
+            ...(deps.program === undefined ? {} : { umie: ["play", "record"], programy: [INPUT_PROGRAM_SCHEMA] }),
           },
           state(),
           ...(readsSettings ? askWhoAmI() : []),

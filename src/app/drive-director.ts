@@ -21,6 +21,20 @@ import {
 export const RUN_SCHEMA = "przebieg/1";
 export const SAMPLE_EVERY_STEPS = 6;
 export const RUN_COLUMNS = ["t", "v_kmh", "x", "y", "z", "odchylenie_st", "przechyl_st"] as const;
+/**
+ * The series of a run, named by the world itself (key of the column, a name for a person, the unit): the host compares
+ * and draws only what a world named, so a world without kilometres per hour never has to dress up as a car
+ * (Gemini Neon's Second World multiplied a body speed by 12 into v_kmh to have something drawn; 25 XI 2026).
+ */
+export const RUN_SERIES = [
+  { klucz: "t", nazwa: "czas od startu programu", jednostka: "s" },
+  { klucz: "v_kmh", nazwa: "prędkość do przodu", jednostka: "km/h" },
+  { klucz: "x", nazwa: "położenie x", jednostka: "m" },
+  { klucz: "y", nazwa: "wysokość nadwozia", jednostka: "m" },
+  { klucz: "z", nazwa: "położenie z", jednostka: "m" },
+  { klucz: "odchylenie_st", nazwa: "kierunek jazdy", jednostka: "°" },
+  { klucz: "przechyl_st", nazwa: "przechył nadwozia od pionu", jednostka: "°" },
+] as const;
 
 /** What a sample needs from a vehicle trace (M6TraceFrame has it). */
 export interface DriveSampleSource {
@@ -33,6 +47,8 @@ export interface ProgramRun {
   readonly schemat: typeof RUN_SCHEMA;
   readonly program: { readonly nazwa: string; readonly skrot: string; readonly kroki: number; readonly krok_s: number };
   readonly kolumny: typeof RUN_COLUMNS;
+  /** The same columns, each named by the world: key, a name for a person, the unit. */
+  readonly serie: typeof RUN_SERIES;
   /**
    * One row per sample: t (s from the program start), forward speed (km/h), chassis position (m), yaw (degrees) and
    * tilt (degrees between the chassis' up axis and the vertical: 0 upright, 90 on its side, 180 on its roof).
@@ -228,6 +244,7 @@ export class DriveDirector {
         krok_s: 1 / PROGRAM_STEPS_PER_SECOND,
       },
       kolumny: RUN_COLUMNS,
+      serie: RUN_SERIES,
       probki: playing.rows,
       koniec: {
         t,

@@ -229,8 +229,10 @@ test("TJ11 a world that plays programs says so in hello; one that does not, says
   const stub = programStub();
   const withProgram = world({ program: stub.access }).bridge.receive(HI_OLD)[0];
   assert.deepEqual(withProgram.umie, ["play", "record"]);
+  assert.deepEqual(withProgram.programy, ["wejscie/1"], "the world says which program schemas it plays (the world speaks for itself)");
   const without = world().bridge.receive(HI_OLD)[0];
   assert.equal("umie" in without, false, "control: no program access, no promise");
+  assert.equal("programy" in without, false, "control: and no program schemas either");
   assert.deepEqual(world({ program: stub.access }).bridge.receive({ jaskinia: 1, type: "play", id: 1, program: PROGRAM }), [], "before hi nothing is played");
   assert.equal(stub.plays.length, 0);
 });
